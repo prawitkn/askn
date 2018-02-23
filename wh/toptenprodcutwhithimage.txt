@@ -1,0 +1,60 @@
+<!-- PRODUCT LIST -->
+          <div class="box box-primary">
+            <div class="box-header with-border">
+              <h3 class="box-title">Top 10 Products</h3>
+
+              <div class="box-tools pull-right">
+                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                </button>
+                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+              </div>
+            </div>
+            <!-- /.box-header -->
+			<div class="box-body">
+				<ul class="products-list product-list-in-box">
+				<?php	
+					$sql = "SELECT 
+							od.prodCode as id, pd.`prodNameNew` as prodName
+							,IFNULL(SUM(od.qty),0) as qty
+							,IFNULL(SUM(od.netTotal),0) as netTotal		
+							, pd.prodDesc, pd.prodPrice, pd.photo
+							FROM order_detail od
+							left join product pd on od.prodCode=pd.code 
+							inner join order_header oh on od.orderNo=oh.orderNo and oh.statusCode='P'							
+								AND year(oh.orderDate)=:year ".
+								($month<>"0"?"and month(oh.orderDate)=:month":"")."
+							GROUP BY od.prodCode, pd.prodNameNew
+							ORDER BY 4 DESC 
+							LIMIT 10							
+							";
+					$stmt = $pdo->prepare($sql);
+					$stmt->bindParam(':year', $year);
+					($month<>"0"?$stmt->bindParam(':month', $month):"");
+					$stmt->execute();	
+				?>
+				  <?php $row_code = 1; while ($row = $stmt->fetch()) { ?>
+				  <li class="item">
+                  <div class="product-img">
+                    <img src="dist/img/default-50x50.gif" alt="Product Image">
+                  </div>
+                  <div class="product-info"> 
+                    <a target="_blank" href="product_view.php?id=<?= $row['id']; ?>" class="product-title"><?= $row['prodName']; ?>
+                      <span class="label label-warning"><i class="fa fa-tag"></i> <?= number_format($row['prodPrice'],2,'.',','); ?></span>
+					<span class="label label-danger pull-right"><i class="fa fa-btc"></i> <?= number_format($row['netTotal'],2,'.',','); ?></span>
+					</a>
+                    <span class="product-description">
+                          <?= $row['prodDesc']; ?>
+                        </span>
+                  </div>
+                </li>
+				<!-- /.item -->
+				<?php $row_code+=1; } ?>
+              </ul>
+            </div>
+            <!-- /.box-body -->
+            <div class="box-footer text-center">
+              <a href="javascript:void(0)" class="uppercase">View All Products</a>
+            </div>
+            <!-- /.box-footer -->
+          </div>
+          <!-- /.box -->
