@@ -139,32 +139,42 @@ desired effect
 								<input type="text" id="deliveryDate" name="deliveryDate" class="form-control datepicker" data-smk-msg="Require Delivery Date / Load Date." required>
 							</div>
 							<div class="col-md-6 form-group">
-								<label for="shippingMarksId">Shiping Marks</label>
-								<select id="shippingMarksId" name="shippingMarksId" class="form-control" >
-									<option value="0"> -- Select -- </option>
-									<?php
-									$sql_sm = "SELECT id, `code`,  `name`, `filePath` FROM `shipping_marks` WHERE `statusCode`='A' ";
-									$result_sm = mysqli_query($link, $sql_sm);
-									while($row = mysqli_fetch_assoc($result_sm)){
-										echo '<option value="'.$row['id'].'" data-filePath="'.$row['filePath'].'"  >'.$row['code'].' : '.$row['name'].'</option>';
-									}
-									?>
-								</select>  
+								
 							</div>
 						</div>
 						
 						<div class="row">
 							<div class="col-md-6 form-group">
-								<label for="shippingMarks">by</label><br/>
-								<input type="checkbox" name="shipByLcl" id="shipByLcl"  >
-								  LCL&nbsp;&nbsp;
-								  <input type="checkbox" name="shipByFcl1x20" id="shipByFcl1x20"  >
-								  FCL 1x20'&nbsp;&nbsp;
-								  <input type="checkbox" name="shipByFcl1x40" id="shipByFcl1x40"  >
-									FCL 1x40'
+								<label for="shippingMarksId">Shiping Marks</label>
+								<select id="shippingMarksId" name="shippingMarksId" class="form-control" >
+									<option value="0"> -- Select -- </option>
+									<?php
+									$sql_sm = "SELECT id, `code`,  `name`,  `typeCode`, `filePath` FROM `shipping_marks` WHERE `statusCode`='A' ";
+									$result_sm = mysqli_query($link, $sql_sm);
+									while($row = mysqli_fetch_assoc($result_sm)){
+										echo '<option value="'.$row['id'].'" data-typeCode="'.$row['typeCode'].'" data-filePath="'.$row['filePath'].'"  >'.$row['code'].' : '.$row['name'].'</option>';
+									}
+									?>
+								</select> 
+								<img src="" id="shippingMarksImg" />
+								<textarea id="shippingMarksRem" name="shippingMarksRem" class="form-control" ></textarea>
 							</div>
 							<div class="col-md-6 form-group">
-								  <img src="" id="shippingMarksImg" />
+								 <label for="shippingMarks">by</label><br/>
+								<input type="checkbox" name="shipByLcl" id="shipByLcl"  >
+								  LCL&nbsp;&nbsp;
+								  <input type="checkbox" name="shipByFcl" id="shipByFcl"  >
+								  FCL
+									<input type="text" id="shipByRemark" name="shipByRemark" class="form-control"  maxlength="40" />
+							</div>
+						</div>
+						
+						<div class="row">
+							<div class="col-md-6 form-group">
+								
+							</div>
+							<div class="col-md-6 form-group">
+								  
 							</div>
 						</div>
 						
@@ -184,7 +194,7 @@ desired effect
 						<div class="row">					
 							<div class="col-md-12 form-group">
 								<label for="remark">Remark</label>
-								  <input type="text" id="remark" name="remark" class="form-control" />
+								  <textarea id="remark" name="remark" class="form-control"  maxlength="80"></textarea>
 							  </div>
 						  </div>
 						  						  
@@ -219,9 +229,9 @@ desired effect
 						  <div class="row">	
 						  <div class="col-md-12 form-group">
 							<label for="custType">Customer Type</label><br/>
-							  <input type="checkbox" name="custTypeOld" id="custTypeOld"  checked>
+								<input type="radio" name="custType" value="custTypeOld"  checked>
 							  Old Customer&nbsp;&nbsp;
-							  <input type="checkbox" name="custTypeNew" id="custTypeNew" >
+								<input type="radio" name="custType" value="custTypeNew" >
 							  New Customer
 						  </div>
 						  </div>
@@ -264,7 +274,7 @@ desired effect
 								  <input type="checkbox" name="prodStkOrder" id="prodStkOrder" >
 								  Order&nbsp;&nbsp;
 								  <input type="checkbox" name="prodStkOther" id="prodStkOther" >
-								  Other <input type="text" name="prodStkRem" id="prodStkRem" class="col-md-2 form-control" style="display: none;" >
+								  Other <input type="text" name="prodStkRem" id="prodStkRem" class="col-md-2 form-control"  maxlength="40" style="display: none;" >
 								<!-- row -->
 						  </div>
 						  </div>
@@ -277,7 +287,7 @@ desired effect
 								  <input type="checkbox" name="packTypeNone" id="packTypeNone" >
 								  Non AK Logo&nbsp;&nbsp;
 								  <input type="checkbox" name="packTypeOther" id="packTypeOther" >
-								  Other <input type="text" name="packTypeRem" id="packTypeRem" class="col-md-2 form-control" style="display: none;" >
+								  Other <input type="text" name="packTypeRem" id="packTypeRem" class="col-md-2 form-control"  maxlength="40" style="display: none;" >
 								<!-- row -->
 						  </div>
 						  </div>
@@ -285,11 +295,11 @@ desired effect
 						  <div class="row">	
 						  <div class="col-md-12 form-group">
 								<label for="priceOn">Price On</label><br/>
-								  <input type="checkbox" name="priceOnOrder" id="priceOnOrder"  checked>
+								  <input type="radio" name="priceOn" value="priceOnOrder"  checked>
 								  on Sales Order&nbsp;&nbsp;
-								  <input type="checkbox" name="priceOnOther" id="priceOnOther" >
+								  <input type="radio" name="priceOn" value="priceOnOther" >
 								  Other 								  
-								  <input type="text" name="priceOnRem" id="priceOnRem" class="col-md-2 form-control" style="display: none;" >							 											  
+								  <input type="text" name="priceOnRem" id="priceOnRem" class="col-md-2 form-control"  maxlength="40" style="display: none;" >							 											  
 						  </div>
 						  </div>
 						  
@@ -301,12 +311,12 @@ desired effect
 								  AK Factory<br/>
 								  <input type="radio" name="plac2deliCode" id="plac2deliCodeSend" value="SEND" >
 								  Send by AK Factory
-								  <input type="textbox" name="plac2deliCodeSendRem" id="plac2deliCodeSendRem"  class="form-control"  style="display: none;"  /><br/>
+								  <input type="textbox" name="plac2deliCodeSendRem" id="plac2deliCodeSendRem"  class="form-control"  maxlength="40" style="display: none;"  /><br/>
 								  <input type="radio" name="plac2deliCode" id="plac2deliCodeMaps" value="MAPS" >
 								  Map<br/>
 								  <input type="radio" name="plac2deliCode" id="plac2deliCodeLogi" value="LOGI" >
 								  Logistic
-								<input type="textbox" name="plac2deliCodeLogiRem" id="plac2deliCodeLogiRem"  class="form-control"  style="display: none;"  />
+								<input type="textbox" name="plac2deliCodeLogiRem" id="plac2deliCodeLogiRem"  class="form-control"  maxlength="40" style="display: none;"  />
 							  </div>
 							  
 							<div class="col-md-6 form-group">
@@ -571,7 +581,17 @@ $("#spin").hide();
 		e.preventDefault();
 	 });
 	 $("#shippingMarksId").on("change",function(e) {
-		$('#shippingMarksImg').attr('src','../asset/img/shippingMarks/'+$('option:selected', this).attr('data-filePath'));
+		 if($('option:selected', this).attr('data-typeCode')=="IMG"){
+			 $('#shippingMarksRem').attr('disabled','').text("").css('display','none');
+			 $('#shippingMarksImg').css('display','block');
+			 $('#shippingMarksImg').attr('src','../images/shippingMarks/'+$('option:selected', this).attr('data-filePath'));
+		 }else{
+			 $('#shippingMarksImg').css('display','none');
+			 $('#shippingMarksRem').css('display','block');
+			 $('#shippingMarksImg').attr('src','');
+			 $('#shippingMarksRem').val($('option:selected', this).text()).attr('disabled','disabled');
+		 }
+		
 		e.preventDefault();
 	 });
 	$('input[name=prodStkOther]').on("change" ,function() {
@@ -588,10 +608,10 @@ $("#spin").hide();
 			$('#packTypeRem').val('').hide();
 		}
 	}); 
-	$('input[name=priceOnOther]').on("change" ,function() {
-		if($(this).is(':checked')){
-			$('#priceOnRem').show().focus();
-		}else{
+	$('input[type=radio][name=priceOn]').on("change" ,function() {
+		if (this.value == 'priceOnOther') {
+            $('#priceOnRem').show().focus();
+        }else{
 			$('#priceOnRem').val('').hide();
 		}
 	}); 

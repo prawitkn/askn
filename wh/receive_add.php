@@ -15,10 +15,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	$sql = "SELECT hdr.`rcNo`, hdr.`refNo`, hdr.`receiveDate`, hdr.`fromCode`, hdr.`toCode`, hdr.`remark`, hdr.`sdNo`, hdr.`statusCode`, hdr.`createTime`, hdr.`createByID`
 	, fsl.name as fromName, tsl.name as toName
 	, d.userFullname as createByName
-	FROM `receive` hdr
-	LEFT JOIN sloc fsl on hdr.fromCode=fsl.code 
-	LEFT JOIN sloc tsl on hdr.toCode=tsl.code
-	left join wh_user d on hdr.createById=d.userId
+	FROM `receive` hdr 
+	LEFT JOIN sloc fsl on hdr.fromCode=fsl.code  
+	LEFT JOIN sloc tsl on hdr.toCode=tsl.code 
+	left join wh_user d on hdr.createById=d.userId 
 	WHERE 1 
 	AND hdr.statusCode='B' AND hdr.createById=:s_userId 
 	";

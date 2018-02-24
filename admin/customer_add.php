@@ -8,27 +8,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <?php include 'head.php'; ?>  
  
 
-<!--
-BODY TAG OPTIONS:
-=================
-Apply one or more of the following classes to get the
-desired effect
-|---------------------------------------------------------|
-| SKINS         | skin-blue                               |
-|               | skin-black                              |
-|               | skin-purple                             |
-|               | skin-yellow                             |
-|               | skin-red                                |
-|               | skin-green                              |
-|---------------------------------------------------------|
-|LAYOUT OPTIONS | fixed                                   |
-|               | layout-boxed                            |
-|               | layout-top-nav                          |
-|               | sidebar-collapse                        |
-|               | sidebar-mini                            |
-|---------------------------------------------------------|
--->
-<body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
   <!-- Main Header -->
   <?php include 'header.php'; 
@@ -230,8 +209,7 @@ desired effect
 					</div>
                     </form>
                 </div>
-                        
-            </div>
+
         </div><!-- /.box-body -->
   <div class="box-footer">
       
@@ -265,8 +243,6 @@ desired effect
 <script src="bootstrap/js/spin.min.js"></script>
 <!-- Add smoke dialog -->
 <script src="bootstrap/js/smoke.min.js"></script>
-<!-- Add _.$ jquery coding -->
-<script src="assets\underscore-min.js"></script>
 
 
 <script> 
@@ -286,6 +262,7 @@ $(document).ready(function() {
 	
 	$('#form1').on("submit",function(e) {
 		if($('#form1').smkValidate()) {    
+			alert('valid ok');
 			$.post("customer_add_ajax.php", $("#form1").serialize() )
 			.done(function(data) {
 				if (data.success) {         
@@ -324,103 +301,6 @@ $(document).ready(function() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- search modal dialog box. -->
-<script>
-	var cur_hid_mid_id = "";
-	var cur_txt_fullname_id = "";
-	var cur_txt_mobile_no_id = "";
-	var cur_txt_position_act_name_id = "";	
-	var cur_txt_origin_gen_no_id = "";
-	$(document).ready(function(){
-		$('.fullname').click(function(){
-			//.prev() and .next() count <br/> too.
-			cur_hid_mid_id = $(this).prev().attr('id');			
-			cur_txt_fullname_id = $(this).attr('id');			
-			cur_txt_mobile_no_id = 'mobile_no';	
-			cur_txt_position_act_name_id = 'position_act_name';
-			cur_txt_origin_gen_no_id = 'origin_gen_no';
-			//show modal.
-			$('#modal_search_person').modal('show');
-		});	
-		
-		$('#modal_search_person').on('shown.bs.modal', function () {
-			$('#txt_search_fullname').focus();
-		});
-		$(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
-			$('#'+cur_hid_mid_id).val($(this).attr('attr-id'));
-			$('#'+cur_txt_fullname_id).val($(this).closest("tr").find('td.search_td_fullname').text());
-			$('#'+cur_txt_mobile_no_id).val($(this).closest('tr').find('td.search_td_mobile_no').text());
-			$('#'+cur_txt_position_act_name_id).val($(this).closest('tr').find('td.search_td_position_act_name').text());
-			$('#'+cur_txt_origin_gen_no_id).val($(this).closest('tr').find('td.search_td_origin_gen_no').text());
-			//hide modal.
-			$('#modal_search_person').modal('hide');
-		});
-		$('#txt_search_fullname').keyup(function(e){
-			if(e.keyCode == 13)
-			{
-				var params = {
-					search_org_code: '',
-                    search_fullname: $('#txt_search_fullname').val()					
-                };
-				if(params.search_fullname.length < 3){
-					alert('search name surname must more than 3 character.');
-					return false;
-				}
-				/* Send the data using post and put the results in a div */
-				  $.ajax({
-					  url: "search_person_by_org_code_and_fullname_ajax.php",
-					  type: "post",
-					  data: params,
-					datatype: 'json',
-					  success: function(data){	
-								if(data.success){
-									console.log(data);
-									console.log(data.rows);
-									//alert(data);
-									_.each(data.rows, function(v){										
-										$('#tbl_search_person_main tbody').append(										
-											'<tr>' +
-												'<td>' +
-												'	<div class="btn-group">' +
-												'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
-												'   attr-id="'+v['id']+'" '+
-												'	class="btn" title="เลือก"> ' +
-												'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
-												'	</div>' +
-												'</td>' +
-												'<td class="search_td_fullname">'+ v['fullname'] +'</td>' +
-												'<td class="search_td_position_act_name">'+ v['position_act_name'] +'</td>' +																							
-											'</tr>'
-										);			
-									}); 
-								}else{
-									alert('data.success = '+data.success);
-								}
-								
-								
-					  }, //success
-					  error:function(response){
-						  alert('error');
-						  alert(response.responseText);
-					  }		  
-					}); 
-			}/* e.keycode=13 */	
-		});
-	});	
-</script>
-<!-- search modal dialog box. END -->
 
 
 	

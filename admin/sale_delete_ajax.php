@@ -8,7 +8,7 @@ try{
 	$pdo->beginTransaction();
 	
 	//Query 1: Check Status for not gen running No.
-	$sql = "SELECT soNo, deliveryRemImg FROM sale_header WHERE soNo=:soNo AND statusCode<>'P' LIMIT 1";
+	$sql = "SELECT soNo FROM sale_header WHERE soNo=:soNo AND statusCode<>'P' LIMIT 1";
 	$stmt = $pdo->prepare($sql);
 	$stmt->bindParam(':soNo', $soNo);
 	$stmt->execute();
@@ -22,9 +22,9 @@ try{
 	}	
 	
 	//DELETE Image
-	if($hdr['deliveryRemImg']<>""){
-		@unlink('./dist/img/soDeli/'.$hdr['deliveryRemImg']);
-	}
+	//if($hdr['deliveryRemImg']<>""){
+	//	@unlink('./dist/img/soDeli/'.$hdr['deliveryRemImg']);
+	//}
 	
 	//Query 1: DELETE Detail
 	$sql = "DELETE FROM `sale_detail` WHERE soNo=:soNo";

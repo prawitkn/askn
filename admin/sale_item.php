@@ -58,7 +58,7 @@ desired effect
     <section class="content">
 		<?php			
 			$sql = "
-			SELECT a.`soNo`, a.`saleDate`,a.`poNo`,a.`piNo`, a.`custId`, a.`smId`
+			SELECT a.`soNo`, a.`saleDate`,a.`poNo`,a.`piNo`, a.`custId`,  a.`shipToId`, a.`smId`, a.`revCount`
 			, a.`deliveryDate`, a.`shipByLcl`, a.`shipByFcl`, a.`shipByRem`, a.`shippingMarksId`, a.`suppTypeFact`
 			, a.`suppTypeImp`, a.`prodTypeOld`, a.`prodTypeNew`, a.`custTypeOld`, a.`custTypeNew`
 			, a.`prodStkInStk`, a.`prodStkOrder`, a.`prodStkOther`, a.`prodStkRem`, a.`packTypeAk`
@@ -66,7 +66,8 @@ desired effect
 			, a.`priceOnRem`, a.`remark`, a.`plac2deliCode`, a.`plac2deliCodeSendRem`, a.`plac2deliCodeLogiRem`, a.`payTypeCode`, a.`payTypeCreditDays`
 			, a.`isClose`, a.`statusCode`, a.`createTime`, a.`createByID`, a.`updateTime`, a.`updateById`
 			, a.shippingMark, a.`remCoa`, a.`remPalletBand`, a.`remFumigate`
-			, b.code as custCode, b.name as custName, b.addr1 as custAddr1, b.addr2 as custAddr2, b.addr3 as custAddr3, b.tel as custTel, b.fax as custFax
+			, b.code as custCode, b.name as custName, b.addr1 as custAddr1, b.addr2 as custAddr2, b.addr3 as custAddr3, b.zipcode as custZipcode, b.tel as custTel, b.fax as custFax
+			, st.code as shipToCode, st.name as shipToName, st.addr1 as shipToAddr1, st.addr2 as shipToAddr2, st.addr3 as shipToAddr3, st.zipcode as shipToZipcode, st.tel as shipToTel, st.fax as shipToFax
 			, c.code as smCode, c.name as smName, c.surname as smSurname
 			, spm.name as shippingMarksName, IFNULL(spm.filePath,'') as shippingMarksFilePath
 			
@@ -75,6 +76,7 @@ desired effect
 			, a.approveTime, au.userFullname as approveByName
 			FROM `sale_header` a
 			left join customer b on b.id=a.custId 
+			left join shipto st on st.id=a.shipToId  
 			left join salesman c on c.id=a.smId 
 			left join shipping_marks spm on spm.id=a.shippingMarksId 
 			left join user d on a.createById=d.userId

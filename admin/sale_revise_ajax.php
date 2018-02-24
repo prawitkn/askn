@@ -27,7 +27,7 @@ try{
 	
 	 
 	//Log Header
-	$sql = "INSERT INTO sale_rev_hdr  (`soNo`, `poNo`, `piNo`, `saleDate`, `custId`, `shipToId`, `smId`, `isRevised`, `deliveryDate`
+	$sql = "INSERT INTO sale_rev_hdr  (`soNo`, `poNo`, `piNo`, `saleDate`, `custId`, `shipToId`, `smId`, `revCount`, `deliveryDate`
 	, `shippingMarksId`, `shipByLcl`, `shipByFcl`, `shipByRem`, `deliveryRem`, `shippingTypeId`, `shippingRemark`, `shippingMark`
 	, `sentDate`, `sentById`, `suppTypeFact`, `suppTypeImp`, `prodTypeOld`, `prodTypeNew`, `custTypeOld`, `custTypeNew`, `prodStkInStk`
 	, `prodStkOrder`, `prodStkOther`, `prodStkRem`, `packTypeAk`, `packTypeNone`, `packTypeOther`, `packTypeRem`
@@ -59,7 +59,7 @@ try{
 	
 	//Query 1: UPDATE DATA
 	$sql = "UPDATE sale_header SET statusCode='B'
-	, isRevised='Y' 
+	, revCount=revCount+1
 	WHERE soNo=:soNo
 	AND statusCode='P' 
 ";

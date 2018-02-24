@@ -21,17 +21,31 @@
 	$smId = $_POST['smId']; 
 	$smAdmId = (isset($_POST['smAdmId'])? $_POST['smAdmId'] : 0 );//if because column datatype = int
 	$statusCode = (isset($_POST['statusCode'])? $_POST['statusCode'] : '' );
-	
-	 //Check Duplicate
+
+try{	
+	//We start our transaction.
+	$pdo->beginTransaction();
+	 //Check Duplicate customer
 	 $sql = "SELECT * FROM `customer` WHERE code=:code OR `name`=:name LIMIT 1 "; 
 	 $stmt = $pdo->prepare($sql);
 	$stmt->bindParam(':code', $code); $stmt->bindParam(':name', $name); 
     $stmt->execute();
 	if($stmt->rowCount()>=1){
 		header('Content-Type: application/json');
-		echo json_encode(array('success' => false, 'message' => 'Duplicate data.'));
+		echo json_encode(array('success' => false, 'message' => 'Duplicate Customer data.'));
+		exit;
+	}	
+	//Check Duplicate shipto
+	 $sql = "SELECT * FROM `shipto` WHERE code=:code OR `name`=:name LIMIT 1 "; 
+	 $stmt = $pdo->prepare($sql);
+	$stmt->bindParam(':code', $code); $stmt->bindParam(':name', $name); 
+	$stmt->execute();
+	if($stmt->rowCount()>=1){
+		header('Content-Type: application/json');
+		echo json_encode(array('success' => false, 'message' => 'Duplicate Shipto data.'));
 		exit;
 	}		
+	//INsert customer
     $sql = "INSERT INTO `customer`(`code`, `name`, `addr1`, `addr2`, `addr3`, `zipcode`, `countryName`, `locationCode`, `marketCode`
 	, `contact`, `contactPosition`, `email`, `tel`, `fax`, `smId`, `smAdmId`
 	, `statusCode`, `createTime`, `createById`) 
@@ -48,14 +62,36 @@
 	$stmt->bindParam(':smId', $smId); $stmt->bindParam(':smAdmId', $smAdmId); 
 	$stmt->bindParam(':statusCode', $statusCode);
 	$stmt->bindParam(':s_userId', $s_userId);
-	//$stmt->execute();
- 
-    if ($stmt->execute()) {
-      header('Content-Type: application/json');
-      echo json_encode(array('success' => true, 'message' => 'Data Inserted Complete.'));
-   } else {
-      header('Content-Type: application/json');
-      $errors = "Error on Data Insertion. Please try new username. " . $pdo->errorInfo();
-      echo json_encode(array('success' => false, 'message' => $errors));
-	}
+	$stmt->execute();
+	
+	$custId=$pdo->lastInsertId();
+	//insert shipto.
+	$sql = "INSERT INTO `shipto`(`custId`, `code`, `name`, `addr1`, `addr2`, `addr3`, `zipcode`, `countryName`, `locationCode`, `marketCode`
+	, `contact`, `contactPosition`, `email`, `tel`, `fax`, `smId`, `smAdmId`
+	, `statusCode`, `createTime`, `createById`)  
+	SELECT :custId, `code`, `name`, `addr1`, `addr2`, `addr3`, `zipcode`, `countryName`, `locationCode`, `marketCode`
+	, `contact`, `contactPosition`, `email`, `tel`, `fax`, `smId`, `smAdmId`
+	, `statusCode`, `createTime`, `createById`
+	FROM customer
+	WHERE id=:custId2 ";
+	$stmt = $pdo->prepare($sql);
+	$stmt->bindParam(':custId', $custId); 
+	$stmt->bindParam(':custId2', $custId); 
+	$stmt->execute();
+	
+	//We've got this far without an exception, so commit the changes.
+    $pdo->commit();
+	
+	 //return JSON
+	header('Content-Type: application/json');
+	echo json_encode(array('success' => true, 'message' => 'Data Inserted Complete.'));
+}catch(Exception $e){
+	//Rollback the transaction.
+    $pdo->rollBack();
+	
+	//return JSON
+	header('Content-Type: application/json');
+	$errors = "Error on Data Insertion. Please try again. " . $e->getMessage();
+	echo json_encode(array('success' => false, 'message' => $errors));
+}
 ?>

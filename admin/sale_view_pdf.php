@@ -2,8 +2,38 @@
 
 include('session.php');
 //include('prints_function.php');
-// include('inc_helper.php');
+//include('inc_helper.php');
+function to_thai_date($eng_date){
+	if(strlen($eng_date) != 10){
+		return null;
+	}else{
+		$new_date = explode('-', $eng_date);
 
+		$new_y = (int) $new_date[0] + 543;
+		$new_m = $new_date[1];
+		$new_d = $new_date[2];
+
+		$thai_date = $new_d . '/' . $new_m . '/' . $new_y;
+
+		return $thai_date;
+	}
+}
+function to_thai_datetime_fdt($eng_date){
+	//if(strlen($eng_date) != 10){
+	//    return null;
+	//}else{
+		$new_datetime = explode(' ', $eng_date);
+		$new_date = explode('-', $new_datetime[0]);
+
+		$new_y = (int) $new_date[0] + 543;
+		$new_m = $new_date[1];
+		$new_d = $new_date[2];
+
+		$thai_date = $new_d . '/' . $new_m . '/' . $new_y . ' ' . substr($new_datetime[1],0,5);
+
+		return $thai_date;
+	//}
+}
 // Include the main TCPDF library (search for installation path).
 require_once('../tcpdf/tcpdf.php');
 
@@ -108,7 +138,7 @@ if( isset($_GET['soNo']) ){
 						
 			$soNo = $_GET['soNo'];
 			$sql = "
-			SELECT a.`soNo`, a.`saleDate`,a.`poNo`,a.`piNo`, a.`custId`, a.`smId`
+			SELECT a.`soNo`, a.`saleDate`,a.`poNo`,a.`piNo`, a.`custId`,  a.`shipToId`, a.`smId`, a.`revCount`
 			, a.`deliveryDate`, a.`shipByLcl`, a.`shipByFcl`, a.`shipByRem`, a.`shippingMarksId`, a.`suppTypeFact`
 			, a.`suppTypeImp`, a.`prodTypeOld`, a.`prodTypeNew`, a.`custTypeOld`, a.`custTypeNew`
 			, a.`prodStkInStk`, a.`prodStkOrder`, a.`prodStkOther`, a.`prodStkRem`, a.`packTypeAk`
@@ -116,7 +146,8 @@ if( isset($_GET['soNo']) ){
 			, a.`priceOnRem`, a.`remark`, a.`plac2deliCode`, a.`plac2deliCodeSendRem`, a.`plac2deliCodeLogiRem`, a.`payTypeCode`, a.`payTypeCreditDays`
 			, a.`isClose`, a.`statusCode`, a.`createTime`, a.`createByID`, a.`updateTime`, a.`updateById`
 			, a.shippingMark, a.`remCoa`, a.`remPalletBand`, a.`remFumigate`
-			, b.code as custCode, b.name as custName, b.addr1 as custAddr1, b.addr2 as custAddr2, b.addr3 as custAddr3, b.zipcode, b.tel as custTel, b.fax as custFax, b.locationCode as custLocCode 
+			, b.code as custCode, b.name as custName, b.addr1 as custAddr1, b.addr2 as custAddr2, b.addr3 as custAddr3, b.zipcode as custZipcode, b.tel as custTel, b.fax as custFax
+			, st.code as shipToCode, st.name as shipToName, st.addr1 as shipToAddr1, st.addr2 as shipToAddr2, st.addr3 as shipToAddr3, st.zipcode as shipToZipcode, st.tel as shipToTel, st.fax as shipToFax
 			, c.code as smCode, c.name as smName, c.surname as smSurname
 			, spm.name as shippingMarksName, IFNULL(spm.filePath,'') as shippingMarksFilePath
 			
@@ -125,6 +156,7 @@ if( isset($_GET['soNo']) ){
 			, a.approveTime, au.userFullname as approveByName
 			FROM `sale_header` a
 			left join customer b on b.id=a.custId 
+			left join shipto st on st.id=a.shipToId  
 			left join salesman c on c.id=a.smId 
 			left join shipping_marks spm on spm.id=a.shippingMarksId 
 			left join user d on a.createById=d.userId
@@ -225,23 +257,28 @@ if( isset($_GET['soNo']) ){
 					$pdf->Cell(45, 0, 'ชื่อลูกค้า (Customer Name) : ', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
 					$pdf->Cell(55, 0, $hdr['custName'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
 					$pdf->Cell(25, 0, 'วันที่ (Date) : ', 0, $ln=0, 'L', 0, '', 0, false, 'T', 'B');
-					$pdf->Cell(50, 0, $hdr['saleDate'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+					$pdf->Cell(50, 0, to_thai_date($hdr['saleDate']), 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
 					$pdf->Ln(6);
 					
 					$pdf->Cell(45, 0, 'ที่อยู่เปิด Invoice (Destination) : ', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-					$pdf->Cell(55, 0, '', 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
+					$pdf->Cell(55, 0, $hdr['shipToName'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
 					$pdf->Cell(25, 0, 'SO No. : ', 0, $ln=0, 'L', 0, '', 0, false, 'T', 'B');
-					$pdf->Cell(50, 0, $hdr['soNo'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+					$pdf->Cell(50, 0, $hdr['soNo'].($hdr['revCount']<>0?' rev.'.$hdr['revCount']:''), 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
 					$pdf->Ln(6);
 											
-					$pdf->Cell(100, 0, $hdr['custAddr1'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
+					$pdf->Cell(100, 0, $hdr['shipToAddr1'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
 					$pdf->Cell(25, 0, 'PO No. : ', 0, $ln=0, 'L', 0, '', 0, false, 'T', 'B');
 					$pdf->Cell(50, 0, $hdr['poNo'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
 					$pdf->Ln(6);
 					
-					$pdf->Cell(100, 0, $hdr['custAddr2'].$hdr['custAddr3'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
+					$pdf->Cell(100, 0, $hdr['shipToAddr2'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
 					$pdf->Cell(25, 0, 'PI No. : ', 0, $ln=0, 'L', 0, '', 0, false, 'T', 'B');
 					$pdf->Cell(50, 0, $hdr['piNo'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+					$pdf->Ln(6);
+					
+					$pdf->Cell(100, 0, $hdr['shipToAddr3'].$hdr['shipToZipcode'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
+					//$pdf->Cell(25, 0, 'PI No. : ', 0, $ln=0, 'L', 0, '', 0, false, 'T', 'B');
+					//$pdf->Cell(50, 0, $hdr['piNo'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
 					$pdf->Ln(8);
 										
 					$html ='
@@ -271,7 +308,7 @@ if( isset($_GET['soNo']) ){
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 40px;
 										border: 0.1em solid black; text-align: right; width: 40px;">'.$row['prodUomCode'].'</td>						
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65px;
-										border: 0.1em solid black; padding: 10px; width: 65px;"> '.$row['deliveryDate'].'</td>
+										border: 0.1em solid black; padding: 10px; width: 65px;"> '.to_thai_date($row['deliveryDate']).'</td>
 						</tr>';	
 				if($iRow==8){
 					//foot document.
@@ -434,7 +471,7 @@ if( isset($_GET['soNo']) ){
 			$pdf->Cell(30, 5, 'ส่งสินค้าจากโรงงาน AK ที่');
 			$pdf->Cell(25, 0, $hdr['plac2deliCodeSendRem'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
 			$pdf->Cell(35, 5, 'วันที่ (Date) : ');
-			$pdf->Cell(30, 5, $hdr['createTime'], 'B', 0, 'C', 1, 'B', 0, false, 'T', 'C');
+			$pdf->Cell(30, 5, to_thai_datetime_fdt($hdr['createTime']), 'B', 0, 'C', 1, 'B', 0, false, 'T', 'C');
 			$pdf->Ln(6);
 			
 			$pdf->Cell(5, 5, '');

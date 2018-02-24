@@ -14,7 +14,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <!-- Main Header -->
   <?php include 'header.php';   
 	
-	$rootPage="inq_sales";
+	$rootPage="report_sale";
   ?>  
   
   <!-- Left side column. contains the logo and sidebar -->
@@ -25,12 +25,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- Content Header (Page header) -->
     <section class="content-header">
       <h1>
-		Sales Inquiry
-        <small>Sales Inquiry</small>
+		Sales Report
+        <small>Sales Report</small>
       </h1>
       <ol class="breadcrumb">
         <li><a href="index.php"><i class="fa fa-dashboard"></i> Main</a></li>
-        <li class="active">Inquiry</li>
+        <li class="active">Report</li>
       </ol>
     </section>
 
@@ -40,19 +40,21 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <!-- Your Page Content Here -->
     <div class="box box-primary">
         <div class="box-header with-border">
-        <h3 class="box-title">Sales Inquiry</h3>		
+        <h3 class="box-title">Sales Report</h3>		
 		
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
           <?php
-				$dateFrom = (isset($_GET['dateFrom'])?to_mysql_date($_GET['dateFrom']):'');
-				$dateTo = (isset($_GET['dateTo'])?to_mysql_date($_GET['dateTo']):'');
-				$custId = (isset($_GET['custId'])?$_GET['custId']:'');
-				$smId = (isset($_GET['smId'])?$_GET['smId']:'');
-				$statusCode = (isset($_GET['statusCode'])?$_GET['statusCode']:'');
+				$dateFrom = (isset($_GET['dateFrom'])?$_GET['dateFrom']:'');
+				$dateTo = (isset($_GET['dateTo'])?$_GET['dateTo']:'');
 				$isClose = (isset($_GET['isClose'])?$_GET['isClose']:'');
-				$search_word = (isset($_GET['search_word'])?$_GET['search_word']:'');
+				
+				$dateFromYmd=$dateToYmd="";
+				if($dateFrom<>""){ $dateFromYmd = to_mysql_date($_GET['dateFrom']);	}
+				if($dateFrom<>""){ $dateToYmd = to_mysql_date($_GET['dateTo']);	}
+				
+				
 											
                 $sql = "SELECT count(*) as countTotal
 				FROM `sale_header` sh
@@ -67,20 +69,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					default :
 				}
 				$sql .= "LEFT JOIN salesman sm on sm.id=sh.smId 
-				WHERE 1 ";
-				if($search_word<>""){ $sql .= "and (ct.code like '%".$search_word."%' OR ct.name like '%".$search_word."%') "; }
-				if($smId<>""){ $sql .= " AND sh.smId=$smId ";	}
-				if($custId<>""){ $sql .= " AND sh.custId=$custId ";	}
-				if($statusCode<>""){ $sql .= " AND sh.statusCode='$statusCode' ";	}
+				WHERE 1 
+				AND sh.statusCode='P' ";				
 				if($isClose<>""){ $sql .= " AND sh.isClose='$isClose' ";	}
-				if($dateFrom<>""){ $sql .= " AND sh.saleDate>='$dateFrom' ";	}
-				if($dateTo<>""){ $sql .= " AND sh.saleDate<='$dateTo' ";	}
-				switch($s_userGroupCode){
-					case 'sales' :
-						 $sql .= " AND sh.smId=$s_smId ";
-						break;
-					default :
-				}
+				if($dateFrom<>""){ $sql .= " AND sh.saleDate>='$dateFromYmd' ";	}
+				if($dateTo<>""){ $sql .= " AND sh.saleDate<='$dateToYmd' ";	}
+				
                 $result = mysqli_query($link, $sql);
                 $countTotal = mysqli_fetch_assoc($result);
 				
@@ -120,77 +114,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						<input type="text" id="dateFrom" name="dateFrom" value="" class="form-control datepicker" data-smk-msg="Require From Date." required >
 						<label for="dateTo">Date To : </label>
 						<input type="text" id="dateTo" name="dateTo" value="" class="form-control datepicker" data-smk-msg="Require To Date." required >
-						<label>Customer : </label>
-					<select name="custId" class="form-control">
-						<option value="" <?php echo ($custId==""?'selected':''); ?> >--All--</option>
-						<?php
-						$sql = "SELECT ct.id, ct.`code`, ct.`name` FROM customer ct WHERE ct.statusCode='A' ";	
-						switch($s_userGroupCode){
-							case 'sales' :
-								 $sql .= " AND ct.smId=$s_smId ";
-								break;
-							case 'salesAdmin' :
-								//$sql .= " AND ct.smAdmId=$s_smId ";
-								break;
-							default :
-						}
-						$sql .= "ORDER BY ct.code ASC ";
-						$stmt = $pdo->prepare($sql);
-						$stmt->execute();					
-						while ($row = $stmt->fetch()){
-							$selected=($custId==$row['id']?'selected':'');						
-							echo '<option value="'.$row['id'].'" '.$selected.'>'.$row['name'].' : '.$row['code'].'</option>';
-						}
-						?>
-					</select>				
-					<label>Salesman : </label>
-					<select name="smId" class="form-control">
-						<option value="" <?php echo ($smId==""?'selected':''); ?> >--All--</option>
-						<?php
-						$sql = "SELECT sm.id,  sm.`code`, sm.`name` FROM salesman sm WHERE sm.statusCode='A' ";
-						switch($s_userGroupCode){
-							case 'sales' :
-								 $sql .= " AND ct.id=$s_smId ";
-								break;
-							default :
-						}
-						$sql .= "ORDER BY code ASC ";
-						$stmt = $pdo->prepare($sql);
-						$stmt->execute();					
-						while ($row = $stmt->fetch()){
-							$selected=($smId==$row['id']?'selected':'');						
-							echo '<option value="'.$row['id'].'" '.$selected.'>'.$row['code'].' : '.$row['name'].'</option>';
-						}
-						?>
-					</select>
-					<label>Status : </label>
-					<select name="statusCode" class="form-control">
-						<option value="" <?php echo ($statusCode==""?'selected':''); ?> >--All--</option>
-						<?php
-						$sql = "SELECT `code`, `name` FROM trans_status WHERE statusCode='A' ORDER BY code ASC ";
-						$stmt = $pdo->prepare($sql);
-						$stmt->execute();					
-						while ($row = $stmt->fetch()){
-							$selected=($statusCode==$row['code']?'selected':'');						
-							echo '<option value="'.$row['code'].'" '.$selected.'>'.$row['code'].' : '.$row['name'].'</option>';
-						}
-						?>
-					</select>
-					<label>Is Closed : </label>
+						<label>Is Closed : </label>
 					<select name="isClose" class="form-control">
 						<option value="" <?php echo ($isClose==""?'selected':''); ?> >--All--</option>
 						<option value="N" <?php echo ($isClose=="N"?'selected':''); ?> >No</option>
 						<option value="Y" <?php echo ($isClose=="Y"?'selected':''); ?> >Yes</option>
-					</select>
-						<div class="form-group">
-                            <label for="search_word">Customer search key word.</label>
-							<div class="input-group">
-								<input id="search_word" type="text" class="form-control" name="search_word" data-smk-msg="Require userFullname."required>
-								<span class="input-group-addon">
-									<span class="glyphicon glyphicon-search"></span>
-								</span>
-							</div>
-                        </div>						
+					</select>					
 						<input type="submit" class="btn btn-default" value="ค้นหา">
                     </form>
                 </div>    
@@ -199,11 +128,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 $sql = "SELECT sh.`soNo`, sh.`poNo`, sh.`saleDate`, sh.`custId`
 				, ct.name as custName
 				, sh.`smId`
-				, sm.name as smName, sh.`statusCode`, sh.`isClose` 
+				, sm.name as smName 
+				, sh.`statusCode`, sh.`isClose` 
 				FROM `sale_header` sh
 				INNER JOIN customer ct on ct.id=sh.custId ";
 				switch($s_userGroupCode){
-					case 'sales' :
+					case 'sales' : 
 						 $sql .= " AND ct.smId=$s_smId ";
 						break;
 					case 'salesAdmin' :
@@ -212,14 +142,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					default :
 				}
 				$sql .= "LEFT JOIN salesman sm on sm.id=sh.smId 
-				WHERE 1 ";
-				if($search_word<>""){ $sql .= "and (ct.code like '%".$search_word."%' OR ct.name like '%".$search_word."%') "; }
-				if($smId<>""){ $sql .= " AND sh.smId=$smId ";	}
-				if($custId<>""){ $sql .= " AND sh.custId=$custId ";	}
-				if($statusCode<>""){ $sql .= " AND sh.statusCode='$statusCode' ";	}
+				WHERE 1 
+				AND sh.statusCode='P' ";
 				if($isClose<>""){ $sql .= " AND sh.isClose='$isClose' ";	}
-				if($dateFrom<>""){ $sql .= " AND sh.saleDate>='$dateFrom' ";	}
-				if($dateTo<>""){ $sql .= " AND sh.saleDate<='$dateTo' ";	}
+				if($dateFrom<>""){ $sql .= " AND sh.saleDate>='$dateFromYmd' ";	}
+				if($dateTo<>""){ $sql .= " AND sh.saleDate<='$dateToYmd' ";	}				
 				$sql .= "ORDER BY soNo desc
 				LIMIT $start, $rows 
 				";
@@ -232,24 +159,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				<tr>
 					<th>No.</th>
 					<th>SO No.</th>
-					<th>PO No.</th>
 					<th>Sales Date</th>
 					<th>Customer</th>
 					<th>Salesman</th>
-					<th>Status</th>
 					<th>Is Closed</th>
 					<th>#</th>
 				</tr>
 				</thead>
 				<tbody>
                 <?php $c_row=($start+1); while ($row = mysqli_fetch_assoc($result)) { 
-					$statusName = '<label class="label label-danger">Unknown</label>';
-					switch($row['statusCode']){
-						case 'B' : $statusName = '<label class="label label-info">Begin</label>'; break;
-						case 'C' : $statusName = '<label class="label label-primary">Confirmed</label>'; break;
-						case 'P' : $statusName = '<label class="label label-success">Approved</label>'; break;
-						default : 						
-					}
 					$isCloseName = '<label class="label label-danger">Unknown</label>';
 					switch($row['isClose']){
 						case 'N' : $isCloseName = '<label class="label label-warning">No</label>'; break;
@@ -259,12 +177,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					?>
 					<tr>
 						<td><?=$c_row;?></td>
-						<td><?=$row['soNo'];?></td>
-						<td><?=$row['poNo'];?></td>
+						<td><a href="sale_view.php?soNo=<?=$row['soNo'];?>"><?=$row['soNo'];?></a></td>
 						<td><?=$row['saleDate'];?></td>
 						<td><?=$row['custName'];?></td>
 						<td><?=$row['smName'];?></td>
-						<td><?=$statusName;?></td>
 						<td><?=$isCloseName;?></td>
 						<td>#</td>
 					</tr>
@@ -275,18 +191,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				<!--table-resposive-->
 		
 		<div class="col-md-12">
-			<?php $pagingString = "?search_word=".$search_word."&custId=".$custId."&smId=".$smId."&statusCode=".$statusCode."&isClose=".$isClose;
+			<?php $pagingString = "?dateFrom=".$dateFrom."&dateTo=".$dateTo."&isClose=".$isClose;
 			?>
-			<a href="<?="inq_sales_dtl_xls.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
+			<a href="<?=$rootPage."_dtl_xls.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
 				<i class="glyphicon glyphicon-save-file"></i> Excel (by item)</span></a>
 				
-			<a href="<?="inq_sales_hdr_xls.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
+			<a href="<?=$rootPage."_hdr_xls.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
 				<i class="glyphicon glyphicon-save-file"></i> Excel</span></a>
 				
-			<!--<a href="<?="inq_sales_hdr_csv.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
-				<i class="glyphicon glyphicon-save-file"></i> CSV</span></a>
-			<a href="<?="inq_sales_dtl_csv.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
-				<i class="glyphicon glyphicon-save-file"></i> CSV (by item)</span></a>-->
 			
 			<nav>
 			<ul class="pagination">
@@ -377,20 +289,20 @@ $(document).ready(function() {
 		});  //กำหนดเป็นวันปัจุบัน
 		//กำหนดเป็น วันที่จากฐานข้อมูล		
 		<?php if($dateFrom<>"") { ?>
-			var queryDate = '<?=$dateFrom?>',
+			var queryDate = '<?=$dateFromYmd;?>',
 			dateParts = queryDate.match(/(\d+)/g)
 			realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
 			$('#dateFrom').datepicker('setDate', realDate);
-		<?php } ?>		
+		<?php }else{ ?> $('#dateFrom').datepicker('setDate', '0'); <?php } ?>
 		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
 		
 		//กำหนดเป็น วันที่จากฐานข้อมูล		
 		<?php if($dateTo<>"") { ?>
-			var queryDate = '<?=$dateTo?>',
+			var queryDate = '<?=$dateToYmd;?>',
 			dateParts = queryDate.match(/(\d+)/g)
 			realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
 			$('#dateTo').datepicker('setDate', realDate);
-		<?php } ?>		
+		<?php }else{ ?> $('#dateTo').datepicker('setDate', '0'); <?php } ?>
 		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
 		
 		

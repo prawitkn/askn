@@ -8,6 +8,7 @@ try{
 	$piNo = $_POST['piNo'];    
     $smId = $_POST['smId'];
     $custId = $_POST['custId'];
+	$shipToId = $_POST['shipToId'];
 	$deliveryDate = $_POST['deliveryDate'];
 	$shippingMarksId = $_POST['shippingMarksId'];
 	//$deliveryRem = $_POST['deliveryRem'];
@@ -67,7 +68,7 @@ try{
 	//$pdo->beginTransaction();
 	
 	$sql = "INSERT INTO `sale_header`
-	(`soNo`, `saleDate`, `poNo`, `piNo`, `custId`, `shipToId`, `smId`,  `isRevised`
+	(`soNo`, `saleDate`, `poNo`, `piNo`, `custId`, `shipToId`, `smId`,  `revCount`
 	, `deliveryDate`, `shipByLcl`, `shipByFcl`, `shipByRem`, `shippingMarksId`
 	, `suppTypeFact`, `suppTypeImp`, `prodTypeOld`, `prodTypeNew`, `custTypeOld`, `custTypeNew`
 	, `prodStkInStk`, `prodStkOrder`, `prodStkOther`, `prodStkRem`
@@ -77,7 +78,7 @@ try{
 	, `plac2deliCode`, `plac2deliCodeSendRem`, `plac2deliCodeLogiRem`, `payTypeCode`, `payTypeCreditDays`
 	, `statusCode`, `createTime`, `createById`) 
 	VALUES 
-	(:soNo, :saleDate, :poNo,:piNo, :custId, :shipToId,  :smId, 'N'
+	(:soNo, :saleDate, :poNo,:piNo, :custId, :shipToId,  :smId, 0
 	, :deliveryDate,:shipByLcl,:shipByFcl,:shipByRem,:shippingMarksId
 	, :suppTypeFact, :suppTypeImp, :prodTypeOld, :prodTypeNew, :custTypeOld, :custTypeNew
 	, :prodStkInStk, :prodStkOrder, :prodStkOther, :prodStkRem
@@ -95,7 +96,7 @@ try{
 	$stmt->bindParam(':poNo', $poNo);
 	$stmt->bindParam(':piNo', $piNo);
 	$stmt->bindParam(':custId', $custId);
-	$stmt->bindParam(':shipToId', $custId);
+	$stmt->bindParam(':shipToId', $shipToId);
 	$stmt->bindParam(':smId', $smId);
 	$stmt->bindParam(':deliveryDate', $deliveryDate);
 	$stmt->bindParam(':shipByLcl', $shipByLcl);

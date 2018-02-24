@@ -21,6 +21,7 @@ $dateTo = (isset($_GET['dateTo'])?to_mysql_date($_GET['dateTo']):'');
 $custId = (isset($_GET['custId'])?$_GET['custId']:'');
 $smId = (isset($_GET['smId'])?$_GET['smId']:'');
 $statusCode = (isset($_GET['statusCode'])?$_GET['statusCode']:'');
+$isClose = (isset($_GET['isClose'])?$_GET['isClose']:'');
 $search_word = (isset($_GET['search_word'])?$_GET['search_word']:'');
 
 $sql = "SELECT count(*) as countTotal
@@ -41,6 +42,7 @@ if($search_word<>""){ $sql .= "and (ct.code like '%".$search_word."%' OR ct.name
 if($smId<>""){ $sql .= " AND sh.smId=$smId ";	}
 if($custId<>""){ $sql .= " AND sh.custId=$custId ";	}
 if($statusCode<>""){ $sql .= " AND sh.statusCode='$statusCode' ";	}
+if($isClose<>""){ $sql .= " AND sh.isClose='$isClose' ";	}
 if($dateFrom<>""){ $sql .= " AND sh.saleDate>='$dateFrom' ";	}
 if($dateTo<>""){ $sql .= " AND sh.saleDate<='$dateTo' ";	}
 switch($s_userGroupCode){
@@ -74,7 +76,7 @@ if($countTotal>0){
 	, ct.name as custName
 	, sh.`smId`
 	, sm.name as smName 
-	, sh.`netTotal`, sh.`statusCode`, sh.`isClose` 
+	, sh.`statusCode`, sh.`isClose` 
 	, sd.prodId
 	, pd.code as prodCode, pd.name as prodName, pd.uomCode 
 	, sd.qty
@@ -98,6 +100,7 @@ if($countTotal>0){
 	if($smId<>""){ $sql .= " AND sh.smId=$smId ";	}
 	if($custId<>""){ $sql .= " AND sh.custId=$custId ";	}
 	if($statusCode<>""){ $sql .= " AND sh.statusCode='$statusCode' ";	}
+	if($isClose<>""){ $sql .= " AND sh.isClose='$isClose' ";	}
 	if($dateFrom<>""){ $sql .= " AND sh.saleDate>='$dateFrom' ";	}
 	if($dateTo<>""){ $sql .= " AND sh.saleDate<='$dateTo' ";	}
 	switch($s_userGroupCode){
@@ -139,7 +142,7 @@ $objPHPExcel->setActiveSheetIndex(0);
 
 // Redirect output to a client’s web browser (Excel2007)
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment;filename="salesDtl.xlsx"');
+header('Content-Disposition: attachment;filename="Sales details.xlsx"');
 header('Cache-Control: max-age=0');
 // If you're serving to IE 9, then the following may be needed
 header('Cache-Control: max-age=1');

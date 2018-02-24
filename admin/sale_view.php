@@ -67,7 +67,7 @@ desired effect
 		<?php
 			$soNo = $_GET['soNo'];
 			$sql = "
-			SELECT a.`soNo`, a.`saleDate`,a.`poNo`,a.`piNo`, a.`custId`, a.`smId`
+			SELECT a.`soNo`, a.`saleDate`,a.`poNo`,a.`piNo`, a.`custId`,  a.`shipToId`, a.`smId`, a.`revCount`
 			, a.`deliveryDate`, a.`shipByLcl`, a.`shipByFcl`, a.`shipByRem`, a.`shippingMarksId`, a.`suppTypeFact`
 			, a.`suppTypeImp`, a.`prodTypeOld`, a.`prodTypeNew`, a.`custTypeOld`, a.`custTypeNew`
 			, a.`prodStkInStk`, a.`prodStkOrder`, a.`prodStkOther`, a.`prodStkRem`, a.`packTypeAk`
@@ -75,7 +75,8 @@ desired effect
 			, a.`priceOnRem`, a.`remark`, a.`plac2deliCode`, a.`plac2deliCodeSendRem`, a.`plac2deliCodeLogiRem`, a.`payTypeCode`, a.`payTypeCreditDays`
 			, a.`isClose`, a.`statusCode`, a.`createTime`, a.`createByID`, a.`updateTime`, a.`updateById`
 			, a.shippingMark, a.`remCoa`, a.`remPalletBand`, a.`remFumigate`
-			, b.code as custCode, b.name as custName, b.addr1 as custAddr1, b.addr2 as custAddr2, b.addr3 as custAddr3, b.zipcode, b.tel as custTel, b.fax as custFax
+			, b.code as custCode, b.name as custName, b.addr1 as custAddr1, b.addr2 as custAddr2, b.addr3 as custAddr3, b.zipcode as custZipcode, b.tel as custTel, b.fax as custFax
+			, st.code as shipToCode, st.name as shipToName, st.addr1 as shipToAddr1, st.addr2 as shipToAddr2, st.addr3 as shipToAddr3, st.zipcode as shipToZipcode, st.tel as shipToTel, st.fax as shipToFax
 			, c.code as smCode, c.name as smName, c.surname as smSurname
 			, spm.name as shippingMarksName, IFNULL(spm.filePath,'') as shippingMarksFilePath
 			
@@ -84,6 +85,7 @@ desired effect
 			, a.approveTime, au.userFullname as approveByName
 			FROM `sale_header` a
 			left join customer b on b.id=a.custId 
+			left join shipto st on st.id=a.shipToId  
 			left join salesman c on c.id=a.smId 
 			left join shipping_marks spm on spm.id=a.shippingMarksId 
 			left join user d on a.createById=d.userId
@@ -103,7 +105,7 @@ desired effect
       <!-- Your Page Content Here -->
     <div class="box box-primary">
         <div class="box-header with-border">
-			<h3 class="box-title">View Sales Order No : <b><?= $soNo; ?></b></h3>
+			<h3 class="box-title">View Sales Order No : <b><?= $soNo; ?><small style="color: red;"><?php echo ($hdr['revCount']<>0?' rev.'.$hdr['revCount']:'');?></small></b></h3>
 			<div class="box-tools pull-right">
 				<?php $statusName = '<b style="color: red;">Unknown</b>'; switch($hdr['statusCode']){
 					case 'A' : $statusName = '<b style="color: red;">Incompleate</b>'; break;
@@ -128,15 +130,15 @@ desired effect
 					<div class="col-md-3">
 						Customer : <br/>
 						<b><?= $hdr['custName']; ?></b><br/>
-						<?= $hdr['custAddr1']; ?><br/>
-						<?= $hdr['custAddr2']; ?><br/>
-						<?= $hdr['custAddr3']; ?>
+						<?= $hdr['shipToAddr1']; ?><br/>
+						<?= $hdr['shipToAddr2']; ?><br/>
+						<?= $hdr['shipToAddr3'].' '.$hdr['shipToZipcode']; ?>
 					</div><!-- /.col-md-3-->	
 					<div class="col-md-3">
 						Order No : <br/>
 						<b><?= $hdr['soNo']; ?></b><br/>
 						Order Date : <br/>
-						<b><?= $hdr['saleDate']; ?></b><br/>
+						<b><?= to_thai_date($hdr['saleDate']); ?></b><br/>
 					</div>	<!-- /.col-md-3-->	
 					<div class="col-md-3">
 						<i class="fa fa-<?php echo ($hdr['suppTypeFact']==0?'square-o':'check-square-o'); ?>"></i> Factory&nbsp;&nbsp;&nbsp;    <i class="fa fa-<?php echo ($hdr['suppTypeImp']==0?'square-o':'check-square-o'); ?>"></i> Import</br>
@@ -240,7 +242,7 @@ desired effect
 			Export Detail
 		</div>
 		<div class="col-md-10">
-			Load Date : <label class="label label-default"><?php echo $hdr['deliveryDate']; ?></label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;By :
+			Load Date : <label class="label label-default"><?php echo to_thai_date($hdr['deliveryDate']); ?></label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;By :
 			<i class="fa fa-<?php echo ($hdr['shipByLcl']==0?'square-o':'check-square-o'); ?>"></i> LCL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
 			<i class="fa fa-<?php echo ($hdr['shipByFcl']==0?'square-o':'check-square-o'); ?>"></i> FCL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
 			<label class="label label-default"><?php echo $hdr['packTypeRem']; ?></label>

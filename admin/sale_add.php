@@ -24,29 +24,6 @@ $soNo = "";
 	}
 ?>
 
-    
-<!--
-BODY TAG OPTIONS:
-=================
-Apply one or more of the following classes to get the
-desired effect
-|---------------------------------------------------------|
-| SKINS         | skin-blue                               |
-|               | skin-black                              |
-|               | skin-purple                             |
-|               | skin-yellow                             |
-|               | skin-red                                |
-|               | skin-green                              |
-|---------------------------------------------------------|
-|LAYOUT OPTIONS | fixed                                   |
-|               | layout-boxed                            |
-|               | layout-top-nav                          |
-|               | sidebar-collapse                        |
-|               | sidebar-mini                            |
-|---------------------------------------------------------|
--->
-  
-<body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
 <!-- Select2 -->
   <link rel="stylesheet" href="plugins/select2/select2.min.css">
@@ -54,7 +31,46 @@ desired effect
   <?php include 'header.php'; ?>
   
   <!-- Left side column. contains the logo and sidebar -->
-   <?php include 'leftside.php'; ?>
+   <?php include 'leftside.php'; 
+	
+   $soNo = $_GET['soNo'];
+	$sql = "
+	SELECT a.`soNo`, a.`saleDate`,a.`poNo`,a.`piNo`, a.`custId`,  a.`shipToId`, a.`smId`, a.`revCount`
+	, a.`deliveryDate`, a.`shipByLcl`, a.`shipByFcl`, a.`shipByRem`, a.`shippingMarksId`, a.`suppTypeFact`
+	, a.`suppTypeImp`, a.`prodTypeOld`, a.`prodTypeNew`, a.`custTypeOld`, a.`custTypeNew`
+	, a.`prodStkInStk`, a.`prodStkOrder`, a.`prodStkOther`, a.`prodStkRem`, a.`packTypeAk`
+	, a.`packTypeNone`, a.`packTypeOther`, a.`packTypeRem`, a.`priceOnOrder`, a.`priceOnOther`
+	, a.`priceOnRem`, a.`remark`, a.`plac2deliCode`, a.`plac2deliCodeSendRem`, a.`plac2deliCodeLogiRem`, a.`payTypeCode`, a.`payTypeCreditDays`
+	, a.`isClose`, a.`statusCode`, a.`createTime`, a.`createByID`, a.`updateTime`, a.`updateById`
+	, a.shippingMark, a.`remCoa`, a.`remPalletBand`, a.`remFumigate`
+	, b.code as custCode, b.name as custName, b.addr1 as custAddr1, b.addr2 as custAddr2, b.addr3 as custAddr3, b.zipcode as custZipcode, b.tel as custTel, b.fax as custFax
+	, st.code as shipToCode, st.name as shipToName, st.addr1 as shipToAddr1, st.addr2 as shipToAddr2, st.addr3 as shipToAddr3, st.zipcode as shipToZipcode, st.tel as shipToTel, st.fax as shipToFax
+	, c.code as smCode, c.name as smName, c.surname as smSurname
+	, spm.name as shippingMarksName, IFNULL(spm.filePath,'') as shippingMarksFilePath
+	
+	, d.userFullname as createByName
+	, a.confirmTime, cu.userFullname as confirmByName
+	, a.approveTime, au.userFullname as approveByName
+	FROM `sale_header` a
+	left join customer b on b.id=a.custId 
+	left join shipto st on st.id=a.shipToId  
+	left join salesman c on c.id=a.smId 
+	left join shipping_marks spm on spm.id=a.shippingMarksId 
+	left join user d on a.createById=d.userId
+	left join user cu on a.confirmById=cu.userId
+	left join user au on a.approveById=au.userId
+	WHERE 1
+	AND a.soNo=:soNo 					
+	ORDER BY a.createTime DESC
+	LIMIT 1
+	";
+	$stmt = $pdo->prepare($sql);			
+	$stmt->bindParam(':soNo', $soNo);	
+	$stmt->execute();
+	$hdr = $stmt->fetch();			
+	$soNo = $hdr['soNo'];
+	$custId = $hdr['custId'];
+   ?>
 
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
@@ -93,11 +109,11 @@ desired effect
                         </div>
 						<div class="col-md-4 form-group">
                             <label for="poNo">PO No.</label>
-                            <input type="text" name="poNo" id="poNo" class="form-control" data-smk-msg="Require PO No." required>
+                            <input type="text" name="poNo" id="poNo" class="form-control" data-smk-msg="Require PO No." value="<?=$hdr['poNo'];?>" required>
                         </div>		
 						<div class="col-md-4 form-group">
 							<label for="piNo">PI No.</label>
-							<input type="text" name="piNo" id="piNo" class="form-control" >
+							<input type="text" name="piNo" id="piNo" class="form-control" value="<?=$hdr['piNo'];?>" >
 						</div>							
 					</div>
 						
@@ -105,14 +121,29 @@ desired effect
 							<label for="custId" >Customer Name</label>
 							<div class="form-group row">
 								<div class="col-md-9">
-									<input type="hidden" name="custId" class="form-control" value=""  />
-									<input type="text" name="custName" class="form-control" value=""  />
+									<input type="hidden" name="custId" class="form-control" value="<?=$hdr['custId'];?>"  />
+									<input type="text" name="custName" class="form-control" value="<?=$hdr['custName'];?>" <?php echo ($soNo<>""?' disabled ':'');?> />
 								</div>
 								<div class="col-md-3">
-									<a href="#" name="btn_search" class="btn btn-primary"  ><i class="glyphicon glyphicon-search" ></i></a>								
+									<a href="#" name="btn_search" class="btn btn-primary" <?php echo ($soNo<>""?' disabled ':'');?> ><i class="glyphicon glyphicon-search" ></i></a>								
 								</div>
 							</div>
                         </div>
+						
+						<div class="form-group">
+                            <label for="shipToId">Shipping to Customer</label>							
+							<select id="shipToId" name="shipToId" class="form-control" data-smk-msg="Require Salesman." required>
+								<option value=""> -- Select -- </option>
+								<?php
+								$sql_sm = "SELECT id, `code`,  `name`,  `addr1`,  `addr2`,  `addr3`,  `zipcode` FROM `shipto` WHERE `statusCode`='A' and custId=$custId ";
+								$result_sm = mysqli_query($link, $sql_sm);
+								while($row = mysqli_fetch_assoc($result_sm)){
+									$selected = ($hdr['shipToId']==$row['id']?' selected ':'');
+									echo '<option value="'.$row['id'].'" '.$selected.' >'.$row['code'].' : '.$row['name'].'</option>';
+								}
+								?>
+							</select>                            
+                        </div>	
 						
                         <div class="form-group">
                             <label for="smId">Salesman Name</label>							
@@ -122,7 +153,8 @@ desired effect
 								$sql_sm = "SELECT id, `code`,  `name`, `surname`, `mobileNo`, `email` FROM `salesman` WHERE `statusCode`='A' ";
 								$result_sm = mysqli_query($link, $sql_sm);
 								while($row = mysqli_fetch_assoc($result_sm)){
-									echo '<option value="'.$row['id'].'">'.$row['code'].' : '.$row['name'].' '.$row['surname'].'</option>';
+									$selected = ($hdr['smId']==$row['id']?' selected ':'');
+									echo '<option value="'.$row['id'].'" '.$selected.' >'.$row['code'].' : '.$row['name'].' '.$row['surname'].'</option>';
 								}
 								?>
 							</select>                            
@@ -130,7 +162,8 @@ desired effect
 						
 						<div class="form-group">
                             <label for="custAddr">Customer Address</label>
-							<textarea id="custAddr" class="form-control" name="custAddr" disabled></textarea>
+							<textarea id="custAddr" class="form-control" name="custAddr" disabled ><?=$hdr['shipToAddr1'].$hdr['shipToAddr2'].$hdr['shipToAddr3'].$hdr['shipToZipcode'];?>
+							</textarea>
                         </div>
                         
 						<div class="row">
@@ -152,7 +185,8 @@ desired effect
 									$sql_sm = "SELECT id, `code`,  `name`,  `typeCode`, `filePath` FROM `shipping_marks` WHERE `statusCode`='A' ";
 									$result_sm = mysqli_query($link, $sql_sm);
 									while($row = mysqli_fetch_assoc($result_sm)){
-										echo '<option value="'.$row['id'].'" data-typeCode="'.$row['typeCode'].'" data-filePath="'.$row['filePath'].'"  >'.$row['code'].' : '.$row['name'].'</option>';
+										$selected = ($hdr['shippingMarksId']==$row['id']?' selected ':'');
+										echo '<option value="'.$row['id'].'" data-typeCode="'.$row['typeCode'].'" data-filePath="'.$row['filePath'].'" '.$selected.' >'.$row['code'].' : '.$row['name'].'</option>';
 									}
 									?>
 								</select> 
@@ -161,11 +195,11 @@ desired effect
 							</div>
 							<div class="col-md-6 form-group">
 								 <label for="shippingMarks">by</label><br/>
-								<input type="checkbox" name="shipByLcl" id="shipByLcl"  >
+								<input type="checkbox" name="shipByLcl" id="shipByLcl" <?php echo ($hdr['shipByLcl']==1?' checked ':''); ?> >
 								  LCL&nbsp;&nbsp;
-								  <input type="checkbox" name="shipByFcl" id="shipByFcl"  >
+								  <input type="checkbox" name="shipByFcl" id="shipByFcl"  <?php echo ($hdr['shipByFcl']==1?' checked ':''); ?>  >
 								  FCL
-									<input type="text" id="shipByRemark" name="shipByRemark" class="form-control"  maxlength="40" />
+									<input type="text" id="shipByRemark" name="shipByRemark" class="form-control"  maxlength="40" <?=$hdr['shipByRem'];?> />
 							</div>
 						</div>
 						
@@ -182,11 +216,11 @@ desired effect
 						<div class="row">					
 							<div class="col-md-12 form-group">
 								  <label for="remOption">Remark Option</label><br/>
-									<input type="checkbox" name="remCoa" id="remCoa"  >
+									<input type="checkbox" name="remCoa" id="remCoa" <?php echo ($hdr['remCoa']==1?' checked ':''); ?> >
 									  ขอ COA&nbsp;&nbsp;
-									  <input type="checkbox" name="remPalletBand" id="remPalletBand"  >
+									  <input type="checkbox" name="remPalletBand" id="remPalletBand" <?php echo ($hdr['remPalletBand']==1?' checked ':''); ?> >
 									  PALLET ตีตรา&nbsp;&nbsp;
-									  <input type="checkbox" name="remFumigate" id="remFumigate"  >
+									  <input type="checkbox" name="remFumigate" id="remFumigate" <?php echo ($hdr['remFumigate']==1?' checked ':''); ?> >
 										รมยาตู้คอนเทนเนอร์
 							  </div>
 						  </div>						  			
@@ -194,7 +228,7 @@ desired effect
 						<div class="row">					
 							<div class="col-md-12 form-group">
 								<label for="remark">Remark</label>
-								  <textarea id="remark" name="remark" class="form-control"  maxlength="80"></textarea>
+								  <textarea id="remark" name="remark" class="form-control"  maxlength="80"><?=$hdr['remark'];?></textarea>
 							  </div>
 						  </div>
 						  						  
@@ -208,9 +242,9 @@ desired effect
 						<div class="row">	
 						  <div class="col-md-12 form-group">
 							<label for="suppType">Product Supp Type</label><br/>
-							  <input type="checkbox" name="suppTypeFact" id="suppTypeFact"  checked>
+							  <input type="checkbox" name="suppTypeFact" id="suppTypeFact"  <?php echo ($soNo==""?' checked ':($hdr['suppTypeFact']==1?' checked ':'')); ?> >
 							  Factory Product&nbsp;&nbsp;
-							  <input type="checkbox" name="suppTypeImp" id="suppTypeImp" >
+							  <input type="checkbox" name="suppTypeImp" id="suppTypeImp" <?php echo ($hdr['suppTypeImp']==1?' checked ':''); ?> >
 							  Import Product
 						  </div>
 						</div>
@@ -219,9 +253,9 @@ desired effect
 						  <div class="row">	
 						  <div class="col-md-12 form-group">
 							<label for="prodType">Product Type</label><br/>
-							<input type="checkbox" name="prodTypeOld" id="prodTypeOld"  checked>
+							<input type="checkbox" name="prodTypeOld" id="prodTypeOld"  <?php echo ($soNo==""?' checked ':($hdr['prodTypeOld']==1?' checked ':'')); ?> >
 							  Old Product&nbsp;&nbsp;
-							  <input type="checkbox" name="prodTypeNew" id="prodTypeNew" >
+							  <input type="checkbox" name="prodTypeNew" id="prodTypeNew" <?php echo ($hdr['prodTypeNew']==1?' checked ':''); ?> >
 							  New Product
 						  </div>
 						  </div>
@@ -229,52 +263,22 @@ desired effect
 						  <div class="row">	
 						  <div class="col-md-12 form-group">
 							<label for="custType">Customer Type</label><br/>
-								<input type="radio" name="custType" value="custTypeOld"  checked>
+								<input type="radio" name="custType" value="custTypeOld"  <?php echo ($soNo==""?' checked ':($hdr['custTypeOld']==1?' checked ':'')); ?> >
 							  Old Customer&nbsp;&nbsp;
-								<input type="radio" name="custType" value="custTypeNew" >
+								<input type="radio" name="custType" value="custTypeNew" <?php echo ($hdr['custTypeNew']==1?' checked ':''); ?> >
 							  New Customer
 						  </div>
-						  </div>
-						  
-						  <div class="row">	
-						  <div class="col-md-12 form-group">
-								<label for="prodName">Product Name</label><br/>
-								<div class="col-md-6">
-								  <input type="checkbox" name="prodGFC" id="prodGFC" value="true"  >
-								  GLASS FIBER CLOTH</br>
-								  <input type="checkbox" name="prodGFM" id="prodGFM"  >
-								  GLASS FIBER MESH</br>
-								  <input type="checkbox" name="prodGFT" id="prodGFT"  >
-								  GLASS FIBER TAPE</br>
-								  <input type="checkbox" name="prodSC" id="prodSC"  >
-								  SILICA CLOTH</br>
-								  <input type="checkbox" name="prodCFC" id="prodCFC"  >
-								  CABON FIBER CLOTH</br>
-								</div>
-								<div class="col-md-6">
-								  <input type="checkbox" name="prodEGWM" id="prodEGWM"  >
-								  E-GLASS WOOL MAT</br>
-								  <input type="checkbox" name="prodGT" id="prodGT"  >
-								  GLASS TISSUE</br>
-								  <input type="checkbox" name="prodCSM" id="prodCSM"  >
-								  CHOPPED STRAND MAT</br>
-								  <input type="checkbox" name="prodWR" id="prodWR"  >
-								  WOVEN ROVING
-								  </div>
-								
-						  </div>
-						  </div>
-						  
+						  </div>	
 						  
 						  <div class="row">	
 						  <div class="col-md-12 form-group">
 							<label for="prodStk">Product Stock</label><br/>
-								  <input type="checkbox" name="prodStkInStk" id="prodStkInStk"  checked>
+								  <input type="checkbox" name="prodStkInStk" id="prodStkInStk" <?php echo ($soNo==""?' checked ':($hdr['prodStkInStk']==1?' checked ':'')); ?> >
 								  In Stock&nbsp;&nbsp;
-								  <input type="checkbox" name="prodStkOrder" id="prodStkOrder" >
+								  <input type="checkbox" name="prodStkOrder" id="prodStkOrder" <?php echo ($hdr['prodStkOrder']==1?' checked ':''); ?> >
 								  Order&nbsp;&nbsp;
-								  <input type="checkbox" name="prodStkOther" id="prodStkOther" >
-								  Other <input type="text" name="prodStkRem" id="prodStkRem" class="col-md-2 form-control"  maxlength="40" style="display: none;" >
+								  <input type="checkbox" name="prodStkOther" id="prodStkOther" <?php echo ($hdr['prodStkOther']==1?' checked ':''); ?> >
+								  Other <input type="text" name="prodStkRem" id="prodStkRem" class="col-md-2 form-control"  maxlength="40" style="display: <?=($hdr['prodStkOther']==1?'block;':'none;');?>" value="<?=$hdr['prodStkRem'];?>" >
 								<!-- row -->
 						  </div>
 						  </div>
@@ -282,12 +286,12 @@ desired effect
 						  <div class="row">	
 						  <div class="col-md-12 form-group">
 							<label for="packType">Packing Type</label><br/>
-								  <input type="checkbox" name="packTypeAk" id="packTypeAk"  checked>
+								  <input type="checkbox" name="packTypeAk" id="packTypeAk" <?php echo ($soNo==""?' checked ':($hdr['packTypeAk']==1?' checked ':'')); ?> >
 								  AK Logo&nbsp;&nbsp;
-								  <input type="checkbox" name="packTypeNone" id="packTypeNone" >
+								  <input type="checkbox" name="packTypeNone" id="packTypeNone" <?php echo ($hdr['packTypeNone']==1?' checked ':''); ?> >
 								  Non AK Logo&nbsp;&nbsp;
-								  <input type="checkbox" name="packTypeOther" id="packTypeOther" >
-								  Other <input type="text" name="packTypeRem" id="packTypeRem" class="col-md-2 form-control"  maxlength="40" style="display: none;" >
+								  <input type="checkbox" name="packTypeOther" id="packTypeOther" <?php echo ($hdr['packTypeOther']==1?' checked ':''); ?> >
+								  Other <input type="text" name="packTypeRem" id="packTypeRem" class="col-md-2 form-control"  maxlength="40" style="display:  <?=($hdr['packTypeOther']==1?'block;':'none;');?>" value="<?=$hdr['packTypeRem'];?>"  >
 								<!-- row -->
 						  </div>
 						  </div>
@@ -295,11 +299,11 @@ desired effect
 						  <div class="row">	
 						  <div class="col-md-12 form-group">
 								<label for="priceOn">Price On</label><br/>
-								  <input type="radio" name="priceOn" value="priceOnOrder"  checked>
+								  <input type="radio" name="priceOn" value="priceOnOrder" <?php echo ($soNo==""?' checked ':($hdr['priceOnOrder']==1?' checked ':'')); ?> >
 								  on Sales Order&nbsp;&nbsp;
-								  <input type="radio" name="priceOn" value="priceOnOther" >
+								  <input type="radio" name="priceOn" value="priceOnOther" <?php echo ($soNo==""?'  ':($hdr['priceOnOther']==1?' checked ':'')); ?> >
 								  Other 								  
-								  <input type="text" name="priceOnRem" id="priceOnRem" class="col-md-2 form-control"  maxlength="40" style="display: none;" >							 											  
+								  <input type="text" name="priceOnRem" id="priceOnRem" class="col-md-2 form-control"  maxlength="40" style="display:  <?=($hdr['priceOnOther']==1?'block;':'none;');?>" value="<?=$hdr['priceOnRem'];?>"  >							 											  
 						  </div>
 						  </div>
 						  
@@ -307,16 +311,16 @@ desired effect
 						  <div class="col-md-12 form-group">
 							<div class="col-md-6 form-group">
 								<label for="plac2deliCode">Place to Delivery</label><br/>
-								  <input type="radio" name="plac2deliCode" id="plac2deliCodeFact" value="FACT"   data-smk-msg="Require Place to Delivery." required checked>
+								  <input type="radio" name="plac2deliCode" id="plac2deliCodeFact" value="FACT"   data-smk-msg="Require Place to Delivery." required <?php echo ($soNo==""?' checked ':($hdr['plac2deliCode']=="FACT"?' checked ':'')); ?> >
 								  AK Factory<br/>
-								  <input type="radio" name="plac2deliCode" id="plac2deliCodeSend" value="SEND" >
+								  <input type="radio" name="plac2deliCode" id="plac2deliCodeSend" value="SEND" <?php echo ($soNo==""?'  ':($hdr['plac2deliCode']=="SEND"?' checked ':'')); ?> >
 								  Send by AK Factory
-								  <input type="textbox" name="plac2deliCodeSendRem" id="plac2deliCodeSendRem"  class="form-control"  maxlength="40" style="display: none;"  /><br/>
-								  <input type="radio" name="plac2deliCode" id="plac2deliCodeMaps" value="MAPS" >
+								  <input type="textbox" name="plac2deliCodeSendRem" id="plac2deliCodeSendRem"  class="form-control"  maxlength="40" style="display: <?=($hdr['plac2deliCode']=='SEND'?'block;':'none;');?>" value="<?=$hdr['plac2deliCodeSendRem'];?>"  /><br/>
+								  <input type="radio" name="plac2deliCode" id="plac2deliCodeMaps" value="MAPS" <?php echo ($soNo==""?'  ':($hdr['plac2deliCode']=="MAPS"?' checked ':'')); ?> >
 								  Map<br/>
-								  <input type="radio" name="plac2deliCode" id="plac2deliCodeLogi" value="LOGI" >
+								  <input type="radio" name="plac2deliCode" id="plac2deliCodeLogi" value="LOGI" <?php echo ($soNo==""?'  ':($hdr['plac2deliCode']=="LOGI"?' checked ':'')); ?> >
 								  Logistic
-								<input type="textbox" name="plac2deliCodeLogiRem" id="plac2deliCodeLogiRem"  class="form-control"  maxlength="40" style="display: none;"  />
+								<input type="textbox" name="plac2deliCodeLogiRem" id="plac2deliCodeLogiRem"  class="form-control"  maxlength="40" style="display: <?=($hdr['plac2deliCode']=='LOGI'?'block;':'none;');?>" value="<?=$hdr['plac2deliCodeLogiRem'];?>" />
 							  </div>
 							  
 							<div class="col-md-6 form-group">
@@ -325,18 +329,18 @@ desired effect
 										<label for="payTypeCode">Credit</label>
 									</div>
 									<div class="col-md-5">
-										<input type="textbox" name="payTypeCreditDays" id="payTypeCreditDays"  class="form-control" />
+										<input type="textbox" name="payTypeCreditDays" id="payTypeCreditDays"  class="form-control" value="<?=$hdr['payTypeCreditDays'];?>" />
 									</div>
 									<div class="col-md-2">
 										Days
 									</div>
 								</div>
 								<div class="row col-md-12">
-							  <input type="radio" name="payTypeCode" value="CASH"  checked>
+							  <input type="radio" name="payTypeCode" value="CASH"  <?php echo ($soNo==""?' checked ':($hdr['payTypeCode']=="CASH"?' checked ':'')); ?>>
 							  by Cash<br/>
-							  <input type="radio" name="payTypeCode" value="CHEQ" >
+							  <input type="radio" name="payTypeCode" value="CHEQ" <?php echo ($soNo==""?'  ':($hdr['payTypeCode']=="CHEQ"?' checked ':'')); ?> >
 							  by Cheque<br/>
-							  <input type="radio" name="payTypeCode" value="TRAN" >
+							  <input type="radio" name="payTypeCode" value="TRAN" <?php echo ($soNo==""?'  ':($hdr['payTypeCode']=="TRAN"?' checked ':'')); ?> >
 							  Transfer
 							  </div>
 						  </div>
@@ -537,10 +541,32 @@ $("#spin").hide();
 		$('input[name='+curId+']').val($(this).closest("tr").find('td:eq(1)').text());
 		$('input[name='+curName+']').val($(this).closest("tr").find('td:eq(3)').text());
 		$('#smId').val($(this).closest("tr").find('td:eq(4)').text());
-		$('#custAddr').val($(this).closest("tr").find('td:eq(6)').text()+
+		/*$('#custAddr').val($(this).closest("tr").find('td:eq(6)').text()+
 			$(this).closest("tr").find('td:eq(7)').text()+
 			$(this).closest("tr").find('td:eq(8)').text()+
-			$(this).closest("tr").find('td:eq(9)').text());
+			$(this).closest("tr").find('td:eq(9)').text());*/
+		//ajax shipto begin
+		var params = {
+			id: $(this).closest("tr").find('td:eq(1)').text()
+		}; alert(params.id);
+		$.ajax({
+		  url: "get_shipto_by_cust_ajax.php",
+		  type: "post",
+		  data: params,
+		datatype: 'json',
+		  success: function(data){
+						//alert(data);
+						$('#shipToId').empty();
+						$.each($.parseJSON(data), function(key,value){
+							$('#shipToId').append('<option value="'+value.id+'" >'+value.code+' : '+value.name+'</option>' );		
+						});
+					
+		  }, //success
+		  error:function(){
+			  alert('error');
+		  }   
+		});
+		//ajax shipto end.
 		
 		//$('#'+curName).val($(this).closest("tr").find('td:eq(2)').text());	
 		$('#modal_search').modal('hide');
@@ -580,6 +606,31 @@ $("#spin").hide();
 		$('#smId').val($('option:selected', this).attr('data-smId'));
 		e.preventDefault();
 	 });
+	 $("#shipToId").on("change",function(e) {
+		//alert($('option:selected', this).attr('data-addr1'));
+		var params = {
+			id: $(this).val() //$('option:selected', this).val();
+		}; alert(params.id);
+		$.ajax({
+			  url: "get_shipto_ajax.php",
+			  type: "post",
+			  data: params,
+			datatype: 'json',
+			  success: function(data){
+					//alert(data);
+					$('#custAddr').empty();
+					$.each($.parseJSON(data), function(key,value){
+						$('#custAddr').val(value.addr1+value.addr2+value.addr3+value.zipcode);
+					});				
+			  }, //success
+			  error:function(){
+				  alert('error');
+			  }   
+			}); 
+		//$('#smId').val($('option:selected', this).attr('data-smId'));
+		e.preventDefault();
+	 });
+	 
 	 $("#shippingMarksId").on("change",function(e) {
 		 if($('option:selected', this).attr('data-typeCode')=="IMG"){
 			 $('#shippingMarksRem').attr('disabled','').text("").css('display','none');
@@ -648,6 +699,24 @@ $("#spin").hide();
 			language: 'th',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
 			thaiyear: true              //Set เป็นปี พ.ศ.
 		});  //กำหนดเป็นวันปัจุบัน
+		
+		//กำหนดเป็น วันที่จากฐานข้อมูล		
+		<?php if($hdr['saleDate']<>"") { ?>
+			var queryDate = '<?=$hdr['saleDate'];?>',
+			dateParts = queryDate.match(/(\d+)/g)
+			realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
+			$('#saleDate').datepicker('setDate', realDate);
+		<?php }else{ ?> $('#saleDate').datepicker('setDate', '0'); <?php } ?>
+		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
+		
+		//กำหนดเป็น วันที่จากฐานข้อมูล		
+		<?php if($hdr['deliveryDate']<>"") { ?>
+			var queryDate = '<?=$hdr['deliveryDate'];?>',
+			dateParts = queryDate.match(/(\d+)/g)
+			realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
+			$('#deliveryDate').datepicker('setDate', realDate);
+		<?php }else{ ?> $('#deliveryDate').datepicker('setDate', '0'); <?php } ?>
+		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
 	});
 </script>
 

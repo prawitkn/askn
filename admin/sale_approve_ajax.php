@@ -37,7 +37,7 @@ try{
 	$row=$stmt->fetch();
 	$locationCode=$row['locationCode'];
 	$soNoNext = '';
-	if($row['isRevised']=="Y"){
+	if($row['revCount']<>0){
 		$soNoNext = $row['soNo'];
 		//Query 2: UPDATE Header
 		$sql = "UPDATE sale_header SET statusCode='P'   
