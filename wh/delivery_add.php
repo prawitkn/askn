@@ -7,7 +7,39 @@ This is a starter template page. Use this page to start your new project from
 scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
-<?php include 'head.php'; ?>
+<?php include 'head.php'; 
+$rootPage = 'delivery';
+if(isset($_GET['doNo'])){
+	$sql = "SELECT dh.`doNo`, dh.`soNo`, dh.`ppNo`, dh.`custId`, dh.`shipToId`, dh.`smId`, dh.`deliveryDate`, dh.`driver`, dh.`refInvNo`, dh.`remark`, dh.`statusCode`
+	, dh.`createTime`, dh.`createById`, dh.`updateTime`, dh.`updateById`, dh.`confirmTime`, dh.`confirmById`, dh.`approveTime`, dh.`approveById`
+	, ct.name as custName, ct.addr1 
+	, sm.name as smName 
+	FROM delivery_header dh 
+	INNER JOIN customer ct on ct.id=dh.custId 
+	LEFT JOIN salesman sm on sm.id=dh.smId 
+	WHERE dh.doNo=:doNo ";
+	$stmt = $pdo->prepare($sql);
+	$stmt->bindParam(':doNo', $_GET['doNo']);
+}else{
+	$sql = "SELECT dh.`doNo`, dh.`soNo`, dh.`ppNo`, dh.`custId`, dh.`shipToId`, dh.`smId`, dh.`deliveryDate`, dh.`driver`, dh.`refInvNo`, dh.`remark`, dh.`statusCode`
+	, dh.`createTime`, dh.`createById`, dh.`updateTime`, dh.`updateById`, dh.`confirmTime`, dh.`confirmById`, dh.`approveTime`, dh.`approveById`
+	, ct.name as custName, ct.addr1 
+	, sm.name as smName 
+	FROM delivery_header dh 
+	INNER JOIN customer ct on ct.id=dh.custId 
+	LEFT JOIN salesman sm on sm.id=dh.smId 
+	WHERE dh.statusCode='B' AND dh.createById=:s_userId 
+	";
+	$stmt = $pdo->prepare($sql);
+	$stmt->bindParam(':s_userId', $s_userId);	
+}
+
+$stmt->execute();
+$hdr = $stmt->fetch();
+$doNo = $hdr['doNo'];
+$ppNo = $hdr['ppNo'];
+$soNo = $hdr['soNo'];
+?>
     
 <div class="wrapper">
 
@@ -38,26 +70,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <section class="content">
 
       <!-- Your Page Content Here -->
-    <a href="delivery.php" class="btn btn-google">Back</a>
+    <a href="<?=$rootPage;?>.php" class="btn btn-google">Back</a>
     <div class="box box-primary">
-		<?php	
-			$sql = "SELECT dh.`doNo`, dh.`soNo`, dh.`ppNo`, dh.`custId`, dh.`shipToId`, dh.`smId`, dh.`deliveryDate`, dh.`driver`, dh.`refInvNo`, dh.`remark`, dh.`statusCode`
-			, dh.`createTime`, dh.`createById`, dh.`updateTime`, dh.`updateById`, dh.`confirmTime`, dh.`confirmById`, dh.`approveTime`, dh.`approveById`
-			, ct.name as custName, ct.addr1 
-			, sm.name as smName 
-			FROM delivery_header dh 
-			INNER JOIN customer ct on ct.id=dh.custId 
-			LEFT JOIN salesman sm on sm.id=dh.smId 
-			WHERE dh.statusCode='B' AND dh.createById=:s_userId 
-			";
-			$stmt = $pdo->prepare($sql);
-			$stmt->bindParam(':s_userId', $s_userId);	
-			$stmt->execute();
-			$hdr = $stmt->fetch();
-			$doNo = $hdr['doNo'];
-			$ppNo = $hdr['ppNo'];
-			$soNo = $hdr['soNo'];
-		?>
         <div class="box-header with-border">
         <h3 class="box-title">Add Delivery Order No. : <?=$doNo;?></h3>
         <div class="box-tools pull-right">
@@ -68,7 +82,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         </div><!-- /.box-header -->
         <div class="box-body">			
             <div class="row">
-				<form id="form1" action="delivery_add_insert.php" method="post" class="form" novalidate>				
+				<form id="form1" action="<?=$rootPage;?>_add_insert.php" method="post" class="form" novalidate>				
                 <div class="col-md-12">   
 					<div class="row">
 						<div class="col-md-3">
@@ -153,30 +167,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			<!--/.row hdr-->
 			
 		<div class="row col-md-12"   <?php echo ($doNo!=''?'':' style="display: none;" '); ?> >
-			<form id="form2" action="delivery_add_item_submit_ajax.php" method="post" class="form" novalidate>
+			<form id="form2" action="<?=$rootPage;?>_add_item_submit_ajax.php" method="post" class="form" novalidate>
 				<input type="hidden" name="doNo" value="<?=$doNo;?>" />
-				<?php
-					/*$sql = "SELECT od.`id`, od.`prodId`, od.`qty`
-					, pd.name as prodName, pd.uomCode
-                    , (SELECT IFNULL(SUM(dd.qty),0) FROM delivery_header dh 
-                    	LEFT JOIN delivery_detail dd on dh.doNo=dd.doNo
-                       	WHERE dh.soNo=oh.soNo AND dd.prodId=od.prodId and dh.statusCode='P' ) as sentQty
-                    , (SELECT IFNULL(SUM(dd.qty),0) FROM delivery_header dh 
-                    	LEFT JOIN delivery_detail dd on dh.doNo=dd.doNo
-                       	WHERE dh.soNo=oh.soNo AND dd.prodId=od.prodId and dh.statusCode='B' ) as curQty
-					FROM `sale_detail` od
-					INNER JOIN sale_header oh on oh.soNo=od.soNo 
-					LEFT JOIN product pd on od.prodId=pd.id 
-					WHERE 1
-					AND oh.soNo=:soNo 
-					
-					ORDER BY od.id  
-							";
-					$stmt = $pdo->prepare($sql);
-					$stmt->bindParam(':soNo', $soNo);		
-					$stmt->execute();*/
-					
-					$sql = "
+				<?php					
+					/*$sql = "
 					SELECT dd.`id`, itm.`qty`
 					,pd.code as prodCode, pd.uomCode
 					, IFNULL((SELECT SUM(sd.qty) FROM sale_detail sd
@@ -208,6 +202,28 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					";
 					$stmt = $pdo->prepare($sql);	
 					$stmt->bindParam(':doNo', $hdr['doNo']);
+					$stmt->execute();*/
+					$sql = "
+					SELECT dtl.`id`, dtl.`qty`, dtl.remark 
+					,pd.code as prodCode, pd.uomCode
+					, IFNULL((SELECT SUM(sd.qty) FROM sale_detail sd
+							WHERE sd.soNo=hdr.soNo
+							AND sd.prodId=dtl.prodId),0) AS sumSalesQty
+					, (SELECT IFNULL(SUM(dds.qty),0) FROM delivery_header dhs 
+						INNER JOIN delivery_prod dds on dhs.doNo=dds.doNo
+						WHERE dds.prodId=dtl.prodId 
+						AND dhs.statusCode='P' ) as sumSentQty
+					, IFNULL(SUM(dtl.qty),0) as sumDeliveryQty 
+					FROM delivery_prod dtl
+					INNER JOIN delivery_header hdr on hdr.doNo=dtl.doNo 
+					LEFT JOIN product pd ON pd.id=dtl.prodId 
+					WHERE 1 
+					AND hdr.doNo=:doNo
+
+					ORDER BY dtl.`id`
+					";
+					$stmt = $pdo->prepare($sql);	
+					$stmt->bindParam(':doNo', $hdr['doNo']);
 					$stmt->execute();
 
 				?>
@@ -233,19 +249,20 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						<td>
 							<input type="hidden" name="id[]" value="<?=$row['id'];?>" />	
 													
-							<input type="text" class="form-control" name="remark[]" value=""  style="text-align: right;" 
-							onkeypress="return numbersOnly(this, event);" 
-							onpaste="return false;"
-							<?php echo ($row_no==1?' id="txt_row_first" ':'');?>
-								>
+							<input type="text" class="form-control" name="remark[]" value="<?=$row['remark'];?>" <?php echo ($row_no==1?' id="txt_row_first" ':'');?>
+							<?php echo ($hdr['statusCode']=='B'?'':' disabled ');?>
+							/>
 						</td>
 					</tr>
 					<?php $row_no+=1; } ?>
 				</table>
 				</div>
 				<!--/.table-responsive-->
+				<?php if($hdr['statusCode']=='B'){ ?>
 				<a name="btn_submit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-save"></i> Submit</a>
-				<a name="btn_view" href="delivery_view.php?doNo=<?=$doNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> View</a>
+				<?php } ?>
+				<a name="btn_view" href="<?=$rootPage;?>_view.php?doNo=<?=$doNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> View</a>
+				
 				</form>
 			</div>
 			<!--/.row dtl-->
@@ -439,9 +456,9 @@ $(document).ready(function() {
 
 	$('#form1 a[name=btn_create]').click (function(e) {
 		if ($('#form1').smkValidate()){
-			$.smkConfirm({text:'Are you sure to Create? ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
+			$.smkConfirm({text:'Are you sure to Create ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
 				$.post({
-					url: 'delivery_add_hdr_insert_ajax.php',
+					url: '<?=$rootPage;?>_add_hdr_insert_ajax.php',
 					data: $("#form1").serialize(),
 					dataType: 'json'
 				}).done(function(data) {
@@ -451,7 +468,7 @@ $(document).ready(function() {
 							type: 'success',
 							position:'top-center'
 						});
-						window.location.href = "delivery_add.php?doNo=" + data.doNo;
+						window.location.href = "<?=$rootPage;?>_add.php?doNo=" + data.doNo;
 					}else{
 						$.smkAlert({
 							text: data.message,
@@ -464,8 +481,6 @@ $(document).ready(function() {
 					alert(response.responseText);
 				});
 				//.post
-			}else{ 
-				$.smkAlert({ text: 'Cancelled.', type: 'info', position:'top-center'});	
 			}});
 			//smkConfirm
 		e.preventDefault();
@@ -478,7 +493,7 @@ $(document).ready(function() {
 		if ($('#form2').smkValidate()){
 			$.smkConfirm({text:'Are you sure to Submit ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 				$.post({
-					url: 'delivery_add_item_submit_ajax.php',
+					url: '<?=$rootPage;?>_add_item_submit_ajax.php',
 					data: $("#form2").serialize(),
 					dataType: 'json'
 				}).done(function(data) {
@@ -488,7 +503,7 @@ $(document).ready(function() {
 							type: 'success',
 							position:'top-center'
 						});
-						window.location.href = "delivery_view.php?doNo=" + data.doNo;
+						window.location.href = "<?=$rootPage;?>_view.php?doNo=" + data.doNo;
 					}else{
 						$.smkAlert({
 							text: data.message,
@@ -501,8 +516,6 @@ $(document).ready(function() {
 					alert(response.responseText);
 				});
 				//.post
-			}else{ 
-				$.smkAlert({ text: 'Cancelled.', type: 'info', position:'top-center'});	
 			}});
 			//smkConfirm
 		e.preventDefault();
@@ -537,10 +550,12 @@ $(document).ready(function() {
 			thaiyear: true              //Set เป็นปี พ.ศ.
 		});  //กำหนดเป็นวันปัจุบัน
 		//กำหนดเป็น วันที่จากฐานข้อมูล
+		<?php if($doNo<>''){ ?>
 		var queryDate = '<?=$hdr['deliveryDate'];?>',
 		dateParts = queryDate.match(/(\d+)/g)
 		realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
 		$('.datepicker').datepicker('setDate', realDate);
+		<?php }else{ ?> $('.datepicker').datepicker('setDate', '0'); <?php } ?>
 		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
 	});
 </script>

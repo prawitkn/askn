@@ -3,7 +3,37 @@
 include('session.php');
 //include('prints_function.php');
 //include('inc_helper.php');
+function to_thai_date($eng_date){
+	if(strlen($eng_date) != 10){
+		return null;
+	}else{
+		$new_date = explode('-', $eng_date);
 
+		$new_y = (int) $new_date[0] + 543;
+		$new_m = $new_date[1];
+		$new_d = $new_date[2];
+
+		$thai_date = $new_d . '/' . $new_m . '/' . $new_y;
+
+		return $thai_date;
+	}
+}
+function to_thai_datetime_fdt($eng_date){
+	//if(strlen($eng_date) != 10){
+	//    return null;
+	//}else{
+		$new_datetime = explode(' ', $eng_date);
+		$new_date = explode('-', $new_datetime[0]);
+
+		$new_y = (int) $new_date[0] + 543;
+		$new_m = $new_date[1];
+		$new_d = $new_date[2];
+
+		$thai_date = $new_d . '/' . $new_m . '/' . $new_y . ' ' . substr($new_datetime[1],0,5);
+
+		return $thai_date;
+	//}
+}
 // Include the main TCPDF library (search for installation path).
 require_once('../tcpdf/tcpdf.php');
 
@@ -101,147 +131,134 @@ if( isset($_GET['doNo']) ){
 	
 	$pdf->SetTitle($doNo);
 	
-$sql = "
-SELECT dh.`doNo`, dh.`soNo`, dh.`ppNo`, oh.`poNo`
-, dh.`deliveryDate`, dh.`remark`, dh.driver
-, dh.`statusCode`, dh.`createTime`, dh.`createById`, dh.`updateTime`, dh.`updateById`
-, dh.`confirmTime`, dh.`confirmById`, dh.`approveTime`, dh.`approveById`
-, ct.code as custCode, ct.name as  custName ,ct.addr1 , ct.addr2 , ct.addr3 , ct.zipcode, ct.tel, ct.fax
-, concat(sm.name, '  ', sm.surname) as smFullname 
-, uca.userFullname as createByName, ucf.userFullname as confirmByName, uap.userFullname as approveByName
-FROM delivery_header dh 
-LEFT JOIN prepare pp on pp.ppNo=dh.ppNo 
-LEFT JOIN picking pk on pk.pickNo=pp.pickNo 
-LEFT JOIN sale_header oh on pk.soNo=oh.soNo 
-LEFT JOIN customer ct on ct.id=oh.custId
-LEFT JOIN salesman sm on sm.id=oh.smId 
-LEFT JOIN wh_user uca on uca.userId=dh.createById					
-LEFT JOIN wh_user ucf on ucf.userId=dh.confirmById
-LEFT JOIN wh_user uap on uap.userId=dh.approveById
-WHERE 1
-AND dh.doNo=:doNo
-";
-$stmt = $pdo->prepare($sql);
-$stmt->bindParam(':doNo', $doNo);	
-$stmt->execute();
-$hdr = $stmt->fetch();
-$doNo = $hdr['doNo'];
-$ppNo = $hdr['ppNo'];
-$soNo = $hdr['soNo'];
+	$doNo = $_GET['doNo'];
 
+	$sql = "
+	SELECT dh.`doNo`, dh.`soNo`, dh.`ppNo`, oh.`poNo`
+	, dh.`deliveryDate`, dh.`remark`, dh.`driver`
+	, dh.`statusCode`, dh.`createTime`, dh.`createById`, dh.`updateTime`, dh.`updateById`
+	, dh.`confirmTime`, dh.`confirmById`, dh.`approveTime`, dh.`approveById`
+	, ct.code as custCode, ct.name as  custName
+	, st.code as shipToCode, st.name as  shipToName ,st.addr1 as shipToAddr1, st.addr2 as shipToAddr2, st.addr3 as shipToAddr3, st.zipcode as shipToZipcode, st.tel as shipToTel, st.fax as shipToFax
+	, sm.code as smCode, sm.name as smName, sm.surname as smSurname, concat(sm.name, '  ', sm.surname) as smFullname 
+	, uca.userFullname as createByName, ucf.userFullname as confirmByName, uap.userFullname as approveByName
+	FROM delivery_header dh 
+	LEFT JOIN sale_header oh on dh.soNo=oh.soNo 
+	LEFT JOIN customer ct on ct.id=oh.custId
+	LEFT JOIN shipto st on st.id=oh.shipToId
+	LEFT JOIN salesman sm on sm.id=oh.smId 
+	LEFT JOIN wh_user uca on uca.userId=dh.createById					
+	LEFT JOIN wh_user ucf on ucf.userId=dh.confirmById
+	LEFT JOIN wh_user uap on uap.userId=dh.approveById
+	WHERE 1
+	AND dh.doNo=:doNo
+	";
+	$stmt = $pdo->prepare($sql);
+	$stmt->bindParam(':doNo', $doNo);	
+	$stmt->execute();
+	$hdr = $stmt->fetch();
+	$doNo = $hdr['doNo'];
+	$ppNo = $hdr['ppNo'];
+	$soNo = $hdr['soNo'];
 
-$sql = "SELECT COUNT(id) as rowCount FROM delivery_detail
-		WHERE doNo=:doNo 
-			";						
-$stmt = $pdo->prepare($sql);	
-$stmt->bindParam(':doNo', $hdr['doNo']);
-$stmt->execute();	
-$rowCount = $stmt->fetch(PDO::FETCH_ASSOC);
+	$sql = "
+	SELECT dtl.`id`, dtl.`qty`, dtl.remark 
+	,pd.name as prodName, pd.code as prodCode, pd.uomCode
+	, IFNULL((SELECT SUM(sd.qty) FROM sale_detail sd
+			WHERE sd.soNo=hdr.soNo
+			AND sd.prodId=dtl.prodId),0) AS sumSalesQty
+	, (SELECT IFNULL(SUM(dds.qty),0) FROM delivery_header dhs 
+		INNER JOIN delivery_prod dds on dhs.doNo=dds.doNo
+		WHERE dds.prodId=dtl.prodId 
+		AND dhs.statusCode='P' ) as sumSentQty
+	, IFNULL(SUM(dtl.qty),0) as sumDeliveryQty 
+	FROM delivery_prod dtl
+	INNER JOIN delivery_header hdr on hdr.doNo=dtl.doNo 
+	LEFT JOIN product pd ON pd.id=dtl.prodId 
+	WHERE 1 
+	AND hdr.doNo=:doNo
 
-
-$sql = "
-SELECT dd.`id`, itm.`prodCodeId`, itm.`qty`
-,pd.code as prodCode, pd.uomCode, dd.remark 
-, IFNULL((SELECT SUM(sd.qty) FROM sale_detail sd
-   		INNER JOIN sale_header sh on sh.soNo=sd.soNo
-   		WHERE sh.soNo=pk.soNo
-   		AND sd.prodId=itm.prodCodeId),0) AS sumSalesQty
-, (SELECT IFNULL(SUM(dds.qty),0) FROM delivery_header dhs 
-	INNER JOIN delivery_detail dds on dhs.doNo=dds.doNo
-	INNER JOIN product_item itms ON itms.prodItemId=dds.prodItemId 
-   	INNER JOIN prepare pps on pps.ppNo=dhs.ppNo
-    INNER JOIN picking pks on pks.pickNo=pps.pickNo
-    WHERE pks.soNo=pk.soNo 
-    AND itms.prodCodeId=itm.prodCodeId
-    AND dhs.statusCode='P' ) as sumSentQty
-, IFNULL(SUM(dd.qty),0) as sumDeliveryQty 
-FROM delivery_detail dd
-INNER JOIN delivery_header dh on dh.doNo=dd.doNo 
-LEFT JOIN product_item itm ON itm.prodItemId=dd.prodItemId 
-INNER JOIN prepare pp on pp.ppNo=dh.ppNo
-INNER JOIN picking pk on pk.pickNo=pp.pickNo
-INNER JOIN sale_header oh on oh.soNo=pk.soNo
-
-LEFT JOIN product pd on dd.prodCode=itm.prodCodeId 
-WHERE 1
-AND dh.doNo=:doNo
-GROUP BY dd.`id`, dd.`prodCode`, dd.`qty` , pd.name, pd.description, pd.uomCode
-
-ORDER BY dd.`id`, dd.`prodCode`, dd.`qty`, pd.name 
-";
-$stmt = $pdo->prepare($sql);	
-$stmt->bindParam(':doNo', $hdr['doNo']);
-$stmt->execute();
-
-					
-						$html ='
-							<table class="table table-striped no-margin" >
-								  <thead>									
-								  <tr>
-									<th style="font-weight: bold;">Customer :</th>
-									<th style="font-weight: bold; text-align: left;">'.$hdr['custCode'].':'.$hdr['custName'].'</th>
-									<th style="font-weight: bold;">Ref No. :</th>
-									<th style="text-align: left;">'.$hdr['soNo'].'<br/>PO No.'.$hdr['poNo'].'</th>
-									<th style="font-weight: bold; text-align: right;">Delivery Date :</th>
-									<th>'.$hdr['deliveryDate'].'</th>
-								</tr>
-								<tr>
-									<th style="font-weight: bold;">Address :</th>
-									<th style="text-align: left;">'.$hdr['addr1'].'</th>
-									<th style="font-weight: bold; text-align: right;"></th>
-									<th style="font-weight: bold; text-algn: right;">Salesman :</th>
-									<th>'.$hdr['smFullname'].'</th>
-								</tr>
-								<tr>
-									<th colspan="6">
-										Remark : '.($hdr['remark']==''?'-':$hdr['remark']).'
-									</th>	
-								</tr>
-								  <tr>
-										<th style="font-weight: bold; text-align: center; width: 30px;" border="1">No.</th>
-										<th style="font-weight: bold; text-align: center; width: 250px;" border="1">Product Code</th>
-										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Qty</th>
-										<th style="font-weight: bold; text-align: center; width: 250px;" border="1">Remark</th>
-									</tr>
-								  </thead>
-								  <tbody>
-							'; 
-							
-					$row_no = 1; $sumQty=$sumNW=$sumGW=0; while ($row = $stmt->fetch()) { 
-						
-						
-					$html .='<tr>
-						<td style="border: 0.1em solid black; text-align: center; width: 30px;">'.$row_no.'</td>
-						<td style="border: 0.1em solid black; padding: 10px; width: 250px;">'.$row['prodCode'].'</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['sumDeliveryQty'],2,'.',',').'</td>
-						<td style="border: 0.1em solid black; padding: 10px; width: 250px;">'.$row['remark'].'</td>
-					</tr>';									
-					$row_no +=1; }
-					//<!--end while div-->	
-					$html .='<tr>
-						<td colspan="2"><br/><br/>
-							Create by ..............................................................<br/>
-							<label style="padding-left: 20px;">'.$hdr['createByName'].' / <small>'.$hdr['createTime'].'</small></label><br/>
-							Verify by ..............................................................<br/>
-							<label style="padding-left: 20px;">'.$hdr['confirmByName'].' / <small>'.$hdr['confirmTime'].'</small></label><br/>
-							Driver by .....'.$hdr['driver'].'.....
-						</td>
-						
-						<td colspan="6" style="text-align: left;"><br/><br/>							
-							Approve by ..............................................................<br/>
-							<label style="padding-left: 20px;">'.$hdr['approveByName'].' / <small>'.$hdr['approveTime'].'</small></label><br/>
-						</td>
-						
-					</tr>';
-					
-					$html .='</tbody></table>';
-						
-					$pdf->AddPage('L','A5');
-					$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
-					}
-					//<!--if isset $_GET['from_date']-->
+	ORDER BY dtl.`id`
+	";
+	$stmt = $pdo->prepare($sql);	
+	$stmt->bindParam(':doNo', $hdr['doNo']);
+	$stmt->execute();
+	
+	//Loop all item
+	$iRow=0;		
+	$row_no = 1; $sumQty=$sumNW=$sumGW=0; while ($row = $stmt->fetch()) { 
+		if($iRow==0){
+			$pdf->AddPage('L','A5');
 		
-		 
+		
+			$pdf->Cell(125, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Cell(50, 0, to_thai_date($hdr['deliveryDate']), 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Ln(6);
+			
+			$pdf->Cell(50, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Cell(50, 0, $hdr['custName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Cell(20, 0, $hdr['custCode'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$custOrder = trim($hdr['soNo']);
+			$custOrder=($hdr['poNo']<>""?'/'.$hdr['poNo']:'');
+			$pdf->Cell(50, 0, $custOrder, 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Ln(6);
+			
+			$pdf->Cell(50, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Cell(100, 0, $hdr['shipToAddr1'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Cell(50, 0, $hdr['smName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Cell(50, 0, $hdr['smCode'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Ln(3);
+			
+			$pdf->Cell(50, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Cell(100, 0, $hdr['shipToAddr2'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Ln(6);
+		}//end if iRow=0					
+		
+		$pdf->Cell(10, 0, $row_no, 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+		$pdf->Cell(80, 0, $row['prodName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+		$pdf->Cell(50, 0, $row['prodCode'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+		$pdf->Cell(20, 0, $row['sumSalesQty'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+		$pdf->Cell(20, 0, $row['sumDeliveryQty'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+		$pdf->Cell(50, 0, $row['remark'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+		$pdf->Ln(6);
+		
+		$row_no+=1;
+		$iRow+=1;
+		
+		if($iRow==10){
+			//foot document.
+			$pdf->Cell(50, 0, $hdr['confirmByName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Cell(50, 0, $hdr['approveByName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Ln(6);
+			
+			$pdf->Cell(50, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Cell(50, 0, $hdr['driver'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Ln(6);					
+			
+			$iRow=0;
+		}	
+	
+		if($iRow<>10){
+			for($iRowRemain=$iRow; $iRowRemain<=10; $iRowRemain++){
+				$pdf->Cell(50, 0, '-', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+				$pdf->Ln(6);
+			}
+		}
+
+		//foot document.
+		$pdf->Cell(50, 0, $hdr['confirmByName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+		$pdf->Cell(50, 0, $hdr['approveByName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+		$pdf->Ln(6);
+		
+		$pdf->Cell(50, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+		$pdf->Cell(50, 0, $hdr['driver'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+		$pdf->Ln(6);
+	
+	
+	}
+	//end while
+
+}//end if id No.		 
 		   
 
 // ---------------------------------------------------------

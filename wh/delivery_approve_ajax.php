@@ -70,6 +70,13 @@ try{
 	$stmt->bindParam(':doNo', $doNo);
     $stmt->execute();
 	
+	//Query 2: UPDATE DATA
+	$sql = "UPDATE delivery_prod SET doNo=:nextNo WHERE doNo=:doNo ";
+    $stmt = $pdo->prepare($sql);
+	$stmt->bindParam(':nextNo', $nextNo);
+	$stmt->bindParam(':doNo', $doNo);
+    $stmt->execute();
+	
     //UPDATE doc running.
 	$sql = "UPDATE doc_running SET cur_no=? WHERE year=? and name=?";
 	$stmt = $pdo->prepare($sql);		
@@ -84,25 +91,34 @@ try{
 	}
 	
 	//Query 5: UPDATE STK BAl
-	$sql = "UPDATE stk_bal sb
-			INNER JOIN product_item itm ON itm.prodCodeId=sb.prodId 
-			INNER JOIN delivery_detail dd on dd.prodItemId=itm.prodItemId 			
-			SET sb.delivery = sb.delivery + dd.qty 
-			, sb.sales = sb.sales - dd.qty 
-			, sb.balance = sb.balance - dd.qty 
-			WHERE dd.doNo=:nextNo 
-			AND sb.sloc='8' 
-			";
+	$sql = "UPDATE stk_bal sb		
+	SET sb.delivery = sb.delivery+(SELECT SUM(dd.qty) FROM delivery_detail dd 	
+									INNER JOIN product_item itm ON dd.prodItemId=itm.prodItemId 	 
+									WHERE itm.prodCodeId=sb.prodId
+									AND dd.doNo=:nextNo) 
+	, sb.sales = sb.sales-(SELECT SUM(dd.qty) FROM delivery_detail dd 	
+									INNER JOIN product_item itm ON dd.prodItemId=itm.prodItemId 	 
+									WHERE itm.prodCodeId=sb.prodId
+									AND dd.doNo=:nextNo2) 
+	, sb.balance = sb.balance-(SELECT SUM(dd.qty) FROM delivery_detail dd 	
+									INNER JOIN product_item itm ON dd.prodItemId=itm.prodItemId 	 
+									WHERE itm.prodCodeId=sb.prodId
+									AND dd.doNo=:nextNo3) 
+	AND sb.sloc='8' 
+	";
     $stmt = $pdo->prepare($sql);
     $stmt->bindParam(':nextNo', $nextNo);
+	$stmt->bindParam(':nextNo2', $nextNo);
+	$stmt->bindParam(':nextNo3', $nextNo);
     $stmt->execute();
 	
-	//Query 6: UPDATE STK BAl
+	//Query 6: INSERT STK BAl
 	$sql = "INSERT INTO stk_bal (prodId, sloc, delivery, sales, balance) 
-			SELECT dd.prodId,'8', dd.qty, -1*dd.qty, -1*dd.qty  FROM delivery_detail dd 
-			WHERE dd.doNo=:nextNo 
-			AND dd.prodId NOT IN (SELECT sb.prodId FROM stk_bal sb WHERE sloc='8' )
-			";
+	SELECT dd.prodId,'8', SUM(dd.qty), SUM(-1*dd.qty), SUM(-1*dd.qty)  FROM delivery_detail dd 
+	WHERE dd.doNo=:nextNo 
+	AND dd.prodId NOT IN (SELECT sb.prodId FROM stk_bal sb WHERE sloc='8' )
+	GROUP BY dd.prodId
+	";
     $stmt = $pdo->prepare($sql);
     $stmt->bindParam(':nextNo', $nextNo);
     $stmt->execute();

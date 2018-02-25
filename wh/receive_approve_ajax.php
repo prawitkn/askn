@@ -36,11 +36,11 @@ try{
 	$toCode = $row['toCode'];
 	$sdNo = $row['sdNo'];
 	
-	//Query 1: GET Next Doc No.
-	$year = date('Y'); $name = 'receive'; $prefix = 'RC'.date('y'); $cur_no=1;
-	$sql = "SELECT prefix, cur_no FROM doc_running WHERE year=? and name=? LIMIT 1";
+	//Query 1: GET Next Doc No. RS-D-YY ; D=department no.
+	$year = date('Y'); $name = 'receive'; $prefix = 'RS'.date('y').$toCode; $cur_no=1;
+	$sql = "SELECT prefix, cur_no FROM doc_running WHERE year=? and name=? and prefix=? LIMIT 1";
 	$stmt = $pdo->prepare($sql);
-	$stmt->execute(array($year, $name));
+	$stmt->execute(array($year, $name, $prefix));
 	$row_count = $stmt->rowCount();	
     if($row_count == 0){
 		$sql = "INSERT INTO doc_running (year, name, prefix, cur_no) VALUES (?,?,?,?)";
@@ -52,7 +52,7 @@ try{
 		$cur_no = (int)$row['cur_no']+1;		
 	}
 	$next_no = '00000'.(string)$cur_no;
-	$noNext = $prefix . substr($next_no, -6);
+	$noNext = $prefix . substr($next_no, -5);
 	
 	//Query 1: UPDATE DATA
 	$sql = "UPDATE receive SET statusCode='P'

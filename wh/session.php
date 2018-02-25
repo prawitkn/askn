@@ -8,10 +8,8 @@
     $is_local = true;
 	if($is_local){
 		include '../db/database_localhost.php';
-		include '../db/database_sqlsrv_localhost.php';
 	}else{
 		include '../db/database.php';
-		include '../db/database_sqlsrv.php';
 	}
     
     $s_userId=$_SESSION['userId'];

@@ -6,6 +6,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
 <?php include 'head.php'; 
+	$is_local = true;
+	if($is_local){
+		include '../db/database_sqlsrv_localhost.php';
+	}else{
+		include '../db/database_sqlsrv.php';
+	}
 $rootPage = 'productionMappingProduct';
 //Check user roll.
 switch($s_userGroupCode){

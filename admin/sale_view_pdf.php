@@ -314,13 +314,157 @@ if( isset($_GET['soNo']) ){
 					//foot document.
 					$html .='</tbody></table>';
 					$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
+					//$pdf->Ln(2);
 					
 					$pdf->CheckBox('stockType', 5, ($hdr['prodStkInStk']==0?false:true), array(), array());
-					$pdf->Cell(40, 5, 'สินค้ามีในสต๊อกทั้งหมด / บางส่วน');
+					$pdf->Cell(45, 5, 'สินค้ามีในสต๊อกทั้งหมด / บางส่วน');
 					$pdf->CheckBox('stockType', 5, ($hdr['prodStkOrder']==0?false:true), array(), array());
 					$pdf->Cell(40, 5, 'สินค้าสั่งผลิต');
 					$pdf->CheckBox('stockType', 5, ($hdr['prodStkOther']==0?false:true), array(), array());
-					$pdf->Cell(40, 5, 'อื่นๆ');
+					$pdf->Cell(20, 5, 'อื่นๆ  (Other)');
+					$pdf->Cell(55, 0, $hdr['prodStkRem'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+					$pdf->Ln(6);
+					
+					//การบรรจุ (Packing) : 	□ มี LOGO AK	□ ไม่มี LOGO AK	□ อื่นๆ (Other) ____________________________
+					$pdf->Cell(25, 5, 'การบรรจุ (Packing) : ', 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
+					$pdf->CheckBox('packingType', 5, ($hdr['packTypeAk']==0?false:true), array(), array());
+					$pdf->Cell(20, 5, 'มี LOGO AK');
+					$pdf->CheckBox('packingType', 5, ($hdr['packTypeNone']==0?false:true), array(), array());
+					$pdf->Cell(40, 5, 'ไม่มี LOGO');
+					$pdf->CheckBox('packingType', 5, ($hdr['packTypeOther']==0?false:true), array(), array());
+					$pdf->Cell(20, 5, 'อื่นๆ  (Other)');
+					$pdf->Cell(55, 0, $hdr['packTypeRem'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+					$pdf->Ln(6);
+					//กรณีส่งในประเทศ (Domestic) วันที่ รับ – ส่ง สินค้า (Delivery Date)
+					
+					/*$pdf->Cell(40, 5, 'กรณีส่งในประเทศ (Domestic)');
+					$pdf->Cell(45, 5, 'วันที่ รับ – ส่ง สินค้า (Delivery Date) : ');
+					$pdf->Cell(30, 5, ($hdr['custLocCode']=='L'?$hdr['deliveryDate']:''), 'B', 0, 'C', 1, 'B', 0, false, 'T', 'C');
+					$pdf->Ln(6);*/
+					
+					//กรณีส่งต่างประเทศ (Export)   วันที่ Load _______________  by   □ LCL	□ FCL : 1x20’ 	□ FCL : 1x40’
+					//$pdf->Cell(40, 5, 'กรณีส่งต่างประเทศ (Export)');
+					$pdf->Cell(40, 5, 'กรณีส่งต่างประเทศ (Export) by ', 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
+					$pdf->CheckBox('shipByType', 5, ($hdr['shipByLcl']==0?false:true), array(), array());
+					$pdf->Cell(5, 5, 'LCL');
+					$pdf->CheckBox('shipByType', 5, ($hdr['shipByFcl']==0?false:true), array(), array());
+					$pdf->Cell(40, 5, 'FCL');
+					$pdf->Cell(20, 5, 'Load Remark : ');
+					$pdf->Cell(60, 0, $hdr['shipByRem'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+					
+					
+					$pdf->Ln(6);
+					
+					$pdf->Cell(25, 5, 'Shipping Options :');
+					$pdf->CheckBox('shipOpt', 5, ($hdr['remCoa']==0?false:true), array(), array());
+					$pdf->Cell(20, 5, 'ขอ COA');
+								
+					$pdf->Cell(23, 5, 'Shipping Mark : ');
+					if($hdr['shippingMarksFilePath']==""){				
+						$pdf->Cell(110, 5, $hdr['shippingMarksName'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
+					}else{	
+						$pdf->Cell(110, 5, $hdr['shippingMarksName'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
+						
+						$image_file = 'images/shippingMarks/'.$hdr['shippingMarksFilePath'];
+						$img = file_get_contents($image_file);
+						// Image example with resizing
+						//image width=150px;
+						//$pdf->Image('@' . $img,xFromTop, yFromTop,'JPG');
+						$pdf->Image('@' . $img,100,165,'JPG');
+					}
+					$pdf->Ln(6);
+					
+					$pdf->Cell(25, 5, '');
+					$pdf->CheckBox('shipOpt', 5, ($hdr['remPalletBand']==0?false:true), array(), array());
+					$pdf->Cell(15, 5, 'PALLET ตีตรา');
+					$pdf->Ln(6);
+
+					$pdf->Cell(25, 5, '');
+					$pdf->CheckBox('shipOpt', 5, ($hdr['remFumigate']==0?false:true), array(), array());
+					$pdf->Cell(15, 5, 'รมยาตู้คอนเทนเนอร์');
+					
+					$pdf->Ln(33);
+								
+					$pdf->Cell(25, 5, 'ราคา (Price) : ');
+					$pdf->CheckBox('priceType', 5, ($hdr['priceOnOrder']==0?false:true), array(), array());
+					$pdf->Cell(20, 5, 'ตามใบสั่งซื้อ');
+					$pdf->CheckBox('priceType', 5, ($hdr['priceOnOther']==0?false:true), array(), array());
+					$pdf->Cell(10, 5, 'อื่นๆ');
+					$pdf->Cell(55, 0, $hdr['priceOnRem'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+					$pdf->Ln(6);
+					
+					$pdf->Cell(25, 5, 'ผู้เสนอขาย (Sales) : ');
+					$pdf->Cell(55, 0, $hdr['smName'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+					$pdf->Ln(6);
+					
+					$remStr = '';
+					/*if($hdr['remCoa']==0){}else{$remStr.=($remStr==""?"":",  ")."ขอ COA";}
+					if($hdr['remPalletBand']==0){}else{$remStr.=($remStr==""?"":",  ")."PALLET ตีตรา";}
+					if($hdr['remFumigate']==0){}else{$remStr.=($remStr==""?"":",  ")."รมยาตู้คอนเทนเนอร์";}*/
+					if($hdr['remark']==""){}else{$remStr.=($remStr==""?"":",  ").$hdr['remark'];}
+					$pdf->Cell(20, 5, 'หมายเหตุ : ');
+					//$remStr=str_replace('\n',"<br/>", $remStr);
+					//$needles = array("<br>", "&#13;", "<br/>", "\n");
+					//$replacement = "<br />";
+					//$remStr = str_replace($needles, $replacement, $remStr);
+					$pdf->MultiCell(150, 0, $remStr, 'B', 0, 'L', 1);
+					//$pdf->MultiCell(30, 0, $remStr, 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
+					$pdf->Ln(9);
+					
+					
+					//a.`remCoa`, a.`remPalletBand`, a.`remFumigate`
+					
+					
+					
+					//box
+					$pdf->Cell(45, 35, '', 1, $ln=0, 'L', 0, '', 0, false, 'T', 'T');
+					$pdf->Cell(65, 35, 'สถานที่ส่งสินค้า (Place to Delivery)', 1, $ln=0, 'L', 0, '', 0, false, 'T', 'T');
+					$pdf->Cell(65, 35, '', 1, $ln=0, 'C', 0, '', 0, false, 'T', 'T');
+					$pdf->Ln(4);
+					
+					//in box
+					$pdf->Cell(20, 5, 'เครดิต (Credit)');
+					$pdf->Cell(10, 5, $hdr['payTypeCreditDays'], 'B', 0, 'C', 1, 'B', 0, false, 'T', 'C');
+					$pdf->Cell(15, 5, 'วัน (Days)');
+					$pdf->Cell(5, 5, '');
+					$pdf->RadioButton('payTypeCode', 5, array(), array(), 'สินค้านำเข้าจากต่างประเทศ', ($hdr['plac2deliCode']=='FACT'?true:false));
+					$pdf->Cell(55, 5, 'ลูกค้ามารับที่โรงงาน AK');
+					$pdf->Cell(35, 5, 'จัดทำโดย (Issue By) : ');
+					$pdf->Cell(30, 5, $hdr['createByName'], 'B', 0, 'C', 1, 'B', 0, false, 'T', 'C');
+					$pdf->Ln(6);
+					
+					$pdf->Cell(5, 5, '');
+					$pdf->RadioButton('payTypeCode', 5, array(), array(), 'สินค้านำเข้าจากต่างประเทศ', ($hdr['payTypeCode']=='CASH'?true:false));
+					$pdf->Cell(40, 5, 'เก็บเงินสด');
+					$pdf->RadioButton('payTypeCode', 5, array(), array(), 'สินค้านำเข้าจากต่างประเทศ', ($hdr['plac2deliCode']=='SEND'?true:false));
+					$pdf->Cell(30, 5, 'ส่งสินค้าจากโรงงาน AK ที่');
+					$pdf->Cell(25, 0, $hdr['plac2deliCodeSendRem'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+					$pdf->Cell(35, 5, 'วันที่ (Date) : ');
+					$pdf->Cell(30, 5, to_thai_datetime_fdt($hdr['createTime']), 'B', 0, 'C', 1, 'B', 0, false, 'T', 'C');
+					$pdf->Ln(6);
+					
+					$pdf->Cell(5, 5, '');
+					$pdf->RadioButton('payTypeCode', 5, array(), array(), 'สินค้านำเข้าจากต่างประเทศ',  ($hdr['payTypeCode']=='CHEQ'?true:false));
+					$pdf->Cell(40, 5, 'เก็บเช็คล่วงหน้า');
+					$pdf->RadioButton('payTypeCode', 5, array(), array(), 'สินค้านำเข้าจากต่างประเทศ', ($hdr['plac2deliCode']=='MAPS'?true:false));
+					$pdf->Cell(55, 5, 'ตามแผนที่');
+					$pdf->Cell(35, 5, 'ตรวจสอบโดย (ผู้ขาย) ');
+					$pdf->Cell(30, 5, $hdr['confirmByName'], 'B', 0, 'C', 1, 'B', 0, false, 'T', 'C');
+					$pdf->Ln(6);
+					
+					$pdf->Cell(5, 5, '');
+					$pdf->RadioButton('payTypeCode', 5, array(), array(), 'สินค้านำเข้าจากต่างประเทศ',  ($hdr['payTypeCode']=='TRAN'?true:false));
+					$pdf->Cell(40, 5, 'ลูกค้าโอนเงินเข้าบัญชี');
+					$pdf->RadioButton('payTypeCode', 5, array(), array(), 'สินค้านำเข้าจากต่างประเทศ', ($hdr['plac2deliCode']=='LOGI'?true:false));
+					$pdf->Cell(10, 5, 'ขนส่ง');
+					$pdf->Cell(45, 0, $hdr['plac2deliCodeLogiRem'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+					$pdf->Cell(35, 5, 'ผู้อนุมัติ (Approved by) ');
+					$pdf->Cell(30, 5, $hdr['approveByName'], 'B', 0, 'C', 1, 'B', 0, false, 'T', 'C');
+					$pdf->Ln(6);
+					
+					$pdf->Cell(5, 5, '');
+					$pdf->Cell(55, 5, '');
+					$pdf->Cell(65, 5, '(เก็บเงินปลายทาง)');
 					$pdf->Ln(6);
 					
 					

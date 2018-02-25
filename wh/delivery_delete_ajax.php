@@ -19,7 +19,13 @@ try{
 		echo json_encode(array('success' => false, 'message' => 'Status incorrect.'));
 		exit();
 	}	
-		
+	
+	//Query 1: DELETE Detail
+	$sql = "DELETE FROM `delivery_prod` WHERE doNo=:doNo";
+	$stmt = $pdo->prepare($sql);
+	$stmt->bindParam(':doNo', $doNo);	
+	$stmt->execute();
+	
 	//Query 1: DELETE Detail
 	$sql = "DELETE FROM `delivery_detail` WHERE doNo=:doNo";
 	$stmt = $pdo->prepare($sql);

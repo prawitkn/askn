@@ -161,7 +161,7 @@ $rootPage="rt";
 					</div>
 					<!--/.table-responsive-->
 					<a name="btn_submit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-save"></i> Submit</a>
-					
+					</form>
 					
 				</div>
 				<!--/box-body-->

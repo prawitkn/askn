@@ -23,7 +23,8 @@ SELECT dh.`doNo`, dh.`soNo`, dh.`ppNo`, oh.`poNo`
 , dh.`deliveryDate`, dh.`remark`
 , dh.`statusCode`, dh.`createTime`, dh.`createById`, dh.`updateTime`, dh.`updateById`
 , dh.`confirmTime`, dh.`confirmById`, dh.`approveTime`, dh.`approveById`
-, ct.code as custCode, ct.name as  custName ,ct.addr1 , ct.addr2 , ct.addr3 , ct.zipcode, ct.tel, ct.fax
+, ct.code as custCode, ct.name as  custName
+, st.code as shipToCode, st.name as  shipToName ,st.addr1 as shipToAddr1, st.addr2 as shipToAddr2, st.addr3 as shipToAddr3, st.zipcode as shipToZipcode, st.tel as shipToTel, st.fax as shipToFax
 , concat(sm.name, '  ', sm.surname) as smFullname 
 , uca.userFullname as createByName, ucf.userFullname as confirmByName, uap.userFullname as approveByName
 FROM delivery_header dh 
@@ -31,6 +32,7 @@ LEFT JOIN prepare pp on pp.ppNo=dh.ppNo
 LEFT JOIN picking pk on pk.pickNo=pp.pickNo 
 LEFT JOIN sale_header oh on pk.soNo=oh.soNo 
 LEFT JOIN customer ct on ct.id=oh.custId
+LEFT JOIN shipto st on st.id=oh.shipToId
 LEFT JOIN salesman sm on sm.id=oh.smId 
 LEFT JOIN wh_user uca on uca.userId=dh.createById					
 LEFT JOIN wh_user ucf on ucf.userId=dh.confirmById
@@ -46,53 +48,31 @@ $doNo = $hdr['doNo'];
 $ppNo = $hdr['ppNo'];
 $soNo = $hdr['soNo'];
 
-
-$sql = "SELECT COUNT(id) as rowCount FROM delivery_detail
-		WHERE doNo=:doNo 
-			";						
-$stmt = $pdo->prepare($sql);	
-$stmt->bindParam(':doNo', $hdr['doNo']);
-$stmt->execute();	
-$rowCount = $stmt->fetch(PDO::FETCH_ASSOC);
-
-
 $sql = "
-SELECT dd.`id`, itm.`prodCodeId`, itm.`qty`
-,pd.code as prodCode, pd.uomCode,dd.remark 
+SELECT dtl.`id`, dtl.`qty`, dtl.remark 
+,pd.code as prodCode, pd.uomCode
 , IFNULL((SELECT SUM(sd.qty) FROM sale_detail sd
-   		INNER JOIN sale_header sh on sh.soNo=sd.soNo
-   		WHERE sh.soNo=pk.soNo
-   		AND sd.prodId=itm.prodCodeId),0) AS sumSalesQty
-, (SELECT IFNULL(SUM(itms.qty),0) FROM delivery_header dhs 
-	INNER JOIN delivery_detail dds on dhs.doNo=dds.doNo
-	INNER JOIN product_item itms ON itms.prodItemId=dds.prodItemId 
-   	INNER JOIN prepare pps on pps.ppNo=dhs.ppNo
-    INNER JOIN picking pks on pks.pickNo=pps.pickNo
-    WHERE pks.soNo=pk.soNo 
-    AND itms.prodCodeId=itm.prodCodeId
-    AND dhs.statusCode='P' ) as sumSentQty
-, IFNULL(SUM(itm.qty),0) as sumDeliveryQty 
-FROM delivery_detail dd
-INNER JOIN delivery_header dh on dh.doNo=dd.doNo 
-LEFT JOIN product_item itm ON itm.prodItemId=dd.prodItemId 
-INNER JOIN prepare pp on pp.ppNo=dh.ppNo
-INNER JOIN picking pk on pk.pickNo=pp.pickNo
-INNER JOIN sale_header oh on oh.soNo=pk.soNo
-LEFT JOIN product pd on pd.id=itm.prodCodeId
-WHERE 1
-AND dh.doNo=:doNo
-GROUP BY dd.`id`, dd.`prodCode`, dd.`qty`, pd.uomCode
+		WHERE sd.soNo=hdr.soNo
+		AND sd.prodId=dtl.prodId),0) AS sumSalesQty
+, (SELECT IFNULL(SUM(dds.qty),0) FROM delivery_header dhs 
+	INNER JOIN delivery_prod dds on dhs.doNo=dds.doNo
+	WHERE dds.prodId=dtl.prodId 
+	AND dhs.statusCode='P' ) as sumSentQty
+, IFNULL(SUM(dtl.qty),0) as sumDeliveryQty 
+FROM delivery_prod dtl
+INNER JOIN delivery_header hdr on hdr.doNo=dtl.doNo 
+LEFT JOIN product pd ON pd.id=dtl.prodId 
+WHERE 1 
+AND hdr.doNo=:doNo
 
-ORDER BY dd.`id`, dd.`prodCode`, dd.`qty`, pd.name 
+ORDER BY dtl.`id`
 ";
 $stmt = $pdo->prepare($sql);	
 $stmt->bindParam(':doNo', $hdr['doNo']);
 $stmt->execute();
+$rowCount=$stmt->rowCount();
 
 		?>
-
-<!-- iCheck for checkboxes and radio inputs -->
-<link rel="stylesheet" href="plugins/iCheck/all.css">
 
 <div class="wrapper">
 
@@ -112,7 +92,7 @@ $stmt->execute();
       </h1>
       <ol class="breadcrumb">
         <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Delivery Order List</a></li>
-		<li><a href="<?=$rootPage;?>_add.php?ppNo=<?=$ppNo;?>"><i class="glyphicon glyphicon-edit"></i>Delivery Order No.<?=$doNo;?></a></li>
+		<li><a href="<?=$rootPage;?>_add.php?doNo=<?=$doNo;?>"><i class="glyphicon glyphicon-edit"></i>Delivery Order No.<?=$doNo;?></a></li>
 		<li><a href="#"><i class="glyphicon glyphicon-list"></i>View</a></li>
       </ol>
     </section>
@@ -138,24 +118,26 @@ $stmt->execute();
 			<input type="hidden" id="doNo" value="<?= $doNo; ?>" />
             <div class="row">				
 					<div class="col-md-3">
-						Salesman : <br/>
-						<b><?= $hdr['smFullname']; ?></b>
-					</div><!-- /.col-md-3-->	
-					<div class="col-md-3">
 						Customer : <br/>
 						<b><?= $hdr['custName']; ?></b><br/>
-						<?= $hdr['addr1']; ?><br/>
-						<?= $hdr['addr2']; ?><br/>
-						<?= $hdr['addr3']; ?>
+						Salesman : <br/>
+						<b><?= $hdr['smFullname'];?></b>
+					</div><!-- /.col-md-3-->	
+					<div class="col-md-3">
+						Ship To : <br/>
+						<b><?= $hdr['shipToName']; ?><br/>
+						<?= $hdr['shipToAddr1']; ?><br/>
+						<?= $hdr['shipToAddr2']; ?><br/>
+						<?= $hdr['shipToAddr3'].' '.$hdr['shipToZipcode']; ?></b>
 					</div><!-- /.col-md-3-->	
 					<div class="col-md-3">
 						Delivery Date : <b><?= $hdr['deliveryDate']; ?></b><br/>
 						Packing No : <b><?= $hdr['ppNo']; ?></b><br/><input type="hidden" id="ppNo" value="<?=$hdr['ppNo'];?>" />		
 						SO No : <b><?= $hdr['soNo']; ?></b><br/><input type="hidden" id="soNo" value="<?=$hdr['soNo'];?>" />		
-						PO No : <b><?= $hdr['poNo']; ?></b><br/>		
+						PO No : <b><?= $hdr['poNo']; ?></b><br/>
 					</div>	<!-- /.col-md-3-->	
-					<div class="col-md-3">
-						
+					<div class="col-md-3">								
+						Remark : <b><?= $hdr['remark']; ?></b>
 					</div>	<!-- /.col-md-3-->	
 			</div> <!-- row add items -->
 		
@@ -165,7 +147,7 @@ $stmt->execute();
 				<div class="box-tools pull-right">
 				  <!-- Buttons, labels, and many other things can be placed here! -->
 				  <!-- Here is a label for example -->
-				  <span class="label label-primary">Total <?php echo $rowCount['rowCount']; ?> items</span>
+				  <span class="label label-primary">Total <?php echo $rowCount; ?> items</span>
 				</div><!-- /.box-tools -->
 				</div><!-- /.box-header -->
 				<div class="box-body">
@@ -179,7 +161,16 @@ $stmt->execute();
 							<th>Remark</th>
 							<th style="text-align: right;">Remain Qty</th>
 						</tr>
-						<?php $remainTotal=0; $row_no=1; while ($row = $stmt->fetch()) { ?>						
+						<?php $remainTotal=0; $row_no=1; while ($row = $stmt->fetch()) {
+						$remarinQty=0;
+						if($hdr['statusCode']=='P'){
+							$remarinQty=$row['sumSalesQty']-$row['sumSentQty'];
+							$remainTotal+=abs($remarinQty);
+						}else{
+							$remarinQty=$row['sumSalesQty']-($row['sumSentQty']+$row['sumDeliveryQty']);
+							$remainTotal+=abs($remarinQty);
+						}
+						?>						
 						<tr>
 							<td style="text-align: center;"><?= $row_no; ?></td>
 							<td><?= $row['prodCode']; ?></td>
@@ -187,7 +178,7 @@ $stmt->execute();
 							<td style="text-align: right;"><?= number_format($row['sumSentQty'],0,'.',',').'&nbsp;'.$row['uomCode']; ?></td>
 							<td style="text-align: right; color: blue; font-weight: bold;"><?= number_format($row['sumDeliveryQty'],0,'.',',').'&nbsp;'.$row['uomCode']; ?></td>
 							<td><?= $row['remark']; ?></td>
-							<td style="text-align: right; color: red;"><?= number_format(($row['sumSalesQty']-($row['sumSentQty']+$row['sumDeliveryQty'])),0,'.',',').'&nbsp;'.$row['uomCode']; ?></td>
+							<td style="text-align: right; color: red;"><?= number_format($remarinQty,0,'.',',').'&nbsp;'.$row['uomCode']; ?></td>
 						</tr>
 						<?php $row_no+=1; } ?>
 					</table>
@@ -197,32 +188,16 @@ $stmt->execute();
 	</div><!-- /.row add items -->
 		
 	<div class="row">
-		<div class="col-md-4">
-					
+		<div class="col-md-6">
+			Create By : <b><?php echo $hdr['createByName']; ?></b></br>
+			Create Time : <?php echo to_thai_datetime_fdt($hdr['createTime']); ?></br>
+			Confirm By : <b><?php echo $hdr['confirmByName']; ?></b></br>
+			Confirm Time : <?php echo to_thai_datetime_fdt($hdr['confirmTime']); ?>	
 		</div>
-		<div class="col-md-4">
-					
-		</div>
-		<div class="col-md-4">
-			<div class="row">
-				<div class="col-md-4">
-					Create By : </br>
-					Create Time : </br>
-					Confirm By : </br>
-					Confirm Time : </br>
-					Approve By : </br>
-					Approve Time : 		
-				</div>
-				<div class="col-md-8">
-					<label class=""><?php echo $hdr['createByName']; ?></label></br>
-					<label class=""><?php echo to_thai_datetime_fdt($hdr['createTime']); ?></label></br>
-					<label class=""><?php echo $hdr['confirmByName']; ?></label></br>
-					<label class=""><?php echo to_thai_datetime_fdt($hdr['confirmTime']); ?></label></br>
-					<label class=""><?php echo $hdr['approveByName']; ?></label></br>
-					<label class=""><?php echo to_thai_datetime_fdt($hdr['approveTime']); ?></label>	
-				</div>				
-			</div>			
-		</div>
+		<div class="col-md-6">
+			Approve By : <b><?php echo $hdr['approveByName']; ?></b></br>
+			Approve Time : <?php echo to_thai_datetime_fdt($hdr['approveTime']); ?>	
+		</div>	
 	</div>
 	<!-- /.row -->
 	

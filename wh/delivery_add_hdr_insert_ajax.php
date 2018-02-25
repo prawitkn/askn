@@ -49,6 +49,19 @@ try{
 	$stmt->bindParam(':ppNo', $ppNo);		
 	$stmt->execute();
 	
+	//`prodId`, `itemCount`, `qty`, `remark`, `doNo`
+	$sql = "INSERT INTO `delivery_prod`(`prodId`, `itemCount`, `qty`, `remark`, `doNo`) 	 	
+	SELECT itm.prodCodeId, COUNT(*), SUM(itm.qty), '',:doNo 
+	FROM prepare_detail pDtl 
+	LEFT JOIN product_item itm ON itm.prodItemId=pDtl.prodItemId 
+	WHERE ppNo=:ppNo 
+	GROUP BY pDtl.prodId
+	";
+	$stmt = $pdo->prepare($sql);
+	$stmt->bindParam(':doNo', $doNo);
+	$stmt->bindParam(':ppNo', $ppNo);		
+	$stmt->execute();
+	
 	//We've got this far without an exception, so commit the changes.
     $pdo->commit();
 			

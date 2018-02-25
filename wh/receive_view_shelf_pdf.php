@@ -3,6 +3,37 @@
 include('session.php');
 //include('prints_function.php');
 //include('inc_helper.php');
+function to_thai_date($eng_date){
+	if(strlen($eng_date) != 10){
+		return null;
+	}else{
+		$new_date = explode('-', $eng_date);
+
+		$new_y = (int) $new_date[0] + 543;
+		$new_m = $new_date[1];
+		$new_d = $new_date[2];
+
+		$thai_date = $new_d . '/' . $new_m . '/' . $new_y;
+
+		return $thai_date;
+	}
+}
+function to_thai_datetime_fdt($eng_date){
+	//if(strlen($eng_date) != 10){
+	//    return null;
+	//}else{
+		$new_datetime = explode(' ', $eng_date);
+		$new_date = explode('-', $new_datetime[0]);
+
+		$new_y = (int) $new_date[0] + 543;
+		$new_m = $new_date[1];
+		$new_d = $new_date[2];
+
+		$thai_date = $new_d . '/' . $new_m . '/' . $new_y . ' ' . substr($new_datetime[1],0,5);
+
+		return $thai_date;
+	//}
+}
 
 // Include the main TCPDF library (search for installation path).
 require_once('../tcpdf/tcpdf.php');
@@ -158,7 +189,7 @@ if( isset($_GET['rcNo']) ){
 									<th style="font-weight: bold; text-align: right;">From :</th>
 									<th>'.$hdr['fromCode'].'-'.$hdr['fromName'].'</th>									
 									<th style="font-weight: bold; text-align: right;">Receive Date :</th>
-									<th>'.$hdr['receiveDate'].'</th>
+									<th>'.to_thai_date($hdr['receiveDate']).'</th>
 								</tr>
 								<tr>
 									<th style="font-weight: bold;">Ref. SD No. :</th>
@@ -213,15 +244,13 @@ if( isset($_GET['rcNo']) ){
 					</tr>';
 					$html .='<tr>
 						<td colspan="2"><br/><br/>
-							Create by ..............................................................<br/>
-							<label style="padding-left: 20px;">'.$hdr['createByName'].' / <small>'.$hdr['createTime'].'</small></label><br/>
-							Verify by ..............................................................<br/>
-							<label style="padding-left: 20px;">'.$hdr['confirmByName'].' / <small>'.$hdr['confirmTime'].'</small></label><br/>
+							ผู้จัดทำ .....'.$hdr['createByName'].'.....<br/>
+							วันที่จัดทำ .....'.to_thai_datetime_fdt($hdr['createTime']).'<br/>
+							ผู้รับ .....'.$hdr['confirmByName'].'.....<br/>
 						</td>
 						
 						<td colspan="6" style="text-align: left;"><br/><br/>							
-							Approve by ..............................................................<br/>
-							<label style="padding-left: 20px;">'.$hdr['approveByName'].' / <small>'.$hdr['approveTime'].'</small></label><br/>
+							ผู้อนุมัติ .....'.$hdr['approveByName'].'.....<br/>
 						</td>
 						
 					</tr>';
