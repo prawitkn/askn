@@ -63,7 +63,7 @@ include 'head.php';
 						<div class="row col-md-12">
 							<div class="form-group col-md-6">
 								<label for="code">Code</label>                            
-								<input id="code" type="text" class="form-control col-md-6" name="code" value="<?= $row['code']; ?>" data-smk-msg="Require Group" disabled required>							
+								<input id="code" type="text" class="form-control col-md-6" name="code" value="<?= $row['code']; ?>" data-smk-msg="Require Group"  required>							
 							</div>
 						</div>
 						<div class="row col-md-12">

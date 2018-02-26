@@ -31,7 +31,7 @@ try{
 	SELECT *, now(), :s_userId FROM customer WHERE id=:id ";
 	$stmt = $pdo->prepare($sql);
 	$stmt->bindParam(':s_userId', $s_userId); $stmt->bindParam(':id', $id); 
-	$stmt->exceute();
+	$stmt->execute();
 	
 	//update 
     $sql = "UPDATE `customer` SET  `code`=:code, `name`=:name 
@@ -55,7 +55,7 @@ try{
 	$stmt->bindParam(':smId', $smId); $stmt->bindParam(':smAdmId', $smAdmId); 
 	$stmt->bindParam(':statusCode', $statusCode);
 	$stmt->bindParam(':id', $id);
-	$stmt->exceute();
+	$stmt->execute();
 	
 	//Commit
 	$pdo->commit();
