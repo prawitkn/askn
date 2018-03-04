@@ -33,6 +33,12 @@
 		<li class="header">Core Master Menu</li>
 		<?php switch($s_userGroupCode){ case 'it' : ?>			
 			<!-- Optionally, you can add icons to the links -->
+			<?php if($s_userFullname=="Mr.Prawit  Khamnet"){ ?>
+				<li><a href="shelf_x.php"><i class="glyphicon glyphicon-wrench"></i> <span>Shelf Column</span></a></li>	
+				<li><a href="shelf_y.php"><i class="glyphicon glyphicon-wrench"></i> <span>Shelf Row</span></a></li>	
+				<li><a href="shelf_z.php"><i class="glyphicon glyphicon-wrench"></i> <span>Shelf Rack</span></a></li>	
+				<li><a href="shelf.php"><i class="glyphicon glyphicon-wrench"></i> <span>Shelf</span></a></li>	
+			<?php } ?>
 			<li><a href="user.php"><i class="fa fa-male"></i> <span>User</span></a></li>		
 			<li><a href="userGroup.php"><i class="fa fa-list-ol"></i> <span>User Group</span></a></li>
 			<li><a href="userDept.php"><i class="fa fa-list-ol"></i> <span>User Prod. Dept.</span></a></li>
