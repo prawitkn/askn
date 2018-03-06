@@ -88,55 +88,17 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			</div>
 			<!-- /.box-header -->
 			
-			 <?php  
-			 $sql = "SELECT `id`, `code`, `name`
-			FROM wh_sloc_x 
-			WHERE 1=1
-			AND statusCode='A' 
+			 <?php
+			$sql = "SELECT ws.`sloc`, ws.`X`, ws.`Y`, ws.`Z`, ws.`code`, ws.`name`, ws.`statusCode`,
+			(SELECT count(*) from wh_sloc_map_item smi WHERE smi.slocCode=ws.code) AS itemCount
+			FROM wh_sloc ws
+			GROUP BY ws.`sloc`, ws.`X`, ws.`Y`, ws.`Z`, ws.`code`, ws.`name`, ws.`statusCode`
+			ORDER BY sloc, x, cast(y as int), cast(z as int)
 						";						
 			$stmt = $pdo->prepare($sql);	
 			//$stmt->bindParam(':rcNo', $hdr['rcNo']);
 			$stmt->execute();	
-			echo '<ul class="nav nav-tabs">';
-			$irow=0; while ($itm = $stmt->fetch()) { 
-				echo '	  <li class="'.($irow==0?'active':'').'"><a data-toggle="tab" href="#'.$itm['code'].'">'.$itm['code'].'</a></li>';
-				$irow++;
-			}//end loop column name 
-			echo '</ul>';
-			
-			 $sql = "SELECT ws.xId, ws.yId, ws.zId, ws.code
-			, wx.code as xCode, wy.code as yCode, wz.code as zCode 
-			,(SELECT count(*) from wh_shelf_map_item smi WHERE smi.shelfId=ws.id) AS itemCount
-			FROM wh_shelf ws
-			INNER JOIN wh_sloc_x wx ON wx.id=ws.xId
-			INNER JOIN wh_sloc_y wy ON wy.id=ws.yId
-			INNER JOIN wh_sloc_z wz ON wz.id=ws.zId 
-			
-			GROUP BY ws.xId, ws.yId, ws.zId, ws.code
-			, wx.code , wy.code , wz.code 
-			ORDER BY ws.xId, ws.yId, ws.zId
-						";						
-			$stmt = $pdo->prepare($sql);	
-			//$stmt->bindParam(':rcNo', $hdr['rcNo']);
-			$stmt->execute();	
-			echo '<div class="tab-content">';
-			$tmpXCode=''; $irow=0; while ($itm = $stmt->fetch()) { 
-				if($tmpXCode<>$itm['xCode']){
-					if($irow<>0){
-						echo '</div>';
-					}
-					echo '<div id="'.$itm['xId'].'" class="tab-pane fade in '.($irow<>0?'':' active ').'">';
-				}
-				switch($itm['itemCount']){
-					case 0 : ?><a class="btn btn-success btn_set_shelf" data-code="<?=$itm['id'];?>" ><?=$itm['code'].' ['.$itm['itemCount'].']';?></a><?php break;
-					default : ?><a class="btn btn-danger btn_set_shelf" data-code="<?=$itm['id'];?>" ><?=$itm['code'].' ['.$itm['itemCount'].']';?></a><?php break;
-				}
-				$irow++;
-			}//end loop column name 
-			echo '</div>';
-			echo '</div>';
-			
-			
+			$rowCount = $stmt->rowCount();
 			?>
 			<div class="box-body">
 				<div class="row col-md-12">

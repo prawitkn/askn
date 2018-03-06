@@ -225,6 +225,7 @@ $(document).ready(function() {
 		if(zCode==null){zCode=""}
 		$('#code').val(xCode+yCode+'-'+zCode);	
 		$('#name').val(xCode+yCode+'-'+zCode);	
+		$('#hidCode').val(xCode+yCode+'-'+zCode);	
 		e.preventDefault();
 	});
 	$('#yId').on("change", function(e) {
@@ -236,6 +237,7 @@ $(document).ready(function() {
 		if(zCode==null){zCode=""}
 		$('#code').val(xCode+yCode+'-'+zCode);	
 		$('#name').val(xCode+yCode+'-'+zCode);	
+		$('#hidCode').val(xCode+yCode+'-'+zCode);	
 		e.preventDefault();
 	});
 	$('#zId').on("change", function(e) {
@@ -247,6 +249,7 @@ $(document).ready(function() {
 		if(zCode==null){zCode=""}
 		$('#code').val(xCode+yCode+'-'+zCode);	
 		$('#name').val(xCode+yCode+'-'+zCode);	
+		$('#hidCode').val(xCode+yCode+'-'+zCode);	
 		e.preventDefault();
 	});
 	//form.submit

@@ -68,16 +68,68 @@ $row=$stmt->fetch();
                     <form id="form1" method="post" class="form" enctype="multipart/form-data" validate>
 					<input type="hidden" name="action" value="edit" />				
 					<input type="hidden" name="id" value="<?=$row['id'];?>" />	
-					<div class="col-md-6">	
+					<div class="col-md-6">
 						<div class="form-group">
-                            <label for="code" >code</label>
+							<label for="xId">Column</label>
+							<select id="xId" name="xId" class="form-control" data-code=""  data-smk-msg="Require Column" required >
+								<option value=""> -- Select -- </option>
+								<?php
+								$sql = "SELECT `id`, `code`, `name`, `statusCode`  FROM `wh_sloc_x` WHERE statusCode='A' ";							
+								$stmt = $pdo->prepare($sql);		
+								$stmt->execute();
+								while($opt = $stmt->fetch()){
+									$selected=($row['xId']==$opt['id']?' selected ':'');
+									echo '<option value="'.$opt['id'].'" 
+										data-code="'.$opt['code'].'" '.$selected.' 
+										 >'.$opt['code'].'</option>';
+								}
+								?>
+							</select>
+						</div>	
+						<div class="form-group">
+							<label for="yId">Row</label>
+							<select id="yId" name="yId" class="form-control" data-code="" data-smk-msg="Require Row" required >
+								<option value=""> -- Select -- </option>
+								<?php
+								$sql = "SELECT `id`, `code`, `name`, `statusCode`  FROM `wh_sloc_y` WHERE statusCode='A' ";							
+								$stmt = $pdo->prepare($sql);		
+								$stmt->execute();
+								while($opt = $stmt->fetch()){
+									$selected=($row['yId']==$opt['id']?' selected ':'');
+									echo '<option value="'.$opt['id'].'" 
+										data-code="'.$opt['code'].'" '.$selected.' 
+										 >'.$opt['code'].'</option>';
+								}
+								?>
+							</select>
+						</div>	
+						<div class="form-group">
+							<label for="zId">Rack</label>
+							<select id="zId" name="zId" class="form-control" data-code="" data-smk-msg="Require Rack" required >
+								<option value=""> -- Select -- </option>
+								<?php
+								$sql = "SELECT `id`, `code`, `name`, `statusCode`  FROM `wh_sloc_z` WHERE statusCode='A' ";							
+								$stmt = $pdo->prepare($sql);		
+								$stmt->execute();
+								while($opt = $stmt->fetch()){
+									$selected=($row['zId']==$opt['id']?' selected ':'');
+									echo '<option value="'.$opt['id'].'" 
+										data-code="'.$opt['code'].'" '.$selected.' 
+										 >'.$opt['code'].'</option>';
+								}
+								?>
+							</select>
+						</div>	
+						<div class="form-group">
+                            <label for="code" >Code</label>
 							<input type="hidden" id="hidCode" name="hidCode" class="form-control" value="<?=$row['code'];?>" >
-                            <input type="code" id="code" name="code" class="form-control" value="<?=$row['code'];?>" data-smk-msg="Require title" required>
+                            <input type="text" id="code" name="code" class="form-control" value="<?=$row['code'];?>" data-smk-msg="Require code" required disabled>
                         </div>
 						<div class="form-group">
                             <label for="name" >name</label>
-                            <input type="text" id="name" name="name" class="form-control" value="<?=$row['name'];?>" data-smk-msg="Require name" required>
+                            <input type="text" id="name" name="name" class="form-control" value="<?=$row['name'];?>" data-smk-msg="Require name" required >
                         </div>
+						
 						<div class="form-group">
                             <label for="statusCode">Status</label>
 							<input type="radio" name="statusCode" value="A" <?php echo ($row['statusCode']=='A'?' checked ':'');?> >Active
@@ -194,6 +246,7 @@ $(document).ready(function() {
 		if(zCode==null){zCode=""}
 		$('#code').val(xCode+yCode+'-'+zCode);	
 		$('#name').val(xCode+yCode+'-'+zCode);	
+		$('#hidCode').val(xCode+yCode+'-'+zCode);	
 		e.preventDefault();
 	});
 	$('#yId').on("change", function(e) {
@@ -205,6 +258,7 @@ $(document).ready(function() {
 		if(zCode==null){zCode=""}
 		$('#code').val(xCode+yCode+'-'+zCode);	
 		$('#name').val(xCode+yCode+'-'+zCode);	
+		$('#hidCode').val(xCode+yCode+'-'+zCode);	
 		e.preventDefault();
 	});
 	$('#zId').on("change", function(e) {
@@ -216,6 +270,7 @@ $(document).ready(function() {
 		if(zCode==null){zCode=""}
 		$('#code').val(xCode+yCode+'-'+zCode);	
 		$('#name').val(xCode+yCode+'-'+zCode);	
+		$('#hidCode').val(xCode+yCode+'-'+zCode);	
 		e.preventDefault();
 	});
 });

@@ -75,15 +75,14 @@ function to_mysql_date($thai_date){
 				  exit;    
 				}   
 	
-				$sql = "INSERT INTO `".$tb."` (`xId`,`yId`,`zId`, `code`, `name`, `statusCode`, `createTime`, `createById`)
-				 VALUES (:xId,:yId,:zId,:code,:name,'A',NOW(),:s_userId)";
+				$sql = "INSERT INTO `".$tb."` (`xId`,`yId`,`zId`, `code`, `name`, `statusCode`)
+				 VALUES (:xId,:yId,:zId,:code,:name,'A')";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':xId', $xId);				
 				$stmt->bindParam(':yId', $yId);
 				$stmt->bindParam(':zId', $zId);
 				$stmt->bindParam(':code', $code);
 				$stmt->bindParam(':name', $name);
-				$stmt->bindParam(':s_userId', $s_userId);
 				if ($stmt->execute()) {
 					header('Content-Type: application/json');
 					echo json_encode(array('success' => true, 'message' => 'Data Inserted Complete.'));
