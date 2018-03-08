@@ -190,42 +190,44 @@ if( isset($_GET['doNo']) ){
 		if($iRow==0){
 			$pdf->AddPage('L','A5');
 		
-		
-			$pdf->Cell(125, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Cell(50, 0, to_thai_date($hdr['deliveryDate']), 0, 0, 'L', 0, '', 0, false, 'T', 'B');
 			$pdf->Ln(6);
+			$pdf->Cell(150, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Cell(50, 0, to_thai_date($hdr['deliveryDate']), 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Ln(12);
 			
-			$pdf->Cell(50, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Cell(50, 0, $hdr['custName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Cell(20, 0, $hdr['custCode'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Cell(10, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Cell(75, 0, $hdr['custName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Cell(5, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Cell(50, 0, $hdr['custCode'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
 			$custOrder = trim($hdr['soNo']);
 			$custOrder=($hdr['poNo']<>""?'/'.$hdr['poNo']:'');
 			$pdf->Cell(50, 0, $custOrder, 0, 0, 'L', 0, '', 0, false, 'T', 'B');
 			$pdf->Ln(6);
-			
-			$pdf->Cell(50, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Cell(100, 0, $hdr['shipToAddr1'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Cell(50, 0, $hdr['smName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+					
+			$pdf->Cell(10, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Cell(120, 0, $hdr['shipToAddr1'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');				
+			$pdf->Cell(30, 0, $hdr['smName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
 			$pdf->Cell(50, 0, $hdr['smCode'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
 			$pdf->Ln(3);
 			
-			$pdf->Cell(50, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+			$pdf->Cell(10, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
 			$pdf->Cell(100, 0, $hdr['shipToAddr2'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Ln(6);
+			
+			$pdf->Ln(15);
 		}//end if iRow=0					
 		
-		$pdf->Cell(10, 0, $row_no, 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-		$pdf->Cell(80, 0, $row['prodName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-		$pdf->Cell(50, 0, $row['prodCode'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-		$pdf->Cell(20, 0, $row['sumSalesQty'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-		$pdf->Cell(20, 0, $row['sumDeliveryQty'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-		$pdf->Cell(50, 0, $row['remark'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+		$pdf->Cell(5, 0, $row_no, 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+		$pdf->Cell(60, 0, $row['prodName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+		$pdf->Cell(25, 0, $row['prodCode'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+		$pdf->Cell(25, 0, $row['sumSalesQty'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+		$pdf->Cell(25, 0, $row['sumDeliveryQty'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
+		$pdf->Cell(30, 0, $row['remark'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
 		$pdf->Ln(6);
 		
 		$row_no+=1;
 		$iRow+=1;
 		
-		if($iRow==10){
+		if($iRow==9){
 			//foot document.
 			$pdf->Cell(50, 0, $hdr['confirmByName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
 			$pdf->Cell(50, 0, $hdr['approveByName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');

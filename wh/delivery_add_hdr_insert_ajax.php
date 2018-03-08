@@ -4,7 +4,7 @@ include 'session.php';
 	
 try{
 	  
-	$doNo = 'DO-'.substr(str_shuffle(MD5(microtime())), 0, 8);
+	$doNo = 'DO-'.substr(str_shuffle(MD5(microtime())), 0, 7);
 	$ppNo = $_POST['ppNo'];
 	$deliveryDate = $_POST['deliveryDate'];
 	$remark = $_POST['remark'];

@@ -9,6 +9,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <html>
 <?php include 'head.php'; 
 $rootPage = 'delivery';
+$stmt="";
 if(isset($_GET['doNo'])){
 	$sql = "SELECT dh.`doNo`, dh.`soNo`, dh.`ppNo`, dh.`custId`, dh.`shipToId`, dh.`smId`, dh.`deliveryDate`, dh.`driver`, dh.`refInvNo`, dh.`remark`, dh.`statusCode`
 	, dh.`createTime`, dh.`createById`, dh.`updateTime`, dh.`updateById`, dh.`confirmTime`, dh.`confirmById`, dh.`approveTime`, dh.`approveById`

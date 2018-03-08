@@ -732,8 +732,26 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	</div>
 	<!--content-wrapper-->
 
+  </div>
+  <!-- /.content-wrapper -->
+
+  <!-- Main Footer -->
+  <?php include'footer.php'; ?>
+  
+  
 </div>
-<!--warpper-->
+<!-- ./wrapper -->
+
+<!-- REQUIRED JS SCRIPTS -->
+
+<!-- jQuery 2.2.3 -->
+<script src="plugins/jQuery/jquery-2.2.3.min.js"></script>
+<!-- Bootstrap 3.3.6 -->
+<script src="bootstrap/js/bootstrap.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/app.min.js"></script>
+<!-- smoke validate -->
+<script src="bootstrap/js/smoke.min.js"></script>
 
 </body>
 </html>
