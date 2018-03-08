@@ -15,7 +15,7 @@ $tb = "wh_shelf";
 
 //Check user roll.
 switch($s_userGroupCode){
-	case 'it' : case 'admin' :
+	case 'it' : case 'admin' :  case 'whOff' : case 'whSup' : 
 		break;
 	default : 
 		header('Location: access_denied.php');

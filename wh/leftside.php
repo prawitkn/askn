@@ -36,12 +36,14 @@
 			<?php if($s_userFullname=="Mr.Prawit  Khamnet"){ ?>
 				<li><a href="shelf_x.php"><i class="glyphicon glyphicon-wrench"></i> <span>Shelf Column</span></a></li>	
 				<li><a href="shelf_y.php"><i class="glyphicon glyphicon-wrench"></i> <span>Shelf Row</span></a></li>	
-				<li><a href="shelf_z.php"><i class="glyphicon glyphicon-wrench"></i> <span>Shelf Rack</span></a></li>	
-				<li><a href="shelf.php"><i class="glyphicon glyphicon-wrench"></i> <span>Shelf</span></a></li>	
-			<?php } ?>
+				<li><a href="shelf_z.php"><i class="glyphicon glyphicon-wrench"></i> <span>Shelf Rack</span></a></li>					
+			<?php } ?>    
 			<li><a href="user.php"><i class="fa fa-male"></i> <span>User</span></a></li>		
 			<li><a href="userGroup.php"><i class="fa fa-list-ol"></i> <span>User Group</span></a></li>
 			<li><a href="userDept.php"><i class="fa fa-list-ol"></i> <span>User Prod. Dept.</span></a></li>
+		<?php } ?>
+		<?php switch($s_userGroupCode){ case 'it' : case 'whOff' : case 'whSup' : ?>
+			<li><a href="shelf.php"><i class="glyphicon glyphicon-wrench"></i> <span>Shelf</span></a></li>	
 		<?php } ?>
 		<?php switch($s_userGroupCode){ case 'it' : case 'tech' : ?>
 			<li><a href="productionMappingProduct.php"><i class="fa fa-list-ol"></i> <span>Production Prod. Mapping</span></a></li>		
@@ -70,10 +72,10 @@
 			<li class="header">Report</li>
 			<li><a href="rpt_so_by_deli.php"><i class="fa fa-list-alt"></i> <span>Sales Order by Delivery Date Report</span></a></li>			
 			<li><a href="rpt_prod_stk.php"><i class="fa fa-list-alt"></i> <span>Stock Report</span></a></li>
-			<li><a href="#"><i class="fa fa-list-alt"></i> <span>Sending Report</span></a></li>
-			<li><a href="#"><i class="fa fa-list-alt"></i> <span>Receiving Report</span></a></li>
+			<li><a href="report_sending.php"><i class="fa fa-list-alt"></i> <span>Sending Report</span></a></li>
+			<li><a href="report_receiving.php"><i class="fa fa-list-alt"></i> <span>Receiving Report</span></a></li>
 			<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whOff' : case 'whSup' : ?>
-			<li><a href="#"><i class="fa fa-list-alt"></i> <span>Delivery Report</span></a></li>
+			<li><a href="report_delivery.php"><i class="fa fa-list-alt"></i> <span>Delivery Report</span></a></li>
 			<?php break; default : } ?>	
 		<?php break; default : } ?>						
       </ul>

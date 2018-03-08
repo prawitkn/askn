@@ -14,7 +14,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <!-- Main Header -->
   <?php include 'header.php';   
 	
-	$rootPage="report_sending";
+	$rootPage="report_delivery";
   ?>  
   
   <!-- Left side column. contains the logo and sidebar -->
@@ -25,8 +25,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- Content Header (Page header) -->
     <section class="content-header">
       <h1>
-		Sending Report
-        <small>Sending Report</small>
+		Delivery Report
+        <small>Delivery Report</small>
       </h1>
       <ol class="breadcrumb">
         <li><a href="index.php"><i class="fa fa-dashboard"></i> Main</a></li>
@@ -40,7 +40,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <!-- Your Page Content Here -->
     <div class="box box-primary">
         <div class="box-header with-border">
-        <h3 class="box-title">Sending Report</h3>		
+        <h3 class="box-title">Delivery Report</h3>		
 		
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
@@ -55,20 +55,17 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				
 				
 $sql = "
-SELECT COUNT(hdr.sdNo) AS countTotal
-FROM `send` hdr 
-WHERE 1 ";
-if($dateFrom<>""){ $sql .= " AND hdr.sendDate>='$dateFromYmd' ";	}
-if($dateTo<>""){ $sql .= " AND hdr.sendDate<='$dateToYmd' ";	}
-switch($s_userGroupCode){ 
-	case 'whOff' :  case 'whSup' : 
-	case 'pdOff' :  case 'pdSup' :
-			$sql .= "AND hdr.fromCode='".$s_userDeptCode."' ";
-		break;
-	default : //case 'it' : case 'admin' : 
-  }
-$sql .= "AND hdr.statusCode='P' 
-";				
+SELECT COUNT(hdr.doNo) AS countTotal
+FROM `delivery_header` hdr
+left join customer cm on cm.id=hdr.custId 
+left join salesman sm on sm.id=hdr.smId
+left join wh_user d on hdr.createById=d.userId
+WHERE 1 
+AND hdr.statusCode='P' ";
+if($dateFrom<>""){ $sql .= " AND hdr.deliveryDate>='$dateFromYmd' ";	}
+if($dateTo<>""){ $sql .= " AND hdr.deliveryDate<='$dateToYmd' ";	}
+				
+
                 $result = mysqli_query($link, $sql);
                 $countTotal = mysqli_fetch_assoc($result);
 				
@@ -114,31 +111,23 @@ $sql .= "AND hdr.statusCode='P'
                 </div>    
 			</div>
            <?php
- $sql = "SELECT hdr.`sdNo`, hdr.`refNo`, hdr.`sendDate`, hdr.`fromCode`, hdr.`toCode`, hdr.`remark`, hdr.`statusCode`
-, hdr.`createTime`, hdr.`createByID`, hdr.`updateTime`, hdr.`updateById`, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById`
-, fsl.name as fromName, tsl.name as toName 
-, cu.userFullname as createByName, fu.userFullname as confirmByName, pu.userFullname as approveByName 
-FROM `send` hdr
-LEFT JOIN sloc fsl on hdr.fromCode=fsl.code
-LEFT JOIN sloc tsl on hdr.toCode=tsl.code
-LEFT JOIN user cu on hdr.createByID=cu.userId 
-LEFT JOIN user fu on hdr.confirmById=fu.userId
-LEFT JOIN user pu on hdr.approveById=pu.userId  
-WHERE 1 ";
-switch($s_userGroupCode){ 
-	case 'whOff' :  case 'whSup' : 
-	case 'pdOff' :  case 'pdSup' :
-			$sql .= "AND hdr.fromCode='".$s_userDeptCode."' ";
-		break;
-	default : //case 'it' : case 'admin' : 
-  }
-if($dateFrom<>""){ $sql .= " AND hdr.sendDate>='$dateFromYmd' ";	}
-if($dateTo<>""){ $sql .= " AND hdr.sendDate<='$dateToYmd' ";	}				  
-$sql .= "AND hdr.statusCode='P' 
-
-ORDER BY hdr.createTime DESC
+$sql = "
+SELECT hdr.`doNo`, hdr.`soNo`, hdr.`ppNo`, hdr.`deliveryDate`, hdr.`remark`, hdr.`statusCode`, hdr.`createTime`, hdr.`createById`
+,cm.code as custCode , cm.name as custName, cm.addr1 , cm.addr2 , cm.addr3 , cm.zipcode, cm.tel, cm.fax
+,sm.code as smCode, sm.name as smName
+,d.userFullname as createByName
+FROM `delivery_header` hdr
+left join customer cm on cm.id=hdr.custId 
+left join salesman sm on sm.id=hdr.smId
+left join wh_user d on hdr.createById=d.userId
+WHERE 1 
+AND hdr.statusCode='P' ";
+if($dateFrom<>""){ $sql .= " AND hdr.deliveryDate>='$dateFromYmd' ";	}
+if($dateTo<>""){ $sql .= " AND hdr.deliveryDate<='$dateToYmd' ";	}
+$sql .="ORDER BY hdr.createTime DESC
 LIMIT $start, $rows 
 ";
+				
 //echo $sql;
 $result = mysqli_query($link, $sql);	   
                          
@@ -149,27 +138,33 @@ $result = mysqli_query($link, $sql);
 				<thead>
 				<tr>
 					<th>No.</th>
-					<th>Sending No.</th>
-					<th>From</th>
-					<th>To</th>
-					<th>#</th>
+					<th>Delivery No.</th>
+					<th>Date</th>
+					<th>Ship To Code</th>
+					<th>Ship To Name</th>					
+					<th>SO No.</th>
+					<th>SM Code</th>
+					<th>SM Name</th>
 				</tr>
 				</thead>
 				<tbody>
                 <?php $c_row=($start+1); while ($row = mysqli_fetch_assoc($result)) { 
-					/*$isCloseName = '<label class="label label-danger">Unknown</label>';
-					switch($row['isClose']){
-						case 'N' : $isCloseName = '<label class="label label-warning">No</label>'; break;
-						case 'Y' : $isCloseName = '<label class="label label-success">Yes</label>'; break;
+					/*$typeName = '<label class="label label-danger">Unknown</label>';
+					switch($row['type']){
+						case 'S' : $typeName = '<label class="label label-primary">Send</label>'; break;
+						case 'R' : $typeName = '<label class="label label-warning">Return</label>'; break;
 						default : 						
 					}*/
 					?>
 					<tr>
 						<td><?=$c_row;?></td>
-						<td><a href="send_view.php?sdNo=<?=$row['sdNo'];?>"><?=$row['sdNo'];?></a></td>
-						<td><?=$row['fromName'];?></td>
-						<td><?=$row['toName'];?></td>
-						<td>#</td>
+						<td><a href="receive_view.php?sdNo=<?=$row['doNo'];?>"><?=$row['doNo'];?></a></td>
+						<td><?=$row['deliveryDate'];?></a></td>
+						<td><?=$row['custCode'];?></td>
+						<td><?=$row['custName'];?></td>
+						<td><?=$row['soNo'];?></a></td>
+						<td><?=$row['smCode'];?></a></td>
+						<td><?=$row['smName'];?></a></td>
 					</tr>
                 <?php $c_row +=1; } ?>
 				</tbody>

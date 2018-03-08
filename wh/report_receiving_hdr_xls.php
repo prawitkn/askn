@@ -25,25 +25,25 @@ if($dateFrom<>""){ $dateToYmd = to_mysql_date($_GET['dateTo']);	}
 
 							
 $sql = "SELECT count(*) as countTotal
-FROM `send` hdr
-	LEFT JOIN sloc fsl on hdr.fromCode=fsl.code
+	FROM `receive` hdr
+	LEFT JOIN sloc fsl on hdr.fromCode=fsl.code 
 	LEFT JOIN sloc tsl on hdr.toCode=tsl.code
-	LEFT JOIN user cu on hdr.createByID=cu.userId 
-	LEFT JOIN user fu on hdr.confirmById=fu.userId
-	LEFT JOIN user pu on hdr.approveById=pu.userId  
-	WHERE 1 ";
+	left join user d on hdr.createByID=d.userID
+	WHERE 1 
+	AND hdr.statusCode='P' ";
 	switch($s_userGroupCode){ 
-		case 'whOff' :  case 'whSup' : 
-		case 'pdOff' :  case 'pdSup' :
-				$sql .= "AND hdr.fromCode='".$s_userDeptCode."' ";
+		case 'whOff' :
+		case 'whSup' :
+			$sql .= "AND hdr.toCode='8' ";
 			break;
-		default : //case 'it' : case 'admin' : 
-	  }
-	if($dateFrom<>""){ $sql .= " AND hdr.sendDate>='$dateFromYmd' ";	}
-	if($dateTo<>""){ $sql .= " AND hdr.sendDate<='$dateToYmd' ";	}				  
-	$sql .= "AND hdr.statusCode='P' 
-
-	ORDER BY hdr.createTime DESC ";
+		case 'pdOff' :
+		case 'pdSup' :
+			$sql .= "AND hdr.toCode=:s_userDeptCode ";
+			break;
+		default :	// it, admin 
+	}	
+	if($dateFrom<>""){ $sql .= " AND hdr.receiveDate>='$dateFromYmd' ";	}
+	if($dateTo<>""){ $sql .= " AND hdr.receiveDate<='$dateToYmd' ";	}
 
 $result = mysqli_query($link, $sql);
 $countTotal = mysqli_fetch_assoc($result);
@@ -51,43 +51,47 @@ $countTotal = mysqli_fetch_assoc($result);
 if($countTotal>0){
 	// Add Header
 	$objPHPExcel->setActiveSheetIndex(0)
-		->setCellValue('A1', 'Sending No.')
+		->setCellValue('A1', 'Receving No.')
 		->setCellValue('B1', 'Date')
-		->setCellValue('C1', 'From')
-		->setCellValue('D1', 'To');
+		->setCellValue('C1', 'Sender')
+		->setCellValue('D1', 'Receiver')
+		->setCellValue('E1', 'Ref. No.')
+		->setCellValue('F1', 'Type');
 		
-	$sql = "SELECT hdr.`sdNo`, hdr.`refNo`, hdr.`sendDate`, hdr.`fromCode`, hdr.`toCode`, hdr.`remark`, hdr.`statusCode`
-	, hdr.`createTime`, hdr.`createByID`, hdr.`updateTime`, hdr.`updateById`, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById`
-	, fsl.name as fromName, tsl.name as toName 
-	, cu.userFullname as createByName, fu.userFullname as confirmByName, pu.userFullname as approveByName 
-	FROM `send` hdr
-	LEFT JOIN sloc fsl on hdr.fromCode=fsl.code
+	$sql = "SELECT hdr.`rcNo`, hdr.`refNo`, hdr.`receiveDate`, hdr.`fromCode`, hdr.`toCode`, hdr.`remark`, hdr.`sdNo`, hdr.`type`, hdr.`statusCode`, hdr.`createTime`, hdr.`createByID`
+	, fsl.name as fromName, tsl.name as toName
+	, d.userFullname as createByName
+	FROM `receive` hdr
+	LEFT JOIN sloc fsl on hdr.fromCode=fsl.code 
 	LEFT JOIN sloc tsl on hdr.toCode=tsl.code
-	LEFT JOIN user cu on hdr.createByID=cu.userId 
-	LEFT JOIN user fu on hdr.confirmById=fu.userId
-	LEFT JOIN user pu on hdr.approveById=pu.userId  
-	WHERE 1 ";
+	left join user d on hdr.createByID=d.userID
+	WHERE 1 
+	AND hdr.statusCode='P' ";
 	switch($s_userGroupCode){ 
-		case 'whOff' :  case 'whSup' : 
-		case 'pdOff' :  case 'pdSup' :
-				$sql .= "AND hdr.fromCode='".$s_userDeptCode."' ";
+		case 'whOff' :
+		case 'whSup' :
+			$sql .= "AND hdr.toCode='8' ";
 			break;
-		default : //case 'it' : case 'admin' : 
-	  }
-	if($dateFrom<>""){ $sql .= " AND hdr.sendDate>='$dateFromYmd' ";	}
-	if($dateTo<>""){ $sql .= " AND hdr.sendDate<='$dateToYmd' ";	}				  
-	$sql .= "AND hdr.statusCode='P' 
-
-	ORDER BY hdr.createTime DESC ";
+		case 'pdOff' :
+		case 'pdSup' :
+			$sql .= "AND hdr.toCode=:s_userDeptCode ";
+			break;
+		default :	// it, admin 
+	}	
+	if($dateFrom<>""){ $sql .= " AND hdr.receiveDate>='$dateFromYmd' ";	}
+	if($dateTo<>""){ $sql .= " AND hdr.receiveDate<='$dateToYmd' ";	}
+	$sql .="ORDER BY hdr.createTime DESC ";
 	$result = mysqli_query($link, $sql);     
 	
 	$iRow=2; while($row = mysqli_fetch_assoc($result) ){
 	// Add some data
 	$objPHPExcel->setActiveSheetIndex(0)		
-		->setCellValue('A'.$iRow, $row['sdNo'])
-		->setCellValue('B'.$iRow, $row['sendDate'])
+		->setCellValue('A'.$iRow, $row['rcNo'])
+		->setCellValue('B'.$iRow, $row['receiveDate'])
 		->setCellValue('C'.$iRow, $row['fromName'])
-		->setCellValue('D'.$iRow, $row['toName']);
+		->setCellValue('D'.$iRow, $row['toName'])
+		->setCellValue('E'.$iRow, $row['refNo'])
+		->setCellValue('F'.$iRow, $row['Type']);
 		
 		$iRow+=1;
 	}
@@ -101,7 +105,7 @@ $objPHPExcel->setActiveSheetIndex(0);
 
 // Redirect output to a client’s web browser (Excel2007)
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment;filename="sending.xlsx"');
+header('Content-Disposition: attachment;filename="receiving.xlsx"');
 header('Cache-Control: max-age=0');
 // If you're serving to IE 9, then the following may be needed
 header('Cache-Control: max-age=1');
