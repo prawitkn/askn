@@ -61,15 +61,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				$sql = "
 				SELECT itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, itm.`qty`				
 				,prd.id as prodId, prd.code as prodCode
-				,ws.name as shelfName 				
+				,ws.code as shelfName 				
 				FROM `receive` hdr 
 				INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  
 				INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 				INNER JOIN product prd ON prd.id=itm.prodCodeId 
-				INNER JOIN wh_sloc ws ON ws.code=dtl.shelfCode 
+				INNER JOIN wh_shelf_map_item wmi ON wmi.recvProdId=dtl.id
+				INNER JOIN wh_shelf ws ON ws.id=wmi.shelfId  
 				WHERE 1=1
 				AND hdr.statusCode='P' 				
-				AND dtl.isReturn is NULL ";
+				AND dtl.statusCode='A'  ";
 				if(isset($_GET['prodId'])){
 					$sql .= "AND itm.prodCodeId=:prodId ";
 				}

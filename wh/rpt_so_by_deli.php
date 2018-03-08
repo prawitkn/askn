@@ -53,15 +53,23 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				$statusCode = (isset($_GET['statusCode'])?$_GET['statusCode']:'');
 				$search_word = (isset($_GET['search_word'])?$_GET['search_word']:'');*/
 											
-                $sql = "SELECT count(DISTINCT sh.soNo) as countTotal
+                $sql = "SELECT DISTINCT sh.soNO, sh.createTime 
 				FROM `sale_header` sh
 				INNER JOIN sale_detail sd ON sd.soNo=sh.soNo 
 				INNER JOIN customer ct on ct.id=sh.custId ";
 				$sql .= "LEFT JOIN salesman sm on sm.id=sh.smId 
-				WHERE 1 ";
+				WHERE 1 
+				AND sh.statusCode='P' 
+				AND sh.isClose<>'Y' ";
 				if($dateFrom<>""){ $sql .= " AND sd.deliveryDate='$dateFrom' ";	}				
-                $result = mysqli_query($link, $sql);
-                $countTotal = mysqli_fetch_assoc($result);
+                //$result = mysqli_query($link, $sql);
+                //$countTotal = mysqli_fetch_assoc($result);
+				 //$countTotal = mysqli_row_count($result);
+				$stmt = $pdo->prepare($sql);	
+				//$stmt->bindParam(':soNo', $hdr['soNo']);
+				$stmt->execute();
+				//$row = $stmt->fetch();
+				$countTotal = $stmt->rowCount();
 				
 				$rows=20;
 				$page=0;
@@ -74,7 +82,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				if($page==0) $start=0;
           ?>
 		  
-          <span class="label label-primary">Total <?php echo $countTotal['countTotal']; ?> items</span>
+          <span class="label label-primary">Total <?php echo $countTotal; ?> items</span>
         </div><!-- /.box-tools -->
         </div><!-- /.box-header -->
         <div class="box-body">
@@ -106,13 +114,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				, ct.name as custName
 				, sh.`smId`
 				, sm.name as smName 
-				, sh.`netTotal`, sh.`statusCode`, sh.`isClose` 
+				, sh.`statusCode`, sh.`isClose` 
 				, sd.deliveryDate 
 				FROM `sale_header` sh
 				INNER JOIN sale_detail sd ON sd.soNo=sh.soNo 
 				INNER JOIN customer ct on ct.id=sh.custId ";
 				$sql .= "LEFT JOIN salesman sm on sm.id=sh.smId 
-				WHERE 1 ";
+				WHERE 1 
+				AND sh.statusCode='P' 
+				AND sh.isClose<>'Y' ";
 				if($dateFrom<>""){ $sql .= " AND sd.deliveryDate='$dateFrom' ";	}
 				$sql .= "ORDER BY soNo desc
 				LIMIT $start, $rows 

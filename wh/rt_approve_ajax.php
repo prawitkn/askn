@@ -159,7 +159,7 @@ try{
 	
 	//Query 3: UPDATE Shelf
 	$sql = "DELETE wsi 
-	FROM wh_sloc_map_item wsi
+	FROM wh_shelf_map_item wsi
 	INNER JOIN receive_detail rcDtl ON rcDtl.id=wsi.recvProdId  
 	INNER JOIN rt_detail rtDtl ON rtDtl.prodItemId=rcDtl.prodItemId AND rtDtl.rtNo=:rtNo
 	";
@@ -170,7 +170,7 @@ try{
 	//Query 3: UPDATE Receive Detail 
 	$sql = "UPDATE receive_detail rcDtl 
 	INNER JOIN rt_detail rtDtl ON rtDtl.prodItemId=rcDtl.prodItemId AND rtDtl.rtNo=:rtNo
-	SET rcDtl.statusCode='A', rcDtl.isReturn='Y', shelfCode='' 
+	SET rcDtl.statusCode='R' 
 	";
     $stmt = $pdo->prepare($sql);
     $stmt->bindParam(':rtNo', $noNext);

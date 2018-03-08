@@ -127,13 +127,14 @@ $rcNo = $hdr['rcNo'];
 						$sql = "
 						SELECT dtl.`id`, dtl.`prodItemId`, itm.`prodCodeId`, itm.`barcode`, itm.`issueDate`
 						, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`  
-						, dtl.`statusCode`, dtl.`isReturn`, dtl.`shelfCode`, dtl.`rcNo` 
-						, ws.name as shelfName 
+						, dtl.`statusCode`, dtl.`rcNo` 
+						, ws.code as shelfName 
 						,prd.code as prodCode , prd.name as prodName 
 						FROM `receive_detail` dtl
 						LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 						LEFT JOIN product prd ON prd.id=itm.prodCodeId 
-						LEFT JOIN wh_sloc ws on ws.code=dtl.shelfCode 
+						LEFT JOIN wh_shelf_map_item wmi ON wmi.recvProdId=dtl.id
+						LEFT JOIN wh_shelf ws ON ws.id=wmi.shelfId 
 						WHERE 1=1 
 						AND dtl.`rcNo`=:rcNo 
 						";
@@ -156,7 +157,7 @@ $rcNo = $hdr['rcNo'];
 						</tr>
 						<?php $row_no=1; while ($row = $stmt->fetch()) { 
 							$isReturn = "";
-							if($row['isReturn']=='Y') { $isReturn = '<label class="label label-danger">Yes</label>'; }
+							if($row['statusCode']=='R') { $isReturn = '<label class="label label-danger">Yes</label>'; }
 						?>
 						<tr>
 							<td style="text-align: center;"><?= $row_no; ?></td>							

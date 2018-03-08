@@ -77,20 +77,20 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				$id=(isset($_GET['prodId'])?$_GET['prodId']:0);
 				$sql = "
 				SELECT itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, itm.`qty`
-				, IFNULL(SUM(itm.`packQty`),0) as packQty, IFNULL(SUM(itm.`qty`),0) as total				
+				, count(*) as packQty, IFNULL(SUM(itm.`qty`),0) as total				
 				,prd.id as prodId, prd.code as prodCode
 				FROM `receive` hdr 
 				INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  
 				INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 				INNER JOIN product prd ON prd.id=itm.prodCodeId 
 				WHERE 1=1
-				AND hdr.statusCode='P' 				
-				AND dtl.isReturn is NULL ";
+				AND hdr.statusCode='P' 	
+				AND dtl.statusCode='A' ";
 				if(isset($_GET['prodId'])){
 					$sql .= "AND itm.prodCodeId=:id ";
 				}
 				
-				$sql .= "GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code 
+				$sql .= "GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`
 								
 				ORDER BY itm.`issueDate` ASC  
 				"; //echo $sql;

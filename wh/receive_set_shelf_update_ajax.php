@@ -4,7 +4,7 @@ include 'session.php';
 
 $rcNo = $_POST['rcNo'];
 $recvProdId = $_POST['recvProdId'];
-$slocCode = $_POST['slocCode'];
+$shelfId = $_POST['shelfId'];
 
 
 //We will need to wrap our queries inside a TRY / CATCH block.
@@ -27,7 +27,7 @@ try{
 	}
 	
 	//Query 1: Check Status for is  return item.
-	$sql = "SELECT * FROM receive_detail WHERE isReturn='Y' AND id=:recvProdId LIMIT 1";
+	$sql = "SELECT * FROM receive_detail WHERE statusCode='R' AND id=:recvProdId LIMIT 1";
 	$stmt = $pdo->prepare($sql);
 	$stmt->bindParam(':recvProdId', $recvProdId);
 	$stmt->execute();
@@ -41,24 +41,24 @@ try{
 	
 	
 	//Query 1: Delete old wh sloc.
-	$sql = "DELETE FROM wh_sloc_map_item WHERE recvProdId=:recvProdId";
+	$sql = "DELETE FROM wh_shelf_map_item WHERE recvProdId=:recvProdId";
     $stmt = $pdo->prepare($sql);
 	$stmt->bindParam(':recvProdId', $recvProdId);
     $stmt->execute();
 	
 	//Query 1: Delete old wh sloc.
-	$sql = "INSERT INTO wh_sloc_map_item (slocCode, recvProdId, statusCode) VALUE (:slocCode,:recvProdId,'A') ";
+	$sql = "INSERT INTO wh_shelf_map_item (shelfId, recvProdId, statusCode) VALUE (:shelfId,:recvProdId,'A') ";
     $stmt = $pdo->prepare($sql);
-	$stmt->bindParam(':slocCode', $slocCode);
+	$stmt->bindParam(':shelfId', $shelfId);
 	$stmt->bindParam(':recvProdId', $recvProdId);
     $stmt->execute();
 	
 	//Query 1: Delete old wh sloc.
-	$sql = "UPDATE receive_detail set shelfCode=:slocCode WHERE id=:recvProdId ";
+	/*$sql = "UPDATE receive_detail set shelfCode=:slocCode WHERE id=:recvProdId ";
     $stmt = $pdo->prepare($sql);
 	$stmt->bindParam(':slocCode', $slocCode);
 	$stmt->bindParam(':recvProdId', $recvProdId);
-    $stmt->execute();
+    $stmt->execute();*/
 	
 	//We've got this far without an exception, so commit the changes.
     $pdo->commit();

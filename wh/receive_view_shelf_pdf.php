@@ -166,18 +166,21 @@ if( isset($_GET['rcNo']) ){
 	   		
 
 
-			$sql = "SELECT dtl.id, dtl.prodItemId 
-						, prd.code as prodCode, prd.name as prodName,  itm.barcode, itm.grade, itm.NW, itm.GW, itm.qty, itm.issueDate, dtl.shelfCode
-						, whs.name as shelfName
-						FROM receive_detail dtl 
-						LEFT JOIN product_item itm on itm.prodItemId=dtl.prodItemId 
-						LEFT JOIN product prd on prd.id=itm.prodCodeId 
-						LEFT JOIN wh_sloc whs on whs.code=dtl.shelfCode 
-						WHERE rcNo=:rcNo  
-						";			
-						$stmt = $pdo->prepare($sql);	
-						$stmt->bindParam(':rcNo', $hdr['rcNo']);
-						$stmt->execute();	
+			$sql = "SELECT dtl.`id`, dtl.`prodItemId`, itm.`prodCodeId`, itm.`barcode`, itm.`issueDate`
+			, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`  
+			, dtl.`statusCode`, dtl.`rcNo` 
+			, ws.code as shelfName 
+			,prd.code as prodCode , prd.name as prodName 
+			FROM `receive_detail` dtl
+			LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+			LEFT JOIN product prd ON prd.id=itm.prodCodeId 
+			LEFT JOIN wh_shelf_map_item wmi ON wmi.recvProdId=dtl.id
+			LEFT JOIN wh_shelf ws ON ws.id=wmi.shelfId 
+				WHERE rcNo=:rcNo  
+				";			
+				$stmt = $pdo->prepare($sql);	
+				$stmt->bindParam(':rcNo', $hdr['rcNo']);
+				$stmt->execute();	
 
 					
 						$html ='

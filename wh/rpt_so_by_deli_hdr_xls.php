@@ -15,14 +15,16 @@ $objPHPExcel->getProperties()->setCreator("Prawit Khamnet")
         ->setKeywords("Sales Order")
         ->setCategory("Sales Order");
 		
-$dateFrom = (isset($_GET['dateFrom'])?to_mysql_date($_GET['dateFrom']):'');
+$dateFrom = (isset($_GET['dateFrom'])? to_mysql_date($_GET['dateFrom']):'');
 
 $sql = "SELECT count(*) as countTotal
 FROM `sale_header` sh
 INNER JOIN sale_detail sd ON sd.soNo=sh.soNo 
 INNER JOIN customer ct on ct.id=sh.custId 
 LEFT JOIN salesman sm on sm.id=sh.smId 
-WHERE 1 ";
+WHERE 1 
+AND sh.statusCode='P' 
+AND sh.isClose<>'Y' ";
 if($dateFrom<>""){ $sql .= " AND sd.deliveryDate='$dateFrom' ";	}
 $sql .= "ORDER BY soNo desc
 ";
@@ -50,7 +52,9 @@ if($countTotal>0){
 	INNER JOIN sale_detail sd ON sd.soNo=sh.soNo 
 	INNER JOIN customer ct on ct.id=sh.custId 
 	LEFT JOIN salesman sm on sm.id=sh.smId 
-	WHERE 1 ";
+	WHERE 10
+	AND sh.statusCode='P' 
+	AND sh.isClose<>'Y' 	";
 	if($dateFrom<>""){ $sql .= " AND sd.deliveryDate='$dateFrom' ";	}
 	$sql .= "ORDER BY soNo desc 
 	";

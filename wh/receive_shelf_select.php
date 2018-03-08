@@ -99,12 +99,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			$stmt->execute();	
 			echo '<ul class="nav nav-tabs">';
 			$irow=0; while ($itm = $stmt->fetch()) { 
-				echo '	  <li class="'.($irow==0?'active':'').'"><a data-toggle="tab" href="#'.$itm['code'].'">'.$itm['code'].'</a></li>';
+				echo '	  <li class="'.($irow==0?'active':'').'"><a data-toggle="tab" href="#'.$itm['id'].'">'.$itm['code'].'</a></li>';
 				$irow++;
 			}//end loop column name 
 			echo '</ul>';
 			
-			 $sql = "SELECT ws.xId, ws.yId, ws.zId, ws.code
+			 $sql = "SELECT ws.id, ws.xId, ws.yId, ws.zId, ws.code
 			, wx.code as xCode, wy.code as yCode, wz.code as zCode 
 			,(SELECT count(*) from wh_shelf_map_item smi WHERE smi.shelfId=ws.id) AS itemCount
 			FROM wh_shelf ws
@@ -120,7 +120,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			//$stmt->bindParam(':rcNo', $hdr['rcNo']);
 			$stmt->execute();	
 			echo '<div class="tab-content">';
-			$tmpXCode=''; $irow=0; while ($itm = $stmt->fetch()) { 
+			$tmpXCode=''; $tmpYCode=''; $irow=0; while ($itm = $stmt->fetch()) { 
+				if($irow<>0 AND $tmpYCode<>$itm['yCode']){
+					echo '</br/>';
+				}
 				if($tmpXCode<>$itm['xCode']){
 					if($irow<>0){
 						echo '</div>';
@@ -128,10 +131,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					echo '<div id="'.$itm['xId'].'" class="tab-pane fade in '.($irow<>0?'':' active ').'">';
 				}
 				switch($itm['itemCount']){
-					case 0 : ?><a class="btn btn-success btn_set_shelf" data-code="<?=$itm['id'];?>" ><?=$itm['code'].' ['.$itm['itemCount'].']';?></a><?php break;
-					default : ?><a class="btn btn-danger btn_set_shelf" data-code="<?=$itm['id'];?>" ><?=$itm['code'].' ['.$itm['itemCount'].']';?></a><?php break;
+					case 0 : ?><a class="btn btn-success btn_set_shelf" data-id="<?=$itm['id'];?>" ><?=$itm['code'].' ['.$itm['itemCount'].']';?></a><?php break;
+					default : ?><a class="btn btn-danger btn_set_shelf" data-id="<?=$itm['id'];?>" ><?=$itm['code'].' ['.$itm['itemCount'].']';?></a><?php break;
 				}
+				
+				
 				$irow++;
+				
+				$tmpXCode=$itm['xCode'];
+				$tmpYCode=$itm['yCode'];
+		
 			}//end loop column name 
 			echo '</div>';
 			echo '</div>';
@@ -200,7 +209,7 @@ $(document).ready(function() {
 		var params = {				
 		rcNo: $('#hid_rcNo').val(),
 		recvProdId: $('#hid_recvProdId').val(),
-		slocCode: $(this).attr('data-code')
+		shelfId: $(this).attr('data-id')
 		};
 		//alert(params.hdrID);
 		$.smkConfirm({text:'Are you sure to Set ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){

@@ -130,13 +130,13 @@ $hdr = $stmt->fetch();
 						$stmt->execute();	
 						
 						$sql = "
-						SELECT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, wmi.slocCode as shelfCode, wsloc.name as shelfName
+						SELECT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, ws.code as shelfCode, ws.name as shelfName
 						, prd.code as prodCode 
 						FROM `picking_detail` dtl 		
 						INNER JOIN product_item itm ON itm.prodCodeId=dtl.prodId AND itm.issueDate=dtl.issueDate AND itm.grade=dtl.grade 						
-						INNER JOIN receive_detail rDtl on  itm.prodItemId=rDtl.prodItemId 
-						INNER JOIN wh_sloc_map_item wmi on wmi.recvProdId=rDtl.id 
-						INNER JOIN wh_sloc wsloc ON wmi.slocCode=wsloc.Code 
+						INNER JOIN receive_detail rDtl on  itm.prodItemId=rDtl.prodItemId  AND rDtl.statusCode='A'  
+						INNER JOIN wh_shelf_map_item wmi on wmi.recvProdId=rDtl.id 
+						INNER JOIN wh_shelf ws ON wmi.shelfId=ws.id 
 						LEFT JOIN product prd ON prd.id=itm.prodCodeId 
 						WHERE 1 
 						AND dtl.`pickNo`=:pickNo 

@@ -140,12 +140,12 @@ $hdr = $stmt->fetch();
 			$stmt->execute();	
 			
 			$sql = "
-			SELECT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, wmi.slocCode as shelfCode, wsloc.name as shelfName   
+			SELECT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, ws.code as shelfCode, ws.name as shelfName   
 			FROM `picking_detail` dtl 		
 			INNER JOIN product_item itm ON itm.prodCodeId=dtl.prodId AND itm.issueDate=dtl.issueDate AND itm.grade=dtl.grade 
-			INNER JOIN receive_detail rDtl on  itm.prodItemId=rDtl.prodItemId 
-			INNER JOIN wh_sloc_map_item wmi on wmi.recvProdId=rDtl.id 
-			INNER JOIN wh_sloc wsloc ON wmi.slocCode=wsloc.Code 
+			INNER JOIN receive_detail rDtl on  itm.prodItemId=rDtl.prodItemId AND rDtl.statusCode='A'  
+			INNER JOIN wh_shelf_map_item wmi on wmi.recvProdId=rDtl.id 
+			INNER JOIN wh_shelf ws ON wmi.shelfId=ws.id 
 			WHERE 1 ";
 			/*AND dtl.`pickNo`=:pickNo 
 			
@@ -213,17 +213,17 @@ $hdr = $stmt->fetch();
 						'stretch' => false,
 						'fitwidth' => true,
 						'cellfitalign' => '',
-						'border' => true,
+						'border' => false,
 						'hpadding' => 'auto',
 						'vpadding' => 'auto',
 						'fgcolor' => array(0,0,0),
 						'bgcolor' => false, //array(255,255,255),
-						'text' => true,
+						'text' => false,
 						'font' => 'helvetica',
 						'fontsize' => 8,
 						'stretchtext' => 4
 					);
-					$pdf->write1DBarcode($hdr['pickNo'], 'C39E', '', '', '', 16, 0.4, $style, 'N');
+					$pdf->write1DBarcode($hdr['pickNo'], 'C39E', '', '', '', 12, 0.4, $style, 'N');
 					$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
 					}
 					//<!--if isset $_GET['from_date']-->

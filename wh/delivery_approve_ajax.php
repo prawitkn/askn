@@ -51,6 +51,14 @@ try{
 	$next_no = '00000'.(string)$cur_no;
 	$nextNo = $prefix . substr($next_no, -6);
 	
+	//Query 2: UPDATE DATA
+	$sql = "UPDATE receive_detail rDtl 
+			INNER JOIN delivery_detail dDtl ON dDtl.prodItemId=rDtl.prodItemId AND dDtl.doNo=:doNo 
+			SET rDtl.statusCode='X' ";
+    $stmt = $pdo->prepare($sql);
+	$stmt->bindParam(':doNo', $doNo);
+    $stmt->execute();
+	
 	//Query 1: UPDATE DATA
 	$sql = "UPDATE `delivery_header` SET statusCode='P'
 			, doNo=:nextNo

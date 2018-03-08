@@ -87,7 +87,7 @@ desired effect
 				
 				$sql = "
 				SELECT itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, itm.`qty`
-				, IFNULL(SUM(itm.`packQty`),0) as packQty, IFNULL(SUM(itm.`qty`),0) as total				
+				, COUNT(*) as packQty, IFNULL(SUM(itm.`qty`),0) as total				
 				,prd.id as prodId, prd.code as prodCode
 				FROM `receive` hdr 
 				INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  
@@ -98,7 +98,7 @@ desired effect
 				AND dtl.isReturn is NULL ";
 				$sql .= "AND itm.prodCodeId=:id ";
 				
-				$sql .= "GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code 
+				$sql .= "GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`
 								
 				ORDER BY itm.`issueDate` DESC 
 				";

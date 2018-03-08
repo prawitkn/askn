@@ -183,7 +183,7 @@ $soNo = $hdr['soNo'];
 					?>
 					<tr>
 						<td><?= $row_no; ?></td>
-						<td><?= $row['prodId'].':'.$row['prodCode']; ?></td>	
+						<td><?= $row['prodCode']; ?></td>	
 						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
 						<td style="text-align: right;"><?= number_format($row['pickQty'],0,'.',','); ?></td>
 					<td>					

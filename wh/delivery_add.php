@@ -51,26 +51,23 @@ $soNo = $hdr['soNo'];
 
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
-    <!-- Content Header (Page header) -->	
-    <section class="content-header">
-		<?php
-			
-		?>
-      <h1>
+    <!-- Content Header (Page header) -->		
+	 <section class="content-header">	  
+	  <h1><i class="glyphicon glyphicon-send"></i>
        Delivery Order
         <small>Delivery Order management</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="customer.php"><i class="fa fa-dashboard"></i>Delivery Order Information</a></li>
-        <li class="active">Delivery Order Information</li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Delivery Order List</a></li>
+		<li><a href="#"><i class="glyphicon glyphicon-edit"></i>Delivery Order</a></li>
       </ol>
     </section>
+	
 
     <!-- Main content -->
     <section class="content">
 
       <!-- Your Page Content Here -->
-    <a href="<?=$rootPage;?>.php" class="btn btn-google">Back</a>
     <div class="box box-primary">
         <div class="box-header with-border">
         <h3 class="box-title">Add Delivery Order No. : <?=$doNo;?></h3>
