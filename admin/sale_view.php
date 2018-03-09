@@ -174,15 +174,16 @@ desired effect
 				<div class="box-body">
 				   <?php
 						$sql = "
-						SELECT a.`id`, a.`prodId`, a.`salesPrice`, a.`qty`, a.`total`, a.deliveryDate, 
-						a.`discPercent`, a.`discAmount`, a.`netTotal`, a.`soNo`
+						SELECT a.`id`, a.`prodId`, a.`salesPrice`, a.`qty`, a.`rollLengthId`, a.`remark`, a.deliveryDate, a.`soNo`
 						, b.code as prodCode, b.name as prodName, b.uomCode as prodUomCode, b.description 
 						, (SELECT IFNULL(SUM(id.qty),0) FROM invoice_detail id 
 								INNER JOIN invoice_header ih on ih.invNo=id.invNo										
 								INNER JOIN delivery_header dh on dh.doNo=ih.doNo 
 								WHERE dh.soNo=a.soNo AND id.prodCode=a.prodId ) as sentQty 
+						, rl.name as rollLengthName 
 						FROM `sale_detail` a
 						LEFT JOIN product b on a.prodId=b.id
+						LEFT JOIN product_roll_length rl ON rl.id=a.rollLengthId 
 						WHERE 1
 						AND a.`soNo`=:soNo 
 						ORDER BY a.createTime
@@ -198,7 +199,7 @@ desired effect
 							<th>Product Code</th>
 							<th>Specification</th>
 							<th>Qty</th>
-							<th>Unit</th>
+							<th>Remark</th>
 							<th>Delivery /Load Date</th>
 							<th style="color: blue;">Sent Qty</th>
 						</tr>
@@ -208,8 +209,8 @@ desired effect
 							<td><?= $row['prodName']; ?></td>					
 							<td><?= $row['prodCode']; ?></td>					
 							<td><?= $row['description']; ?></td>		
-							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
-							<td style="text-align: right;"><?= $row['prodUomCode']; ?></td>							
+							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',',').' '.$row['prodUomCode']; ?></td>
+							<td style="text-align: right;"><?= $row['remark']; ?>/RL:<?= $row['rollLengthName']; ?></td>							
 							<td><?= to_thai_date_fdt($row['deliveryDate']); ?></td>	
 							<td style="text-align: right; color: blue;"><?= number_format($row['sentQty'],0,'.',',').'&nbsp;'.$row['prodUomCode']; ?></td>
 						</tr>

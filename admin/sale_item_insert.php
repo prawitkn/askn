@@ -14,6 +14,8 @@ try{
     $prodId = $_POST['prodId'];
     //$salesPrice = $_POST['salesPrice'];
 	$qty = $_POST['qty'];
+	$rollLengthId = $_POST['rollLengthId'];
+	$remark = $_POST['remark'];
 	//$total = $_POST['total'];
     //$discPercent = $_POST['discPercent'];
     //$discAmount = $_POST['discAmount'];
@@ -34,14 +36,16 @@ try{
 	
 	//insert product
     $sql = "INSERT INTO `sale_detail`
-	(`prodId`, `deliveryDate`, `qty`, `createTime`, `soNo`) 
+	(`prodId`, `deliveryDate`, `qty`, `rollLengthId`, `remark`, `createTime`, `soNo`) 
 	VALUES 
-	(:prodId, :deliveryDate, :qty, now(), :soNo)
+	(:prodId, :deliveryDate, :qty,:rollLengthId,:remark, now(), :soNo)
 	";
 	$stmt = $pdo->prepare($sql);
 	$stmt->bindParam(':prodId', $prodId);	
 	$stmt->bindParam(':deliveryDate', $deliveryDate);	
 	$stmt->bindParam(':qty', $qty);	
+	$stmt->bindParam(':rollLengthId', $rollLengthId);	
+	$stmt->bindParam(':remark', $remark);	
 	$stmt->bindParam(':soNo', $soNo);	
 	$stmt->execute();
 		

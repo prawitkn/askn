@@ -473,9 +473,9 @@ if( isset($_GET['soNo']) ){
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px;
 										border: 0.1em solid black; padding: 10px; width: 150px;"> '.$row['prodName'].'</td>
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 150px;
-										border: 0.1em solid black; padding: 10px; width: 150px;"> '.$row['prodCode'].'</td>
+										border: 0.1em solid black; padding: 10px; width: 150px;"> '.$row['prodCode'].($row['rollLengthId']<>'0'?'[RL:'.$row['rollLengthName'].']':'').'</td>
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 150px;
-										border: 0.1em solid black; padding: 10px; width: 150px;"> '.''.'</td>
+										border: 0.1em solid black; padding: 10px; width: 150px;"> '.$row['remark'].'</td>
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 60px;
 										border: 0.1em solid black; text-align: right; width: 60px;">'.number_format($row['qty'],0,'.',',').'</td>						
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 40px;

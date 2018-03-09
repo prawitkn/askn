@@ -191,23 +191,26 @@ desired effect
 								<label>Qty : </label>
 							</div>							
 							</div><!-- /.col-md-2-->								
-							<div class="col-md-1">
+							<div class="col-md-4">
 								<input id="qty" type="text" class="form-control" name="qty" value="0"  style="text-align: right;" data-smk-msg="Require Quantity."required
 								onkeypress="return numbersOnly(this, event);" 
 								onpaste="return false;"
 									>
 							</div><!-- /.col-md-1-->	
-							<div class="col-md-1"><label id="lblUom">UOM</label></div>
+							<div class="col-md-1">
+								<label id="lblUom">UOM</label>
+							</div>
+							<div class="col-md-3">
+								<input type="text" id="remark" name="remark" class="form-control" /> 
+							</div>
 							
-							<div class="col-md-2"></div><!-- /.col-md-2-->								
 							<div class="col-md-2">
-								
+								<select id="rollLengthId" name="rollLengthId" class="form-control" >
+									<option value=""> -- Select -- </option>
+								</select>
 							</div><!-- /.col-md-2-->	
 							
-							<div class="col-md-2"></div><!-- /.col-md-2-->								
-							<div class="col-md-2">
-								
-							</div><!-- /.col-md-2-->	
+							
 						</div><!--row-->					
 												
 					</form>
@@ -246,11 +249,12 @@ desired effect
 				<div class="box-body">
 				   <?php
 						$sql = "
-								SELECT a.`id`, a.`prodId`, a.`deliveryDate`, a.`salesPrice`, a.`qty`, a.`total`, 
-								a.`discPercent`, a.`discAmount`, a.`netTotal`, a.`soNo`,
-								b.code as prodCode, b.name as prodName, b.uomCode 
+								SELECT a.`id`, a.`prodId`, a.`deliveryDate`, a.`salesPrice`, a.`qty`,  a.`rollLengthId`, a.`remark`, a.`soNo`
+								,b.code as prodCode, b.name as prodName, b.uomCode 
+								, rl.name as rollLengthName 
 								FROM `sale_detail` a
 								LEFT JOIN product b on b.id=a.prodId
+								LEFT JOIN product_roll_length rl ON rl.id=a.rollLengthId 
 								WHERE 1
 								AND a.`soNo`=:soNo 
 								ORDER BY a.createTime ASC
@@ -263,10 +267,11 @@ desired effect
 					<table id="tbl_items" class="table table-striped">
 						<tr>
 							<th>No.</th>
-							<th>Delivery Date</th>
 							<th>Product Name</th>							
 							<th>Product Code</th>	
 							<th>Qty</th>							
+							<th>Remark</th>								
+							<th>Delivery Date</th>
 							<?php if($hdr['statusCode']=='A' OR $hdr['statusCode']=='B') { ?>
 							<th>#</th>
 							<?php } ?>							
@@ -274,10 +279,11 @@ desired effect
 						<?php $row_no=1; while ($row = $stmt->fetch()) { ?>
 						<tr>
 							<td><?= $row_no; ?></td>
-							<td><?= to_thai_date_fdt($row['deliveryDate']); ?></td>
 							<td><?= $row['prodName']; ?></td>
 							<td><?= $row['prodCode']; ?></td>
 							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',',').'&nbsp;'.$row['uomCode']; ?></td>
+							<td><?= $row['remark'];?>/RL:<?= $row['rollLengthName']; ?></td>
+							<td><?= to_thai_date_fdt($row['deliveryDate']); ?></td>
 							<?php if($hdr['statusCode']=='A' OR $hdr['statusCode']=='B') { ?>
 							<td><a class="btn btn-danger" name="btn_row_delete" data-id="<?= $row['id']; ?>" ><i class="fa fa-trash"></i> Delete</a></td>
 							<?php } ?>
@@ -305,7 +311,7 @@ desired effect
 			
 			<!--Right-->		  
 		  <a class="btn btn-success pull-right" name="btn_row_search" 
-				href="sale_view.php?soNo=<?=$hdr['soNo'];?>" target="_blank" 
+				href="sale_view.php?soNo=<?=$hdr['soNo'];?>" 
 				data-toggle="tooltip" title="Preview"><i class="glyphicon glyphicon-search"></i> Preview</a>				
 	</div><!-- /.col-md-12 -->
   </div><!-- box-footer -->
@@ -359,6 +365,7 @@ desired effect
 			<tbody>
 			</tbody>
 		</table>
+		
 		</form>
 		<div id="div_search_person_result">
 		</div>
@@ -481,6 +488,27 @@ desired effect
 		//$('#prodPrice').val($(this).closest('tr').find('td:eq(4)').text());	
 		//$('#salesPrice').val($(this).closest('tr').find('td:eq(4)').text());	
 		
+		//Get Roll Length
+		var params = {
+			id: $(this).closest("tr").find('td:eq(1)').text() //$('option:selected', this).val();
+		}; alert(params.id);
+		$.ajax({
+		  url: "get_prod_roll_length_ajax.php",
+		  type: "post",
+		  data: params,
+		datatype: 'json',
+		  success: function(data){
+				//alert(data);
+				$('#rollLengthId').empty();
+				$.each($.parseJSON(data), function(key,value){
+					$('#rollLengthId').append('<option value="'+value.id+'" >'+value.name+'</option>' );		
+				});		
+		  }, //success
+		  error:function(){
+			  alert('error');
+		  }   
+		}); 
+			
 		$('#qty').focus().select();
 
 				
@@ -525,7 +553,9 @@ desired effect
 					//total: $('#total').val().replace(/,/g, ''),
 					//discPercent: $('#discPercent').val(),
 					//discAmount: $('#discAmount').val().replace(/,/g, ''),
-					//netTotal: $('#netTotal').val().replace(/,/g, '')					
+					//netTotal: $('#netTotal').val().replace(/,/g, '')	
+					rollLengthId: $('#rollLengthId').val(),					
+					remark: $('#remark').val()
 				};
 				//alert(params.prodCode);
                 $.post("sale_item_insert.php", params )
@@ -648,6 +678,10 @@ desired effect
 				 //$('#btn_calc').css('display','none');
                 e.preventDefault();
              });
+			 
+			
+			 
+			 
 			 			 						
 			$('html, body').animate({ scrollTop: 0 }, 'fast');
 			$("#statusName").fadeOut('slow').fadeIn('slow').fadeOut('slow').fadeIn('slow');

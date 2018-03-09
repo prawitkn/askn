@@ -536,8 +536,7 @@ $("#spin").hide();
 		}/* e.keycode=13 */	
 	});
 	
-	$(document).on("click",'a[data-name="btn_search_checked"]',function() {
-		
+	$(document).on("click",'a[data-name="btn_search_checked"]',function() {		
 		$('input[name='+curId+']').val($(this).closest("tr").find('td:eq(1)').text());
 		$('input[name='+curName+']').val($(this).closest("tr").find('td:eq(3)').text());
 		$('#smId').val($(this).closest("tr").find('td:eq(4)').text());
