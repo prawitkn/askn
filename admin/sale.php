@@ -178,10 +178,10 @@ $rootPage="sale";
                     </td>		
 					<td>					
 						<a class="btn btn-default" name="btn_row_search" 
-							href="sale_view.php?soNo=<?=$row['soNo'];?>" target="_blank" 
+							href="sale_view.php?soNo=<?=$row['soNo'];?>" 
 							data-toggle="tooltip" title="Search"><i class="glyphicon glyphicon-search"></i></a>						
 						<a class="btn btn-default" name="btn_row_edit" 
-							<?php echo ($row['statusCode']=='B'?'href="sale_edit.php?soNo='.$row['soNo'].'"':' disabled '); ?> 
+							<?php echo ($row['statusCode']=='B'?'href="sale_add.php?soNo='.$row['soNo'].'"':' disabled '); ?> 
 							data-toggle="tooltip" title="Edit Header"><i class="glyphicon glyphicon-edit"></i></a>						
 						<a class="btn btn-default" name="btn_row_item" 
 							<?php echo (($row['statusCode']=='A' OR $row['statusCode']=='B')?'href="sale_item.php?soNo='.$row['soNo'].'"':' disabled '); ?> 

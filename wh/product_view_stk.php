@@ -103,7 +103,7 @@ desired effect
 					<?php				
 						$sql = "SELECT `prodId`, `open`, `receive`, `sales`, `delivery`, `balance`, uomCode
 								FROM `stk_bal` 
-								LEFT JOIN product on product.id=stk_bal.prodId
+								INNER JOIN product on product.id=stk_bal.prodId
 								WHERE 1
 								AND prodId=:id 
 								";
@@ -136,7 +136,7 @@ desired effect
           <!-- TABLE: LATEST ORDERS -->
           <div class="box box-success">
             <div class="box-header with-border">
-              <h3 class="box-title">Avalible Stock by Size</h3>
+              <h3 class="box-title">Avalible Stock by Unit</h3>
 
               <div class="box-tools pull-right">
                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
@@ -150,7 +150,7 @@ desired effect
 			<?php	
 					
 			$sql = "SELECT itm.prodCodeId as prodId,
-			itm.qty, sum(itm.qty) as sumQty
+			itm.qty, sum(itm.qty) as sumQty, count(*) as sumPack 
 			FROM `receive_detail` dtl 
 			INNER JOIN receive hdr ON hdr.rcNo=dtl.rcNo 
 			LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
@@ -167,23 +167,28 @@ desired effect
                 <table class="table no-margin">
                   <thead>
 					<th>No.</th>
-                    <th style="text-align: center;">Size</th>
+                    <th style="text-align: center;">Unit</th>
                     <th style="text-align: right;">Total</th>
 					<th style="text-align: right;">Pack</th>
                   </tr>
                   </thead>
                   <tbody>
-				  <?php $row_no = 1; while ($row = $stmt->fetch()) { 
+				  <?php $row_no = 1; $totalQty=0; $totalPack=0; while ($row = $stmt->fetch()) { 
 					  
 						?>
                   <tr>
 					<td><?= $row_no; ?></td>
 					<td style="text-align: center;"><?= number_format($row['qty'],0,'.',','); ?></td>
 					<td style="text-align: right;"><?= number_format($row['sumQty'],0,'.',','); ?></td>
-					<td style="text-align: right;"><?= number_format($row['sumQty']/$row['qty'],0,'.',','); ?></td>
+					<td style="text-align: right;"><?= number_format($row['sumPack'],0,'.',','); ?></td>
                 </tr>
-                <?php $row_no+=1; } ?>
-                  </tbody>
+                <?php $row_no+=1; $totalQty+=$row['sumQty']; $totalPack+=$row['sumPack']; } ?>
+					<tr style="font-weight: bold;">
+					<td colspan="2"></td>
+					<td style="text-align: right;"><?=number_format($totalQty,0,'.',',');?></td>
+					<td style="text-align: right;"><?=number_format($totalPack,0,'.',',');?></td>
+					</tr>
+                  </tbody>				  
                 </table>
               </div>
               <!-- /.table-responsive -->

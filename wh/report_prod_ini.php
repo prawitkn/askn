@@ -12,7 +12,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		$s_userDeptCode = $row_user['userDeptCode'];
 		$s_userID=$_SESSION['userID'];*/
 	
-	$rootPage="report_prod_stk";
+	$rootPage="report_prod_ini";
 	
 	$search_word = (isset($_GET['search_word'])?$_GET['search_word']:'');
 	$sloc = (isset($_GET['sloc'])?$_GET['sloc']:'');
@@ -80,17 +80,12 @@ desired effect
 					
 				
                 $sql = "SELECT count(*) as countTotal
-				FROM stk_bal sb 
-				INNER JOIN product prd on prd.id=sb.prodId  
-				WHERE 1 ";
-				if($search_word<>""){ $sql = "and (prd.code like '%".$search_word."%' OR prd.name like '%".$search_word."%') "; }
-				if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
-				if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
-			
+				FROM product 
+				WHERE 1 ";			
                 $result = mysqli_query($link, $sql);
                 $countTotal = mysqli_fetch_assoc($result);
 				
-				$rows=20;
+				$rows=100;
 				$page=0;
 				if( !empty($_GET["page"]) and isset($_GET["page"]) ) $page=$_GET["page"];
 				if($page<=0) $page=1;
@@ -183,17 +178,65 @@ desired effect
                   </thead>
                   <tbody>
 					<?php
-						$sql = "SELECT prd.*
-						,sb.sloc, sb.`open`, sb.`produce`, sb.`onway`, sb.`receive`, sb.`send`, sb.`sales`, sb.`delivery`, sb.`balance` 
-						FROM stk_bal sb 
-						INNER JOIN product prd on prd.id=sb.prodId  
-						WHERE 1 ";
-						if($search_word<>""){ $sql = "and (prd.code like '%".$search_word."%' OR prd.name like '%".$search_word."%') "; }
-						if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
-						if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
-						$sql.="ORDER BY prd.code desc ";
-						$sql.="LIMIT $start, $rows ";
-						$result = mysqli_query($link, $sql);                
+$sql = "
+SELECT id, prodCode, sloc, sum(open) as open, sum(send) as send, sum(recv) as recv, sum(rt) as rt, sum(deli) as deli, sum(sale) as sale, sum(open-send+recv-rt-deli) as bal 
+FROM (
+SELECT prd.id, prd.code as prodCode, '8' as sloc 
+, IFNULL(stk.balance,0) as open, 0 as send, 0 as recv, 0 as rt, 0 as deli, 0 as sale
+FROM product prd
+INNER JOIN stk_ini stk ON stk.prodID=prd.id AND stk.transDate=(SELECT MAX(transDate) FROM stk_ini) 
+
+UNION
+
+SELECT prd.id, prd.Code as prodCode, hdr.fromCode as sloc
+, 0 as open, itm.qty as send, 0 as recv, 0 as rt, 0 as deli, 0 as sale
+FROM product prd 
+INNER JOIN product_item itm ON itm.prodId=prd.id 
+INNER JOIN send_detail dtl ON dtl.prodItemId=itm.prodItemId 
+INNER JOIN send hdr ON hdr.sdNo=dtl.sdNo AND hdr.statusCode='P' AND hdr.sendDate>(SELECT MAX(transDate) FROM stk_ini)
+
+UNION
+
+SELECT prd.id, prd.Code as prodCode, hdr.toCode as sloc
+, 0 as open, 0 as send, itm.qty as recv, 0 as rt, 0 as deli, 0 as sale
+FROM product prd
+INNER JOIN product_item itm ON itm.prodId=prd.id 
+INNER JOIN receive_detail dtl ON dtl.prodItemId=itm.prodItemId 
+INNER JOIN receive hdr ON hdr.rcNo=dtl.rcNo AND hdr.statusCode='P' AND hdr.receiveDate>(SELECT MAX(transDate) FROM stk_ini)
+
+UNION
+
+SELECT prd.id, prd.Code as prodCode, hdr.fromCode as sloc
+, 0 as open, 0 as send, 0 as recv, itm.qty as rt, 0 as deli, 0 as sale
+FROM product prd 
+INNER JOIN product_item itm ON itm.prodId=prd.id 
+INNER JOIN rt_detail dtl ON dtl.prodItemId=itm.prodItemId 
+INNER JOIN rt hdr ON hdr.rtNo=dtl.rtNo AND hdr.statusCode='P' AND hdr.returnDate>(SELECT MAX(transDate) FROM stk_ini)
+
+UNION
+
+SELECT prd.id, prd.Code as prodCode, '8' as sloc
+, 0 as open, 0 as send, 0 as recv, 0 as rt, itm.qty as deli, 0 as sale
+FROM product prd 
+INNER JOIN product_item itm ON itm.prodId=prd.id 
+INNER JOIN delivery_detail dtl ON dtl.prodItemId=itm.prodItemId 
+INNER JOIN delivery_header hdr ON hdr.doNo=dtl.doNo AND hdr.statusCode='P' AND hdr.deliveryDate>(SELECT MAX(transDate) FROM stk_ini)
+
+UNION
+
+SELECT prd.id, prd.Code as prodCode, '8' as sloc
+, 0 as open, 0 as send, 0 as recv, 0 as rt, 0 as deli, dtl.qty  as sale
+FROM product prd 
+INNER JOIN sale_detail dtl ON dtl.prodId=prd.id 
+INNER JOIN sale_header hdr ON hdr.soNo=dtl.soNo AND hdr.statusCode='P' AND hdr.saleDate>(SELECT MAX(transDate) FROM stk_ini)
+) as tmp 
+GROUP BY id, prodCode, sloc
+";
+
+//if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
+$sql.="ORDER BY tmp.prodCode desc ";
+$sql.="LIMIT $start, $rows ";
+$result = mysqli_query($link, $sql);                
 				   ?>             
 					
 					
@@ -202,13 +245,12 @@ desired effect
 					?>
                   <tr>
 					<td><?= $c_row; ?></td>
-                    <td><a href="product_view_stk.php?id=<?=$row['id'];?>" ><?= $row['code']; ?></a></td>
+                    <td><a href="product_view_stk.php?id=<?=$row['id'];?>" ><?= $row['prodCode']; ?></a></td>
 					<td><?= $row['sloc']; ?></td>
-					<td><?= $row['catCode']; ?></td>
-					<td><?= number_format($row['receive'],0,'.',','); ?></td>
+					<td><?= number_format($row['recv'],0,'.',','); ?></td>
 					<td><?= number_format($row['send'],0,'.',','); ?></td>
-					<td><?= number_format($row['delivery'],0,'.',','); ?></td>
-					<td><?= number_format($row['balance'],0,'.',','); ?></td>
+					<td><?= number_format($row['deli'],0,'.',','); ?></td>
+					<td><?= number_format($row['bal'],0,'.',','); ?></td>
                 </tr>
                  <?php $c_row +=1; } ?>
                   </tbody>

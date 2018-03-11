@@ -82,7 +82,7 @@ $soNo = "";
       </h1>
       <ol class="breadcrumb">
         <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Sales Order List</a></li>
-		<li><a href="<?=$rootPage;?>_add.php?soNo=<?=$soNo;?>"><i class="glyphicon glyphicon-edit"></i>No. <?=$soNo;?></a></li>
+		<li><a href="#"><i class="glyphicon glyphicon-edit"></i>No. <?=$soNo;?></a></li>
     </section>
 
     <!-- Main content -->
@@ -101,6 +101,7 @@ $soNo = "";
         <div class="box-body">
             <div class="row">
 				<form id="form1" action="sale_add_insert.php" method="post" class="form" novalidate>
+					<input type="hidden" name="soNo" id="soNo" value="<?=$_GET['soNo'];?>" />
                 <div class="col-md-6">   
 					<div class="row">
 						<div class="col-md-4 form-group">
@@ -199,7 +200,7 @@ $soNo = "";
 								  LCL&nbsp;&nbsp;
 								  <input type="checkbox" name="shipByFcl" id="shipByFcl"  <?php echo ($hdr['shipByFcl']==1?' checked ':''); ?>  >
 								  FCL
-									<input type="text" id="shipByRemark" name="shipByRemark" class="form-control"  maxlength="40" <?=$hdr['shipByRem'];?> />
+									<input type="text" id="shipByRem" name="shipByRem" class="form-control"  maxlength="40" <?=$hdr['shipByRem'];?> />
 							</div>
 						</div>
 						
@@ -547,7 +548,7 @@ $("#spin").hide();
 		//ajax shipto begin
 		var params = {
 			id: $(this).closest("tr").find('td:eq(1)').text()
-		}; alert(params.id);
+		}; //alert(params.id);
 		$.ajax({
 		  url: "get_shipto_by_cust_ajax.php",
 		  type: "post",
@@ -557,7 +558,8 @@ $("#spin").hide();
 						//alert(data);
 						$('#shipToId').empty();
 						$.each($.parseJSON(data), function(key,value){
-							$('#shipToId').append('<option value="'+value.id+'" >'+value.code+' : '+value.name+'</option>' );		
+							$('#shipToId').append('<option value="'+value.id+'" >'+value.code+' : '+value.name+'</option>' );
+							$('#custAddr').text(value.addr1+value.addr2+value.addr3+value.zipcode);							
 						});
 					
 		  }, //success
@@ -586,7 +588,7 @@ $("#spin").hide();
 						alert(data.message);
 						window.location.href = "sale.php";
 					} else {
-						alert('a');
+						//alert('a');
 						$.smkAlert({
 							text: data.message,
 							type: 'danger',
@@ -619,7 +621,8 @@ $("#spin").hide();
 					//alert(data);
 					$('#custAddr').empty();
 					$.each($.parseJSON(data), function(key,value){
-						$('#custAddr').val(value.addr1+value.addr2+value.addr3+value.zipcode);
+						alert(value.addr1+value.addr2+value.addr3+value.zipcode);
+						$('#custAddr').text(value.addr1+value.addr2+value.addr3+value.zipcode);
 					});				
 			  }, //success
 			  error:function(){

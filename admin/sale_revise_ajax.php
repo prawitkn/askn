@@ -46,7 +46,7 @@ try{
 	$logId = $pdo->lastInsertId();
 	
 	//Log Detail
-	$sql = "INSERT INTO sale_rev_dtl (`id`, `prodId`, `deliveryDate`, `qty`, `salesPrice`
+	$sql = "INSERT INTO sale_rev_dtl (`id`, `prodId`, `deliveryDate`, `qty`, `rollLengthId`, `remark`, `salesPrice`
 	, `total`, `discAmount`, `discPercent`, `discPerAmount`, `salesPerUnit`, `netTotal`
 	, `createTime`, `soNo`, `logHdrId`)
 	SELECT *,:logId FROM sale_detail dtl

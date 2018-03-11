@@ -15,35 +15,18 @@ $objPHPExcel->getProperties()->setCreator("Prawit Khamnet")
         ->setKeywords("Sales Order")
         ->setCategory("Sales Order");
 		
-$dateFrom = (isset($_GET['dateFrom'])?$_GET['dateFrom']:'');
-$dateTo = (isset($_GET['dateTo'])?$_GET['dateTo']:'');
-
-$dateFromYmd=$dateToYmd="";
-if($dateFrom<>""){ $dateFromYmd = to_mysql_date($_GET['dateFrom']);	}
-if($dateFrom<>""){ $dateToYmd = to_mysql_date($_GET['dateTo']);	}
-
+$search_word = (isset($_GET['search_word'])?$_GET['search_word']:'');
+$sloc = (isset($_GET['sloc'])?$_GET['sloc']:'');
+$catCode = (isset($_GET['catCode'])?$_GET['catCode']:'');
 
 							
 $sql = "SELECT count(*) as countTotal
-FROM `send` hdr
-	LEFT JOIN sloc fsl on hdr.fromCode=fsl.code
-	LEFT JOIN sloc tsl on hdr.toCode=tsl.code
-	LEFT JOIN user cu on hdr.createByID=cu.userId 
-	LEFT JOIN user fu on hdr.confirmById=fu.userId
-	LEFT JOIN user pu on hdr.approveById=pu.userId  
-	WHERE 1 ";
-	switch($s_userGroupCode){ 
-		case 'whOff' :  case 'whSup' : 
-		case 'pdOff' :  case 'pdSup' :
-				$sql .= "AND hdr.fromCode='".$s_userDeptCode."' ";
-			break;
-		default : //case 'it' : case 'admin' : 
-	  }
-	if($dateFrom<>""){ $sql .= " AND hdr.sendDate>='$dateFromYmd' ";	}
-	if($dateTo<>""){ $sql .= " AND hdr.sendDate<='$dateToYmd' ";	}				  
-	$sql .= "AND hdr.statusCode='P' 
-
-	ORDER BY hdr.createTime DESC ";
+FROM stk_bal sb 
+INNER JOIN product prd on prd.id=sb.prodId  
+WHERE 1 ";
+if($search_word<>""){ $sql = "and (prd.code like '%".$search_word."%' OR prd.name like '%".$search_word."%') "; }
+if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
+if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
 
 $result = mysqli_query($link, $sql);
 $countTotal = mysqli_fetch_assoc($result);
@@ -51,43 +34,40 @@ $countTotal = mysqli_fetch_assoc($result);
 if($countTotal>0){
 	// Add Header
 	$objPHPExcel->setActiveSheetIndex(0)
-		->setCellValue('A1', 'Sending No.')
-		->setCellValue('B1', 'Date')
-		->setCellValue('C1', 'From')
-		->setCellValue('D1', 'To');
+		->setCellValue('A1', 'Update Date : '.date('Y-m-d H:m:s'));
 		
-	$sql = "SELECT hdr.`sdNo`, hdr.`refNo`, hdr.`sendDate`, hdr.`fromCode`, hdr.`toCode`, hdr.`remark`, hdr.`statusCode`
-	, hdr.`createTime`, hdr.`createByID`, hdr.`updateTime`, hdr.`updateById`, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById`
-	, fsl.name as fromName, tsl.name as toName 
-	, cu.userFullname as createByName, fu.userFullname as confirmByName, pu.userFullname as approveByName 
-	FROM `send` hdr
-	LEFT JOIN sloc fsl on hdr.fromCode=fsl.code
-	LEFT JOIN sloc tsl on hdr.toCode=tsl.code
-	LEFT JOIN user cu on hdr.createByID=cu.userId 
-	LEFT JOIN user fu on hdr.confirmById=fu.userId
-	LEFT JOIN user pu on hdr.approveById=pu.userId  
-	WHERE 1 ";
-	switch($s_userGroupCode){ 
-		case 'whOff' :  case 'whSup' : 
-		case 'pdOff' :  case 'pdSup' :
-				$sql .= "AND hdr.fromCode='".$s_userDeptCode."' ";
-			break;
-		default : //case 'it' : case 'admin' : 
-	  }
-	if($dateFrom<>""){ $sql .= " AND hdr.sendDate>='$dateFromYmd' ";	}
-	if($dateTo<>""){ $sql .= " AND hdr.sendDate<='$dateToYmd' ";	}				  
-	$sql .= "AND hdr.statusCode='P' 
-
-	ORDER BY hdr.createTime DESC ";
-	$result = mysqli_query($link, $sql);     
+	$objPHPExcel->setActiveSheetIndex(0)
+		->setCellValue('A2', 'Product Code')
+		->setCellValue('B2', 'SLOC')
+		->setCellValue('C2', 'Category')
+		->setCellValue('D2', 'Receive')
+		->setCellValue('E2', 'Send')
+		->setCellValue('F2', 'Delivery')
+		->setCellValue('G2', 'Balance');
 	
-	$iRow=2; while($row = mysqli_fetch_assoc($result) ){
+		
+	$sql = "SELECT prd.`id`, prd.`code`, prd.`catCode`, prd.`name`, prd.`name2`, prd.`uomCode`, prd.`packUomCode`
+	, prd.`sourceTypeCode`, prd.`appCode`, prd.`description`, prd.`statusCode`
+	,sb.sloc, sb.`open`, sb.`produce`, sb.`onway`, sb.`receive`, sb.`send`, sb.`sales`, sb.`delivery`, sb.`balance` 
+	FROM stk_bal sb 
+	INNER JOIN product prd on prd.id=sb.prodId  
+	WHERE 1 ";
+	if($search_word<>""){ $sql = "and (prd.code like '%".$search_word."%' OR prd.name like '%".$search_word."%') "; }
+	if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
+	if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
+	$sql.="ORDER BY prd.code desc ";
+	$result = mysqli_query($link, $sql);    
+	
+	$iRow=3; while($row = mysqli_fetch_assoc($result) ){
 	// Add some data
 	$objPHPExcel->setActiveSheetIndex(0)		
-		->setCellValue('A'.$iRow, $row['sdNo'])
-		->setCellValue('B'.$iRow, $row['sendDate'])
-		->setCellValue('C'.$iRow, $row['fromName'])
-		->setCellValue('D'.$iRow, $row['toName']);
+		->setCellValue('A'.$iRow, $row['code'])
+		->setCellValue('B'.$iRow, $row['sloc'])
+		->setCellValue('C'.$iRow, $row['catCode'])
+		->setCellValue('D'.$iRow, $row['receive'])
+		->setCellValue('E'.$iRow, $row['send'])
+		->setCellValue('F'.$iRow, $row['delivery'])
+		->setCellValue('G'.$iRow, $row['balance']);
 		
 		$iRow+=1;
 	}
@@ -101,7 +81,7 @@ $objPHPExcel->setActiveSheetIndex(0);
 
 // Redirect output to a client’s web browser (Excel2007)
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment;filename="sending.xlsx"');
+header('Content-Disposition: attachment;filename="stock.xlsx"');
 header('Cache-Control: max-age=0');
 // If you're serving to IE 9, then the following may be needed
 header('Cache-Control: max-age=1');

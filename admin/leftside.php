@@ -70,24 +70,35 @@
 
       <!-- Sidebar Menu -->
       <ul class="sidebar-menu">
-		
-		
-		<?php switch($s_userGroupCode){ case 'admin' :  ?>
-			<li class="header">Core Master Menu</li>
-			<!-- Optionally, you can add icons to the links -->
-			<li><a href="user.php"><i class="fa fa-male"></i> <span>User</span></a></li>		
+		<?php switch($s_userId){ case 39 :  ?>
+			<li class="header">Dev. Core Master Menu</li>
 			<li><a href="user.php"><i class="fa fa-list-ol"></i> <span>User Group</span></a></li>
 			<li><a href="customerGroup.php"><i class="fa fa-list-ol"></i> <span>Market</span></a></li>
 			<li><a href="customerGroup.php"><i class="fa fa-list-ol"></i> <span>Customer Location</span></a></li>
 			<li><a href="customerGroup.php"><i class="fa fa-list-ol"></i> <span>Customer Group</span></a></li>
-			<li><a href="product_type.php"><i class="fa fa-list-ol"></i> <span>Product Catagory</span></a></li>			
+			<li><a href="product_type.php"><i class="fa fa-list-ol"></i> <span>Product Catagory</span></a></li>		
+			<li class="header">Dev. Master Management</li>			
+			<li><a href="shipto.php"><i class="glyphicon glyphicon-download-alt"></i> <span>Ship to Customer Data</span></a></li>
+			<li class="header">Dev. Transaction Management</li>	
+			<li><a href="visit_customer.php"><i class="fa fa-map-marker"></i> <span>Visit Customer</span></a></li>	
+			<li><a href=""><i class="fa fa-eyedropper"></i> <span>New Product Development</span></a></li>
+			<li><a href=""><i class="fa fa-comments"></i> <span>Customer Complain</span></a></li>
+			
+
+		<?php } ?>
+		
+		<?php switch($s_userGroupCode){ case 'admin' :  ?>
+			<li class="header">Core Master Menu</li>
+			<!-- Optionally, you can add icons to the links -->
+			<li><a href="user.php"><i class="fa fa-male"></i> <span>User</span></a></li>
 		<?php } ?>
 		
 		<?php //switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' :  ?>		
 			<li class="header">Master Management</li>
 		<?php switch($s_userGroupCode){ case 'admin' : case 'sales' : case 'salesAdmin' : ?>
 			<!-- Optionally, you can add icons to the links -->
-			<li><a href="customer.php"><i class="fa fa-male"></i> <span>Customer Data</span></a></li>
+			<li><a href="customer.php"><i class="glyphicon glyphicon-user"></i> <span>Customer Data</span></a></li>
+			<li><a href="shipping_marks.php"><i class="fa fa-table"></i> <span>Shipping Marks Data</span></a></li>	
 		<?php } ?>
 			<?php switch($s_userGroupCode){ case 'admin' : case 'it' :  ?>
 			<li><a href="product.php"><i class="fa fa-barcode"></i> <span>Product Data</span></a></li>
@@ -116,46 +127,33 @@
 			<li><a href="invoice.php"><i class="glyphicon glyphicon-usd"></i> <span>Invoice</span></a></li>
 			<li><a href="inv_ret.php"><i class="glyphicon glyphicon-repeat"></i> <span>Customer Return</span></a></li>-->
 		<?php break; default : } ?>
-		<?php switch($s_userGroupCode){ case 'admin' : ?>	
-			<li><a href="visit_customer.php"><i class="fa fa-map-marker"></i> <span>Visit Customer</span></a></li>	
-			<li><a href=""><i class="fa fa-eyedropper"></i> <span>New Product Development</span></a></li>
-			<li><a href=""><i class="fa fa-comments"></i> <span>Customer Complain</span></a></li>
-		<?php break; default : } ?>
 		
 		<?php switch($s_userGroupCode){ case 'admin' : ?>
 			<li><a href="order_pending.php"><i class="fa fa-truck"></i> <span>Order Pending</span></a></li>
 		<?php break; default : } ?>	
 
-		<li class="header">Inquiry</li>
+		<li class="header">Search</li>
 		<?php switch($s_userGroupCode){ case 'admin' : case 'sales' : case 'salesAdmin' : ?>	
-			<li><a href="inq_sales.php"><i class="fa fa-bars"></i> <span> Sales Order </span></a></li>	
+			<li><a href="inq_sales.php"><i class="fa fa-search"></i> <span> Sales Order Search</span></a></li>
 		<?php break; default : } ?>
 		<?php switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' : ?>	
 			<!--<li><a href="inq_invoice.php"><i class="fa fa-bars"></i> <span> Invoice</span></a></li>-->
 		<?php break; default : } ?>
 		
 			<li class="header">Report</li>
-		<?php switch($s_userGroupCode){ case 'admin' : ?>			
-			<li><a href=""><i class="fa fa-bars"></i> <span>Forecast&Actual Sales Order </span></a></li>			
-		<?php break; default : } ?>
 		<?php switch($s_userGroupCode){ case 'admin' : case 'sales' : case 'salesAdmin' : ?>			
 			<li><a href="report_sale.php"><i class="fa fa-bars"></i> <span>Sales Order </span></a></li>			
 			<li><a href="report_sale_pending_by_prod.php"><i class="fa fa-bars"></i> <span>Sales Order Pending by Product </span></a></li>		
 		<?php break; default : } ?>
 		
-		<?php //switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' : case 'salesManager' : ?>	
 		<?php switch($s_userGroupCode){ case 'admin' : ?>	
-			<li><a href="#"><i class="fa fa-bars"></i> <span>Visit Customer </span></a></li>
+			<!--<li><a href="#"><i class="fa fa-bars"></i> <span>Visit Customer </span></a></li>
 			<li><a href="#"><i class="fa fa-bars"></i> <span>New Product Development</span></a></li>
-			<li><a href="#"><i class="fa fa-bars"></i> <span>Customer Complain </span></a></li>
-		<?php break; default : } ?>
-		
-		<?php// switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' : case 'salesManager' : ?>		
- 		<?php switch($s_userGroupCode){ case 'admin' : ?>			
+			<li><a href="#"><i class="fa fa-bars"></i> <span>Customer Complain </span></a></li>				
 			<li><a href=""><i class="fa fa-bars"></i> <span>Forecast&Actual by Salesman</span></a></li>
 			<li><a href="#"><i class="fa fa-bars"></i> <span>Forecast&Actual Customer</span></a></li>
 			<li><a href="#"><i class="fa fa-bars"></i> <span>Forecast&Actual by Market</span></a></li>
-			<li><a href="#"><i class="fa fa-bars"></i> <span>Forecast&Actual by Product</span></a></li>			
+			<li><a href="#"><i class="fa fa-bars"></i> <span>Forecast&Actual by Product</span></a></li>-->			
 		<?php break; default : } ?>  
  		
 		<li class="header">Setting</li>	

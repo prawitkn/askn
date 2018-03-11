@@ -71,7 +71,7 @@
 		<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whOff' : case 'whSup' : case 'pdOff' : case 'pdSup' :   ?>
 			<li class="header">Report</li>
 			<li><a href="rpt_so_by_deli.php"><i class="fa fa-list-alt"></i> <span>Sales Order by Delivery Date Report</span></a></li>			
-			<li><a href="rpt_prod_stk.php"><i class="fa fa-list-alt"></i> <span>Stock Report</span></a></li>
+			<li><a href="report_prod_stk.php"><i class="fa fa-list-alt"></i> <span>Stock Report</span></a></li>
 			<li><a href="report_sending.php"><i class="fa fa-list-alt"></i> <span>Sending Report</span></a></li>
 			<li><a href="report_receiving.php"><i class="fa fa-list-alt"></i> <span>Receiving Report</span></a></li>
 			<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whOff' : case 'whSup' : ?>

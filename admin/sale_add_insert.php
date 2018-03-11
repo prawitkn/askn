@@ -3,18 +3,19 @@ include 'inc_helper.php';
 include 'session.php';	
 	
 try{
+	$soNo = $_POST['soNo'];
 	$saleDate = $_POST['saleDate'];
 	$poNo = $_POST['poNo'];    
 	$piNo = $_POST['piNo'];    
     $smId = $_POST['smId'];
-    $custId = $_POST['custId'];
+    $custId = (isset($_POST['custId'])? $_POST['custId'] : 0 );
 	$shipToId = $_POST['shipToId'];
 	$deliveryDate = $_POST['deliveryDate'];
 	$shippingMarksId = $_POST['shippingMarksId'];
 	//$deliveryRem = $_POST['deliveryRem'];
 	$shipByLcl = (isset($_POST['shipByLcl'])? 1 : 0 );
 	$shipByFcl = (isset($_POST['shipByFcl'])? 1 : 0 );
-	$shipByRemark = $_POST['shipByRemark'];
+	$shipByRem = $_POST['shipByRem'];
 	$remCoa = (isset($_POST['remCoa'])? 1 : 0 );
 	$remPalletBand = (isset($_POST['remPalletBand'])? 1 : 0 );
 	$remFumigate = (isset($_POST['remFumigate'])? 1 : 0 );
@@ -60,77 +61,133 @@ try{
 	$payTypeCreditDays = $_POST['payTypeCreditDays'];
 	$payTypeCode = (isset($_POST['payTypeCode'])? $_POST['payTypeCode'] : '' );
 	
-	$soNo = 'SO-'.substr(str_shuffle(MD5(microtime())), 0, 7);
+	
 	
 	$saleDate = to_mysql_date($saleDate);
 	$deliveryDate = to_mysql_date($deliveryDate);
 
 	//$pdo->beginTransaction();
 	
-	$sql = "INSERT INTO `sale_header`
-	(`soNo`, `saleDate`, `poNo`, `piNo`, `custId`, `shipToId`, `smId`,  `revCount`
-	, `deliveryDate`, `shipByLcl`, `shipByFcl`, `shipByRem`, `shippingMarksId`
-	, `suppTypeFact`, `suppTypeImp`, `prodTypeOld`, `prodTypeNew`, `custTypeOld`, `custTypeNew`
-	, `prodStkInStk`, `prodStkOrder`, `prodStkOther`, `prodStkRem`
-	, `packTypeAk`, `packTypeNone`, `packTypeOther`, `packTypeRem`
-	, `priceOnOrder`, `priceOnOther`, `priceOnRem`
-	, `remCoa`, `remPalletBand`, `remFumigate`, `remark`
-	, `plac2deliCode`, `plac2deliCodeSendRem`, `plac2deliCodeLogiRem`, `payTypeCode`, `payTypeCreditDays`
-	, `statusCode`, `createTime`, `createById`) 
-	VALUES 
-	(:soNo, :saleDate, :poNo,:piNo, :custId, :shipToId,  :smId, 0
-	, :deliveryDate,:shipByLcl,:shipByFcl,:shipByRem,:shippingMarksId
-	, :suppTypeFact, :suppTypeImp, :prodTypeOld, :prodTypeNew, :custTypeOld, :custTypeNew
-	, :prodStkInStk, :prodStkOrder, :prodStkOther, :prodStkRem
-	, :packTypeAk, :packTypeNone, :packTypeOther, :packTypeRem
-	, :priceOnOrder, :priceOnOther, :priceOnRem
-	, :remCoa, :remPalletBand, :remFumigate, :remark
-	, :plac2deliCode, :plac2deliCodeSendRem, :plac2deliCodeLogiRem, :payTypeCode, :payTypeCreditDays
-	, 'A', now(), :s_userId) 
-	";
+	
  
-    //$result = mysqli_query($link, $sql);
-	$stmt = $pdo->prepare($sql);
-	$stmt->bindParam(':soNo', $soNo);
-	$stmt->bindParam(':saleDate', $saleDate);
-	$stmt->bindParam(':poNo', $poNo);
-	$stmt->bindParam(':piNo', $piNo);
-	$stmt->bindParam(':custId', $custId);
-	$stmt->bindParam(':shipToId', $shipToId);
-	$stmt->bindParam(':smId', $smId);
-	$stmt->bindParam(':deliveryDate', $deliveryDate);
-	$stmt->bindParam(':shipByLcl', $shipByLcl);
-	$stmt->bindParam(':shipByFcl', $shipByFcl);
-	$stmt->bindParam(':shipByRem', $shipByRemark);
-	$stmt->bindParam(':shippingMarksId', $shippingMarksId);
-	$stmt->bindParam(':suppTypeFact', $suppTypeFact);
-	$stmt->bindParam(':suppTypeImp', $suppTypeImp);
-	$stmt->bindParam(':prodTypeOld', $prodTypeOld);
-	$stmt->bindParam(':prodTypeNew', $prodTypeNew);
-	$stmt->bindParam(':custTypeOld', $custTypeOld);
-	$stmt->bindParam(':custTypeNew', $custTypeNew);
-	$stmt->bindParam(':prodStkInStk', $prodStkInStk);
-	$stmt->bindParam(':prodStkOrder', $prodStkOrder);
-	$stmt->bindParam(':prodStkOther', $prodStkOther);
-	$stmt->bindParam(':prodStkRem', $prodStkRem);
-	$stmt->bindParam(':packTypeAk', $packTypeAk);
-	$stmt->bindParam(':packTypeNone', $packTypeNone);
-	$stmt->bindParam(':packTypeOther', $packTypeOther);
-	$stmt->bindParam(':packTypeRem', $packTypeRem);
-	$stmt->bindParam(':priceOnOrder', $priceOnOrder);
-	$stmt->bindParam(':priceOnOther', $priceOnOther);
-	$stmt->bindParam(':priceOnRem', $priceOnRem);
-	$stmt->bindParam(':remark', $remark);
-	$stmt->bindParam(':remCoa', $remCoa);
-	$stmt->bindParam(':remPalletBand', $remPalletBand);
-	$stmt->bindParam(':remFumigate', $remFumigate);
-	$stmt->bindParam(':plac2deliCode', $plac2deliCode);
-	$stmt->bindParam(':plac2deliCodeSendRem', $plac2deliCodeSendRem);
-	$stmt->bindParam(':plac2deliCodeLogiRem', $plac2deliCodeLogiRem);
-	$stmt->bindParam(':payTypeCode', $payTypeCode);
-	$stmt->bindParam(':payTypeCreditDays', $payTypeCreditDays);
-	$stmt->bindParam(':s_userId', $s_userId);	
-	$stmt->execute();
+	if($soNo==""){
+		$soNo = 'SO-'.substr(str_shuffle(MD5(microtime())), 0, 7);
+		$sql = "INSERT INTO `sale_header`
+		(`soNo`, `saleDate`, `poNo`, `piNo`, `custId`, `shipToId`, `smId`,  `revCount`
+		, `deliveryDate`, `shipByLcl`, `shipByFcl`, `shipByRem`, `shippingMarksId`
+		, `suppTypeFact`, `suppTypeImp`, `prodTypeOld`, `prodTypeNew`, `custTypeOld`, `custTypeNew`
+		, `prodStkInStk`, `prodStkOrder`, `prodStkOther`, `prodStkRem`
+		, `packTypeAk`, `packTypeNone`, `packTypeOther`, `packTypeRem`
+		, `priceOnOrder`, `priceOnOther`, `priceOnRem`
+		, `remCoa`, `remPalletBand`, `remFumigate`, `remark`
+		, `plac2deliCode`, `plac2deliCodeSendRem`, `plac2deliCodeLogiRem`, `payTypeCode`, `payTypeCreditDays`
+		, `statusCode`, `createTime`, `createById`) 
+		VALUES 
+		(:soNo, :saleDate, :poNo,:piNo, :custId, :shipToId,  :smId, 0
+		, :deliveryDate,:shipByLcl,:shipByFcl,:shipByRem,:shippingMarksId
+		, :suppTypeFact, :suppTypeImp, :prodTypeOld, :prodTypeNew, :custTypeOld, :custTypeNew
+		, :prodStkInStk, :prodStkOrder, :prodStkOther, :prodStkRem
+		, :packTypeAk, :packTypeNone, :packTypeOther, :packTypeRem
+		, :priceOnOrder, :priceOnOther, :priceOnRem
+		, :remCoa, :remPalletBand, :remFumigate, :remark
+		, :plac2deliCode, :plac2deliCodeSendRem, :plac2deliCodeLogiRem, :payTypeCode, :payTypeCreditDays
+		, 'A', now(), :s_userId) 
+		";
+		$stmt = $pdo->prepare($sql);
+		$stmt->bindParam(':soNo', $soNo);
+		$stmt->bindParam(':saleDate', $saleDate);
+		$stmt->bindParam(':poNo', $poNo);
+		$stmt->bindParam(':piNo', $piNo);
+		$stmt->bindParam(':custId', $custId);
+		$stmt->bindParam(':shipToId', $shipToId);
+		$stmt->bindParam(':smId', $smId);
+		$stmt->bindParam(':deliveryDate', $deliveryDate);
+		$stmt->bindParam(':shipByLcl', $shipByLcl);
+		$stmt->bindParam(':shipByFcl', $shipByFcl);
+		$stmt->bindParam(':shipByRem', $shipByRem);
+		$stmt->bindParam(':shippingMarksId', $shippingMarksId);
+		$stmt->bindParam(':suppTypeFact', $suppTypeFact);
+		$stmt->bindParam(':suppTypeImp', $suppTypeImp);
+		$stmt->bindParam(':prodTypeOld', $prodTypeOld);
+		$stmt->bindParam(':prodTypeNew', $prodTypeNew);
+		$stmt->bindParam(':custTypeOld', $custTypeOld);
+		$stmt->bindParam(':custTypeNew', $custTypeNew);
+		$stmt->bindParam(':prodStkInStk', $prodStkInStk);
+		$stmt->bindParam(':prodStkOrder', $prodStkOrder);
+		$stmt->bindParam(':prodStkOther', $prodStkOther);
+		$stmt->bindParam(':prodStkRem', $prodStkRem);
+		$stmt->bindParam(':packTypeAk', $packTypeAk);
+		$stmt->bindParam(':packTypeNone', $packTypeNone);
+		$stmt->bindParam(':packTypeOther', $packTypeOther);
+		$stmt->bindParam(':packTypeRem', $packTypeRem);
+		$stmt->bindParam(':priceOnOrder', $priceOnOrder);
+		$stmt->bindParam(':priceOnOther', $priceOnOther);
+		$stmt->bindParam(':priceOnRem', $priceOnRem);
+		$stmt->bindParam(':remark', $remark);
+		$stmt->bindParam(':remCoa', $remCoa);
+		$stmt->bindParam(':remPalletBand', $remPalletBand);
+		$stmt->bindParam(':remFumigate', $remFumigate);
+		$stmt->bindParam(':plac2deliCode', $plac2deliCode);
+		$stmt->bindParam(':plac2deliCodeSendRem', $plac2deliCodeSendRem);
+		$stmt->bindParam(':plac2deliCodeLogiRem', $plac2deliCodeLogiRem);
+		$stmt->bindParam(':payTypeCode', $payTypeCode);
+		$stmt->bindParam(':payTypeCreditDays', $payTypeCreditDays);
+		$stmt->bindParam(':s_userId', $s_userId);	
+		$stmt->execute();
+	}else{
+		$sql = "UPDATE `sale_header` SET `saleDate`=:saleDate, `poNo`=:poNo, `piNo`=:piNo, `custId`=`custId`
+		, `shipToId`=:shipToId, `smId`=:smId,  `revCount`=`revCount`, `deliveryDate`=:deliveryDate, `shipByLcl`=:shipByLcl
+		, `shipByFcl`=:shipByFcl, `shipByRem`=:shipByRem, `shippingMarksId`=:shippingMarksId, `suppTypeFact`=:suppTypeFact, `suppTypeImp`=:suppTypeImp
+		, `prodTypeOld`=:prodTypeOld, `prodTypeNew`=:prodTypeNew, `custTypeOld`=:custTypeOld, `custTypeNew`=:custTypeNew, `prodStkInStk`=:prodStkInStk
+		, `prodStkOrder`=:prodStkOrder, `prodStkOther`=:prodStkOther, `prodStkRem`=:prodStkRem, `packTypeAk`=:packTypeAk, `packTypeNone`=:packTypeNone
+		, `packTypeOther`=:packTypeOther, `packTypeRem`=:packTypeRem, `priceOnOrder`=:priceOnOrder, `priceOnOther`=:priceOnOther, `priceOnRem`=:priceOnRem
+		, `remCoa`=:remCoa, `remPalletBand`=:remPalletBand, `remFumigate`=:remFumigate, `remark`=:remark, `plac2deliCode`=:plac2deliCode
+		, `plac2deliCodeSendRem`=:plac2deliCodeSendRem, `plac2deliCodeLogiRem`=:plac2deliCodeLogiRem, `payTypeCode`=:payTypeCode, `payTypeCreditDays`=:payTypeCreditDays
+		, `statusCode`=`statusCode`, `updateTime`=now(), `updateById`=:s_userId ";
+		$sql .= "WHERE `soNo`=:soNo 
+		";
+		$stmt = $pdo->prepare($sql);
+		$stmt->bindParam(':soNo', $soNo);
+		$stmt->bindParam(':saleDate', $saleDate);
+		$stmt->bindParam(':poNo', $poNo);
+		$stmt->bindParam(':piNo', $piNo);
+			$stmt->bindParam(':shipToId', $shipToId);
+		$stmt->bindParam(':smId', $smId);
+		$stmt->bindParam(':deliveryDate', $deliveryDate);
+		$stmt->bindParam(':shipByLcl', $shipByLcl);
+		$stmt->bindParam(':shipByFcl', $shipByFcl);
+		$stmt->bindParam(':shipByRem', $shipByRem);
+		$stmt->bindParam(':shippingMarksId', $shippingMarksId);
+		$stmt->bindParam(':suppTypeFact', $suppTypeFact);
+		$stmt->bindParam(':suppTypeImp', $suppTypeImp);
+			$stmt->bindParam(':prodTypeOld', $prodTypeOld);
+		$stmt->bindParam(':prodTypeNew', $prodTypeNew);
+		$stmt->bindParam(':custTypeOld', $custTypeOld);
+		$stmt->bindParam(':custTypeNew', $custTypeNew);
+		$stmt->bindParam(':prodStkInStk', $prodStkInStk);
+			$stmt->bindParam(':prodStkOrder', $prodStkOrder);
+		$stmt->bindParam(':prodStkOther', $prodStkOther);
+		$stmt->bindParam(':prodStkRem', $prodStkRem);
+		$stmt->bindParam(':packTypeAk', $packTypeAk);
+		$stmt->bindParam(':packTypeNone', $packTypeNone);
+			$stmt->bindParam(':packTypeOther', $packTypeOther);
+		$stmt->bindParam(':packTypeRem', $packTypeRem);
+		$stmt->bindParam(':priceOnOrder', $priceOnOrder);
+		$stmt->bindParam(':priceOnOther', $priceOnOther);
+		$stmt->bindParam(':priceOnRem', $priceOnRem);
+		$stmt->bindParam(':remCoa', $remCoa);
+		$stmt->bindParam(':remPalletBand', $remPalletBand);
+		$stmt->bindParam(':remFumigate', $remFumigate);
+		$stmt->bindParam(':remark', $remark);
+		$stmt->bindParam(':plac2deliCode', $plac2deliCode);
+		$stmt->bindParam(':plac2deliCodeSendRem', $plac2deliCodeSendRem);
+		$stmt->bindParam(':plac2deliCodeLogiRem', $plac2deliCodeLogiRem);
+		$stmt->bindParam(':payTypeCode', $payTypeCode);
+		$stmt->bindParam(':payTypeCreditDays', $payTypeCreditDays);
+		$stmt->bindParam(':s_userId', $s_userId);	
+		
+		$stmt->execute();
+	}
 	
 	/*$id = $pdo->lastInsertId();
 	$soNo = substr('0000000000'.(string)$id,-10);	
@@ -143,7 +200,7 @@ try{
 	//$pdo->commit();
 	
 	header('Content-Type: application/json');
-    echo json_encode(array('success' => true, 'message' => 'Data Inserted Complete.', 'soNo' => $soNo));
+    echo json_encode(array('success' => true, 'message' => 'Success.', 'soNo' => $soNo));
 } 
 //Our catch block will handle any exceptions that are thrown.
 catch(Exception $e){
