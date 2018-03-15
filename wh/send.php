@@ -14,9 +14,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		$s_userDeptCode = $row_user['userDeptCode'];		*/
 	//$is_local = true;
 	if($is_local){
-		//include '../db/database_sqlsrv_localhost.php';
+		include '../db/database_sqlsrv_localhost.php';
 	}else{
-		//include '../db/database_sqlsrv.php';
+		include '../db/database_sqlsrv.php';
 	}
 
 $rootPage = 'send';
@@ -427,7 +427,7 @@ if(isset($_GET['sync']) AND isset($_GET['sendDate'])  ){
 				  }
 				$sql .= "AND hdr.statusCode<>'X' 
 				
-				ORDER BY hdr.createTime DESC
+				ORDER BY hdr.createTime DESC 
 				LIMIT $start, $rows 
 				";
 				//echo $sql;

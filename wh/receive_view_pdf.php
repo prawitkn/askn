@@ -213,12 +213,18 @@ if( isset($_GET['rcNo']) ){
 							'; 
 							
 					$row_no = 1; $sumQty=$sumNW=$sumGW=0; while ($row = $stmt->fetch()) { 
-						
+							$gradeName = '<b style="color: red;">N/A</b>'; 
+							switch($row['grade']){
+								case 0 : $gradeName = 'A'; break;
+								case 1 : $statusName = '<b style="color: red;">B</b>';  break;
+								case 2 : $statusName = '<b style="color: red;">N</b>'; break;
+								default : 
+							} 
 						
 					$html .='<tr>
 						<td style="border: 0.1em solid black; text-align: center; width: 30px;">'.$row_no.'</td>
 						<td style="border: 0.1em solid black; padding: 10px; width: 250px;"> '.$row['barcode'].'</td>
-						<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$row['grade'].'</td>
+						<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$gradeName.'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['NW'].'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['GW'].'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['qty'],0,'.',',').'</td>

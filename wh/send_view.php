@@ -144,12 +144,21 @@ $sdNo = $hdr['sdNo'];
 							<th>Issue Date</th>
 							<th>#</th>
 						</tr>
-						<?php $row_no=1; $sumQty=0; while ($row = $stmt->fetch()) { $sumQty+=$row['qty']; ?>
+						<?php $row_no=1; $sumQty=0; $sumGradeNotOk=0; while ($row = $stmt->fetch()) { $sumQty+=$row['qty']; 
+							$gradeName = '<b style="color: red;">N/A</b>'; 
+							switch($row['grade']){
+								case 0 : $gradeName = 'A'; break;
+								case 1 : $statusName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
+								case 2 : $statusName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+								default : 
+									$statusName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
+							} 
+						?>
 						<tr>
 							<td style="text-align: center;"><?= $row_no; ?></td>
 							<td><?= $row['prodCode']; ?></td>
 							<td><?= $row['barcode']; ?></td>
-							<td><?= $row['grade']; ?></td>
+							<td><?= $gradeName; ?></td>
 							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
 							<td><?= $row['issueDate']; ?></td>							
 						</tr>
@@ -247,7 +256,10 @@ var spinner = new Spinner().spin();
 $("#spin").append(spinner.el);
 $("#spin").hide();
 //           
-$('#btn_verify').click (function(e) {				 
+$('#btn_verify').click (function(e) {			
+	<?php if($sumGradeNotOk>0){
+			echo "alert('Please check GRADE before sending.'); return false; ";
+	}?>	 
 	var params = {					
 	sdNo: $('#sdNo').val()			
 	};
@@ -317,7 +329,10 @@ $('#btn_reject').click (function(e) {
 });
 //.btn_click
 
-$('#btn_approve').click (function(e) {				 
+$('#btn_approve').click (function(e) {
+	<?php if($sumGradeNotOk>0){
+			echo "alert('Please check GRADE before sending.'); return false; ";
+	}?>
 	var params = {					
 	sdNo: $('#sdNo').val()				
 	};
