@@ -74,7 +74,7 @@ class MYPDF extends TCPDF {
         // Page number
 		$tmp = date('Y-m-d H:i:s');
 		//$tmp = to_thai_short_date_fdt($tmp);
-		$this->Cell(0, 10,'FM-MS-003; rev.01', 0, false, 'L', 0, '', 0, false, 'T', 'M');
+		$this->Cell(0, 10,'FM-MS-003; rev.03', 0, false, 'L', 0, '', 0, false, 'T', 'M');
 		$this->Cell(0, 10,'Print : '. $tmp, 0, false, 'R', 0, '', 0, false, 'T', 'M');
     }
 	public function head($hdr){
@@ -124,7 +124,7 @@ class MYPDF extends TCPDF {
 		$this->Cell(45, 0, 'ชื่อลูกค้า (Customer Name) : ', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
 		$this->Cell(55, 0, $hdr['custName'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
 		$this->Cell(25, 0, 'วันที่ (Date) : ', 0, $ln=0, 'L', 0, '', 0, false, 'T', 'B');
-		$this->Cell(50, 0, to_thai_date($hdr['saleDate']), 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+		$this->Cell(50, 0, date('d M Y',strtotime( $hdr['saleDate'] )), 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
 		$this->Ln(6);
 		
 		$this->Cell(45, 0, 'ที่อยู่เปิด Invoice (Destination) : ', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
@@ -290,7 +290,7 @@ class MYPDF extends TCPDF {
 		$this->Cell(30, 5, 'ส่งสินค้าจากโรงงาน AK ที่');
 		$this->Cell(25, 0, $hdr['plac2deliCodeSendRem'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
 		$this->Cell(35, 5, 'วันที่ (Date) : ');
-		$this->Cell(30, 5, to_thai_datetime_fdt($hdr['createTime']), 'B', 0, 'C', 1, 'B', 0, false, 'T', 'C');
+		$this->Cell(30, 5, date('d M Y H:m',strtotime( $hdr['createTime'] )), 'B', 0, 'C', 1, 'B', 0, false, 'T', 'C');
 		$this->Ln(6);
 		
 		$this->Cell(5, 5, '');
@@ -466,7 +466,7 @@ if( isset($_GET['soNo']) ){
 										<th style="font-weight: bold; text-align: center; width: 150px; border: 0.1em solid black;">Specification</th>								
 										<th style="font-weight: bold; text-align: center; width: 60px; border: 0.1em solid black;">Qty</th>								
 										<th style="font-weight: bold; text-align: center; width: 40px; border: 0.1em solid black;">Unit</th>
-										<th style="font-weight: bold; text-align: center; width: 65px; border: 0.1em solid black;">Delivery / Load Date</th>
+										<th style="font-weight: bold; text-align: center; width: 70px; border: 0.1em solid black;">Delivery / Load Date</th>
 									</tr>
 								</thead>
 								  <tbody>
@@ -485,7 +485,7 @@ if( isset($_GET['soNo']) ){
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 40px;
 										border: 0.1em solid black; text-align: right; width: 40px;">'.$row['prodUomCode'].'</td>						
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65px;
-										border: 0.1em solid black; padding: 10px; width: 65px;"> '.to_thai_date($row['deliveryDate']).'</td>
+										border: 0.1em solid black; padding: 10px; width: 70px;"> '.date('d M Y',strtotime( $row['deliveryDate'] )).'</td>
 						</tr>';	
 				
 				//Loop item per page
@@ -506,7 +506,7 @@ if( isset($_GET['soNo']) ){
 							<td style="font-weight: bold; text-align: center; width: 150px;border: 0.1em solid black;"></td>								
 							<td style="font-weight: bold; text-align: center; width: 60px;border: 0.1em solid black;"></td>								
 							<td style="font-weight: bold; text-align: center; width: 40px;border: 0.1em solid black;"></td>
-							<td style="font-weight: bold; text-align: center; width: 65px;border: 0.1em solid black;"></td>							
+							<td style="font-weight: bold; text-align: center; width: 70px;border: 0.1em solid black;"></td>							
 						</tr>';	
 				}
 			}

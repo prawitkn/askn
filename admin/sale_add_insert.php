@@ -63,8 +63,8 @@ try{
 	
 	
 	
-	$saleDate = to_mysql_date($saleDate);
-	$deliveryDate = to_mysql_date($deliveryDate);
+	//$saleDate = to_mysql_date($saleDate);
+	//$deliveryDate = to_mysql_date($deliveryDate);
 
 	//$pdo->beginTransaction();
 	

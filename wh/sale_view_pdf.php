@@ -41,6 +41,7 @@ class MYPDF extends TCPDF {
 
     //Page header
     public function Header() {
+		$this->setImageScale(PDF_IMAGE_SCALE_RATIO);
 		// Set font
 		$this->SetFont('THSarabun', '', 16, '', true);
 		// Title
@@ -73,7 +74,7 @@ class MYPDF extends TCPDF {
         // Page number
 		$tmp = date('Y-m-d H:i:s');
 		//$tmp = to_thai_short_date_fdt($tmp);
-		$this->Cell(0, 10,'FM-MS-003; rev.01', 0, false, 'L', 0, '', 0, false, 'T', 'M');
+		$this->Cell(0, 10,'FM-MS-003; rev.03', 0, false, 'L', 0, '', 0, false, 'T', 'M');
 		$this->Cell(0, 10,'Print : '. $tmp, 0, false, 'R', 0, '', 0, false, 'T', 'M');
     }
 	public function head($hdr){
@@ -123,7 +124,7 @@ class MYPDF extends TCPDF {
 		$this->Cell(45, 0, 'ชื่อลูกค้า (Customer Name) : ', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
 		$this->Cell(55, 0, $hdr['custName'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
 		$this->Cell(25, 0, 'วันที่ (Date) : ', 0, $ln=0, 'L', 0, '', 0, false, 'T', 'B');
-		$this->Cell(50, 0, to_thai_date($hdr['saleDate']), 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+		$this->Cell(50, 0, date('d M Y',strtotime( $hdr['saleDate'] )), 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
 		$this->Ln(6);
 		
 		$this->Cell(45, 0, 'ที่อยู่เปิด Invoice (Destination) : ', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
@@ -209,8 +210,9 @@ class MYPDF extends TCPDF {
 			$img = file_get_contents($image_file);
 			// Image example with resizing
 			//image width=150px;
-			//$this->Image('@' . $img,xFromTop, yFromTop,'JPG');
-			$this->Image('@' . $img,100,165,'JPG');
+			//$this->Image('@' . $img,xFromTop, yFromTop,'JPG'); 
+			//$this->SetLineWidth( 1 );
+			$this->Image('@' . $img,150,180, 45, 'JPG');
 		}
 		$this->Ln(6);
 		
@@ -255,7 +257,7 @@ class MYPDF extends TCPDF {
 		//$replacement = "<br />";
 		//$remStr = str_replace($needles, $replacement, $remStr);
 		//$pdf->MultiCell(150, 0, $remStr, 'B', 0, 'L', 1);
-		$this->MultiCell(150, 0, $remStr."afdjsalfjdksajfdks fjdklsajfgfsaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa dklsajfdksla fjdkslajfkdls af djsk\nafljds klaffdjdkslafjds  jfdksa ;jfdksja  ", 'B', 0, 'L', 1);  //, 'B'
+		$this->MultiCell(150, 0, $remStr, 'B', 0, 'L', 1);  //, 'B'
 		//$pdf->MultiCell(30, 0, $remStr, 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
 		$this->Ln(9);
 		
@@ -288,7 +290,7 @@ class MYPDF extends TCPDF {
 		$this->Cell(30, 5, 'ส่งสินค้าจากโรงงาน AK ที่');
 		$this->Cell(25, 0, $hdr['plac2deliCodeSendRem'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
 		$this->Cell(35, 5, 'วันที่ (Date) : ');
-		$this->Cell(30, 5, to_thai_datetime_fdt($hdr['createTime']), 'B', 0, 'C', 1, 'B', 0, false, 'T', 'C');
+		$this->Cell(30, 5, date('d M Y H:m',strtotime( $hdr['createTime'] )), 'B', 0, 'C', 1, 'B', 0, false, 'T', 'C');
 		$this->Ln(6);
 		
 		$this->Cell(5, 5, '');
@@ -426,15 +428,16 @@ if( isset($_GET['soNo']) ){
 			$countTotal = $row['countTotal'];
 			
 			$sql = "
-			SELECT a.`id`, a.`prodId`, a.`salesPrice`, a.`qty`, a.`total`, a.deliveryDate, 
-			a.`discPercent`, a.`discAmount`, a.`netTotal`, a.`soNo`
-			, b.code as prodCode, b.name as prodName, b.uomCode as prodUomCode
+			SELECT a.`id`, a.`prodId`, a.`salesPrice`, a.`qty`, a.`rollLengthId`, a.`remark`, a.deliveryDate, a.`soNo`
+			, b.code as prodCode, b.name as prodName, b.uomCode as prodUomCode, b.description 
 			, (SELECT IFNULL(SUM(id.qty),0) FROM invoice_detail id 
 					INNER JOIN invoice_header ih on ih.invNo=id.invNo										
 					INNER JOIN delivery_header dh on dh.doNo=ih.doNo 
 					WHERE dh.soNo=a.soNo AND id.prodCode=a.prodId ) as sentQty 
+			, rl.name as rollLengthName 
 			FROM `sale_detail` a
 			LEFT JOIN product b on a.prodId=b.id
+			LEFT JOIN product_roll_length rl ON rl.id=a.rollLengthId 
 			WHERE 1
 			AND a.`soNo`=:soNo 
 			ORDER BY a.createTime
@@ -455,7 +458,7 @@ if( isset($_GET['soNo']) ){
 					
 					$html="";					
 					$html ='
-							<table class="table table-striped no-margin" style="width:100%;"  >
+							<table class="table table-striped no-margin" style="width:100%; table-layout: fixed;"  >
 								<thead>	
 									<tr>										
 										<th style="font-weight: bold; text-align: center; width: 150px; border: 0.1em solid black;">Product Name</th>
@@ -463,7 +466,7 @@ if( isset($_GET['soNo']) ){
 										<th style="font-weight: bold; text-align: center; width: 150px; border: 0.1em solid black;">Specification</th>								
 										<th style="font-weight: bold; text-align: center; width: 60px; border: 0.1em solid black;">Qty</th>								
 										<th style="font-weight: bold; text-align: center; width: 40px; border: 0.1em solid black;">Unit</th>
-										<th style="font-weight: bold; text-align: center; width: 65px; border: 0.1em solid black;">Delivery / Load Date</th>
+										<th style="font-weight: bold; text-align: center; width: 70px; border: 0.1em solid black;">Delivery / Load Date</th>
 									</tr>
 								</thead>
 								  <tbody>
@@ -471,17 +474,18 @@ if( isset($_GET['soNo']) ){
 				}
 				$html .='<tr>							
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px;
-										border: 0.1em solid black; padding: 10px; width: 150px;"> '.$row['prodName'].'</td>
+										border: 0.1em solid black; padding: 10px; width: 150px;"> 
+										 '.$row['prodName'].'</td>
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 150px;
 										border: 0.1em solid black; padding: 10px; width: 150px;"> '.$row['prodCode'].'</td>
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 150px;
-										border: 0.1em solid black; padding: 10px; width: 150px;"> '.''.'</td>
+										border: 0.1em solid black; padding: 10px; width: 150px;"> '.$row['remark'].' '.($row['rollLengthId']<>'0'?'[RL:'.$row['rollLengthName'].']':'').'</td>
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 60px;
 										border: 0.1em solid black; text-align: right; width: 60px;">'.number_format($row['qty'],0,'.',',').'</td>						
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 40px;
 										border: 0.1em solid black; text-align: right; width: 40px;">'.$row['prodUomCode'].'</td>						
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65px;
-										border: 0.1em solid black; padding: 10px; width: 65px;"> '.to_thai_date($row['deliveryDate']).'</td>
+										border: 0.1em solid black; padding: 10px; width: 70px;"> '.date('d M Y',strtotime( $row['deliveryDate'] )).'</td>
 						</tr>';	
 				
 				//Loop item per page
@@ -502,7 +506,7 @@ if( isset($_GET['soNo']) ){
 							<td style="font-weight: bold; text-align: center; width: 150px;border: 0.1em solid black;"></td>								
 							<td style="font-weight: bold; text-align: center; width: 60px;border: 0.1em solid black;"></td>								
 							<td style="font-weight: bold; text-align: center; width: 40px;border: 0.1em solid black;"></td>
-							<td style="font-weight: bold; text-align: center; width: 65px;border: 0.1em solid black;"></td>							
+							<td style="font-weight: bold; text-align: center; width: 70px;border: 0.1em solid black;"></td>							
 						</tr>';	
 				}
 			}

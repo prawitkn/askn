@@ -181,15 +181,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			<nav>
 			<ul class="pagination">
 				<li <?php if($page==1) echo 'class="disabled"'; ?> >
-					<a href="<?=$url;?>?search_word=<?= $search_word;?>&catCode=<?= $catCode;?>&marketCode=<?= $marketCode;?>&=page=<?= $page-1; ?>" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
+					<a href="<?=$url;?>?search_word=<?= $search_word;?>&catCode=<?= $catCode;?>&appCode=<?= $appCode;?>&=page=<?= $page-1; ?>" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
 				</li>
 				<?php for($i=1; $i<=$total_page;$i++){ ?>
 				<li <?php if($page==$i) echo 'class="active"'; ?> >
-					<a href="<?=$url;?>?search_word=<?= $search_word;?>&catCode=<?= $catCode;?>&marketCode=<?= $marketCode;?>&page=<?= $i?>" > <?= $i;?></a>			
+					<a href="<?=$url;?>?search_word=<?= $search_word;?>&catCode=<?= $catCode;?>&appCode=<?= $appCode;?>&page=<?= $i?>" > <?= $i;?></a>			
 				</li>
 				<?php } ?>
 				<li <?php if($page==$total_page) echo 'class="disabled"'; ?> >
-					<a href="<?=$url;?>?search_word=<?= $search_word;?>&catCode=<?= $catCode;?>&marketCode=<?= $marketCode;?>&page=<?=$page+1?>" aria-labels="Next"><span aria-hidden="true">&raquo;</span></a>
+					<a href="<?=$url;?>?search_word=<?= $search_word;?>&catCode=<?= $catCode;?>&appCode=<?= $appCode;?>&page=<?=$page+1?>" aria-labels="Next"><span aria-hidden="true">&raquo;</span></a>
 				</li>
 			</ul>
 			</nav>
