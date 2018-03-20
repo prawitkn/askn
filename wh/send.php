@@ -14,7 +14,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		$s_userDeptCode = $row_user['userDeptCode'];		*/
 	//$is_local = true;
 	if($is_local){
-		include '../db/database_sqlsrv_localhost.php';
+		//include '../db/database_sqlsrv_localhost.php';
 	}else{
 		include '../db/database_sqlsrv.php';
 	}

@@ -12,6 +12,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 $rootPage="receive";
 
+switch($s_userGroupCode){ 	
+	case 'pdOff' :
+	case 'pdSup' :
+		if($hdr['toCode']!=$s_userDeptCode) { header("Location: access_denied.php"); exit();}			
+		break;
+	default :	// it, admin 
+}
 
 $rcNo = $_GET['rcNo'];
 $sql = "SELECT rc.`rcNo`, rc.`refNo`, rc.`receiveDate`, rc.`fromCode`, rc.`remark`, rc.`statusCode`

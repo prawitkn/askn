@@ -150,6 +150,7 @@ $result = mysqli_query($link, $sql);
 				<tr>
 					<th>No.</th>
 					<th>Sending No.</th>
+					<th>Date</th>
 					<th>From</th>
 					<th>To</th>
 					<th>#</th>
@@ -167,6 +168,7 @@ $result = mysqli_query($link, $sql);
 					<tr>
 						<td><?=$c_row;?></td>
 						<td><a href="send_view.php?sdNo=<?=$row['sdNo'];?>"><?=$row['sdNo'];?></a></td>
+					<td><?=date('d M Y',strtotime( $row['sendDate'] ));?></td>
 						<td><?=$row['fromName'];?></td>
 						<td><?=$row['toName'];?></td>
 						<td>#</td>
