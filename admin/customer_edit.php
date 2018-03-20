@@ -270,7 +270,6 @@ $(document).ready(function() {
 			$.post("customer_edit_ajax.php", $("#form1").serialize() )
 			
 			.done(function(data) {
-				alert(data);
 				if (data.success) {         
 					//$.smkAlert({text: data.message, type: data.status});
 					//$('#form1').smkClear();

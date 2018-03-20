@@ -74,7 +74,7 @@ function to_mysql_date($thai_date){
 				$fax = $_POST['fax']; 
 				$smId = $_POST['smId']; 
 				$smAdmId = (isset($_POST['smAdmId'])? $_POST['smAdmId'] : 0 );//if because column datatype = int
-				$statusCode = (isset($_POST['statusCode'])? $_POST['statusCode'] : '' );
+				$statusCode = (isset($_POST['statusCode'])? $_POST['statusCode'] : 'I' );
 								
 				//Check Duplicate shipto
 				 $sql = "SELECT * FROM `shipto` WHERE code=:code OR `name`=:name LIMIT 1 "; 
@@ -91,7 +91,7 @@ function to_mysql_date($thai_date){
 				, `contact`, `contactPosition`, `email`, `tel`, `fax`, `smId`, `smAdmId`
 				, `statusCode`, `createTime`, `createById`) 
 				 VALUES 
-				(:code,:name,:addr1,:addr2,:addr3,:zipcode,:countryName,:locationCode,:marketCode
+				(:custId,:code,:name,:addr1,:addr2,:addr3,:zipcode,:countryName,:locationCode,:marketCode
 				,:contact,:contactPosition,:email,:tel,:fax,:smId,:smAdmId
 				,:statusCode, now(), :s_userId)";
 				$stmt = $pdo->prepare($sql);
@@ -105,13 +105,12 @@ function to_mysql_date($thai_date){
 				$stmt->bindParam(':s_userId', $s_userId);
 				$stmt->execute();
 
-				$result = mysqli_query($link, $sql);
-				if ($result) {
+				if ($stmt->execute()) {
 					header('Content-Type: application/json');
 					echo json_encode(array('success' => true, 'message' => 'Data Inserted Complete.'));
 				} else {
 					header('Content-Type: application/json');
-					$errors = "Error on Data Insertion. Please try new username. " . mysqli_error($link);
+					$errors = "Error on Data Insertion. Please try new username. " . $pdo->errorInfo();
 					echo json_encode(array('success' => false, 'message' => $errors));
 				}				
 				break;
@@ -135,12 +134,12 @@ function to_mysql_date($thai_date){
 				$fax = $_POST['fax']; 
 				$smId = $_POST['smId']; 
 				$smAdmId = (isset($_POST['smAdmId'])? $_POST['smAdmId'] : 0 );//if because column datatype = int
-				$statusCode = (isset($_POST['statusCode'])? $_POST['statusCode'] : '' );
+				$statusCode = (isset($_POST['statusCode'])? $_POST['statusCode'] : 'I' );
 								
 				$sql = "UPDATE `".$tb."` SET `custId`=:custId, `code`=:code, `name`=:name, `addr1`=:addr1, `addr2`=:addr2
 				, `addr3`=:addr3, `zipcode`=:zipcode, `countryName`=:countryName, `locationCode`=:locationCode, `marketCode`=:marketCode
 				, `contact`=:contact, `contactPosition`=:contactPosition, `email`=:email, `tel`=:tel, `fax`=:fax, `smId`=:smId, `smAdmId`=:smAdmId
-				, `statusCode`=:xxxxx				
+				, `statusCode`=:statusCode 				
 				WHERE id=:id 
 				";	
 				$stmt = $pdo->prepare($sql);	
@@ -160,13 +159,11 @@ function to_mysql_date($thai_date){
 				$stmt->bindParam(':email', $email);
 				$stmt->bindParam(':tel', $tel);
 				$stmt->bindParam(':fax', $fax);
-				$stmt->bindParam(':address', $address);
-				$stmt->bindParam(':address2', $address2);
-				$stmt->bindParam(':groupCode', $groupCode);
-				$stmt->bindParam(':group2code', $group2code);
-				$stmt->bindParam(':group2Name', $group2Name);
-				$stmt->bindParam(':retireYear', $retireYear);
-				$stmt->bindParam(':photo', $photo);
+				
+				
+				$stmt->bindParam(':smId', $smId);
+				$stmt->bindParam(':smAdmId', $smAdmId);
+				$stmt->bindParam(':statusCode', $statusCode);
 				$stmt->bindParam(':id', $id);
 				if ($stmt->execute()) {
 					  header('Content-Type: application/json');
@@ -181,7 +178,7 @@ function to_mysql_date($thai_date){
 				$id = $_POST['id'];
 				$statusCode = $_POST['statusCode'];	
 				
-				$sql = "UPDATE cadet18_person SET statusCode=:statusCode WHERE id=:id ";
+				$sql = "UPDATE `".$tb."` SET statusCode=:statusCode WHERE id=:id ";
 				$stmt = $pdo->prepare($sql);	
 				$stmt->bindParam(':statusCode', $statusCode);
 				$stmt->bindParam(':id', $id);
@@ -198,7 +195,7 @@ function to_mysql_date($thai_date){
 			case 'remove' :
 				$id = $_POST['id'];
 				
-				$sql = "UPDATE cadet18_person SET statusCode='X' WHERE id=:id ";
+				$sql = "UPDATE `".$tb."` SET statusCode='X' WHERE id=:id ";
 				$stmt = $pdo->prepare($sql);	
 				$stmt->bindParam(':id', $id);
 				$stmt->execute();	
@@ -215,7 +212,7 @@ function to_mysql_date($thai_date){
 				$id = $_POST['id'];
 				$statusCode = $_POST['statusCode'];	
 				
-				$sql = "DELETE FROM cadet18_person WHERE id=:id ";
+				$sql = "DELETE FROM `".$tb."` WHERE id=:id ";
 				$stmt = $pdo->prepare($sql);	
 				$stmt->bindParam(':id', $id);
 				$stmt->execute();	

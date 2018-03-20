@@ -1,6 +1,6 @@
 <?php
   //  include '../db/database.php';
-  include 'inc_helper.php';
+  //include 'inc_helper.php';
 ?>
 <!DOCTYPE html>
 <!--
@@ -138,7 +138,7 @@ desired effect
 						Order No : <br/>
 						<b><?= $hdr['soNo']; ?></b><br/>
 						Order Date : <br/>
-						<b><?= to_thai_date($hdr['saleDate']); ?></b><br/>
+						<b><?= date('d M Y',strtotime( $hdr['saleDate'] )); ?></b><br/>
 					</div>	<!-- /.col-md-3-->	
 					<div class="col-md-3">
 						<i class="fa fa-<?php echo ($hdr['suppTypeFact']==0?'square-o':'check-square-o'); ?>"></i> Factory&nbsp;&nbsp;&nbsp;    <i class="fa fa-<?php echo ($hdr['suppTypeImp']==0?'square-o':'check-square-o'); ?>"></i> Import</br>
@@ -211,7 +211,7 @@ desired effect
 							<td><?= $row['description']; ?></td>		
 							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',',').' '.$row['prodUomCode']; ?></td>
 							<td style="text-align: right;"><?= $row['remark']; ?>/RL:<?= $row['rollLengthName']; ?></td>							
-							<td><?= to_thai_date_fdt($row['deliveryDate']); ?></td>	
+							<td><?= date('d M Y',strtotime( $row['deliveryDate'] )); ?></td>	
 							<td style="text-align: right; color: blue;"><?= number_format($row['sentQty'],0,'.',',').'&nbsp;'.$row['prodUomCode']; ?></td>
 						</tr>
 						<?php $row_no+=1; } ?>						
@@ -243,7 +243,7 @@ desired effect
 			Export Detail
 		</div>
 		<div class="col-md-10">
-			Load Date : <label class="label label-default"><?php echo to_thai_date($hdr['deliveryDate']); ?></label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;By :
+			Load Date : <label class="label label-default"><?php echo date('d M Y',strtotime( $hdr['deliveryDate'] )); ?></label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;By :
 			<i class="fa fa-<?php echo ($hdr['shipByLcl']==0?'square-o':'check-square-o'); ?>"></i> LCL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
 			<i class="fa fa-<?php echo ($hdr['shipByFcl']==0?'square-o':'check-square-o'); ?>"></i> FCL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
 			<label class="label label-default"><?php echo $hdr['packTypeRem']; ?></label>
@@ -324,11 +324,11 @@ desired effect
 				</div>
 				<div class="col-md-8">
 					<label class=""><?php echo $hdr['createByName']; ?></label></br>
-					<label class=""><?php echo to_thai_datetime_fdt($hdr['createTime']); ?></label></br>
+					<label class=""><?php echo date('d M Y H:m',strtotime( $hdr['createTime'] )); ?></label></br>
 					<label class=""><?php echo $hdr['confirmByName']; ?></label></br>
-					<label class=""><?php echo to_thai_datetime_fdt($hdr['confirmTime']); ?></label></br>
+					<label class=""><?php echo date('d M Y H:m',strtotime( $hdr['confirmTime'] )); ?></label></br>
 					<label class=""><?php echo $hdr['approveByName']; ?></label></br>
-					<label class=""><?php echo to_thai_datetime_fdt($hdr['approveTime']); ?></label>	
+					<label class=""><?php echo date('d M Y H:m',strtotime( $hdr['approveTime'] )); ?></label>	
 				</div>				
 			</div>			
 		</div>

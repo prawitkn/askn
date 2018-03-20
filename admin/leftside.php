@@ -78,11 +78,16 @@
 			<li><a href="customerGroup.php"><i class="fa fa-list-ol"></i> <span>Customer Group</span></a></li>
 			<li><a href="product_type.php"><i class="fa fa-list-ol"></i> <span>Product Catagory</span></a></li>		
 			<li class="header">Dev. Master Management</li>			
-			<li><a href="shipto.php"><i class="glyphicon glyphicon-download-alt"></i> <span>Ship to Customer Data</span></a></li>
+			
 			<li class="header">Dev. Transaction Management</li>	
 			<li><a href="visit_customer.php"><i class="fa fa-map-marker"></i> <span>Visit Customer</span></a></li>	
 			<li><a href=""><i class="fa fa-eyedropper"></i> <span>New Product Development</span></a></li>
 			<li><a href=""><i class="fa fa-comments"></i> <span>Customer Complain</span></a></li>
+			<!--Master management-->
+			<li><a href="salesman.php"><i class="fa fa-male"></i> <span>Salesman Data</span></a></li>
+			<li><a href=""><i class="fa fa-table"></i> <span>Customer Target Data</span></a></li>		
+			<li><a href="product_set_target.php"><i class="fa fa-table"></i> <span>Product Target Data</span></a></li>
+			<li><a href=""><i class="fa fa-table"></i> <span>Salesman Target Data</span></a></li>		
 			
 
 		<?php } ?>
@@ -98,16 +103,14 @@
 		<?php switch($s_userGroupCode){ case 'admin' : case 'sales' : case 'salesAdmin' : ?>
 			<!-- Optionally, you can add icons to the links -->
 			<li><a href="customer.php"><i class="glyphicon glyphicon-user"></i> <span>Customer Data</span></a></li>
+			<li><a href="shipto.php"><i class="glyphicon glyphicon-download-alt"></i> <span>Ship to Customer Data</span></a></li>
 			<li><a href="shipping_marks.php"><i class="fa fa-table"></i> <span>Shipping Marks Data</span></a></li>	
 		<?php } ?>
 			<?php switch($s_userGroupCode){ case 'admin' : case 'it' :  ?>
 			<li><a href="product.php"><i class="fa fa-barcode"></i> <span>Product Data</span></a></li>
 			<?php } ?>
 		<?php switch($s_userGroupCode){ case 'admin' :  ?>
-			<li><a href="salesman.php"><i class="fa fa-male"></i> <span>Salesman Data</span></a></li>
-			<li><a href=""><i class="fa fa-table"></i> <span>Customer Target Data</span></a></li>		
-			<li><a href="product_set_target.php"><i class="fa fa-table"></i> <span>Product Target Data</span></a></li>
-			<li><a href=""><i class="fa fa-table"></i> <span>Salesman Target Data</span></a></li>			
+				
 		<?php } ?>
 		
 		<?php switch($s_userGroupCode){ case 'admin' : case 'sales' : case 'salesAdmin' : ?>

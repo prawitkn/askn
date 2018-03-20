@@ -3,37 +3,7 @@
 include('session.php');
 //include('prints_function.php');
 //include('inc_helper.php');
-function to_thai_date($eng_date){
-	if(strlen($eng_date) != 10){
-		return null;
-	}else{
-		$new_date = explode('-', $eng_date);
 
-		$new_y = (int) $new_date[0] + 543;
-		$new_m = $new_date[1];
-		$new_d = $new_date[2];
-
-		$thai_date = $new_d . '/' . $new_m . '/' . $new_y;
-
-		return $thai_date;
-	}
-}
-function to_thai_datetime_fdt($eng_date){
-	//if(strlen($eng_date) != 10){
-	//    return null;
-	//}else{
-		$new_datetime = explode(' ', $eng_date);
-		$new_date = explode('-', $new_datetime[0]);
-
-		$new_y = (int) $new_date[0] + 543;
-		$new_m = $new_date[1];
-		$new_d = $new_date[2];
-
-		$thai_date = $new_d . '/' . $new_m . '/' . $new_y . ' ' . substr($new_datetime[1],0,5);
-
-		return $thai_date;
-	//}
-}
 // Include the main TCPDF library (search for installation path).
 require_once('../tcpdf/tcpdf.php');
 

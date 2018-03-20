@@ -1,5 +1,5 @@
 <?php
-	include 'inc_helper.php';
+	//include 'inc_helper.php';
 ?>
 <!DOCTYPE html>
 <!--
@@ -162,7 +162,7 @@ $rootPage="sale";
                          <?= $row['soNo']; ?>
                     </td>
                     <td>
-                         <?= to_thai_date_fdt($row['saleDate']); ?>
+                         <?= date('d M Y',strtotime($row['saleDate'])); ?>
                     </td>
                     <td>
                          <?= $row['custName']; ?>

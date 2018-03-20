@@ -25,7 +25,13 @@ switch($s_userGroupCode){
 ?>
   
   <!-- Left side column. contains the logo and sidebar -->
-   <?php include 'leftside.php'; ?>
+   <?php include 'leftside.php'; 
+   
+   $locationCode=$row['locationCode'];
+	$marketCode=$row['marketCode'];
+	$smId=$row['smId'];
+	$smAdmId=$row['smAdmId'];
+   ?>
 
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">

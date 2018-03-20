@@ -37,6 +37,10 @@ switch($s_userGroupCode){
 	echo $sql;
 	$result = mysqli_query($link, $sql);  
 	$row = mysqli_fetch_assoc($result);
+	$locationCode=$row['locationCode'];
+	$marketCode=$row['marketCode'];
+	$smId=$row['smId'];
+	$smAdmId=$row['smAdmId'];
    ?>
 
   <!-- Content Wrapper. Contains page content -->
@@ -152,7 +156,7 @@ switch($s_userGroupCode){
 								$stmt = $pdo->prepare($sql);
 								$stmt->execute();					
 								while ($optItm = $stmt->fetch()){
-									$selected=($row['appCode']==$optItm['code']?' selected ':'');							
+									$selected=($row['marketCode']==$optItm['code']?' selected ':'');							
 									echo '<option value="'.$optItm['code'].'" '.$selected.'>'.$optItm['code'].' : '.$optItm['name'].'</option>';
 								}
 								?>
@@ -264,6 +268,60 @@ switch($s_userGroupCode){
 
   <!-- Main Footer -->
   <?php include'footer.php'; ?>
+
+
+
+
+<!-- Modal -->
+<div id="modal_search" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-lg">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Search Customer</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-horizontal">
+			<div class="form-group">	
+				<label for="txt_search_word" class="control-label col-md-2">Customer Name</label>
+				<div class="col-md-4">
+					<input type="text" class="form-control" id="txt_search_word" />
+				</div>
+			</div>
+		
+		<table id="tbl_search" class="table">
+			<thead>
+				<tr bgcolor="4169E1" style="color: white; text-align: center;">
+					<td>#Select</td>
+					<td style="display: none;">Id</td>
+					<td>Code</td>
+					<td>Name</td>
+					<td style="display: none;">SM ID</td>
+					<td>Salesman</td>
+					<td style="display: none;">Addr1</td>
+					<td style="display: none;">Addr2</td>
+					<td style="display: none;">Addr3</td>
+					<td style="display: none;">Zipcode</td>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+		</form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+
   
   
 </div>
@@ -299,6 +357,91 @@ $(document).ready(function() {
 	$("#spin").append(spinner.el);
 	$("#spin").hide();
 //           
+
+
+
+
+	//SEARCH Begin
+	$('a[name="btn_search"]').click(function(){
+		//prev() and next() count <br/> too.	
+		$txtName = $(this).closest("div").prev().find('input[type="text"]');
+		//alert($btn.attr('name'));
+		//curId = $btn.attr('name');
+		curId = $(this).closest("div").prev().find('input[type="hidden"]').attr('name');
+		curName = $(this).closest("div").prev().find('input[type="text"]').attr('name');
+		//alert($txtName);
+		if(!$txtName.prop('disabled')){
+			$('#modal_search').modal('show');
+		}
+	});	
+	$('#txt_search_word').keyup(function(e){ 
+		if(e.keyCode == 13)
+		{
+			var params = {
+				search_word: $('#txt_search_word').val()
+			};
+			if(params.search_word.length < 3){
+				alert('Search word must more than 3 character.');
+				return false;
+			}
+			/* Send the data using post and put the results in a div */
+			  $.ajax({
+				  url: "search_customer_ajax.php",
+				  type: "post",
+				  data: params,
+				datatype: 'json',
+				  success: function(data){
+								//alert(data);
+								$('#tbl_search tbody').empty();
+								$.each($.parseJSON(data), function(key,value){
+									$('#tbl_search tbody').append(
+									'<tr>' +
+										'<td>' +
+										'	<div class="btn-group">' +
+										'	<a href="javascript:void(0);" data-name="btn_search_checked" ' +
+										'	class="btn" title="เลือก"> ' +
+										'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
+										'	</div>' +
+										'</td>' +
+										'<td style="display: none;">'+ value.id +'</td>' +	//1
+										'<td>'+ value.code +'</td>' +	
+										'<td>'+ value.name +'</td>' +	
+										'<td style="display: none;">'+ value.smId +'</td>' +
+										'<td>'+ value.smName +'</td>' +
+										'<td style="display: none;">'+ value.addr1 +'</td>' +
+										'<td style="display: none;">'+ value.addr2 +'</td>' +
+										'<td style="display: none;">'+ value.addr3 +'</td>' +
+										'<td style="display: none;">'+ value.zipcode +'</td>' +
+									'</tr>'
+									);			
+								});
+							
+				  }, //success
+				  error:function(){
+					  alert('error');
+				  }   
+				}); 
+		}/* e.keycode=13 */	
+	});
+	
+	$(document).on("click",'a[data-name="btn_search_checked"]',function() {		
+		$('input[name='+curId+']').val($(this).closest("tr").find('td:eq(1)').text());
+		$('input[name='+curName+']').val($(this).closest("tr").find('td:eq(3)').text());
+		/*$('#smId').val($(this).closest("tr").find('td:eq(4)').text());
+		$('#custAddr').val($(this).closest("tr").find('td:eq(6)').text()+
+			$(this).closest("tr").find('td:eq(7)').text()+
+			$(this).closest("tr").find('td:eq(8)').text()+
+			$(this).closest("tr").find('td:eq(9)').text());*/
+				
+		//$('#'+curName).val($(this).closest("tr").find('td:eq(2)').text());	
+		$('#modal_search').modal('hide');
+	});
+	//Search End
+	
+	
+	
+	
+	
 	$('#form1').on("submit", function(e) { 
 		if ($('#form1').smkValidate()) {
 			$.ajax({
