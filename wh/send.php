@@ -286,9 +286,21 @@ if(isset($_GET['sync']) AND isset($_GET['sendDate'])  ){
 	$stmt = $pdo->prepare($sql);
 	$stmt->execute();*/
 	
+	//Delete temp if Approved.
+	$sql = "DELETE FROM send_production WHERE sendId IN (SELECT refNo FROM send WHERE statusCode='P') 
+	";			
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
 	
 	//Delete temp if Approved.
-	$sql = "DELETE FROM send_production WHERE sendNo IN (SELECT refNo FROM send WHERE statusCode='P') 
+	$sql = "DELETE FROM send_detail WHERE sdNo IN (SELECT sdNo FROM send 
+													WHERE refNo IN (SELECT sendId FROM send_production) 
+													AND statusCode='B')
+	";			
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute();
+	
+	$sql = "DELETE FROM send WHERE refNo IN (SELECT sendId FROM send_production) AND statusCode='B'
 	";			
 	$stmt = $pdo->prepare($sql);
 	$stmt->execute();

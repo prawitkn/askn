@@ -55,7 +55,7 @@
                     <td><a href="sale_view_pdf.php?soNo=<?=$row['soNo'];?>" ><?= $row['soNo']; ?></a></td>
 					<td><?= $row['custName']; ?></td>
 					<td><?= $row['smName']; ?></td>
-					<td><?= $row['createTime']; ?></td>
+					<td><?= date('d M Y H:m',strtotime($row['createTime'])); ?></td>
                 </tr>
                 <?php  } ?>
                   </tbody>
