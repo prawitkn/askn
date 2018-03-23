@@ -148,10 +148,10 @@ $sdNo = $hdr['sdNo'];
 							$gradeName = '<b style="color: red;">N/A</b>'; 
 							switch($row['grade']){
 								case 0 : $gradeName = 'A'; break;
-								case 1 : $statusName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
-								case 2 : $statusName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+								case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
+								case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
 								default : 
-									$statusName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
+									$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
 							} 
 						?>
 						<tr>

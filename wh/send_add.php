@@ -211,12 +211,20 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							<th>Seding Date</th>
 							<th>#</th>
 						</tr>
-						<?php $row_no=1; while ($row = $stmt->fetch()) { 
+						<?php $row_no=1; $sumGradeNotOk=0; while ($row = $stmt->fetch()) { 
+							$gradeName = '<b style="color: red;">N/A</b>'; 
+							switch($row['grade']){
+								case 0 : $gradeName = 'A'; break;
+								case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
+								case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+								default : 
+									$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
+							} 
 						?>
 						<tr>
 							<td style="text-align: center;"><?= $row_no; ?></td>
 							<td><?= $row['barcode']; ?></td>
-							<td><?= $row['grade']; ?></td>
+							<td><?= $gradeName; ?></td>
 							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
 							<td><?= $row['issueDate']; ?></td>
 							<td><a class="btn btn-danger fa fa-trash" name="btn_row_delete" <?php echo ($hdr['statusCode']=='B'?' data-id="'.$row['id'].'" ':' disabled '); ?> > Delete</a></td>

@@ -577,6 +577,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							$sql = "SELECT * FROM sale_header hdr 
 							INNER JOIN sale_detail dtl on dtl.soNo=hdr.soNo
 							WHERE hdr.isClose='N'  
+							AND hdr.statusCode='P' 
 							ORDER BY hdr.`createTime` DESC
 							LIMIT 10
 							";
@@ -589,6 +590,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 									INNER JOIN sale_detail dtl on dtl.soNo=hdr.soNo
 										AND dtl.prodCode IN (SELECT prodCode FROM product prd WHERE prodCatCode='70')								
 									WHERE hdr.isClose=0 
+									AND hdr.statusCode='P' 
 									ORDER BY hdr.`createTime` DESC
 									LIMIT 10
 									";
@@ -598,6 +600,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 									INNER JOIN sale_detail dtl on dtl.soNo=hdr.soNo
 										AND dtl.prodCode IN (SELECT prodCode FROM product prd WHERE prodCatCode='71')								
 									WHERE hdr.isClose=0 
+									AND hdr.statusCode='P' 
 									ORDER BY hdr.`createTime` DESC
 									LIMIT 10
 									";
@@ -637,7 +640,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						 <?= $row_code; ?>
 					</td>
 					<td>
-						 <a target="_blank" href="sale_view.php?soNo=<?= $row['soNo'];?>" ><?= $row['soNo']; ?></a>
+						 <a target="_blank" href="sale_view_pdf.php?soNo=<?= $row['soNo'];?>" ><?= $row['soNo']; ?></a>
 					</td>
 					<td>
 						 <?= substr($row['deliveryDate'],0,10); ?>
