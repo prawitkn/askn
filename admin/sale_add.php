@@ -354,7 +354,7 @@ $soNo = "";
 				
 				
 <div class="col-md-12">
-	<button id="btn1" type="button" class="btn btn-default">Submit</button>		
+	<button id="btn1" type="button" class="btn btn-primary">Submit</button>		
 </div>
 
 		
@@ -611,7 +611,7 @@ $("#spin").hide();
 		//alert($('option:selected', this).attr('data-addr1'));
 		var params = {
 			id: $(this).val() //$('option:selected', this).val();
-		}; alert(params.id);
+		}; 
 		$.ajax({
 			  url: "get_shipto_ajax.php",
 			  type: "post",

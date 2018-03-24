@@ -640,7 +640,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						 <?= $row_code; ?>
 					</td>
 					<td>
-						 <a target="_blank" href="sale_view.php?soNo=<?= $row['soNo'];?>" ><?= $row['soNo']; ?></a>
+						 <a target="_blank" href="sale_view_pdf.php?soNo=<?= $row['soNo'];?>" ><?= $row['soNo']; ?></a>
 					</td>
 					<td>
 						 <?= substr($row['deliveryDate'],0,10); ?>

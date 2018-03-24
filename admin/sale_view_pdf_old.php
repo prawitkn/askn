@@ -176,7 +176,7 @@ class MYPDF extends TCPDF {
 		}else{	
 			$this->Cell(110, 5, $text, 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
 			
-			$image_file = '../images/shippingMarks/'.$hdr['shippingMarksFilePath'];
+			$image_file = 'images/shippingMarks/'.$hdr['shippingMarksFilePath'];
 			$img = file_get_contents($image_file);
 			// Image example with resizing
 			//image width=150px;

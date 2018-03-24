@@ -154,17 +154,16 @@ $rcNo = $hdr['rcNo'];
 							<th>Produce Date</th>
 							<th>Is Return</th>
 						</tr>
-						<?php $row_no=1;  $sumQty=$sumNW=$sumGW=0;  while ($row = $stmt->fetch()) { 
+						<?php $row_no=1;  $sumQty=$sumNW=$sumGW=$sumGradeNotOk=0;  while ($row = $stmt->fetch()) { 
 							$isReturn = "";
 							if($row['isReturn']=='Y') { $isReturn = '<label class="label label-danger">Yes</label>'; }
-							
 								$gradeName = '<b style="color: red;">N/A</b>'; 
 								switch($row['grade']){
 									case 0 : $gradeName = 'A'; break;
-									case 1 : $statusName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
-									case 2 : $statusName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+									case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
+									case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
 									default : 
-										$statusName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
+										$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
 								} 
 						?>
 						<tr>
