@@ -84,7 +84,6 @@
 			<li><a href=""><i class="fa fa-eyedropper"></i> <span>New Product Development</span></a></li>
 			<li><a href=""><i class="fa fa-comments"></i> <span>Customer Complain</span></a></li>
 			<!--Master management-->
-			<li><a href="salesman.php"><i class="fa fa-male"></i> <span>Salesman Data</span></a></li>
 			<li><a href=""><i class="fa fa-table"></i> <span>Customer Target Data</span></a></li>		
 			<li><a href="product_set_target.php"><i class="fa fa-table"></i> <span>Product Target Data</span></a></li>
 			<li><a href=""><i class="fa fa-table"></i> <span>Salesman Target Data</span></a></li>		
@@ -100,11 +99,12 @@
 		
 		<?php //switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' :  ?>		
 			<li class="header">Master Management</li>
-		<?php switch($s_userGroupCode){ case 'admin' : case 'sales' : case 'salesAdmin' : ?>
+		<?php switch($s_userGroupCode){ case 'admin' : case 'it' :  case 'sales' : case 'salesAdmin' : ?>
 			<!-- Optionally, you can add icons to the links -->
 			<li><a href="customer.php"><i class="glyphicon glyphicon-user"></i> <span>Customer Data</span></a></li>
 			<li><a href="shipto.php"><i class="glyphicon glyphicon-download-alt"></i> <span>Ship to Customer Data</span></a></li>
-			<li><a href="shipping_marks.php"><i class="fa fa-table"></i> <span>Shipping Marks Data</span></a></li>	
+			<li><a href="shipping_marks.php"><i class="fa fa-table"></i> <span>Shipping Marks Data</span></a></li>
+			<li><a href="salesman.php"><i class="glyphicon glyphicon-briefcase"></i> <span>Salesman Data</span></a></li>
 		<?php } ?>
 			<?php switch($s_userGroupCode){ case 'admin' : case 'it' :  ?>
 			<li><a href="product.php"><i class="fa fa-barcode"></i> <span>Product Data</span></a></li>

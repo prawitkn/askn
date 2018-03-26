@@ -21,7 +21,7 @@ switch($s_userGroupCode){
 	case 'admin' : case 'salesAdmin' :
 		break;
 	default : 
-		header('Location: access_denied.php');
+		include 'access_denied2.php';
 		exit();
 }
   
@@ -160,7 +160,12 @@ switch($s_userGroupCode){
 						 <?php } ?>
                     </td>					
                     <td>
-						<a class="btn btn-success" name="btn_row_edit" href="<?=$rootPage;?>_edit.php?id=<?= $row['id']; ?>" >Edit</a>						
+						<a class="btn btn-success" name="btn_row_edit" href="<?=$rootPage;?>_edit.php?id=<?= $row['id']; ?>" >Edit</a>	
+						<?php if($row['statusCode']=='X'){ ?>
+							<a class="btn btn-danger fa fa-trash" name="btn_row_delete"  data-id="<?=$row['id'];?>" ></a>  
+						<?php }else{ ?>	
+							<a class="btn btn-danger fa fa-trash"  disabled  >Delete</a>  
+						<?php } ?>
                     </td>
                 </tr>
                 <?php $c_row+=1; } ?>

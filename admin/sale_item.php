@@ -491,7 +491,7 @@ desired effect
 		//Get Roll Length
 		var params = {
 			id: $(this).closest("tr").find('td:eq(1)').text() //$('option:selected', this).val();
-		}; alert(params.id);
+		}; 
 		$.ajax({
 		  url: "get_prod_roll_length_ajax.php",
 		  type: "post",

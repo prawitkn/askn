@@ -109,11 +109,11 @@ $rootPage="sale";
 				</div>
            <?php
                 $sql = "
-						SELECT a.`soNo`, a.`saleDate`, a.`custId`, a.`smId`, a.`createTime`, a.`createById`, a.isClose, a.statusCode ,
-						b.code as custCode, b.name as custName, b.tel as custTel, b.fax as custFax,
-						c.name as smName,
-						d.userFullname as createByName,
-						(SELECT IFNULL(count(*),0) FROM sale_detail b WHERE b.soNo=a.soNo) as countItem
+						SELECT a.`soNo`, a.`saleDate`, a.`custId`, a.`smId`, a.`createTime`, a.`createById`, a.isClose, a.statusCode , a.revCount
+						,b.code as custCode, b.name as custName, b.tel as custTel, b.fax as custFax
+						,c.name as smName
+						,d.userFullname as createByName
+						,(SELECT IFNULL(count(*),0) FROM sale_detail b WHERE b.soNo=a.soNo) as countItem
 						FROM `sale_header` a
 						left join customer b on a.custId=b.id
 						left join salesman c on a.smId=c.id
@@ -155,11 +155,12 @@ $rootPage="sale";
 						case 'Y' : $isCloseName = '<label class="label label-success">Yes</label>'; break;
 						default : 						
 					}
+					$revisedName = ($row['revCount']<>0?'<small style="color: red;"> rev.'.$row['revCount'].'</small>':'');
 					?>
 					
                 <tr>
                     <td>
-                         <?= $row['soNo']; ?>
+                         <?= $row['soNo'].$revisedName; ?>
                     </td>
                     <td>
                          <?= date('d M Y',strtotime($row['saleDate'])); ?>
@@ -179,13 +180,13 @@ $rootPage="sale";
 					<td>					
 						<a class="btn btn-default" name="btn_row_search" 
 							href="sale_view.php?soNo=<?=$row['soNo'];?>" 
-							data-toggle="tooltip" title="Search"><i class="glyphicon glyphicon-search"></i></a>						
+							data-toggle="tooltip" title="View"><i class="glyphicon glyphicon-search"></i> View</a>						
 						<a class="btn btn-default" name="btn_row_edit" 
 							<?php echo ($row['statusCode']=='B'?'href="sale_add.php?soNo='.$row['soNo'].'"':' disabled '); ?> 
-							data-toggle="tooltip" title="Edit Header"><i class="glyphicon glyphicon-edit"></i></a>						
+							data-toggle="tooltip" title="Edit Header"><i class="glyphicon glyphicon-edit"></i> Header</a>						
 						<a class="btn btn-default" name="btn_row_item" 
 							<?php echo (($row['statusCode']=='A' OR $row['statusCode']=='B')?'href="sale_item.php?soNo='.$row['soNo'].'"':' disabled '); ?> 
-							data-toggle="tooltip" title="Add Product"><i class="glyphicon glyphicon-plus"></i></a>
+							data-toggle="tooltip" title="Add Product"><i class="glyphicon glyphicon-plus"></i> Item</a>
 						<!--<a class="btn btn-default" name="btn_row_remove" 
 							<?php echo ($row['statusCode']=='P'?' disabled ':' data-id="'.$row['soNo'].'" '); ?> 
 							data-toggle="tooltip" title="Delete"><i class="glyphicon glyphicon-trash"></i></a>	-->

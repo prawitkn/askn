@@ -345,14 +345,18 @@ desired effect
     </div><!-- /.box-body -->
   <div class="box-footer">
     <div class="col-md-12">
+	
 		<?php if($hdr['statusCode']=='P'){ ?>
           <a href="<?=$rootPage;?>_view_pdf.php?soNo=<?=$soNo;?>" target="_blank" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
-		  
+		
 			<?php switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' : ?>
-		  <button type="button" id="btn_revise" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='P'?'':'disabled'); ?> >
-            <i class="glyphicon glyphicon-wrench"></i> Edit for Revise
-          </button>
-		  <?php break; default : } ?>
+			  <button type="button" id="btn_revise" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['isClose']=='N'?'':'disabled'); ?> >
+				<i class="glyphicon glyphicon-wrench"></i> Edit for Revise
+			  </button>
+		  <?php break; 
+			default : ?>
+				
+			<?php } ?>
 		<?php } ?>
 		
 		
@@ -382,7 +386,8 @@ desired effect
             <i class="glyphicon glyphicon-ok"></i> Confirm
           </button>      
 		  </button>   
-			<button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']<>'P'?'':'disabled'); ?> >
+		  
+          <button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ((($hdr['statusCode']<>'P') AND ($hdr['revCount']==0))?'':'disabled'); ?> >
             <i class="glyphicon glyphicon-trash"></i> Delete
           </button>
 		  
@@ -417,9 +422,9 @@ desired effect
       <div class="modal-body">
         <div class="form-horizontal">
 			<div class="form-group">	
-				<label for="txt_reason" class="control-label col-md-2">Reason : </label>
+				<label for="txt_reason" class="control-label col-md-4">Reason/Remark : </label>
 				<div class="col-md-6">
-					<input type="text" class="form-control" id="txt_reason" />
+					<textarea class="form-control" id="txt_reason"></textarea>
 				</div>
 			</div>
 		
@@ -481,8 +486,14 @@ $("#spin").hide();
 		var params = {					
 			soNo: $('#soNo').val(),
 			reason: $('#txt_reason').val()
-		};
-		$.smkConfirm({text:'Are you sure to Edit Approved Sales Order ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+		};	
+		if(params.reason.trim()==""){
+			alert('Reason/Remark is required.');
+			$('#txt_reason').select();
+			return false;
+		}
+		if (confirm('Are you sure to Edit Approved Sales Order ?')) {
+			// Save it!
 			$.post({
 				url: 'sale_revise_ajax.php',
 				data: params,
@@ -507,7 +518,12 @@ $("#spin").hide();
 				alert(response.responseText);
 			});
 			//.post
-		}});
+		} else {
+			// Do nothing!
+		}
+		//$.smkConfirm({text:'Are you sure to Edit Approved Sales Order ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			
+		//}});
 		//smkConfirm
 		//$('#modal_search').modal('hide');
 	});	

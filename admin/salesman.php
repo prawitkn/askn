@@ -6,7 +6,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <html>
 <?php 
 	include 'head.php'; 
-	include 'inc_helper.php'; 
+	//include 'inc_helper.php'; 
 ?>    
 
 <!--
@@ -32,7 +32,19 @@ desired effect
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
   <!-- Main Header -->
-  <?php include 'header.php'; ?>  
+  <?php include 'header.php'; 
+  $rootPage = 'salesman';
+  $tb = 'salesman';
+  
+  //Check user roll.
+	switch($s_userGroupCode){
+		case 'admin' : case 'it' : case 'salesAdmin' :
+			break;
+		default : 
+			include 'access_denied2.php';
+			exit();
+	}
+  ?>  
   
   <!-- Left side column. contains the logo and sidebar -->
    <?php include 'leftside.php'; ?>
@@ -40,14 +52,14 @@ desired effect
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
-    <section class="content-header">
-      <h1>
-		Salesman
+	<section class="content-header">
+		<h1><i class="glyphicon glyphicon-briefcase"></i>
+       Salesman
         <small>Salesman management</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="index.php"><i class="fa fa-dashboard"></i> Main</a></li>
-        <li class="active">Salesman</li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Salesman List</a></li>
+		<!--<li><a href="#"><i class="glyphicon glyphicon-edit"></i>Ship to Customer</a></li>-->
       </ol>
     </section>
 
@@ -55,10 +67,11 @@ desired effect
     <section class="content">
 	
       <!-- Your Page Content Here -->
-      <a href="salesman_add.php" class="btn btn-google">Add Salesman</a>
     <div class="box box-primary">
         <div class="box-header with-border">
-        <h3 class="box-title">Salesman List</h3>
+		<label class="box-title">Salesman List</label>
+			<a href="<?=$rootPage;?>_dtl.php?act=add&id=" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add Salesman</a>
+		
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
@@ -70,11 +83,16 @@ desired effect
 					$sqlSearch = "and name like '%".$_GET['search_word']."%' or surname like '%".$_GET['search_word']."%' ";
 				}
                 $sql = "SELECT count(*) as countTotal
-						FROM salesman a
+						FROM ".$tb." a
 						WHERE 1 "
-						.$sqlSearch."
-						ORDER BY a.name asc 
-						";
+						.$sqlSearch;
+				switch($s_userGroupCode){ 					
+					case 'admin' : 
+					case 'it' : 
+						break;
+					default :	
+						$sql.="AND a.statusCode IN ('A','I') "; 
+				}
                 $result = mysqli_query($link, $sql);
                 $countTotal = mysqli_fetch_assoc($result);
 				
@@ -93,7 +111,7 @@ desired effect
         <div class="box-body">
 			<div class="row">
 			<div class="col-md-6">					
-                    <form id="form1" action="salesman.php" method="get" class="form" novalidate>
+                    <form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
 						<div class="form-group">
                             <label for="search_word">Salesman search key word.</label>
 							<div class="input-group">
@@ -109,21 +127,29 @@ desired effect
 			</div>
            <?php
                 $sql = "SELECT a.*
-						FROM salesman a
+						FROM ".$tb." a
 						WHERE 1 "
-						.$sqlSearch."
-						ORDER BY a.name asc
-						LIMIT $start, $rows 
-						";
+						.$sqlSearch;
+				switch($s_userGroupCode){ 					
+					case 'admin' : 
+					case 'it' : 
+						break;
+					default :	
+						$sql.="AND a.statusCode IN ('A','I') "; 
+				}
+				$sql.="ORDER BY a.name asc ";
+				$sql.="LIMIT $start, $rows ";
+				
+				
                 $result = mysqli_query($link, $sql);                
            ?>             
             <table class="table table-striped">
                 <tr>
                     <th>No.</th>
+					<th>Photo</th>
+					<th>Code</th>
 					<th>Fullname</th>
 					<th>Position</th>
-					<th>Mobile</th>
-					<th>Email</th>
 					<th>Status</th>
                     <th>#</th>
                 </tr>
@@ -131,7 +157,13 @@ desired effect
                 <tr>
                     <td>
                          <?= $c_row; ?>
-                    </td>
+                    </td>					 
+					<td>
+                         <?= $row['code']; ?>
+                    </td> 
+					<td>
+                         <img class="img-circle" src="./dist/img/<?php echo (empty($row['photo'])? 'default-50x50.gif' : $row['photo']) ?> " width="32px" height="32px" >
+                    </td> 
 					<td>
                          <?= $row['name'].'&nbsp;&nbsp;'.$row['surname']; ?>
                     </td>  		
@@ -139,17 +171,44 @@ desired effect
                          <?= $row['positionName']; ?>
                     </td> 
 					<td>
-                         <?= $row['mobileNo']; ?>
-                    </td> 
-					<td>
-                         <?= $row['email']; ?>
-                    </td> 
-					<td>
-                         <?php echo ($row['statusCode']=='A' ? 'Active' : 'Inactive'); ?>
+						 <?php
+						 switch($row['statusCode']){ 	
+							case 'A' :
+								echo '<a class="btn btn-success" name="btn_row_setActive" data-statusCode="I" data-id="'.$row['id'].'" >Active</a>';
+								break;
+							case 'I' :
+								echo '<a class="btn btn-default" name="btn_row_setActive" data-statusCode="A" data-id="'.$row['id'].'" >Inactive</a>';
+								break;
+							case 'X' : 
+								echo '<label style="color: red;" >Removed</label>';
+								break;
+							default :	
+								echo '<label style="color: red;" >N/A</label>';
+						}
+						 ?>
                     </td>					
                     <td>
-						<a class="btn btn-success" name="btn_row_edit" href="salesman_edit.php?id=<?= $row['ID']; ?>" >Edit</a>
-						<a class="btn btn-danger" name="btn_row_remove" data-id="<?= $row['ID']; ?>" >Remove</a>
+						
+						<?php if($row['statusCode']=='A' OR ($s_userGroupCode=='it' OR $s_userGroupCode=='prog')){ ?>
+							<a class="btn btn-primary" name="btn_row_edit" href="<?=$rootPage;?>_dtl.php?act=edit&id=<?= $row['id']; ?>" >
+								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
+						<?php }else{ ?>	
+							<a class="btn btn-primary"  disabled  > 
+								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
+						<?php } ?>
+						
+						<?php if($row['statusCode']=='I'){ ?>
+							<a class="btn btn-primary" name="btn_row_remove"  data-id="<?=$row['id'];?>" > 
+								<i class="glyphicon glyphicon-remove"></i> Remove</a>	
+						<?php }else{ ?>	
+							<a class="btn btn-primary"  disabled  >
+								<i class="glyphicon glyphicon-remove"></i> Remove</a>	
+						<?php } ?>
+						
+						<?php if($row['statusCode']=='X' AND ($s_userGroupCode=='it' OR $s_userGroupCode=='prog')){ ?>
+							<a class="btn btn-primary" name="btn_row_delete"  data-id="<?=$row['id'];?>" > 
+								<i class="glyphicon glyphicon-trash"></i> Delete</a>	
+						<?php } ?>
                     </td>
                 </tr>
                 <?php $c_row +=1; } ?>
@@ -208,28 +267,30 @@ desired effect
 
 <script> 		
 $(document).ready(function() {    
-			//.ajaxStart inside $(document).ready to start and stop spiner.  
-			$( document ).ajaxStart(function() {
-				$("#spin").show();
-			}).ajaxStop(function() {
-				$("#spin").hide();
-			});
-			//.ajaxStart inside $(document).ready END
-			
-            $("#title").focus();
-            var spinner = new Spinner().spin();
-            $("#spin").append(spinner.el);
-            $("#spin").hide();
+	//.ajaxStart inside $(document).ready to start and stop spiner.  
+	$( document ).ajaxStart(function() {
+		$("#spin").show();
+	}).ajaxStop(function() {
+		$("#spin").hide();
+	});
+	//.ajaxStart inside $(document).ready END
+	
+	$("#title").focus();
+	var spinner = new Spinner().spin();
+	$("#spin").append(spinner.el);
+	$("#spin").hide();
 			
 	  
 			   
-	$('a[name=btn_row_delete]').click(function(){
+	$('a[name=btn_row_setActive]').click(function(){
 		var params = {
-			id: $(this).attr('data-id')
+			action: 'setActive',
+			id: $(this).attr('data-id'),
+			statusCode: $(this).attr('data-statusCode')			
 		};
-		$.smkConfirm({text:'คุณแน่ใจที่จะลบรายการนี้ใช่หรือไม่ ?',accept:'ลบรายการ', cancel:'ไม่ลบรายการ'}, function (e){if(e){
+		$.smkConfirm({text:'Are you sure ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 			$.post({
-				url: 'salesman_del_ajax.php',
+				url: '<?=$rootPage;?>_ajax.php',
 				data: params,
 				dataType: 'json'
 			}).done(function (data) {					
@@ -254,14 +315,16 @@ $(document).ready(function() {
 		}});
 		e.preventDefault();
 	});
+	//end btn_row_setActive
 	
 	$('a[name=btn_row_remove]').click(function(){
 		var params = {
+			action: 'remove',
 			id: $(this).attr('data-id')
 		};
-		$.smkConfirm({text:'คุณแน่ใจที่จะยกเลิกรายการนี้ใช่หรือไม่ ?',accept:'ยกเลิกรายการ', cancel:'ไม่ยกเลิกรายการ'}, function (e){if(e){
+		$.smkConfirm({text:'Are you sure to Delete ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 			$.post({
-				url: 'salesman_remove_ajax.php',
+				url: '<?=$rootPage;?>_ajax.php',
 				data: params,
 				dataType: 'json'
 			}).done(function (data) {					
@@ -286,6 +349,41 @@ $(document).ready(function() {
 		}});
 		e.preventDefault();
 	});
+	//end btn_row_delete
+	
+	$('a[name=btn_row_delete]').click(function(){
+		var params = {
+			action: 'delete',
+			id: $(this).attr('data-id')
+		};
+		$.smkConfirm({text:'Are you sure to Delete ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function (data) {					
+				if (data.success){ 
+					$.smkAlert({
+						text: data.message,
+						type: 'success',
+						position:'top-center'
+					});
+					location.reload();
+				} else {
+					alert(data.message);
+					$.smkAlert({
+						text: data.message,
+						type: 'danger'//,
+					//                        position:'top-center'
+					});
+				}
+			}).error(function (response) {
+				alert(response.responseText);
+			}); 
+		}});
+		e.preventDefault();
+	});
+	//end btn_row_delete
 });
 </script>
 

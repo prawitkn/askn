@@ -119,14 +119,13 @@ $soNo = "";
 					</div>
 						
 						<div class="form-group">
-							<label for="custId" >Customer Name</label>
+							<label for="custId" >Customer</label>
 							<div class="form-group row">
-								<div class="col-md-9">
+								<div class="col-md-12">
 									<input type="hidden" name="custId" class="form-control" value="<?=$hdr['custId'];?>"  />
-									<input type="text" name="custName" class="form-control" value="<?=$hdr['custName'];?>" <?php echo ($soNo<>""?' disabled ':'');?> />
-								</div>
-								<div class="col-md-3">
-									<a href="#" name="btn_search" class="btn btn-primary" <?php echo ($soNo<>""?' disabled ':'');?> ><i class="glyphicon glyphicon-search" ></i></a>								
+									<!--<input type="text" name="custName" class="form-control" value="<?=$hdr['custName'];?>" <?php echo ($soNo<>""?' disabled ':'');?> />-->
+									<label name="custName" ><?=$hdr['custName'];?></label>
+									<a href="#" name="btn_search" class="btn btn-primary" <?php echo ($soNo<>""?' disabled ':'');?> ><i class="glyphicon glyphicon-search" ></i></a>
 								</div>
 							</div>
                         </div>
@@ -147,7 +146,7 @@ $soNo = "";
                         </div>	
 						
                         <div class="form-group">
-                            <label for="smId">Salesman Name</label>							
+                            <label for="smId">Salesman</label>							
 							<select id="smId" name="smId" class="form-control" data-smk-msg="Require Salesman." required>
 								<option value=""> -- Select -- </option>
 								<?php
@@ -465,7 +464,7 @@ $("#spin").show();
 
 $(document).ready(function() {
 //       alert("jquery ok");
-	$("#custName").focus();
+	//$("#custName").focus();
 	
 // Append and Hide spinner.          
 var spinner = new Spinner().spin();
@@ -477,13 +476,14 @@ $("#spin").hide();
 	//SEARCH Begin
 	$('a[name="btn_search"]').click(function(){
 		//prev() and next() count <br/> too.	
-		$txtName = $(this).closest("div").prev().find('input[type="text"]');
+		//$txtName = $(this).closest("div").prev().find('input[type="text"]');
+		//$txtName = $(this).closest("div").prev().find('label');
 		//alert($btn.attr('name'));
 		//curId = $btn.attr('name');
-		curId = $(this).closest("div").prev().find('input[type="hidden"]').attr('name');
-		curName = $(this).closest("div").prev().find('input[type="text"]').attr('name');
+		curId = $(this).closest("div").find('input[type="hidden"]').attr('name');
+		curName = $(this).closest("div").find('label').attr('name');
 		//alert($txtName);
-		if(!$txtName.prop('disabled')){
+		if(!$(this).attr('disabled')){
 			$('#modal_search').modal('show');
 		}
 	});	
@@ -539,7 +539,8 @@ $("#spin").hide();
 	
 	$(document).on("click",'a[data-name="btn_search_checked"]',function() {		
 		$('input[name='+curId+']').val($(this).closest("tr").find('td:eq(1)').text());
-		$('input[name='+curName+']').val($(this).closest("tr").find('td:eq(3)').text());
+		$('label[name='+curName+']').text($(this).closest("tr").find('td:eq(2)').text()+' : '+$(this).closest("tr").find('td:eq(3)').text());
+		
 		$('#smId').val($(this).closest("tr").find('td:eq(4)').text());
 		/*$('#custAddr').val($(this).closest("tr").find('td:eq(6)').text()+
 			$(this).closest("tr").find('td:eq(7)').text()+
