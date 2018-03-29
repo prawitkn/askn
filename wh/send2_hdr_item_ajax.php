@@ -1,12 +1,12 @@
 <?php
 include 'session.php';	
-include 'inc_helper.php';	
+//include 'inc_helper.php';	
 	
 try{
 	$t = "";
 	$s_userId = $_SESSION['userId']; 
 	
-    $rtNo = $_POST['rtNo'];
+    $sdNo = $_POST['sdNo'];
 	
 	$pdo->beginTransaction();
 	
@@ -15,18 +15,14 @@ try{
 		//$arrProdItems=explode(',', $prodItems);
         foreach($_POST['prodItemId'] as $index => $item )
         {	
-			$sql = "INSERT INTO `rt_detail`
-			(`prodItemId`
-			, `returnReasonCode`, `returnReasonRemark`, `rtNo`)
-			SELECT rc.`prodItemId`
-			,:returnReasonCode, :returnReasonRemark, :rtNo 
+			$sql = "INSERT INTO `send_detail`
+			(`prodItemId`, `sdNo`)
+			SELECT rc.`prodItemId`, :sdNo 
 			FROM receive_detail rc 
 			WHERE rc.id=:id 
 			";						
 			$stmt = $pdo->prepare($sql);	
-			$stmt->bindParam(':returnReasonCode', $_POST['returnReasonCode'][$index]);	
-			$stmt->bindParam(':returnReasonRemark', $_POST['returnReasonRemark'][$index]);	
-			$stmt->bindParam(':rtNo', $rtNo);	
+			$stmt->bindParam(':sdNo', $sdNo);	
 			$stmt->bindParam(':id', $item);		
 			$stmt->execute();			
         }

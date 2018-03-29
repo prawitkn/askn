@@ -61,7 +61,7 @@ $tb="send";
 			$hdr = $stmt->fetch();
 		?>
         <div class="box-header with-border">
-        <h3 class="box-title">Sending No. : <?=$rtNo;?></h3>
+        <h3 class="box-title">Sending No. : <?=$sdNo;?></h3>
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
@@ -96,7 +96,7 @@ $tb="send";
 				</div><!-- /.box-header -->
 				<div class="box-body">
 					<form id="form2" action="" method="post" class="form" novalidate>
-						<input type="hidden" name="rtNo" value="<?=$rtNo;?>" />
+						<input type="hidden" name="sdNo" value="<?=$sdNo;?>" />
 					<?php
 						$sql = "SELECT dtl.`id`, dtl.`prodItemId`, itm.`barcode`, itm.`issueDate`
 						, itm.`machineId`, itm.`seqNo`, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`
@@ -105,10 +105,10 @@ $tb="send";
 						FROM send_prod_detail dtl 
 						LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 						LEFT JOIN product prd ON prd.id=itm.prodCodeId 
-						WHERE dtl.sdNo=:sdNo 
+						WHERE dtl.sdNo=:refNo 
 								";
 						$stmt = $pdo->prepare($sql);
-						$stmt->bindParam(':sdNo', $refNo);		
+						$stmt->bindParam(':refNo', $refNo);		
 						$stmt->execute();
 					?>
 					<div class="table-responsive">
@@ -222,7 +222,7 @@ $(document).ready(function() {
 		if ($('#form2').smkValidate()){
 			$.smkConfirm({text:'Are you sure to Submit ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 				$.post({
-					url: 'rt_add_search_prod_submit_ajax.php',
+					url: 'send2_hdr_item_ajax.php',
 					data: $("#form2").serialize(),
 					dataType: 'json'
 				}).done(function(data) {
@@ -232,7 +232,7 @@ $(document).ready(function() {
 							type: 'success',
 							position:'top-center'
 						});
-						window.location.href = "rt_add.php?rtNo=<?=$rtNo;?>";
+						window.location.href = "<?=$rootPage;?>_hdr.php?sdNo=<?=$sdNo;?>";
 					}else{
 						$.smkAlert({
 							text: data.message,
@@ -268,45 +268,6 @@ $(document).ready(function() {
    
   </script>
   
-  <link href="bootstrap-datepicker-custom-thai/dist/css/bootstrap-datepicker.css" rel="stylesheet" />
-    <script src="bootstrap-datepicker-custom-thai/dist/js/bootstrap-datepicker-custom.js"></script>
-    <script src="bootstrap-datepicker-custom-thai/dist/locales/bootstrap-datepicker.th.min.js" charset="UTF-8"></script>
-  
-<script>
-	$(document).ready(function () {
-		$('.datepicker').datepicker({
-			daysOfWeekHighlighted: "0,6",
-			autoclose: true,
-			format: 'dd/mm/yyyy',
-			todayBtn: true,
-			language: 'th',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
-			thaiyear: true              //Set เป็นปี พ.ศ.
-		});  
-				
-		<?php if(isset($searchFromDate)){ ?>
-		//กำหนดเป็น วันที่จากฐานข้อมูล
-		var queryDate = '<?= $searchFromDate;?>',
-		dateParts = queryDate.match(/(\d+)/g)
-		realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
-		$('#searchFromDate').datepicker('setDate', realDate);
-		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
-		<?php } ?>
-		
-		<?php if(isset($searchToDate)){ ?>
-		//กำหนดเป็น วันที่จากฐานข้อมูล
-		var queryDate = '<?= $searchToDate;?>',
-		dateParts = queryDate.match(/(\d+)/g)
-		realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
-		$('#searchToDate').datepicker('setDate', realDate);
-		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
-		<?php } ?>
-		
-	});
-</script>
-
-
-
-
 <!-- Optionally, you can add Slimscroll and FastClick plugins.
      Both of these plugins are recommended to enhance the
      user experience. Slimscroll is required when using the

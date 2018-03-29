@@ -32,7 +32,7 @@ $tb="send";
 		$stmt->bindParam(':s_userId', $s_userId);	
 		$stmt->execute();
 		$hdr = $stmt->fetch();
-		$rtNo = $hdr['rtNo'];
+		$sdNo = $hdr['sdNo'];
 		$refNo = $hdr['refNo'];
 		if($stmt->rowCount() >= 1){
 			switch($s_userGroupCode){ 					
@@ -172,15 +172,15 @@ $tb="send";
 			$sql = "SELECT dtl.`id`, dtl.`prodItemId`,itm.`barcode`, itm.`issueDate`, itm.`machineId`, dtl.`seqNo`, dtl.`NW`, dtl.`GW`
 			, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId`
 			,prd.id as prodId, prd.code as prodCode 
-			, dtl.`returnReasonCode`, dtl.`returnReasonRemark`, dtl.`rtNo` 
+			, dtl.`sdNo` 
 			FROM `".$tb."_detail` dtl	
 			LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 			LEFT JOIN product prd ON prd.id=itm.prodCodeId  
 			WHERE 1
-			AND dtl.rtNo=:rtNo  
+			AND dtl.sdNo=:sdNo  
 			";
 			$stmt = $pdo->prepare($sql);
-			$stmt->bindParam(':rtNo', $rtNo);		
+			$stmt->bindParam(':sdNo', $sdNo);		
 			$stmt->execute();
 			$rowCount = $stmt->rowCount();
 		?>
@@ -478,9 +478,9 @@ $(document).ready(function() {
 	//btn_click
 	
 	$('a[name=btn_search_prod]').click(function(e){
-		var rtNo = $('#rtNo').val();
+		var sdNo = $('#sdNo').val();
 		var refNo = $('#refNo').val();
-		window.location.href = "<?=$rootPage;?>_add_search_prod.php?rtNo="+rtNo+"&refNo="+refNo;
+		window.location.href = "<?=$rootPage;?>_hdr_item.php?sdNo="+sdNo+"&refNo="+refNo;
 	});
 	
 	$("html,body").scrollTop(0);
