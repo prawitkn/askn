@@ -147,7 +147,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 $result = mysqli_query($link, $sql);                
            ?>             
 			
-				<div class="table-responsive">
+			<div class="table-responsive">
 				<table class="table table-striped">
 				<thead>
 				<tr>

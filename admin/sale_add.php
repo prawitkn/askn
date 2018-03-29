@@ -90,8 +90,12 @@ $soNo = "";
 
       <!-- Your Page Content Here -->
     <div class="box box-primary">
-        <div class="box-header with-border">
-        <h3 class="box-title">Add Sales Order</h3>
+        <div class="box-header with-border">			
+		<?php if($soNo==""){ ?>
+			<h3 class="box-title">Add Sales Order</h3>
+		<?php }else{ ?>
+			<h3 class="box-title">Edit Sales Order : <label style="color: red;"><?=$soNo;?></label></h3>
+		<?php } ?>        
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
