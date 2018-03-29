@@ -371,11 +371,18 @@ if(isset($_GET['sync']) AND isset($_GET['sendDate'])  ){
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placedhere! -->
           <!-- Here is a label for example -->
-          <?php				
+          <?php	
+				$sendDate2="";
+				if(isset($_GET['sendDate2'])){
+					$sendDate2=to_mysql_date($_GET['sendDate2']);
+				}	
                 $sql = "
 				SELECT COUNT(hdr.sdNo) AS countTotal
 				FROM `send` hdr 
 				WHERE 1 ";
+				if(isset($_GET['sendDate2'])){
+					$sql.="AND hdr.sendDate='$sendDate2' ";
+				}
 				switch($s_userGroupCode){ 
 					case 'whOff' :  case 'whSup' : 
 					case 'pdOff' :  case 'pdSup' :
@@ -404,8 +411,8 @@ if(isset($_GET['sync']) AND isset($_GET['sendDate'])  ){
         <div class="box-body">
 			<div class="row">
 				<div class="col-md-6">					
-						<form id="form1" action="<?=$url;?>" method="get" class="form" novalidate>
-							<div class="form-group">
+						<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
+							<!--<div class="form-group">
 								<label for="search_word">Ref. No Or Remark search key word.</label>
 								<div class="input-group">
 									<input id="search_word" type="text" class="form-control" name="search_word" data-smk-msg="Require userFullname."required>
@@ -413,12 +420,17 @@ if(isset($_GET['sync']) AND isset($_GET['sendDate'])  ){
 										<span class="glyphicon glyphicon-search"></span>
 									</span>
 								</div>
-							</div>						
+							</div>-->
+							<div class="from-group">
+								<label for="sendDate2">Sending Date</label>
+								<input type="text" id="sendDate2" name="sendDate2" class="form-control datepicker" >
+							</div>
+							<!--from group-->								
 							<input type="submit" class="btn btn-default" value="ค้นหา">
 						</form>
 					</div>    
 				</div>
-           <?php
+           <?php				
                 $sql = "SELECT hdr.`sdNo`, hdr.`refNo`, hdr.`sendDate`, hdr.`fromCode`, hdr.`toCode`, hdr.`remark`, hdr.`statusCode`
 				, hdr.`createTime`, hdr.`createByID`, hdr.`updateTime`, hdr.`updateById`, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById`
 				, fsl.name as fromName, tsl.name as toName 
@@ -430,6 +442,9 @@ if(isset($_GET['sync']) AND isset($_GET['sendDate'])  ){
 				LEFT JOIN user fu on hdr.confirmById=fu.userId
 				LEFT JOIN user pu on hdr.approveById=pu.userId  
 				WHERE 1 ";
+				if(isset($_GET['sendDate2'])){
+					$sql.="AND hdr.sendDate='$sendDate2' ";
+				}
 				switch($s_userGroupCode){ 
 					case 'whOff' :  case 'whSup' : 
 					case 'pdOff' :  case 'pdSup' :
@@ -623,6 +638,15 @@ $(document).ready(function() {
 		$('#sendDate').datepicker('setDate', realDate);
 		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
 		<?php }else{ ?> $('#sendDate').datepicker('setDate', "0"); <?php } ?>
+		
+		<?php if(isset($_GET['sendDate2'])){ ?>
+		//กำหนดเป็น วันที่จากฐานข้อมูล
+		var queryDate = '<?= to_mysql_date($_GET['sendDate2']);?>',
+		dateParts = queryDate.match(/(\d+)/g)
+		realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
+		$('#sendDate2').datepicker('setDate', realDate);
+		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
+		<?php }else{ ?> $('#sendDate2').datepicker('setDate', "0"); <?php } ?>
 			
 	});
 </script>

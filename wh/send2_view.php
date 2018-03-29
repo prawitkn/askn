@@ -8,52 +8,38 @@ This is a starter template page. Use this page to start your new project from
 scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
-<?php include 'head.php'; /*$s_userFullname = $row_user['userFullname'];
-        $s_userPicture = $row_user['userPicture'];
-		$s_username = $row_user['userName'];
-		$s_userGroupCode = $row_user['userGroupCode'];
-		$s_userDeptCode = $row_user['userDeptCode'];
-		$s_userID=$_SESSION['userID'];*/
-$rootPage='rt';		
+<?php include 'head.php'; 
 
-$rtNo = $_GET['rtNo'];
-$sql = "SELECT hdr.`rtNo`, hdr.`refNo`, hdr.`returnDate`, hdr.`fromCode`, hdr.toCode, hdr.remark, hdr.`statusCode`
-, hdr.`createTime`, hdr.`createByID`, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById` 
+$rootPage="send2";
+
+$sdNo = $_GET['sdNo'];
+$sql = "SELECT hdr.`sdNo`, hdr.`refNo`, hdr.`sendDate`, hdr.`fromCode`, hdr.toCode, hdr.rcNo, hdr.remark, hdr.`statusCode`
+, hdr.`createTime`, hdr.`createById`, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById` 
 , fsl.name as fromName, tsl.name as toName
 , d.userFullname as createByName
 , hdr.confirmTime, cu.userFullname as confirmByName
 , hdr.approveTime, au.userFullname as approveByName
-FROM `rt` hdr
+FROM `send` hdr
 LEFT JOIN sloc fsl on hdr.fromCode=fsl.code
 LEFT JOIN sloc tsl on hdr.toCode=tsl.code
-left join user d on hdr.createByID=d.userID
-left join user cu on hdr.confirmByID=cu.userID
-left join user au on hdr.approveByID=au.userID
+left join wh_user d on hdr.createById=d.userId
+left join wh_user cu on hdr.confirmById=cu.userId
+left join wh_user au on hdr.approveById=au.userId
 WHERE 1
-AND hdr.rtNo=:rtNo 					
+AND hdr.sdNo=:sdNo 					
 ORDER BY hdr.createTime DESC
 LIMIT 1
 		
 ";
 $stmt = $pdo->prepare($sql);			
-$stmt->bindParam(':rtNo', $rtNo);	
+$stmt->bindParam(':sdNo', $sdNo);	
 $stmt->execute();
-$hdr = $stmt->fetch();	
-$rtNo = $hdr['rtNo'];
-$refNo = $hdr['refNo'];
-if($stmt->rowCount() >= 1){
-	switch($s_userGroupCode){ 					
-		case 'whOff' :
-		case 'whSup' :
-		case 'pdOff' :
-		case 'pdSup' :
-			//if($hdr['fromCode']!=$s_userDeptCode) { header("Location: access_denied.php"); exit();}			
-			break;
-		default :	// it, admin 
-	}
-}
-
+$hdr = $stmt->fetch();			
+$sdNo = $hdr['sdNo'];
 ?>
+<!-- iCheck for checkboxes and radio inputs -->
+<link rel="stylesheet" href="plugins/iCheck/all.css">
+
 <div class="wrapper">
 
   <!-- Main Header -->
@@ -64,16 +50,16 @@ if($stmt->rowCount() >= 1){
 
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
+	<!-- Content Header (Page header) -->
     <section class="content-header">	  
-	  <h1><i class="glyphicon glyphicon-arrow-left"></i>
-       Return
-        <small>Return management</small>
+	  <h1><i class="glyphicon glyphicon-arrow-up"></i>
+       Send
+        <small>Send management</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Return List</a></li>
-		<li><a href="<?=$rootPage;?>_add.php?rtNo=<?=$rtNo;?>"><i class="glyphicon glyphicon-edit"></i>RT No.<?=$rtNo;?></a></li>
-		<li><a href="#"><i class="glyphicon glyphicon-list"></i>View</a></li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Send List</a></li>
+		<li><a href="#"><i class="glyphicon glyphicon-edit"></i>Send</a></li>
+		<li><a href="#"><i class="glyphicon glyphicon-list"></i> View</a></li>
       </ol>
     </section>
 
@@ -82,7 +68,7 @@ if($stmt->rowCount() >= 1){
       <!-- Your Page Content Here -->
     <div class="box box-primary">
         <div class="box-header with-border">
-			<h3 class="box-title">View Return No : <b><?= $rtNo; ?></b></h3>
+			<h3 class="box-title">View Sending No : <b><?= $sdNo; ?><?php if($hdr['rcNo']<>'') { ?> / <small style="color: red;"><?=$hdr['rcNo'];?></small> <?php } ?></b></h3>
 			<div class="box-tools pull-right">
 				<?php $statusName = '<b style="color: red;">Unknown</b>'; switch($hdr['statusCode']){
 					case 'A' : $statusName = '<b style="color: red;">Incompleate</b>'; break;
@@ -95,25 +81,23 @@ if($stmt->rowCount() >= 1){
 			</div><!-- /.box-tools -->
         </div><!-- /.box-header -->
         <div class="box-body">
-			<input type="hidden" id="rtNo" value="<?= $rtNo; ?>" />
+			<input type="hidden" id="sdNo" value="<?= $sdNo; ?>" />
             <div class="row">				
 					<div class="col-md-3">
 						From : <br/>
-						<b><?= $hdr['fromCode'].' : '.$hdr['fromName']; ?></b><br/>
+						<b><?= $hdr['fromCode'].' : '.$hdr['fromName']; ?></b>						
 					</div><!-- /.col-md-3-->	
 					<div class="col-md-3">
 						To : <br/>
 						<b><?= $hdr['toCode'].' : '.$hdr['toName']; ?></b><br/>
 					</div><!-- /.col-md-3-->	
 					<div class="col-md-3">
-						Return Date : <br/>
-						<b><?= $hdr['returnDate']; ?></b><br/>
-						Ref. RC No. : <br/>
-						<b><?= $hdr['refNo']; ?></b><br/>
+						Issue Date : <br/>
+						<b><?= date('d M Y',strtotime( $hdr['sendDate'] )); ?></b><br/>
 					</div>	<!-- /.col-md-3-->	
 					<div class="col-md-3">
 						Remark : 
-						<b><?= $hdr['remark']; ?></b>
+						<b><?= $hdr['remark']; ?></b>						
 					</div>	<!-- /.col-md-3-->	
 			</div> <!-- row add items -->
 		
@@ -124,11 +108,11 @@ if($stmt->rowCount() >= 1){
 				  <!-- Buttons, labels, and many other things can be placed here! -->
 				  <!-- Here is a label for example -->
 				  <?php
-						$sql = "SELECT count(*) as countTotal FROM rt_detail
-								WHERE rtNo=:rtNo 
+						$sql = "SELECT count(*) as countTotal FROM send_detail
+								WHERE sdNo=:sdNo 
 									";						
 						$stmt = $pdo->prepare($sql);	
-						$stmt->bindParam(':rtNo', $hdr['rtNo']);
+						$stmt->bindParam(':sdNo', $hdr['sdNo']);
 						$stmt->execute();	
 						$rc = $stmt->fetch();						
 				  ?>
@@ -137,53 +121,56 @@ if($stmt->rowCount() >= 1){
 				</div><!-- /.box-header -->
 				<div class="box-body">
 				   <?php
-			$sql = "SELECT dtl.`id`, dtl.`prodItemId`, itm.`barcode`, itm.`issueDate`, itm.`machineId`, itm.`seqNo`, itm.`NW`, itm.`GW`
-			, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId`
-			, prd.code as prodCode 
-			, dtl.`returnReasonCode`, dtl.`returnReasonRemark`, dtl.`rtNo` 
-			, rrt.name as returnReasonName 
-			FROM `rt_detail` dtl 
-			LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-			LEFT JOIN product prd ON prd.id=itm.prodCodeId 
-			LEFT JOIN wh_return_reason_type rrt on rrt.code=dtl.returnReasonCode 
-			WHERE 1
-			AND dtl.rtNo=:rtNo  
-			";
-			$stmt = $pdo->prepare($sql);
-			$stmt->bindParam(':rtNo', $rtNo);		
-			$stmt->execute();
-			$rowCount = $stmt->rowCount();
+						$sql = "SELECT dtl.id, dtl.prodItemId 
+						, itm.barcode, itm.grade, itm.qty, itm.issueDate 
+						, prd.code as prodCode 
+						FROM send_detail dtl 
+						LEFT JOIN product_item itm on itm.prodItemId=dtl.prodItemId 
+						LEFT JOIN product prd ON prd.id=itm.prodCodeId 
+						WHERE sdNo=:sdNo  
+						";			
+						$stmt = $pdo->prepare($sql);	
+						$stmt->bindParam(':sdNo', $hdr['sdNo']);
+						$stmt->execute();	
 				   ?>	
 					<table class="table table-striped">
 						<tr>
 							<th>No.</th>
-							<th>Product code</th>
+							<th>Product Code</th>
 							<th>Barcode</th>
+							<th>Grade</th>
 							<th>Qty</th>
-							<th>Return Remark</th>
+							<th>Issue Date</th>
 							<th>#</th>
 						</tr>
-						<?php $row_no=1; $sumQty=0;    while ($row = $stmt->fetch()) { ?>
+						<?php $row_no=1; $sumQty=0; $sumGradeNotOk=0; while ($row = $stmt->fetch()) { $sumQty+=$row['qty']; 
+							$gradeName = '<b style="color: red;">N/A</b>'; 
+							switch($row['grade']){
+								case 0 : $gradeName = 'A'; break;
+								case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
+								case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+								default : 
+									$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
+							} $sumGradeNotOk=0;
+						?>
 						<tr>
 							<td style="text-align: center;"><?= $row_no; ?></td>
-							<td><?= $row['prodCode']; ?></td>	
-							<td><?= $row['barcode']; ?></td>	
+							<td><?= $row['prodCode']; ?></td>
+							<td><?= $row['barcode']; ?></td>
+							<td><?= $gradeName; ?></td>
 							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
-							<td><?= $row['returnReasonRemark']; ?></td>	
+							<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>							
 						</tr>
-						<?php $row_no+=1; $sumQty+=$row['qty']; } ?>
-						<tr>
-							<td></td>
-							<td>Total</td>	
-							<td></td>
+						<?php $row_no+=1; } ?>
+						<tr style="font-weight: bold;">
+							<td style="text-align: center;"></td>
+							<td colspan="3">Total</td>
 							<td style="text-align: right;"><?= number_format($sumQty,0,'.',','); ?></td>
-							<td></td>
+							<td></td>							
 						</tr>
 					</table>
 				</div><!-- /.box-body -->
-	</div><!-- /.row add items -->
-
-			
+	</div><!-- /.row add items -->			
 			
           
     
@@ -191,12 +178,12 @@ if($stmt->rowCount() >= 1){
   <div class="box-footer">
     <div class="col-md-12">
 		<?php if($hdr['statusCode']=='P'){ ?>
-          <a href="<?=$rootPage;?>_view_pdf.php?rtNo=<?=$rtNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
+          <a href="<?=$rootPage;?>_view_pdf.php?sdNo=<?=$sdNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
 		<?php } ?>
 	
 		
 		  
-		   <?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whSup' :  case 'pdSup' : ?>
+		  <?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whSup' :  case 'pdSup' : ?>
           <button type="button" id="btn_approve" class="btn btn-success pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='C'?'':'disabled'); ?> >
 		 <i class="glyphicon glyphicon-check">
 			</i> Approve
@@ -215,6 +202,10 @@ if($stmt->rowCount() >= 1){
 			<button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']<>'P'?'':'disabled'); ?> >
             <i class="glyphicon glyphicon-trash"></i> Delete
           </button>
+		  
+		  <button type="button" id="btn_mapping" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
+            <i class="glyphicon glyphicon-link"></i> Prod.Mapping
+          </button>
 	</div><!-- /.col-md-12 -->
   </div><!-- box-footer -->
 </div><!-- /.box -->
@@ -230,7 +221,7 @@ if($stmt->rowCount() >= 1){
   <?php include'footer.php'; ?>
   
   <!--AUDIO-->
-  <audio id="audioSuccess" src="..\asset\sound\game-sound-effects-success-cute.wav" type="audio/wav"></audio>    
+  <audio id="audioSuccess" src="..\asset\sound\game-sound-effects-success-cute.wav" type="audio/wav"></audio>      
   
 </div>
 <!-- ./wrapper -->
@@ -264,17 +255,21 @@ var spinner = new Spinner().spin();
 $("#spin").append(spinner.el);
 $("#spin").hide();
 //           
-$('#btn_verify').click (function(e) {				 
-	var params = {					
-	rtNo: $('#rtNo').val()			
+$('#btn_verify').click (function(e) {			
+	<?php if($sumGradeNotOk>0){
+			echo "alert('Please check GRADE before sending.'); return false; ";
+	}?>	 
+	var params = {
+	action: 'confirm',					
+	sdNo: $('#sdNo').val()			
 	};
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_confirm_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
 			data: params,
 			dataType: 'json'
-		}).done(function(data) {			
+		}).done(function(data) {
 			if (data.success){  
 				$.smkAlert({
 					text: data.message,
@@ -300,13 +295,14 @@ $('#btn_verify').click (function(e) {
 //.btn_click
 
 $('#btn_reject').click (function(e) {				 
-	var params = {					
-	rtNo: $('#rtNo').val()					
+	var params = {
+	action: 'reject',					
+	sdNo: $('#sdNo').val()					
 	};
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Reject ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_reject_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -334,14 +330,18 @@ $('#btn_reject').click (function(e) {
 });
 //.btn_click
 
-$('#btn_approve').click (function(e) {				 
-	var params = {					
-	rtNo: $('#rtNo').val()				
+$('#btn_approve').click (function(e) {
+	<?php if($sumGradeNotOk>0){
+			echo "alert('Please check GRADE before sending.'); return false; ";
+	}?>
+	var params = {
+	action: 'approve',					
+	sdNo: $('#sdNo').val()				
 	};
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Approve ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_approve_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -353,7 +353,7 @@ $('#btn_approve').click (function(e) {
 				});
 				$('#audioSuccess').get(0).play();
 				alert('Success.');
-				window.location.href = "<?=$rootPage;?>_view.php?rtNo=" + data.rtNo;
+				window.location.href = "<?=$rootPage;?>_view.php?sdNo=" + data.sdNo;
 			}else{
 				$.smkAlert({
 					text: data.message,
@@ -373,13 +373,14 @@ $('#btn_approve').click (function(e) {
 
 
 $('#btn_delete').click (function(e) {				 
-	var params = {					
-	rtNo: $('#rtNo').val()				
+	var params = {
+	action: 'delete',
+	sdNo: $('#sdNo').val()				
 	};
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_delete_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -402,6 +403,38 @@ $('#btn_delete').click (function(e) {
 	//smkConfirm
 });
 //.btn_click
+
+$('#btn_mapping').click (function(e) {				 
+	var params = {
+	action: 'mapping',
+	sdNo: $('#sdNo').val()				
+	};
+	//alert(params.hdrID);
+	$.post({
+		url: '<?=$rootPage;?>_ajax.php',
+		data: params,
+		dataType: 'json'
+	}).done(function(data) {
+		if (data.success){
+			if(data.rowCount==0){
+				alert('Product mapping not found.');
+			}
+			window.location.href = "<?=$rootPage;?>_view.php?sdNo=" + data.sdNo;
+		}else{
+			$.smkAlert({
+				text: data.message,
+				type: 'danger',
+				position:'top-center'
+			});
+		}
+		//e.preventDefault();		
+	}).error(function (response) {
+		alert(response.responseText);
+	});
+	//.post
+});
+//.btn_click
+
 
 	$("html,body").scrollTop(0);
 	$("#statusName").fadeOut('slow').fadeIn('slow').fadeOut('slow').fadeIn('slow');

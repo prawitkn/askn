@@ -106,6 +106,7 @@ desired effect
 						FROM `stk_bal` 
 						LEFT JOIN product on product.id=stk_bal.prodId
 						WHERE 1
+						AND sloc=8 
 						AND prodId=:id 
 						";
 						$id = $_GET['id'];
@@ -156,20 +157,17 @@ desired effect
 			$sql = "SELECT itm.prodCodeId as prodId,
 			itm.qty, sum(itm.qty) as sumQty
 			FROM `receive_detail` dtl 
-			INNER JOIN receive hdr ON hdr.rcNo=dtl.rcNo 
-			LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+			INNER JOIN receive hdr ON hdr.rcNo=dtl.rcNo AND hdr.toCode=8 
+			INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId AND itm.prodCodeId=:id 
 			WHERE 1
 			GROUP BY itm.prodCodeId, itm.qty
-			AND dtl.prodId=:id 
 			";
 			if(ISSET($_GET['sloc'])){ $sql.="AND hdr.toCode=:sloc "; }
 			$stmt = $pdo->prepare($sql);
 			$stmt->bindParam(':id', $id);
-			$stmt->execute();
 			
-						$stmt = $pdo->prepare($sql);
-						$stmt->bindParam(':id', $id);
-						if(ISSET($_GET['sloc'])){ $stmt->bindParam(':sloc', $_GET['sloc']); }		
+			if(ISSET($_GET['sloc'])){ $stmt->bindParam(':sloc', $_GET['sloc']); }
+			$stmt->execute();
 				?>
               <div class="table-responsive">
                 <table class="table no-margin">

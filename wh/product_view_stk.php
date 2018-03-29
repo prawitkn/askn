@@ -1,3 +1,4 @@
+<?php include 'inc_helper.php'; ?>      
 <!DOCTYPE html>
 <!--
 This is a starter template page. Use this page to start your new project from
@@ -5,7 +6,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
 <?php include 'head.php'; ?>  
-<?php include 'inc_helper.php'; ?>      
+
    
 <!--
 BODY TAG OPTIONS:
@@ -102,13 +103,17 @@ desired effect
 					
 					<?php				
 						$sql = "SELECT `prodId`, `open`, `receive`, `sales`, `delivery`, `balance`, uomCode
-								FROM `stk_bal` 
-								INNER JOIN product on product.id=stk_bal.prodId
-								WHERE 1
-								AND prodId=:id 
-								";
+						FROM `stk_bal` 
+						LEFT JOIN product on product.id=stk_bal.prodId
+						WHERE 1
+						AND sloc=8 
+						AND prodId=:id 
+						";
+						$id = $_GET['id'];
+						if(ISSET($_GET['sloc'])){ $sql.="AND sloc=:sloc "; }
 						$stmt = $pdo->prepare($sql);
 						$stmt->bindParam(':id', $id);
+						if(ISSET($_GET['sloc'])){ $stmt->bindParam(':sloc', $_GET['sloc']); }
 						$stmt->execute();
 						$row = $stmt->fetch();
 					?>
@@ -136,7 +141,7 @@ desired effect
           <!-- TABLE: LATEST ORDERS -->
           <div class="box box-success">
             <div class="box-header with-border">
-              <h3 class="box-title">Avalible Stock by Unit</h3>
+              <h3 class="box-title">Avalible Stock by Size</h3>
 
               <div class="box-tools pull-right">
                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
@@ -150,45 +155,40 @@ desired effect
 			<?php	
 					
 			$sql = "SELECT itm.prodCodeId as prodId,
-			itm.qty, sum(itm.qty) as sumQty, count(*) as sumPack 
+			itm.qty, sum(itm.qty) as sumQty
 			FROM `receive_detail` dtl 
-			INNER JOIN receive hdr ON hdr.rcNo=dtl.rcNo 
-			LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+			INNER JOIN receive hdr ON hdr.rcNo=dtl.rcNo AND hdr.toCode=8 
+			INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId AND itm.prodCodeId=:id 
 			WHERE 1
 			GROUP BY itm.prodCodeId, itm.qty
-			AND dtl.prodId=:id 
 			";
+			if(ISSET($_GET['sloc'])){ $sql.="AND hdr.toCode=:sloc "; }
 			$stmt = $pdo->prepare($sql);
 			$stmt->bindParam(':id', $id);
+			
+			if(ISSET($_GET['sloc'])){ $stmt->bindParam(':sloc', $_GET['sloc']); }
 			$stmt->execute();
-					
 				?>
               <div class="table-responsive">
                 <table class="table no-margin">
                   <thead>
 					<th>No.</th>
-                    <th style="text-align: center;">Unit</th>
+                    <th style="text-align: center;">Size</th>
                     <th style="text-align: right;">Total</th>
 					<th style="text-align: right;">Pack</th>
                   </tr>
                   </thead>
                   <tbody>
-				  <?php $row_no = 1; $totalQty=0; $totalPack=0; while ($row = $stmt->fetch()) { 
-					  
-						?>
+				  <?php $row_no = 1; while ($row = $stmt->fetch()) { 
+					?>
                   <tr>
 					<td><?= $row_no; ?></td>
 					<td style="text-align: center;"><?= number_format($row['qty'],0,'.',','); ?></td>
 					<td style="text-align: right;"><?= number_format($row['sumQty'],0,'.',','); ?></td>
-					<td style="text-align: right;"><?= number_format($row['sumPack'],0,'.',','); ?></td>
+					<td style="text-align: right;"><?= number_format($row['sumQty']/$row['qty'],0,'.',','); ?></td>
                 </tr>
-                <?php $row_no+=1; $totalQty+=$row['sumQty']; $totalPack+=$row['sumPack']; } ?>
-					<tr style="font-weight: bold;">
-					<td colspan="2"></td>
-					<td style="text-align: right;"><?=number_format($totalQty,0,'.',',');?></td>
-					<td style="text-align: right;"><?=number_format($totalPack,0,'.',',');?></td>
-					</tr>
-                  </tbody>				  
+                <?php $row_no+=1; } ?>
+                  </tbody>
                 </table>
               </div>
               <!-- /.table-responsive -->
@@ -294,150 +294,8 @@ desired effect
 <script src="bootstrap/js/smoke.min.js"></script>
 <!-- Add _.$ jquery coding -->
 <script src="assets/underscore-min.js"></script>
-<!-- Hightchart -->
-<script src="plugins/highcharts-5.0.12/code/highcharts.js"></script>
-<script src="plugins/highcharts-5.0.12/code/modules/exporting.js"></script>
 
- <?php 
-		$sql = "SELECT
-						a.id, a.abb_eng as monthName
-						,(SELECT IFNULL(sum(tg.budget),0)/1000 FROM target_prod tg
-                         	WHERE tg.month=a.id 
-							AND tg.prodCode=:code AND tg.year=:yearBudget )as sumBudget
-                        ,(SELECT IFNULL(sum(tg.Forecast),0)/1000 FROM target_prod tg
-                         	WHERE tg.month=a.id 
-							AND tg.prodCode=:code2 AND tg.year=:yearForecast )as sumForecast
-						, IFNULL(sum(od.netTotal),0)/1000 as sumActual
-						FROM `month` a                        
-						LEFT JOIN `sale_header` oh on month(oh.saleDate)=a.id and oh.statusCode='P' 
-							and year(oh.saleDate)=:year
-						LEFT JOIN `sale_detail` od on oh.soNo=od.soNo AND od.prodCode=:code3  
-						WHERE 1
-						GROUP BY a.id, a.abb_eng
-						";
-		$stmt = $pdo->prepare($sql);
-		$stmt->bindParam(':code', $code);
-		$stmt->bindParam(':code2', $code);
-		$stmt->bindParam(':code3', $code);
-		$stmt->bindParam(':yearBudget', $year);
-		$stmt->bindParam(':yearForecast', $year);
-		$stmt->bindParam(':year', $year);
-		$stmt->execute();
-		$monthName = array();
-        $sumBudget = array();
-		$sumForecast = array();
-        $sumActual = array();
-		$arrYtdBudget = array();
-		$arrYtdForecast = array();
-		$arrYtdActual = array();
-		$tmpBudget = 0;
-		$tmpForecast = 0;
-		$tmpActual = 0;
-        while($row = $stmt->fetch()){
-            $monthName[] = $row['monthName'];
-            $sumBudget[] = $row['sumBudget'];
-			$sumForecast[] = $row['sumForecast'];
-            $sumActual[] = $row['sumActual'];
-			
-			$tmpBudget += $row['sumBudget'];
-			$tmpForecast += $row['sumForecast'];
-			$tmpActual += $row['sumActual'];
-			$arrYtdBudget[] = $tmpBudget;
-			$arrYtdForecast[] = $tmpForecast;
-			$arrYtdActual[] = $tmpActual;
-        }
-  ?>
-<script>
-$(function () { 
-    var myChart = Highcharts.chart('container', {
-        chart: {
-            type: 'column'
-        },
-        data: {
-            decimalPoint: "."
-        },
-        title: {
-            text: <?php echo $year; ?>
-        },
-        xAxis: {            
-            //categories: ['Apples', 'Bananas', 'Oranges'],
-            categories: [<?php echo "'" . implode("','", $monthName) . "'"; ?>]
-        },
-        yAxis: {
-            title: {
-                text: '(1,000) Baht'
-            }
-        },
-        series: [{
-            name: 'Forecast',
-			//data: [1, 0, 4]
-            data: [<?php echo implode(",", $sumForecast); ?>],            
-            dataLabels: {
-                enabled: true,
-				inside: true,
-				rotation: 270,
-				y: -50,
-				style: {
-                    fontWeight: 'bold'
-                },
-                format: '{point.y:,.0f} Baht'
-            }
-        },
-             {
-            name: 'Actual',
-            data: [<?php echo implode(",", $sumActual); ?>],
-            dataLabels: {
-                //enabled: true,
-                //format: '{y} ชิ้น'
-            }
-        }
-        ]
-    });
-	
-	var myChart2 = Highcharts.chart('container2', {
-        chart: {
-            type: 'line'
-        },
-        data: {
-            decimalPoint: "."
-        },
-        title: {
-            text: 'Year to date '+<?php echo $year; ?>
-        },
-        xAxis: {
-            
-            //categories: ['Apples', 'Bananas', 'Oranges'],
-            categories: [<?php echo "'" . implode("','", $monthName) . "'"; ?>]
-                        //'prod5','prod6','prod7'
-        },
-        yAxis: {
-            title: {
-                text: '(1,000) Baht'
-            }
-        },
-        series: [{
-            name: 'Forecast',
-            data: [<?php echo implode(",", $arrYtdForecast); ?>],
-            //data: [1, 0, 4]
-            dataLabels: {
-                //enabled: true,
-                //format: '{y} ชิ้น'
-            }
-        },{
-            name: 'Actual',
-            data: [<?php echo implode(",", $arrYtdActual); ?>],
-            //data: [1, 0, 4]
-            dataLabels: {
-                //enabled: true,
-                //format: '{y} ชิ้น'
-            }
-        }
-        ]
-    });
-});
-
-</script>
-
+ 
 <script> 
   // to start and stop spiner.  
 $( document ).ajaxStart(function() {

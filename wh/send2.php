@@ -29,7 +29,7 @@ $tb="send";
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">	  
-	  <h1><i class="glyphicon glyphicon-arrow-left"></i>
+	  <h1><i class="glyphicon glyphicon-arrow-up"></i>
        Send
         <small>Send management</small>
       </h1>
@@ -140,7 +140,7 @@ $tb="send";
 					default :	// it, admin 
 				}	
 				if(isset($_GET['search_word']) and $_GET['search_word']<>""){
-					$sql .= "AND hdr.snNo like :search_word ";		
+					$sql .= "AND hdr.sdNo like :search_word ";		
 				}
 				$sql .="			
 				ORDER BY hdr.createTime DESC
@@ -186,7 +186,7 @@ $tb="send";
 					?>
                 <tr>
 					<td><?= $row['sdNo']; ?></td>
-					<td><?= $row['sendDate']; ?></td>
+					<td><?= date('d M Y',strtotime( $row['sendDate'] )); ?></td>
 					<td><?= $row['refNo']; ?></td>
 					<td><?= $row['fromName']; ?></td>
 					<td><?= $row['toName']; ?></td>

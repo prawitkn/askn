@@ -18,29 +18,29 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		$s_userDeptCode = $row_user['userDeptCode'];
 		$s_userID=$_SESSION['userID'];*/
 		
-$rootPage="sending";		
+$rootPage="send2";		
 $tb="send";
 
 ?>
   
   <!-- Left side column. contains the logo and sidebar -->
    <?php include 'leftside.php'; ?>
-
-  <!-- Content Wrapper. Contains page content -->
-  <div class="content-wrapper">
-    <!-- Content Header (Page header) -->	
-    <section class="content-header">
-		<?php
+<?php
 			$sdNo = $_GET['sdNo'];
 			$refNo = $_GET['refNo'];
 		?>
-      <h1>
-       Return
-        <small>Return management</small>
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+	<!-- Content Header (Page header) -->
+    <section class="content-header">	  
+	  <h1><i class="glyphicon glyphicon-arrow-up"></i>
+       Send
+        <small>Send management</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="index.php"><i class="fa fa-dashboard"></i> Main Menu</a></li>
-        <li class="active">Return</li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Send List</a></li>
+		<li><a href="<?=$rootPage;?>_hdr.php?sdNo=<?=$sdNo;?>"><i class="glyphicon glyphicon-edit"></i>Send</a></li>
+		<li><a href="#"><i class="glyphicon glyphicon-list"></i> Item Select</a></li>
       </ol>
     </section>
 
@@ -48,7 +48,6 @@ $tb="send";
     <section class="content">
 
       <!-- Your Page Content Here -->
-    <a href="<?=$rootPage;?>_add.php?sdNo=<?=$sdNo;?>" class="btn btn-google">Back</a>
     <div class="box box-primary">
 		<?php			
 			$sql = "SELECT hdr.* 
@@ -61,7 +60,11 @@ $tb="send";
 			$hdr = $stmt->fetch();
 		?>
         <div class="box-header with-border">
-        <h3 class="box-title">Sending No. : <?=$sdNo;?></h3>
+			<div class="form-inline">
+				<label class="box-title">Sending No. : <?=$sdNo;?></label>
+				<a href="<?=$rootPage;?>_hdr.php?sdNo=" class="btn btn-primary"><i class="glyphicon glyphicon-arrow-left"></i> Back</a>
+			</div>
+		
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
@@ -97,6 +100,7 @@ $tb="send";
 				<div class="box-body">
 					<form id="form2" action="" method="post" class="form" novalidate>
 						<input type="hidden" name="sdNo" value="<?=$sdNo;?>" />
+						<input type="hidden" name="action" value="item_add" />
 					<?php
 						$sql = "SELECT dtl.`id`, dtl.`prodItemId`, itm.`barcode`, itm.`issueDate`
 						, itm.`machineId`, itm.`seqNo`, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`
@@ -105,7 +109,7 @@ $tb="send";
 						FROM send_prod_detail dtl 
 						LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 						LEFT JOIN product prd ON prd.id=itm.prodCodeId 
-						WHERE dtl.sdNo=:refNo 
+						WHERE dtl.hdrNo=:refNo 
 								";
 						$stmt = $pdo->prepare($sql);
 						$stmt->bindParam(':refNo', $refNo);		
@@ -222,7 +226,7 @@ $(document).ready(function() {
 		if ($('#form2').smkValidate()){
 			$.smkConfirm({text:'Are you sure to Submit ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 				$.post({
-					url: 'send2_hdr_item_ajax.php',
+					url: '<?=$rootPage;?>_ajax.php',
 					data: $("#form2").serialize(),
 					dataType: 'json'
 				}).done(function(data) {

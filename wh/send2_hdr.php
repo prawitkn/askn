@@ -57,15 +57,16 @@ $tb="send";
 
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
-    <!-- Content Header (Page header) -->	
+	<!-- Content Header (Page header) -->
     <section class="content-header">	  
-	  <h1><i class="glyphicon glyphicon-arrow-left"></i>
-       Return
-        <small>Return management</small>
+	  <h1><i class="glyphicon glyphicon-arrow-up"></i>
+       Send
+        <small>Send management</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Return List</a></li>
-		<li><a href="#"><i class="glyphicon glyphicon-edit"></i>Return</a></li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Send List</a></li>
+		<!--<li><a href="#"><i class="glyphicon glyphicon-edit"></i>Send</a></li>-->
+      </ol>
     </section>
 
     <!-- Main content -->
@@ -74,7 +75,7 @@ $tb="send";
       <!-- Your Page Content Here -->
     <div class="box box-primary">
         <div class="box-header with-border">
-        <h3 class="box-title">Add Return No. : <?=$sdNo;?></h3>
+        <h3 class="box-title">Add Send No. : <?=$sdNo;?></h3>
 		
 		
 		<input type="hidden" id="sdNo" value="<?=$sdNo;?>" />
@@ -93,10 +94,15 @@ $tb="send";
 						<div class="col-md-3">
 							<label for="refNo" >Referene Receive No.</label>
 							<div class="form-group row">
-								<div class="col-md-9">
+								<!--<div class="col-md-9">
 									<input type="text" name="refNo" id="refNo" class="form-control" <?php echo ($sdNo==''?'':' value="'.$refNo.'" disabled '); ?>  />
 								</div>
 								<div class="col-md-3">
+									<a href="#" name="btnSdNo" class="btn btn-primary" <?php echo ($sdNo==''?'':' disabled '); ?> ><i class="glyphicon glyphicon-search" ></i></a>								
+								</div>-->
+								<div class="col-md-12">									
+									<input type="hidden" name="refNo" id="refNo" value="<?=$refNo;?>" />
+									<label name="refNoName" id="refNoName" ></label>
 									<a href="#" name="btnSdNo" class="btn btn-primary" <?php echo ($sdNo==''?'':' disabled '); ?> ><i class="glyphicon glyphicon-search" ></i></a>								
 								</div>
 							</div>
@@ -129,8 +135,8 @@ $tb="send";
 		<div class="row">
 			<div class="col-md-3">		
 				<div class="from-group">
-				<label for="returnDate">Return Date</label>
-				<input type="text" id="returnDate" name="returnDate" class="form-control datepicker" data-smk-msg="Require Order Date." required <?php echo ($sdNo==''?'':' disabled '); ?> >
+				<label for="sendDate">Send Date</label>
+				<input type="text" id="sendDate" name="sendDate" class="form-control datepicker" data-smk-msg="Require Order Date." required <?php echo ($sdNo==''?'':' disabled '); ?> >
 				</div>
 				<!--from group-->				
 			</div>
@@ -204,17 +210,28 @@ $tb="send";
 						<th>No.</th>
 						<th>Product Code</th>
 						<th>Barcode</th>
+						<th>Grade</th>
 						<th>Qty</th>
-						<th>Return Remark</th>
+						<th>Issue Date</th>
 						<th>#</th>
 					</tr>
-					<?php $row_no=1; $sumQty=0;   while ($row = $stmt->fetch()) { 
+					<?php $row_no=1; $sumQty=0;  $sumGradeNotOk=0; while ($row = $stmt->fetch()) { 
+							$gradeName = '<b style="color: red;">N/A</b>'; 
+							switch($row['grade']){
+								case 0 : $gradeName = 'A'; break;
+								case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
+								case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+								default : 
+									$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
+							} $sumGradeNotOk=0;
 					?>
 					<tr>
 						<td><?= $row_no; ?></td>
 						<td><?= $row['prodCode']; ?></td>	
 						<td><?= $row['barcode']; ?></td>	
+						<td><?= $gradeName; ?></td>	
 						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
+						<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>		
 						<td><a class="btn btn-danger fa fa-trash" name="btn_row_delete" <?php echo ($hdr['statusCode']=='B'?' data-id="'.$row['id'].'" ':' disabled '); ?> > Delete</a></td>
 					</tr>
 					<?php $row_no+=1; $sumQty+=$row['qty']; } ?>
@@ -222,7 +239,9 @@ $tb="send";
 						<td></td>
 						<td>Total</td>	
 						<td></td>
+						<td></td>
 						<td style="text-align: right;"><?= number_format($sumQty,0,'.',','); ?></td>
+						<td></td>
 						<td></td>
 					</tr>
 				</table>
@@ -255,8 +274,12 @@ $tb="send";
         <div class="form-horizontal">
 			<div class="form-group">	
 				<label for="year_month" class="control-label col-md-2">Production Sending Date</label>
-				<div class="col-md-4">
-					<input type="text" class="form-control" id="txt_search_fullname" />
+				<div class="col-md-2">
+					<!--<input type="text" class="form-control" id="txt_search_fullname" />-->
+					<input type="text" id="txt_search_fullname" name="txt_search_fullname" class="form-control datepicker" >
+				</div>
+				<div class="col-md-2">
+					<a name="btn_search_ref_no" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-search" ></i> Search</a>
 				</div>
 			</div>
 		
@@ -346,67 +369,62 @@ $(document).ready(function() {
   
 	//SEARCH Begin
 	$('a[name="btnSdNo"]').click(function(){
-		//prev() and next() count <br/> too.		
-		$btn = $(this).closest("div").prev().find('input');
-		curId = $btn.attr('name');
-		//curId = $(this).prev().attr('name');
-		curTxtFullName = $(this).attr('id');
-		if(!$btn.prop('disabled')){
+		curId = $(this).prev().prev().attr('id');
+		curName = $(this).prev().attr('id');
+		<?php if($sdNo==""){ ?>
 			$('#modal_search_person').modal('show');
-		}
-		
-		//alert(curHidMid+' '+curSlOrgCode+' '+curTxtFullName+' ' +curTxtMobilePhoneNo);
-		
+		<?php } ?>
 	});	
-	$('#txt_search_fullname').keyup(function(e){
-		if(e.keyCode == 13)
-		{
-			var params = {
-				search_fullname: $('#txt_search_fullname').val()
-			};
-			if(params.search_fullname.length < 3){
-				alert('search keyword must more than 3 character.');
-				return false;
-			}
-			/* Send the data using post and put the results in a div */
-			  $.ajax({
-				  url: "search_receive_ajax.php",
-				  type: "post",
-				  data: params,
-				datatype: 'json',
-				  success: function(data){	
-								$('#tbl_search_person_main tbody').empty();
-								$.each($.parseJSON(data), function(key,value){
-									$('#tbl_search_person_main tbody').append(
-									'<tr>' +
-										'<td>' +
-										'	<div class="btn-group">' +
-										'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
-										'	class="btn" title="เลือก"> ' +
-										'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
-										'	</div>' +
-										'</td>' +
-										'<td>'+ value.rcNo +'</td>' +
-										'<td>'+ value.receiveDate +'</td>' +
-										'<td>'+ value.fromCode+' : '+value.fromName+'</td>' +
-										'<td>'+ value.toCode+' : '+value.toName+'</td>' +
-									'</tr>'
-									);			
-								});
-							
-				  }, //success
-				  error:function(){
-					  alert('error');
-				  }   
-				}); 
-		}/* e.keycode=13 */	
+	
+	$('a[name=btn_search_ref_no]').click(function(e){
+		var params = {
+			search_fullname: $('#txt_search_fullname').val()
+		};
+		if(params.search_fullname.length < 3){
+			alert('search keyword must more than 3 character.');
+			return false;
+		}
+		/* Send the data using post and put the results in a div */
+		  $.ajax({
+			  url: "search_send_prod_ajax.php",
+			  type: "post",
+			  data: params,
+			datatype: 'json',
+			  success: function(data){	
+							$('#tbl_search_person_main tbody').empty();
+							$.each($.parseJSON(data), function(key,value){
+								$('#tbl_search_person_main tbody').append(
+								'<tr>' +
+									'<td>' +
+									'	<div class="btn-group">' +
+									'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
+									'	class="btn" title="เลือก"> ' +
+									'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
+									'	</div>' +
+									'</td>' +
+									'<td>'+ value.rcNo +'</td>' +
+									'<td>'+ value.receiveDate +'</td>' +
+									'<td>'+ value.fromCode+' : '+value.fromName+'</td>' +
+									'<td>'+ value.toCode+' : '+value.toName+'</td>' +
+								'</tr>'
+								);			
+							});
+						
+			  }, //success
+			  error:function(){
+				  alert('error');
+			  }   
+			}); 
 	});
 	
 	$(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
 		
-		$('input[name='+curId+']').val($(this).closest("tr").find('td:eq(1)').text());
+		//$('input[name='+curId+']').val($(this).closest("tr").find('td:eq(1)').text());
 		//$('#'+curTxtFullName).val($(this).closest("tr").find('td:eq(2)').text());
-		//$('#'+curTxtMobilePhoneNo).val($(this).closest('tr').find('td:eq(3)').text());		
+		//$('#'+curTxtMobilePhoneNo).val($(this).closest('tr').find('td:eq(3)').text());	
+		$('#'+curId).val($(this).closest("tr").find('td:eq(1)').text());
+		$('#'+curName).text($(this).closest("tr").find('td:eq(1)').text());
+		
 		$('#modal_search_person').modal('hide');
 	});
 	//Search End
@@ -449,12 +467,13 @@ $(document).ready(function() {
 	
 	$('a[name=btn_row_delete]').click(function(){
 		var params = {
+			action: 'item_delete',
 			id: $(this).attr('data-id')
 		};
 		//alert(params.id);
 		$.smkConfirm({text:'Are you sure to Delete ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 			$.post({
-				url: '<?=$rootPage;?>_add_item_delete_ajax.php',
+				url: '<?=$rootPage;?>_ajax.php',
 				data: params,
 				dataType: 'json'
 			}).done(function (data) {					
@@ -505,14 +524,16 @@ $(document).ready(function() {
 			autoclose: true,
 			format: 'dd/mm/yyyy',
 			todayBtn: true,
-			language: 'th',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
-			thaiyear: true              //Set เป็นปี พ.ศ.
+			language: 'en',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
+			thaiyear: false              //Set เป็นปี พ.ศ.
 		});  //กำหนดเป็นวันปัจุบัน
 		//กำหนดเป็น วันที่จากฐานข้อมูล
-		var queryDate = '<?=$hdr['returnDate'];?>',
+		<?php if(isset($hdr['sendDate'])){ ?>
+		var queryDate = '<?=$hdr['sendDate'];?>',
 		dateParts = queryDate.match(/(\d+)/g)
 		realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
-		$('#returnDate').datepicker('setDate', realDate);
+		$('#sendDate').datepicker('setDate', realDate);
+		<?php }else{ ?> $('#sendDate').datepicker('setDate', '0'); <?php } ?>
 		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
 	});
 </script>

@@ -2,23 +2,20 @@
 include 'session.php';	
 //include 'inc_helper.php';	
 	
-try{
-	$t = "";
-	$s_userId = $_SESSION['userId']; 
-	
+try{	
     $sdNo = $_POST['sdNo'];
 	
 	$pdo->beginTransaction();
 	
-	if(!empty($_POST['prodItemId']) and isset($_POST['prodItemId']))
+	if(!empty($_POST['itmId']) and isset($_POST['itmId']))
     {
 		//$arrProdItems=explode(',', $prodItems);
-        foreach($_POST['prodItemId'] as $index => $item )
+        foreach($_POST['itmId'] as $index => $item )
         {	
 			$sql = "INSERT INTO `send_detail`
 			(`prodItemId`, `sdNo`)
 			SELECT rc.`prodItemId`, :sdNo 
-			FROM receive_detail rc 
+			FROM send_prod_detail rc 
 			WHERE rc.id=:id 
 			";						
 			$stmt = $pdo->prepare($sql);	
@@ -27,14 +24,10 @@ try{
 			$stmt->execute();			
         }
     }
-	
-	
-	
-		
 	$pdo->commit();
 	
 	header('Content-Type: application/json');
-    echo json_encode(array('success' => true, 'message' => 'Data Inserted Complete.', 'rtNo' => $rtNo));
+    echo json_encode(array('success' => true, 'message' => 'Data Inserted Complete.', 'sdNo' => $sdNo));
 } 
 //Our catch block will handle any exceptions that are thrown.
 catch(Exception $e){
@@ -42,7 +35,7 @@ catch(Exception $e){
     $pdo->rollBack();
 	//return JSON
 	header('Content-Type: application/json');
-	$errors = "Error on Data Verify. Please try again. " . $e->getMessage();
+	$errors = "Error on Data Update. Please try again. " . $e->getMessage();
 	echo json_encode(array('success' => false, 'message' => $errors.$t));
 }
 

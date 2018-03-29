@@ -18,7 +18,7 @@ try{
 }catch(Exception $e){
 	//Return JSON
 	header('Content-Type: application/json');
-	$errors = "Error on Data Verify. Please try again. " . $e->getMessage();
+	$errors = "Error on Data Delete. Please try again. " . $e->getMessage();
 	echo json_encode(array('success' => false, 'message' => $errors));
 }		
 

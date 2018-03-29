@@ -104,10 +104,11 @@
 			<li><a href="customer.php"><i class="glyphicon glyphicon-user"></i> <span>Customer Data</span></a></li>
 			<li><a href="shipto.php"><i class="glyphicon glyphicon-download-alt"></i> <span>Ship to Customer Data</span></a></li>
 			<li><a href="shipping_marks.php"><i class="fa fa-table"></i> <span>Shipping Marks Data</span></a></li>
+			<li><a href="product.php"><i class="fa fa-barcode"></i> <span>Product Data</span></a></li>
 			<li><a href="salesman.php"><i class="glyphicon glyphicon-briefcase"></i> <span>Salesman Data</span></a></li>
 		<?php } ?>
 			<?php switch($s_userGroupCode){ case 'admin' : case 'it' :  ?>
-			<li><a href="product.php"><i class="fa fa-barcode"></i> <span>Product Data</span></a></li>
+			
 			<?php } ?>
 		<?php switch($s_userGroupCode){ case 'admin' :  ?>
 				
@@ -146,7 +147,8 @@
 			<li class="header">Report</li>
 		<?php switch($s_userGroupCode){ case 'admin' : case 'sales' : case 'salesAdmin' : ?>			
 			<li><a href="report_sale.php"><i class="fa fa-bars"></i> <span>Sales Order </span></a></li>			
-			<li><a href="report_sale_pending_by_prod.php"><i class="fa fa-bars"></i> <span>Sales Order Pending by Product </span></a></li>		
+			<li><a href="report_sale_pending_by_prod.php"><i class="fa fa-bars"></i> <span>Sales Order Pending by Product </span></a></li>	
+			<li><a href="report_prod_stk.php"><i class="fa fa-list-alt"></i> <span>Stock Report</span></a></li>
 		<?php break; default : } ?>
 		
 		<?php switch($s_userGroupCode){ case 'admin' : ?>	
