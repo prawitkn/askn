@@ -1,6 +1,6 @@
 <?php
   //  include '../db/database.php';
-	include 'inc_helper.php';
+	//include 'inc_helper.php';
 ?>
 <!DOCTYPE html>
 <!--
@@ -120,8 +120,8 @@ desired effect
 					</div><!-- /.col-md-3-->	
 					<div class="col-md-3">
 						Po No : <b><?= $hdr['poNo']; ?></b><br/>
-						sales Date : <b><?= $hdr['saleDate']; ?></b><br/>
-						Delivery Date : <b><?= $hdr['deliveryDate']; ?></b><br/>
+						sales Date : <b><?=date('d M Y',strtotime($hdr['saleDate'])); ?></b><br/>
+						Delivery Date : <b><?=date('d M Y',strtotime($hdr['deliveryDate'])); ?></b><br/>
 					</div>	<!-- /.col-md-3-->	
 					<div class="col-md-3">
 						
@@ -283,7 +283,7 @@ desired effect
 							<td><?= $row['prodCode']; ?></td>
 							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',',').'&nbsp;'.$row['uomCode']; ?></td>
 							<td><?= $row['remark'];?>/RL:<?= $row['rollLengthName']; ?></td>
-							<td><?= to_thai_date_fdt($row['deliveryDate']); ?></td>
+							<td><?=date('d M Y',strtotime($row['deliveryDate'])); ?></td>
 							<?php if($hdr['statusCode']=='A' OR $hdr['statusCode']=='B') { ?>
 							<td><a class="btn btn-danger" name="btn_row_delete" data-id="<?= $row['id']; ?>" ><i class="fa fa-trash"></i> Delete</a></td>
 							<?php } ?>
@@ -491,7 +491,7 @@ desired effect
 		//Get Roll Length
 		var params = {
 			id: $(this).closest("tr").find('td:eq(1)').text() //$('option:selected', this).val();
-		}; alert(params.id);
+		}; 
 		$.ajax({
 		  url: "get_prod_roll_length_ajax.php",
 		  type: "post",
@@ -713,8 +713,8 @@ desired effect
 			autoclose: true,
 			format: 'dd/mm/yyyy',
 			todayBtn: true,
-			language: 'th',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
-			thaiyear: true              //Set เป็นปี พ.ศ.
+			language: 'en',             // เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
+			thaiyear: false              //Set เป็นปี พ.ศ.
 		}); 
 		//กำหนดเป็น วันที่จากฐานข้อมูล
 		var queryDate = '<?=$hdr['deliveryDate'];?>',

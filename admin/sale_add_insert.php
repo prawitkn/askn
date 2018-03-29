@@ -62,9 +62,13 @@ try{
 	$payTypeCode = (isset($_POST['payTypeCode'])? $_POST['payTypeCode'] : '' );
 	
 	
+	$var = $saleDate;
+	$var = str_replace('/', '-', $var);
+	$saleDate = date("Y-m-d", strtotime($var));
 	
-	$saleDate = to_mysql_date($saleDate);
-	$deliveryDate = to_mysql_date($deliveryDate);
+	$var = $deliveryDate;
+	$var = str_replace('/', '-', $var);
+	$deliveryDate = date("Y-m-d", strtotime($var));
 
 	//$pdo->beginTransaction();
 	

@@ -3,37 +3,7 @@
 include('session.php');
 //include('prints_function.php');
 //include('inc_helper.php');
-function to_thai_date($eng_date){
-	if(strlen($eng_date) != 10){
-		return null;
-	}else{
-		$new_date = explode('-', $eng_date);
 
-		$new_y = (int) $new_date[0] + 543;
-		$new_m = $new_date[1];
-		$new_d = $new_date[2];
-
-		$thai_date = $new_d . '/' . $new_m . '/' . $new_y;
-
-		return $thai_date;
-	}
-}
-function to_thai_datetime_fdt($eng_date){
-	//if(strlen($eng_date) != 10){
-	//    return null;
-	//}else{
-		$new_datetime = explode(' ', $eng_date);
-		$new_date = explode('-', $new_datetime[0]);
-
-		$new_y = (int) $new_date[0] + 543;
-		$new_m = $new_date[1];
-		$new_d = $new_date[2];
-
-		$thai_date = $new_d . '/' . $new_m . '/' . $new_y . ' ' . substr($new_datetime[1],0,5);
-
-		return $thai_date;
-	//}
-}
 // Include the main TCPDF library (search for installation path).
 require_once('../tcpdf/tcpdf.php');
 
@@ -74,7 +44,7 @@ class MYPDF extends TCPDF {
         // Page number
 		$tmp = date('Y-m-d H:i:s');
 		//$tmp = to_thai_short_date_fdt($tmp);
-		$this->Cell(0, 10,'FM-MS-003; rev.01', 0, false, 'L', 0, '', 0, false, 'T', 'M');
+		$this->Cell(0, 10,'FM-MS-003; rev.03', 0, false, 'L', 0, '', 0, false, 'T', 'M');
 		$this->Cell(0, 10,'Print : '. $tmp, 0, false, 'R', 0, '', 0, false, 'T', 'M');
     }
 	public function head($hdr){
@@ -118,32 +88,32 @@ class MYPDF extends TCPDF {
 		$this->Cell(50, 0, 'SALES ORDER FORM (ใบสั่งขาย)', 1, $ln=0, 'C', 0, '', 0, false, 'T', 'B');
 		$this->Cell(50, 0, '');
 		$this->Cell(45, 0, 'รหัสลูกค้า (Customer Code) : ', 0, $ln=0, 'L', 0, '', 0, false, 'T', 'B');			
-		$this->Cell(30, 0, $hdr['custCode'], 'B', 0, 'C', 1, 'B', 0, false, 'T', 'C');
+		$this->Cell(30, 0, $hdr['custCode'], 'B', 0, 'C', 1, '', 0, false, 'T', 'C');
 		$this->Ln(8);
 		
 		$this->Cell(45, 0, 'ชื่อลูกค้า (Customer Name) : ', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-		$this->Cell(55, 0, $hdr['custName'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
+		$this->Cell(55, 0, $hdr['custName'], 'B', 0, 'L', 1, '', 0, false, 'T', 'C');
 		$this->Cell(25, 0, 'วันที่ (Date) : ', 0, $ln=0, 'L', 0, '', 0, false, 'T', 'B');
-		$this->Cell(50, 0, to_thai_date($hdr['saleDate']), 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+		$this->Cell(50, 0, date('d M Y',strtotime( $hdr['saleDate'] )), 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
 		$this->Ln(6);
 		
 		$this->Cell(45, 0, 'ที่อยู่เปิด Invoice (Destination) : ', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-		$this->Cell(55, 0, $hdr['shipToName'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
+		$this->Cell(55, 0, $hdr['shipToName'], 'B', 0, 'L', 1, '', 0, false, 'T', 'C');
 		$this->Cell(25, 0, 'SO No. : ', 0, $ln=0, 'L', 0, '', 0, false, 'T', 'B');
-		$this->Cell(50, 0, $hdr['soNo'].($hdr['revCount']<>0?' rev.'.$hdr['revCount']:''), 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+		$this->Cell(50, 0, $hdr['soNo'].($hdr['revCount']<>0?' rev.'.$hdr['revCount']:''), 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
 		$this->Ln(6);
 								
-		$this->Cell(100, 0, $hdr['shipToAddr1'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
+		$this->Cell(100, 0, $hdr['shipToAddr1'], 'B', 0, 'L', 1, '', 0, false, 'T', 'C');
 		$this->Cell(25, 0, 'PO No. : ', 0, $ln=0, 'L', 0, '', 0, false, 'T', 'B');
-		$this->Cell(50, 0, $hdr['poNo'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+		$this->Cell(50, 0, $hdr['poNo'], 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
 		$this->Ln(6);
 		
-		$this->Cell(100, 0, $hdr['shipToAddr2'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
+		$this->Cell(100, 0, $hdr['shipToAddr2'], 'B', 0, 'L', 1, '', 0, false, 'T', 'C');
 		$this->Cell(25, 0, 'PI No. : ', 0, $ln=0, 'L', 0, '', 0, false, 'T', 'B');
-		$this->Cell(50, 0, $hdr['piNo'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+		$this->Cell(50, 0, $hdr['piNo'], 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
 		$this->Ln(6);
 		
-		$this->Cell(100, 0, $hdr['shipToAddr3'].$hdr['shipToZipcode'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
+		$this->Cell(100, 0, $hdr['shipToAddr3'].$hdr['shipToZipcode'], 'B', 0, 'L', 1, '', 0, false, 'T', 'C');
 		//$pdf->Cell(25, 0, 'PI No. : ', 0, $ln=0, 'L', 0, '', 0, false, 'T', 'B');
 		//$pdf->Cell(50, 0, $hdr['piNo'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
 		$this->Ln(8);
@@ -160,18 +130,18 @@ class MYPDF extends TCPDF {
 		$this->Cell(40, 5, 'สินค้าสั่งผลิต');
 		$this->CheckBox('stockType', 5, ($hdr['prodStkOther']==0?false:true), array(), array());
 		$this->Cell(20, 5, 'อื่นๆ  (Other)');
-		$this->Cell(55, 0, $hdr['prodStkRem'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+		$this->Cell(55, 0, $hdr['prodStkRem'], 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
 		$this->Ln(6);
 		
 		//การบรรจุ (Packing) : 	□ มี LOGO AK	□ ไม่มี LOGO AK	□ อื่นๆ (Other) ____________________________
-		$this->Cell(25, 5, 'การบรรจุ (Packing) : ', 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
+		$this->Cell(25, 5, 'การบรรจุ (Packing) : ', 'B', 0, 'L', 1, '', 0, false, 'T', 'C');
 		$this->CheckBox('packingType', 5, ($hdr['packTypeAk']==0?false:true), array(), array());
 		$this->Cell(20, 5, 'มี LOGO AK');
 		$this->CheckBox('packingType', 5, ($hdr['packTypeNone']==0?false:true), array(), array());
 		$this->Cell(40, 5, 'ไม่มี LOGO');
 		$this->CheckBox('packingType', 5, ($hdr['packTypeOther']==0?false:true), array(), array());
 		$this->Cell(20, 5, 'อื่นๆ  (Other)');
-		$this->Cell(55, 0, $hdr['packTypeRem'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+		$this->Cell(55, 0, $hdr['packTypeRem'], 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
 		$this->Ln(6);
 		//กรณีส่งในประเทศ (Domestic) วันที่ รับ – ส่ง สินค้า (Delivery Date)
 		
@@ -182,13 +152,13 @@ class MYPDF extends TCPDF {
 		
 		//กรณีส่งต่างประเทศ (Export)   วันที่ Load _______________  by   □ LCL	□ FCL : 1x20’ 	□ FCL : 1x40’
 		//$pdf->Cell(40, 5, 'กรณีส่งต่างประเทศ (Export)');
-		$this->Cell(40, 5, 'กรณีส่งต่างประเทศ (Export) by ', 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
+		$this->Cell(40, 5, 'กรณีส่งต่างประเทศ (Export) by ', 'B', 0, 'L', 1, '', 0, false, 'T', 'C');
 		$this->CheckBox('shipByType', 5, ($hdr['shipByLcl']==0?false:true), array(), array());
 		$this->Cell(5, 5, 'LCL');
 		$this->CheckBox('shipByType', 5, ($hdr['shipByFcl']==0?false:true), array(), array());
 		$this->Cell(40, 5, 'FCL');
 		$this->Cell(20, 5, 'Load Remark : ');
-		$this->Cell(60, 0, $hdr['shipByRem'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+		$this->Cell(60, 0, $hdr['shipByRem'], 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
 		
 		
 		$this->Ln(6);
@@ -202,11 +172,11 @@ class MYPDF extends TCPDF {
 		$text = str_ireplace($breaks, "\r\n", $hdr['shippingMarksName']);  
 		$shippingMarkTextArr = explode("\r\n", $text);
 		if($hdr['shippingMarksFilePath']==""){				
-			$this->Cell(110, 5, $shippingMarkTextArr[0], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
+			$this->Cell(110, 5, $shippingMarkTextArr[0], 'B', 0, 'L', 1, '', 0, false, 'T', 'C');
 		}else{	
-			$this->Cell(110, 5, $text, 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
+			$this->Cell(110, 5, $text, 'B', 0, 'L', 1, '', 0, false, 'T', 'C');
 			
-			$image_file = 'images/shippingMarks/'.$hdr['shippingMarksFilePath'];
+			$image_file = '../images/shippingMarks/'.$hdr['shippingMarksFilePath'];
 			$img = file_get_contents($image_file);
 			// Image example with resizing
 			//image width=150px;
@@ -221,7 +191,7 @@ class MYPDF extends TCPDF {
 		$this->Cell(15, 5, 'PALLET ตีตรา');
 		if(isset($shippingMarkTextArr[1])){
 			$this->Cell(28, 5, '');
-			$this->Cell(110, 5, $shippingMarkTextArr[1], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C'); 
+			$this->Cell(110, 5, $shippingMarkTextArr[1], 'B', 0, 'L', 1, '', 0, false, 'T', 'C'); 
 		}
 		$this->Ln(6);
 
@@ -230,7 +200,7 @@ class MYPDF extends TCPDF {
 		$this->Cell(15, 5, 'รมยาตู้คอนเทนเนอร์');
 		if(isset($shippingMarkTextArr[2])){
 			$this->Cell(28, 5, '');
-			$this->Cell(110, 5, $shippingMarkTextArr[2], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C'); 
+			$this->Cell(110, 5, $shippingMarkTextArr[2], 'B', 0, 'L', 1, '', 0, false, 'T', 'C'); 
 		}
 		$this->Ln(33);
 					
@@ -239,11 +209,11 @@ class MYPDF extends TCPDF {
 		$this->Cell(20, 5, 'ตามใบสั่งซื้อ');
 		$this->CheckBox('priceType', 5, ($hdr['priceOnOther']==0?false:true), array(), array());
 		$this->Cell(10, 5, 'อื่นๆ');
-		$this->Cell(55, 0, $hdr['priceOnRem'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+		$this->Cell(55, 0, $hdr['priceOnRem'], 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
 		$this->Ln(6);
 		
 		$this->Cell(25, 5, 'ผู้เสนอขาย (Sales) : ');
-		$this->Cell(55, 0, $hdr['smName'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+		$this->Cell(55, 0, $hdr['smName'], 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
 		$this->Ln(6);
 		
 		$remStr = '';
@@ -274,13 +244,13 @@ class MYPDF extends TCPDF {
 		
 		//in box
 		$this->Cell(20, 5, 'เครดิต (Credit)');
-		$this->Cell(10, 5, $hdr['payTypeCreditDays'], 'B', 0, 'C', 1, 'B', 0, false, 'T', 'C');
+		$this->Cell(10, 5, $hdr['payTypeCreditDays'], 'B', 0, 'C', 1, '', 0, false, 'T', 'C');
 		$this->Cell(15, 5, 'วัน (Days)');
 		$this->Cell(5, 5, '');
 		$this->RadioButton('payTypeCode', 5, array(), array(), 'สินค้านำเข้าจากต่างประเทศ', ($hdr['plac2deliCode']=='FACT'?true:false));
 		$this->Cell(55, 5, 'ลูกค้ามารับที่โรงงาน AK');
 		$this->Cell(35, 5, 'จัดทำโดย (Issue By) : ');
-		$this->Cell(30, 5, $hdr['createByName'], 'B', 0, 'C', 1, 'B', 0, false, 'T', 'C');
+		$this->Cell(30, 5, $hdr['createByName'], 'B', 0, 'C', 1, '', 0, false, 'T', 'C');
 		$this->Ln(6);
 		
 		$this->Cell(5, 5, '');
@@ -288,9 +258,9 @@ class MYPDF extends TCPDF {
 		$this->Cell(40, 5, 'เก็บเงินสด');
 		$this->RadioButton('payTypeCode', 5, array(), array(), 'สินค้านำเข้าจากต่างประเทศ', ($hdr['plac2deliCode']=='SEND'?true:false));
 		$this->Cell(30, 5, 'ส่งสินค้าจากโรงงาน AK ที่');
-		$this->Cell(25, 0, $hdr['plac2deliCodeSendRem'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+		$this->Cell(25, 0, $hdr['plac2deliCodeSendRem'], 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
 		$this->Cell(35, 5, 'วันที่ (Date) : ');
-		$this->Cell(30, 5, to_thai_datetime_fdt($hdr['createTime']), 'B', 0, 'C', 1, 'B', 0, false, 'T', 'C');
+		$this->Cell(30, 5, date('d M Y H:m',strtotime( $hdr['createTime'] )), 'B', 0, 'C', 1, '', 0, false, 'T', 'C');
 		$this->Ln(6);
 		
 		$this->Cell(5, 5, '');
@@ -299,7 +269,7 @@ class MYPDF extends TCPDF {
 		$this->RadioButton('payTypeCode', 5, array(), array(), 'สินค้านำเข้าจากต่างประเทศ', ($hdr['plac2deliCode']=='MAPS'?true:false));
 		$this->Cell(55, 5, 'ตามแผนที่');
 		$this->Cell(35, 5, 'ตรวจสอบโดย (ผู้ขาย) ');
-		$this->Cell(30, 5, $hdr['confirmByName'], 'B', 0, 'C', 1, 'B', 0, false, 'T', 'C');
+		$this->Cell(30, 5, $hdr['confirmByName'], 'B', 0, 'C', 1, '', 0, false, 'T', 'C');
 		$this->Ln(6);
 		
 		$this->Cell(5, 5, '');
@@ -307,9 +277,9 @@ class MYPDF extends TCPDF {
 		$this->Cell(40, 5, 'ลูกค้าโอนเงินเข้าบัญชี');
 		$this->RadioButton('payTypeCode', 5, array(), array(), 'สินค้านำเข้าจากต่างประเทศ', ($hdr['plac2deliCode']=='LOGI'?true:false));
 		$this->Cell(10, 5, 'ขนส่ง');
-		$this->Cell(45, 0, $hdr['plac2deliCodeLogiRem'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
+		$this->Cell(45, 0, $hdr['plac2deliCodeLogiRem'], 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
 		$this->Cell(35, 5, 'ผู้อนุมัติ (Approved by) ');
-		$this->Cell(30, 5, $hdr['approveByName'], 'B', 0, 'C', 1, 'B', 0, false, 'T', 'C');
+		$this->Cell(30, 5, $hdr['approveByName'], 'B', 0, 'C', 1, '', 0, false, 'T', 'C');
 		$this->Ln(6);
 		
 		$this->Cell(5, 5, '');
@@ -466,7 +436,7 @@ if( isset($_GET['soNo']) ){
 										<th style="font-weight: bold; text-align: center; width: 150px; border: 0.1em solid black;">Specification</th>								
 										<th style="font-weight: bold; text-align: center; width: 60px; border: 0.1em solid black;">Qty</th>								
 										<th style="font-weight: bold; text-align: center; width: 40px; border: 0.1em solid black;">Unit</th>
-										<th style="font-weight: bold; text-align: center; width: 65px; border: 0.1em solid black;">Delivery / Load Date</th>
+										<th style="font-weight: bold; text-align: center; width: 70px; border: 0.1em solid black;">Delivery / Load Date</th>
 									</tr>
 								</thead>
 								  <tbody>
@@ -485,7 +455,7 @@ if( isset($_GET['soNo']) ){
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 40px;
 										border: 0.1em solid black; text-align: right; width: 40px;">'.$row['prodUomCode'].'</td>						
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65px;
-										border: 0.1em solid black; padding: 10px; width: 65px;"> '.to_thai_date($row['deliveryDate']).'</td>
+										border: 0.1em solid black; padding: 10px; width: 70px;"> '.date('d M Y',strtotime( $row['deliveryDate'] )).'</td>
 						</tr>';	
 				
 				//Loop item per page
@@ -506,7 +476,7 @@ if( isset($_GET['soNo']) ){
 							<td style="font-weight: bold; text-align: center; width: 150px;border: 0.1em solid black;"></td>								
 							<td style="font-weight: bold; text-align: center; width: 60px;border: 0.1em solid black;"></td>								
 							<td style="font-weight: bold; text-align: center; width: 40px;border: 0.1em solid black;"></td>
-							<td style="font-weight: bold; text-align: center; width: 65px;border: 0.1em solid black;"></td>							
+							<td style="font-weight: bold; text-align: center; width: 70px;border: 0.1em solid black;"></td>							
 						</tr>';	
 				}
 			}

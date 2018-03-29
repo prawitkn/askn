@@ -154,15 +154,23 @@ $rcNo = $hdr['rcNo'];
 							<th>Produce Date</th>
 							<th>Is Return</th>
 						</tr>
-						<?php $row_no=1;  $sumQty=$sumNW=$sumGW=0;  while ($row = $stmt->fetch()) { 
+						<?php $row_no=1;  $sumQty=$sumNW=$sumGW=$sumGradeNotOk=0;  while ($row = $stmt->fetch()) { 
 							$isReturn = "";
 							if($row['isReturn']=='Y') { $isReturn = '<label class="label label-danger">Yes</label>'; }
+								$gradeName = '<b style="color: red;">N/A</b>'; 
+								switch($row['grade']){
+									case 0 : $gradeName = 'A'; break;
+									case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
+									case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+									default : 
+										$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
+								} 
 						?>
 						<tr>
 							<td style="text-align: center;"><?= $row_no; ?></td>							
 							<td><?= $row['prodCode']; ?></td>
 							<td><?= $row['barcode']; ?></td>
-							<td style="text-align: center;"><?= $row['grade']; ?></td>	
+							<td style="text-align: center;"><?= $gradeName; ?></td>	
 							<td style="text-align: right;"><?= number_format($row['NW'],2,'.',','); ?></td>	
 							<td style="text-align: right;"><?= number_format($row['GW'],2,'.',','); ?></td>	
 							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>

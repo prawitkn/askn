@@ -55,7 +55,7 @@
                     <td><a href="sale_view_pdf.php?soNo=<?=$row['soNo'];?>" ><?= $row['soNo']; ?></a></td>
 					<td><?= $row['custName']; ?></td>
 					<td><?= $row['smName']; ?></td>
-					<td><?= $row['createTime']; ?></td>
+					<td><?= date('d M Y H:m',strtotime($row['createTime'])); ?></td>
                 </tr>
                 <?php  } ?>
                   </tbody>
@@ -65,8 +65,8 @@
             </div>
             <!-- /.box-body -->
             <div class="box-footer clearfix">
-              <a href="javascript:void(0)" class="btn btn-sm btn-info btn-flat pull-left">Place New Order</a>
-              <a href="javascript:void(0)" class="btn btn-sm btn-default btn-flat pull-right">View All Orders</a>
+              <a href="sale_add.php?soNo=" class="btn btn-sm btn-info btn-flat pull-left">Place New Order</a>
+              <!--<a href="javascript:void(0)" class="btn btn-sm btn-default btn-flat pull-right">View All Orders</a>-->
             </div>
             <!-- /.box-footer -->
           </div>
@@ -95,7 +95,7 @@
 			<div class="box-body no-padding">
 				<?php
 					$sql_smm = "
-								SELECT `name`, `surname`, `photo`, `positionName`, `mobileNo` 
+								SELECT `id`, `code`, `name`, `surname`, `photo`, `positionName`, `mobileNo` 
 								FROM `salesman` WHERE `statusCode`='A'
 								";
 					$result_smm = mysqli_query($link, $sql_smm);
@@ -186,7 +186,7 @@
 						 <?= $row_code; ?>
 					</td>
 					<td>
-						 <a target="_blank" href="product_view.php?code=<?= $row['code'];?>" ><?= $row['prodName']; ?></a>
+						 <a href="product_view.php?code=<?= $row['prodCode'];?>" ><?= $row['prodName']; ?></a>
 					</td>
 					<td style="text-align: right;">
 						 <?= number_format($row['qty'],0,'.',','); ?>
@@ -226,7 +226,8 @@
 							,IFNULL(COUNT(oh.soNo),0) as netTotal		
 							FROM sale_header oh 
 							INNER JOIN customer c on oh.custId=c.id
-							WHERE oh.statusCode='P'							
+							WHERE oh.statusCode='P'		
+							AND c.statusCode='A' 
 							AND year(oh.saleDate)=:year ".
 							($month<>"0"?"and month(oh.saleDate)=:month":"")."
 							GROUP BY oh.custId, c.name

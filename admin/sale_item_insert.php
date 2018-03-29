@@ -20,8 +20,10 @@ try{
     //$discPercent = $_POST['discPercent'];
     //$discAmount = $_POST['discAmount'];
 	//$netTotal = $_POST['netTotal'];
-	
-	$deliveryDate = to_mysql_date($deliveryDate);
+		
+	$var = $deliveryDate;
+	$var = str_replace('/', '-', $var);
+	$deliveryDate = date("Y-m-d", strtotime($var));
 	
 	$pdo->beginTransaction();
 	

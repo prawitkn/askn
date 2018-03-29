@@ -262,7 +262,6 @@ $(document).ready(function() {
 	
 	$('#form1').on("submit",function(e) {
 		if($('#form1').smkValidate()) {    
-			alert('valid ok');
 			$.post("customer_add_ajax.php", $("#form1").serialize() )
 			.done(function(data) {
 				if (data.success) {         

@@ -12,6 +12,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 $rootPage="receive";
 
+switch($s_userGroupCode){ 	
+	case 'pdOff' :
+	case 'pdSup' :
+		if($hdr['toCode']!=$s_userDeptCode) { header("Location: access_denied.php"); exit();}			
+		break;
+	default :	// it, admin 
+}
 
 $rcNo = $_GET['rcNo'];
 $sql = "SELECT rc.`rcNo`, rc.`refNo`, rc.`receiveDate`, rc.`fromCode`, rc.`remark`, rc.`statusCode`
@@ -158,12 +165,21 @@ $rcNo = $hdr['rcNo'];
 						<?php $row_no=1; while ($row = $stmt->fetch()) { 
 							$isReturn = "";
 							if($row['statusCode']=='R') { $isReturn = '<label class="label label-danger">Yes</label>'; }
+							
+							$gradeName = '<b style="color: red;">N/A</b>'; 
+								switch($row['grade']){
+									case 0 : $gradeName = 'A'; break;
+									case 1 : $statusName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
+									case 2 : $statusName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+									default : 
+										$statusName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
+								} 
 						?>
 						<tr>
 							<td style="text-align: center;"><?= $row_no; ?></td>							
 							<td><?= $row['prodCode']; ?></td>
 							<td><?= $row['barcode']; ?></td>
-							<td style="text-align: center;"><?= $row['grade']; ?></td>	
+							<td style="text-align: center;"><?= $gradeName; ?></td>	
 							<td style="text-align: right;"><?= $row['NW']; ?></td>	
 							<td style="text-align: right;"><?= $row['GW']; ?></td>	
 							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>

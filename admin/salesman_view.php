@@ -5,7 +5,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
 <?php include 'head.php'; ?>  
-<?php include 'inc_helper.php'; ?>
 
 <?php 
 	$smCode = $_GET['code'];
@@ -19,7 +18,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		case 'salesAdmin' : break;
 		case 'sales' :
 			if($smCode<>$s_smCode) {
-				header('Location: access_denied.php');
+				include 'access_denied2.php';
 				exit();
 			}
 			break;
@@ -53,6 +52,8 @@ desired effect
 <div class="wrapper">
   <!-- Main Header -->
   <?php include 'header.php'; ?>  
+  
+<?php //include 'inc_helper.php'; ?>
   
   <!-- Left side column. contains the logo and sidebar -->
    <?php include 'leftside.php'; ?>
@@ -140,6 +141,7 @@ desired effect
 							$stmt->bindParam(':code', $smCode);
 							$stmt->execute();
 							$sm = $stmt->fetch();
+							$smId= $sm['id'];
 						?>
 				<div class="col-md-2">
 					<image src="dist/img/<?= $sm['photo']; ?>" />
@@ -228,19 +230,20 @@ desired effect
             <!-- /.box-header -->
             <div class="box-body">
 			<?php
-					$sql = "SELECT a.`soNo`, a.`saleDate`, a.`custCode`, a.`smCode`, a.`statusCode`, a.`createTime`
-							,b.custName
+					$sql = "SELECT a.`soNo`, a.`saleDate`, a.`custId`, a.`smId`, a.`statusCode`, a.`createTime`, a.revCount 
+							,b.name as custName 
 							,c.name as smName
 							FROM `sale_header` a 
-							INNER JOIN `customer` b on a.`custCode`= b.code
-							INNER JOIN `salesman` c on a.`smCode`= c.code
+							INNER JOIN `customer` b on a.`custId`= b.id
+							INNER JOIN `salesman` c on a.`smId`= c.id
 							WHERE 1
-							AND a.smCode=:smCode 
+							AND a.smId=:smId 
+							AND a.statusCode='P' 
 							ORDER BY a.`createTime` DESC
 							LIMIT 10
 							";
 					$stmt = $pdo->prepare($sql);
-					$stmt->bindParam(':smCode', $smCode);
+					$stmt->bindParam(':smId', $smId);
 					$stmt->execute();					
 				?>
               <div class="table-responsive">
@@ -261,14 +264,15 @@ desired effect
 							case 'P' : $statusName = '<label class="label label-success">Approved</label>'; break;
 							default : 						
 						}
+						$revisedName = ($row['revCount']<>0?'<small style="color: red;"> rev.'.$row['revCount'].'</small>':'');
 						?>
                   <tr>
-                    <td><a href="sale_view.php?soNo=<?=$row['soNo'];?>" target="_blank"><?= $row['soNo']; ?></a></td>
+                    <td><a href="sale_view.php?soNo=<?=$row['soNo'];?>" ><?= $row['soNo'].$revisedName; ?></a></td>
 					<td><?= $row['custName']; ?></td>
 					<td>
 						<?=$statusName;?>
 					</td>
-					<td><a href="pages/examples/invoice.html"><?= to_thai_datetime_fdt($row['createTime']); ?></a></td>
+					<td><a href="sale_view.php?soNo=<?=$row['soNo'];?>" ><?=date('d M Y H:m',strtotime( $row['createTime'] )); ?></a></td>
                 </tr>
                 <?php $row_no+=1; } ?>
                   </tbody>
@@ -278,8 +282,8 @@ desired effect
             </div>
             <!-- /.box-body -->
             <div class="box-footer clearfix">
-              <a href="javascript:void(0)" class="btn btn-sm btn-info btn-flat pull-left">Place New Order</a>
-              <a href="javascript:void(0)" class="btn btn-sm btn-default btn-flat pull-right">View All Orders</a>
+              <a href="sale_add.php?soNo=" class="btn btn-sm btn-info btn-flat pull-left">Place New Order</a>
+              <!--<a href="javascript:void(0)" class="btn btn-sm btn-default btn-flat pull-right">View All Orders</a>-->
             </div>
             <!-- /.box-footer -->
           </div>

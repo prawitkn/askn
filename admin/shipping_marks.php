@@ -154,7 +154,7 @@ desired effect
 						<?php if($row['statusCode']=='X'){ ?>
 							<a class="btn btn-danger fa fa-trash" name="btn_row_delete"  data-id="<?=$row['id'];?>" ></a>  
 						<?php }else{ ?>	
-							<a class="btn btn-danger fa fa-trash"  disabled  ></a>  
+							<a class="btn btn-danger fa fa-trash"  disabled  >Delete</a>  
 						<?php } ?>
                     </td>
                 </tr>

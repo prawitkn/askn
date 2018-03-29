@@ -21,7 +21,7 @@ switch($s_userGroupCode){
 	case 'admin' : case 'salesAdmin' :
 		break;
 	default : 
-		header('Location: access_denied.php');
+		include 'access_denied2.php';
 		exit();
 }
   
@@ -68,7 +68,7 @@ switch($s_userGroupCode){
 			LEFT JOIN customer cust ON cust.id=h.custId 
 			WHERE 1 ";
 			if($search_word<>""){				
-				$sql .= "and (name like '%".$search_word."%') ";
+				$sql .= "and (h.name like '%".$search_word."%') ";
 			}	
 			//echo $sql;
 			$result = mysqli_query($link, $sql);
@@ -81,7 +81,8 @@ switch($s_userGroupCode){
 			$total_data=$countTotal['countTotal'];
 			$total_page=ceil($total_data/$rows);
 			if($page>=$total_page) $page=$total_page;
-			$start=($page-1)*$rows;			                
+			$start=($page-1)*$rows;	
+			if($start<0) $start=0;		
           ?>
           <span class="label label-primary">Total <?php echo $total_data; ?> items</span>
         </div><!-- /.box-tools -->
@@ -116,9 +117,9 @@ switch($s_userGroupCode){
 			LEFT JOIN customer cust ON cust.id=h.custId 
 			WHERE 1 ";
 			if($search_word<>""){				
-				$sql .= "and (name like '%".$search_word."%' ) ";
+				$sql .= "and (h.name like '%".$search_word."%' ) ";
 			}	
-			$sql .= "ORDER BY h.name ASC ";
+			$sql .= "ORDER BY h.createTime DESC  ";
 			$sql.="LIMIT $start, $rows ";		
 			//$result = mysqli_query($link, $sql);
 			$stmt = $pdo->prepare($sql);	
@@ -153,13 +154,18 @@ switch($s_userGroupCode){
 					<td>
                          <?php //echo ($row['statusCode']=='A' ? 'Active' : 'Inactive'); 
 						 if($row['statusCode']=='A'){ ?>
-							 <a class="btn btn-danger" name="btn_row_remove" data-statusCode="X" data-id="<?= $row['id']; ?>" >Active</a>
+							 <a class="btn btn-danger" name="btn_row_setActive" data-statusCode="I" data-id="<?= $row['id']; ?>" >Active</a>
 						 <?php }else{ ?>
-							 <a class="btn btn-default" name="btn_row_remove" data-statusCode="A" data-id="<?= $row['id']; ?>" >Inactive</a>
+							 <a class="btn btn-default" name="btn_row_setActive" data-statusCode="A" data-id="<?= $row['id']; ?>" >Inactive</a>
 						 <?php } ?>
                     </td>					
                     <td>
-						<a class="btn btn-success" name="btn_row_edit" href="<?=$rootPage;?>_edit.php?id=<?= $row['id']; ?>" >Edit</a>						
+						<a class="btn btn-success" name="btn_row_edit" href="<?=$rootPage;?>_edit.php?id=<?= $row['id']; ?>" >Edit</a>	
+						<?php if($row['statusCode']=='X'){ ?>
+							<a class="btn btn-danger fa fa-trash" name="btn_row_delete"  data-id="<?=$row['id'];?>" ></a>  
+						<?php }else{ ?>	
+							<a class="btn btn-danger fa fa-trash"  disabled  >Delete</a>  
+						<?php } ?>
                     </td>
                 </tr>
                 <?php $c_row+=1; } ?>

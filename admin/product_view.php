@@ -108,15 +108,17 @@ desired effect
               <div class="row">
 				<?php				
 					$code = $_GET['code'];
-					$sql = "SELECT `code`, `prodGroup`, `prodName`, `prodNameNew`, `photo`, `prodPrice`, `prodDesc`, `appID`, `statusCode` 
-							FROM `product` 
+					$sql = "SELECT hdr.`id`, hdr.`code`, hdr.`catCode`, hdr.`name`, hdr.`name2`, hdr.`uomCode`, hdr.`ratioPack`, hdr.`packUomCode`
+					, hdr.`sourceTypeCode`, hdr.`appCode`, hdr.`isFg`, hdr.`isWip`, hdr.`photo`, hdr.`price`, hdr.`description`, hdr.`statusCode`
+							FROM `product` hdr
 							WHERE 1
-							AND code=:code 
+							AND hdr.code=:code 
 							";
 					$stmt = $pdo->prepare($sql);
 					$stmt->bindParam(':code', $code);
 					$stmt->execute();
 					$sm = $stmt->fetch();
+					$prodId=$sm['id'];
 				?>
 				<div class="col-md-4">
 					<image src="dist/img/product/<?php echo (empty($sm['photo'])? 'default.jpg' : $sm['photo']) ?> " width="300" height="300" />
@@ -125,23 +127,19 @@ desired effect
 					<table>
 						<tr>
 							<td style="font-size: large; font-weight: bold;">Product Name : </td>
-							<td style="font-size: large;"><?= $sm['code'].'&nbsp;&nbsp;'.$sm['prodNameNew']; ?></td>
+							<td style="font-size: large;"><?= $sm['code'].'&nbsp;&nbsp;'.$sm['name']; ?></td>
 						</tr>
 						<tr>
 							<td style="font-size: large; font-weight: bold;">Description : </td>
-							<td style="font-size: large;"><?= $sm['prodDesc']; ?></td>
+							<td style="font-size: large;"><?= $sm['description']; ?></td>
 						</tr>
 						<tr>
 							<td style="font-size: large; font-weight: bold;">App ID : </td>
-							<td style="font-size: large;"><?= $sm['appID']; ?></td>
+							<td style="font-size: large;"><?= $sm['appCode']; ?></td>
 						</tr>
 						<tr>
 							<td style="font-size: large; font-weight: bold;">Status : </td>
 							<td style="font-size: large;"><?= $sm['statusCode']; ?></td>
-						</tr>
-						<tr>
-							<td style="font-size: large; font-weight: bold;">Sales Price : </td>
-							<td style="font-size: large;"><?= number_format($sm['prodPrice'],2,'.',','); ?></td>
 						</tr>
 					</table>
                 </div><!-- /.col-10 -->

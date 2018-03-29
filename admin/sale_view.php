@@ -1,6 +1,6 @@
 <?php
   //  include '../db/database.php';
-  include 'inc_helper.php';
+  //include 'inc_helper.php';
 ?>
 <!DOCTYPE html>
 <!--
@@ -138,7 +138,7 @@ desired effect
 						Order No : <br/>
 						<b><?= $hdr['soNo']; ?></b><br/>
 						Order Date : <br/>
-						<b><?= to_thai_date($hdr['saleDate']); ?></b><br/>
+						<b><?= date('d M Y',strtotime( $hdr['saleDate'] )); ?></b><br/>
 					</div>	<!-- /.col-md-3-->	
 					<div class="col-md-3">
 						<i class="fa fa-<?php echo ($hdr['suppTypeFact']==0?'square-o':'check-square-o'); ?>"></i> Factory&nbsp;&nbsp;&nbsp;    <i class="fa fa-<?php echo ($hdr['suppTypeImp']==0?'square-o':'check-square-o'); ?>"></i> Import</br>
@@ -211,7 +211,7 @@ desired effect
 							<td><?= $row['description']; ?></td>		
 							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',',').' '.$row['prodUomCode']; ?></td>
 							<td style="text-align: right;"><?= $row['remark']; ?>/RL:<?= $row['rollLengthName']; ?></td>							
-							<td><?= to_thai_date_fdt($row['deliveryDate']); ?></td>	
+							<td><?= date('d M Y',strtotime( $row['deliveryDate'] )); ?></td>	
 							<td style="text-align: right; color: blue;"><?= number_format($row['sentQty'],0,'.',',').'&nbsp;'.$row['prodUomCode']; ?></td>
 						</tr>
 						<?php $row_no+=1; } ?>						
@@ -243,7 +243,7 @@ desired effect
 			Export Detail
 		</div>
 		<div class="col-md-10">
-			Load Date : <label class="label label-default"><?php echo to_thai_date($hdr['deliveryDate']); ?></label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;By :
+			Load Date : <label class="label label-default"><?php echo date('d M Y',strtotime( $hdr['deliveryDate'] )); ?></label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;By :
 			<i class="fa fa-<?php echo ($hdr['shipByLcl']==0?'square-o':'check-square-o'); ?>"></i> LCL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
 			<i class="fa fa-<?php echo ($hdr['shipByFcl']==0?'square-o':'check-square-o'); ?>"></i> FCL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
 			<label class="label label-default"><?php echo $hdr['packTypeRem']; ?></label>
@@ -324,11 +324,11 @@ desired effect
 				</div>
 				<div class="col-md-8">
 					<label class=""><?php echo $hdr['createByName']; ?></label></br>
-					<label class=""><?php echo to_thai_datetime_fdt($hdr['createTime']); ?></label></br>
+					<label class=""><?php echo date('d M Y H:m',strtotime( $hdr['createTime'] )); ?></label></br>
 					<label class=""><?php echo $hdr['confirmByName']; ?></label></br>
-					<label class=""><?php echo to_thai_datetime_fdt($hdr['confirmTime']); ?></label></br>
+					<label class=""><?php echo date('d M Y H:m',strtotime( $hdr['confirmTime'] )); ?></label></br>
 					<label class=""><?php echo $hdr['approveByName']; ?></label></br>
-					<label class=""><?php echo to_thai_datetime_fdt($hdr['approveTime']); ?></label>	
+					<label class=""><?php echo date('d M Y H:m',strtotime( $hdr['approveTime'] )); ?></label>	
 				</div>				
 			</div>			
 		</div>
@@ -345,14 +345,18 @@ desired effect
     </div><!-- /.box-body -->
   <div class="box-footer">
     <div class="col-md-12">
+	
 		<?php if($hdr['statusCode']=='P'){ ?>
           <a href="<?=$rootPage;?>_view_pdf.php?soNo=<?=$soNo;?>" target="_blank" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
-		  
+		
 			<?php switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' : ?>
-		  <button type="button" id="btn_revise" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='P'?'':'disabled'); ?> >
-            <i class="glyphicon glyphicon-wrench"></i> Edit for Revise
-          </button>
-		  <?php break; default : } ?>
+			  <button type="button" id="btn_revise" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['isClose']=='N'?'':'disabled'); ?> >
+				<i class="glyphicon glyphicon-wrench"></i> Edit for Revise
+			  </button>
+		  <?php break; 
+			default : ?>
+				
+			<?php } ?>
 		<?php } ?>
 		
 		
@@ -382,7 +386,8 @@ desired effect
             <i class="glyphicon glyphicon-ok"></i> Confirm
           </button>      
 		  </button>   
-			<button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']<>'P'?'':'disabled'); ?> >
+		  
+          <button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ((($hdr['statusCode']<>'P') AND ($hdr['revCount']==0))?'':'disabled'); ?> >
             <i class="glyphicon glyphicon-trash"></i> Delete
           </button>
 		  
@@ -417,9 +422,9 @@ desired effect
       <div class="modal-body">
         <div class="form-horizontal">
 			<div class="form-group">	
-				<label for="txt_reason" class="control-label col-md-2">Reason : </label>
+				<label for="txt_reason" class="control-label col-md-4">Reason/Remark : </label>
 				<div class="col-md-6">
-					<input type="text" class="form-control" id="txt_reason" />
+					<textarea class="form-control" id="txt_reason"></textarea>
 				</div>
 			</div>
 		
@@ -481,8 +486,14 @@ $("#spin").hide();
 		var params = {					
 			soNo: $('#soNo').val(),
 			reason: $('#txt_reason').val()
-		};
-		$.smkConfirm({text:'Are you sure to Edit Approved Sales Order ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+		};	
+		if(params.reason.trim()==""){
+			alert('Reason/Remark is required.');
+			$('#txt_reason').select();
+			return false;
+		}
+		if (confirm('Are you sure to Edit Approved Sales Order ?')) {
+			// Save it!
 			$.post({
 				url: 'sale_revise_ajax.php',
 				data: params,
@@ -507,7 +518,12 @@ $("#spin").hide();
 				alert(response.responseText);
 			});
 			//.post
-		}});
+		} else {
+			// Do nothing!
+		}
+		//$.smkConfirm({text:'Are you sure to Edit Approved Sales Order ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			
+		//}});
 		//smkConfirm
 		//$('#modal_search').modal('hide');
 	});	

@@ -218,10 +218,13 @@ desired effect
 			  
 				
                 
-               
+               <div class="col-md-12">
+			<a href="<?=$rootPage;?>_xls.php?sloc=<?=$sloc;?>&catCode=<?=$catCode;?>&search_word=<?=$search_word;?>" class="btn btn-default pull-right"><i class="glyphicon glyphicon-print"></i> Export</a>
 			
 			<nav>
 			<ul class="pagination">
+				
+				
 				<li <?php if($page==1) echo 'class="disabled"'; ?> >
 					<a href="<?=$rootPage;?>?search_word=<?= $search_word;?>&catCode=<?= $catCode;?>&=page=<?= $page-1; ?>" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
 				</li>
@@ -235,11 +238,11 @@ desired effect
 				</li>
 			</ul>
 			</nav>
-			
+			</div>
 			
         </div><!-- /.box-body -->
   <div class="box-footer">
-      <a href="<?=$rootPage;?>_xls.php?sloc=<?=$sloc;?>&catCode=<?=$catCode;?>&search_word=<?=$search_word;?>" class="btn btn-default pull-left"><i class="glyphicon glyphicon-print"></i> Print</a>
+      
     
     <!--The footer of the box -->
   </div><!-- box-footer -->

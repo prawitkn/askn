@@ -22,7 +22,6 @@ try{
 	WHERE 1
 	AND pp.ppNo=:ppNo 
 			";
-
  	$stmt = $pdo->prepare($sql);
 	$stmt->bindParam(':doNo', $doNo);
 	$stmt->bindParam(':ppNo', $ppNo);

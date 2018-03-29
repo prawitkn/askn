@@ -38,18 +38,20 @@
   <![endif]-->
   
   <style>
-	 body .content-wrapper{font-size: 16px;}
+	body { font-family: Browallia New; font-size: 18px; }
+
+	 body .content-wrapper{font-size: 20px;}
 	@media (max-width: @screen-xs) {
-		body .content-wrapper{font-size: 10px;}
+		body .content-wrapper{font-size: 12px;}
 	}
 
 	@media (max-width: @screen-sm) {
-		body .content-wrapper{font-size: 14px;}
+		body .content-wrapper{font-size: 16px;}
 	}
 
 
 	.content-wrapper h5{
-		font-size: 1.4em;
+		font-size: 1.8em;
 	}
 	</style>  
 </head>
