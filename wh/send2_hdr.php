@@ -88,7 +88,8 @@ $tb="send";
         </div><!-- /.box-header -->
         <div class="box-body">			
             <div class="row">
-				<form id="form1" action="#" method="post" class="form" novalidate>				
+				<form id="form1" action="#" method="post" class="form" novalidate>	
+				<input type="hidden" name="action" value="add" />
                 <div class="col-md-12">   
 					<div class="row">
 						<div class="col-md-3">
@@ -391,6 +392,7 @@ $(document).ready(function() {
 			  data: params,
 			datatype: 'json',
 			  success: function(data){	
+							alert(data);
 							$('#tbl_search_person_main tbody').empty();
 							$.each($.parseJSON(data), function(key,value){
 								$('#tbl_search_person_main tbody').append(
@@ -402,8 +404,8 @@ $(document).ready(function() {
 									'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
 									'	</div>' +
 									'</td>' +
-									'<td>'+ value.rcNo +'</td>' +
-									'<td>'+ value.receiveDate +'</td>' +
+									'<td>'+ value.sdNo +'</td>' +
+									'<td>'+ value.sendDate +'</td>' +
 									'<td>'+ value.fromCode+' : '+value.fromName+'</td>' +
 									'<td>'+ value.toCode+' : '+value.toName+'</td>' +
 								'</tr>'
@@ -424,6 +426,13 @@ $(document).ready(function() {
 		//$('#'+curTxtMobilePhoneNo).val($(this).closest('tr').find('td:eq(3)').text());	
 		$('#'+curId).val($(this).closest("tr").find('td:eq(1)').text());
 		$('#'+curName).text($(this).closest("tr").find('td:eq(1)').text());
+		$('#'+curName).text($(this).closest("tr").find('td:eq(1)').text());
+		
+		var queryDate = $(this).closest("tr").find('td:eq(2)').text(),
+		dateParts = queryDate.match(/(\d+)/g)
+		realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
+		$('#sendDate').datepicker('setDate', realDate);
+		$('#sendDate').attr('disabled','disabled');
 		
 		$('#modal_search_person').modal('hide');
 	});
@@ -435,7 +444,7 @@ $(document).ready(function() {
 		if ($('#form1').smkValidate()){
 			$.smkConfirm({text:'Are you sure to Create ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
 				$.post({
-					url: '<?=$rootPage;?>_add_hdr_insert_ajax.php',
+					url: '<?=$rootPage;?>_ajax.php',
 					data: $("#form1").serialize(),
 					dataType: 'json'
 				}).done(function(data) {
@@ -445,7 +454,7 @@ $(document).ready(function() {
 							type: 'success',
 							position:'top-center'
 						});
-						window.location.href = "rt_add.php?rtNo=" + data.rtNo;
+						window.location.href = "send2_hdr.php?sdNo=" + data.sdNo;
 					}else{
 						$.smkAlert({
 							text: data.message,

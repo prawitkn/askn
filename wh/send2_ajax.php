@@ -17,22 +17,20 @@ if(!isset($_POST['action'])){
 								
 				$sdNo = 'SD-'.substr(str_shuffle(MD5(microtime())), 0, 7);
 				$refNo = $_POST['refNo'];
-				$sendDate = $_POST['sendDate'];
-				$fromCode = $_POST['fromCode'];
-				$toCode = $_POST['toCode'];
+				//$sendDate = $_POST['sendDate'];
+				//$fromCode = $_POST['fromCode'];
+				//$toCode = $_POST['toCode'];
 				
-				$sendDate = to_mysql_date($sendDate);
+				//$sendDate = to_mysql_date($sendDate);
 				
 				$sql = "INSERT INTO `".$tb."`
 				(`sdNo`, `refNo`, `sendDate`, `fromCode`, `toCode`, `statusCode`, `createTime`, `createByID`) 
-				VALUES
-				(:sdNo,:refNo,:sendDate,:fromCode,:toCode,'B',now(),:s_userId)";
+				SELECT :sdNo, hdr.sdNo, hdr.sendDate, hdr.fromCode, hdr.toCode, 'B', NOW(), :s_userId 
+				FROM send_prod hdr 
+				WHERE hdr.sdNo=:refNo ";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':sdNo', $sdNo);
 				$stmt->bindParam(':refNo', $refNo);
-				$stmt->bindParam(':sendDate', $sendDate);
-				$stmt->bindParam(':fromCode', $fromCode);
-				$stmt->bindParam(':toCode', $toCode);
 				$stmt->bindParam(':s_userId', $s_userId);	
 				$stmt->execute();
 						
@@ -206,7 +204,7 @@ if(!isset($_POST['action'])){
 			break;
 		case 'delete' :
 			try{
-				$id = $_POST['id'];	
+				$sdNo = $_POST['sdNo'];	
 				
 				//We start our transaction.
 				$pdo->beginTransaction();
@@ -214,7 +212,7 @@ if(!isset($_POST['action'])){
 				//Query 1: Check Status for not gen running No.
 				$sql = "SELECT sdNo FROM send WHERE sdNo=:sdNo AND statusCode<>'P' LIMIT 1";
 				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $id);
+				$stmt->bindParam(':sdNo', $sdNo);
 				$stmt->execute();
 				$hdr = $stmt->fetch();	
 				$row_count = $stmt->rowCount();	
@@ -228,13 +226,13 @@ if(!isset($_POST['action'])){
 				//Query 1: DELETE Detail
 				$sql = "DELETE FROM `send_detail` WHERE sdNo=:sdNo";
 				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $id);	
+				$stmt->bindParam(':sdNo', $sdNo);	
 				$stmt->execute();
 				
 				//Query 2: DELETE Header
 				$sql = "DELETE FROM `send` WHERE sdNo=:sdNo";
 				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $id);	
+				$stmt->bindParam(':sdNo', $sdNo);	
 				$stmt->execute();
 						
 				//We've got this far without an exception, so commit the changes.

@@ -13,13 +13,13 @@
 	LEFT JOIN sloc fsl on hdr.fromCode=fsl.code
 	LEFT JOIN sloc tsl on hdr.toCode=tsl.code
 	WHERE 1 
-	AND hdr.sendDate=:search_fullname ";
+	AND hdr.sendDate=:search_word ";
 	switch($s_userGroupCode){ 
 		case 'whOff' :
 		case 'whSup' :
 		case 'pdOff' :
 		case 'pdSup' :
-			$sql .= "AND hdr.toCode=:s_userDeptCode ";
+			$sql .= "AND hdr.fromCode=:s_userDeptCode ";
 			break;
 		default :	// it, admin 
 	}	
