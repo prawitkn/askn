@@ -1,6 +1,6 @@
 <?php
   //  include '../db/database.php';
-  include 'inc_helper.php'; 
+  include 'inc_helper.php';
 ?>
 <!DOCTYPE html>
 <!--
@@ -8,17 +8,21 @@ This is a starter template page. Use this page to start your new project from
 scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
-<?php include 'head.php';/*$s_userFullname = $row_user['userFullname'];
-        $s_userPicture = $row_user['userPicture'];
-		$s_username = $row_user['userName'];
-		$s_userGroupCode = $row_user['userGroupCode'];
-		$s_userDeptCode = $row_user['userDeptCode'];
-		$s_userID=$_SESSION['userID'];*/
-$rootPage='receive';
+<?php include 'head.php'; 
+
+$rootPage="receive";
+
+switch($s_userGroupCode){ 	
+	case 'pdOff' :
+	case 'pdSup' :
+		if($hdr['toCode']!=$s_userDeptCode) { header("Location: access_denied.php"); exit();}			
+		break;
+	default :	// it, admin 
+}
 
 $rcNo = $_GET['rcNo'];
 $sql = "SELECT rc.`rcNo`, rc.`refNo`, rc.`receiveDate`, rc.`fromCode`, rc.`remark`, rc.`statusCode`
-, rc.`createTime`, rc.`createByID`, rc.`confirmTime`, rc.`confirmById`, rc.`approveTime`, rc.`approveById` 
+, rc.`createTime`, rc.`createById`, rc.`confirmTime`, rc.`confirmById`, rc.`approveTime`, rc.`approveById` 
 , fsl.name as fromName, tsl.name as toName
 , d.userFullname as createByName
 , rc.confirmTime, cu.userFullname as confirmByName
@@ -26,9 +30,9 @@ $sql = "SELECT rc.`rcNo`, rc.`refNo`, rc.`receiveDate`, rc.`fromCode`, rc.`remar
 FROM `receive` rc 
 LEFT JOIN sloc fsl on rc.fromCode=fsl.code 
 LEFT JOIN sloc tsl on rc.toCode=tsl.code 
-left join user d on rc.createByID=d.userID
-left join user cu on rc.confirmByID=cu.userID
-left join user au on rc.approveByID=au.userID
+left join wh_user d on rc.createById=d.userId
+left join wh_user cu on rc.confirmById=cu.userId
+left join wh_user au on rc.approveById=au.userId
 WHERE 1
 AND rc.rcNo=:rcNo 					
 ORDER BY rc.createTime DESC
@@ -40,6 +44,7 @@ $stmt->bindParam(':rcNo', $rcNo);
 $stmt->execute();
 $hdr = $stmt->fetch();			
 $rcNo = $hdr['rcNo'];
+
 ?>
 <!-- iCheck for checkboxes and radio inputs -->
 <link rel="stylesheet" href="plugins/iCheck/all.css">
@@ -63,7 +68,8 @@ $rcNo = $hdr['rcNo'];
       <ol class="breadcrumb">
         <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Receive List</a></li>
 		<li><a href="<?=$rootPage;?>_add.php?rcNo=<?=$rcNo;?>"><i class="glyphicon glyphicon-edit"></i>RC No.<?=$rcNo;?></a></li>
-		<li><a href="#"><i class="glyphicon glyphicon-list"></i>View</a></li>
+		<li><a href="<?=$rootPage;?>_view.php?rcNo=<?=$rcNo;?>"><i class="glyphicon glyphicon-list"></i>View</a></li>
+		<li><a href="<?=$rootPage;?>_set_shelf.php?rcNo=<?=$rcNo;?>"><i class="glyphicon glyphicon-download-alt"></i>Set Shelf</a></li>
       </ol>
     </section>
 
@@ -72,7 +78,7 @@ $rcNo = $hdr['rcNo'];
       <!-- Your Page Content Here -->
     <div class="box box-primary">
         <div class="box-header with-border">
-			<h3 class="box-title">Receive No : <b><?= $rcNo; ?></b></h3>
+			<h3 class="box-title">View Receive No : <b><?= $rcNo; ?></b></h3>
 			<div class="box-tools pull-right">
 				<?php $statusName = '<b style="color: red;">Unknown</b>'; switch($hdr['statusCode']){
 					case 'A' : $statusName = '<b style="color: red;">Incompleate</b>'; break;
@@ -97,7 +103,7 @@ $rcNo = $hdr['rcNo'];
 					</div><!-- /.col-md-3-->	
 					<div class="col-md-3">
 						Receive Date : <br/>
-						<b><?= date('d M Y',strtotime( $hdr['receiveDate'] )); ?></b><br/>
+						<b><?= $hdr['receiveDate']; ?></b><br/>
 					</div>	<!-- /.col-md-3-->	
 					<div class="col-md-3">
 						Remark : 
@@ -126,15 +132,16 @@ $rcNo = $hdr['rcNo'];
 				<div class="box-body">
 				   <?php
 						$sql = "
-						SELECT dtl.`id`, dtl.`prodItemId`, itm.`prodId`, itm.`barcode`, itm.`issueDate`, itm.`machineId`, itm.`seqNo` 
-						, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId` 
-						,prd.code as prodCode 
-						, dtl.`isReturn`, dtl.`shelfCode`, dtl.`rcNo` 
-						, ws.name as shelfName 
+						SELECT dtl.`id`, dtl.`prodItemId`, itm.`prodCodeId`, itm.`barcode`, itm.`issueDate`
+						, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`  
+						, dtl.`statusCode`, dtl.`rcNo` 
+						, ws.code as shelfName 
+						,prd.code as prodCode , prd.name as prodName 
 						FROM `receive_detail` dtl
 						LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-						LEFT JOIN product prd ON prd.id=itm.prodCodeId
-						LEFT JOIN wh_sloc ws on ws.code=dtl.shelfCode 
+						LEFT JOIN product prd ON prd.id=itm.prodCodeId 
+						LEFT JOIN wh_shelf_map_item wmi ON wmi.recvProdId=dtl.id
+						LEFT JOIN wh_shelf ws ON ws.id=wmi.shelfId 
 						WHERE 1=1 
 						AND dtl.`rcNo`=:rcNo 
 						";
@@ -146,24 +153,26 @@ $rcNo = $hdr['rcNo'];
 						<tr>
 							<th>No.</th>							
 							<th>Product Code</th>
-							<th>barcode</th>
+							<th>Barcode</th>
 							<th>Grade</th>
 							<th>Net<br/>Weight(kg.)</th>
 							<th>Gross<br/>Weight(kg.)</th>
 							<th>Qty</th>
-							<th>Issue Date</th>
+							<th>Produce Date</th>
 							<th>Is Return</th>
+							<th>Shelf</th>
 						</tr>
-						<?php $row_no=1;  $sumQty=$sumNW=$sumGW=$sumGradeNotOk=0;  while ($row = $stmt->fetch()) { 
+						<?php $row_no=1; while ($row = $stmt->fetch()) { 
 							$isReturn = "";
-							if($row['isReturn']=='Y') { $isReturn = '<label class="label label-danger">Yes</label>'; }
-								$gradeName = '<b style="color: red;">N/A</b>'; 
+							if($row['statusCode']=='R') { $isReturn = '<label class="label label-danger">Yes</label>'; }
+							
+							$gradeName = '<b style="color: red;">N/A</b>'; 
 								switch($row['grade']){
 									case 0 : $gradeName = 'A'; break;
-									case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
-									case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+									case 1 : $statusName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
+									case 2 : $statusName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
 									default : 
-										$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
+										$statusName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
 								} 
 						?>
 						<tr>
@@ -171,24 +180,17 @@ $rcNo = $hdr['rcNo'];
 							<td><?= $row['prodCode']; ?></td>
 							<td><?= $row['barcode']; ?></td>
 							<td style="text-align: center;"><?= $gradeName; ?></td>	
-							<td style="text-align: right;"><?= number_format($row['NW'],2,'.',','); ?></td>	
-							<td style="text-align: right;"><?= number_format($row['GW'],2,'.',','); ?></td>	
+							<td style="text-align: right;"><?= $row['NW']; ?></td>	
+							<td style="text-align: right;"><?= $row['GW']; ?></td>	
 							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
-							<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>	
+							<td><?= $row['issueDate']; ?></td>	
 							<td><?= $isReturn; ?></td>
-						</tr>
-						<?php $row_no+=1;  $sumQty+=$row['qty'] ; $sumNW+=$row['NW']; $sumGW+=$row['GW'] ;  } ?>
-						<tr style="font-weight: bold;">
-							<td></td>
-							<td colspan="3">Total</td>	
-							<td style="text-align: right;"><?= number_format($sumNW,2,'.',','); ?></td>
-							<td style="text-align: right;"><?= number_format($sumGW,2,'.',','); ?></td>
-							<td style="text-align: right;"><?= number_format($sumQty,0,'.',','); ?></td>
-							<td></td>	
 							<td>
-								
-							</td>
+								<input type="hidden" id="hid_shelf_code_<?=$row_no;?>" />
+								<label id="lbl_shelf_name_<?=$row_no;?>"><?=$row['shelfName'];?></label><a href="receive_shelf_select.php?id=<?=$row['id'];?>" name="" class="btn btn-default btn_set_shelf">...</a>
+							</td>						
 						</tr>
+						<?php $row_no+=1; } ?>
 					</table>
 				</div><!-- /.box-body -->
 	</div><!-- /.row add items -->
@@ -201,34 +203,22 @@ $rcNo = $hdr['rcNo'];
   <div class="box-footer">
     <div class="col-md-12">
 		<?php if($hdr['statusCode']=='P'){ ?>
-          <a href="<?=$rootPage;?>_view_pdf.php?rcNo=<?=$hdr['rcNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
-		  <a href="<?=$rootPage;?>_set_shelf.php?rcNo=<?=$hdr['rcNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-grid"></i> Shelf</a>
+          <a href="receive_view_shelf_pdf.php?rcNo=<?=$rcNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
 		<?php } ?>
 	
 		
 		  
-		  <?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whSup' :  case 'pdSup' : ?>
-          <button type="button" id="btn_approve" class="btn btn-success pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='C'?'':'disabled'); ?> >
-		 <i class="glyphicon glyphicon-check">
-			</i> Approve
-          </button>
-		  
-		  <button type="button" id="btn_reject" class="btn btn-warning pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='C'?'':'disabled'); ?>>
-		  <i class="glyphicon glyphicon-remove">
-			</i> Reject
-          </button>
-		  <?php break; default : } ?>
-		  
-          <button type="button" id="btn_verify" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
-            <i class="glyphicon glyphicon-ok"></i> Confirm
-          </button>      
+		 	      
 		  </button>   
-			<button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']<>'P'?'':'disabled'); ?> >
-            <i class="glyphicon glyphicon-trash"></i> Delete
-          </button>
 	</div><!-- /.col-md-12 -->
   </div><!-- box-footer -->
 </div><!-- /.box -->
+
+
+
+
+
+
 
 <div id="spin"></div>
 
@@ -240,8 +230,6 @@ $rcNo = $hdr['rcNo'];
   <!-- Main Footer -->
   <?php include'footer.php'; ?>
   
-  <!--AUDIO-->
-  <audio id="audioSuccess" src="..\asset\sound\game-sound-effects-success-cute.wav" type="audio/wav"></audio>    
   
 </div>
 <!-- ./wrapper -->
@@ -280,9 +268,9 @@ $('#btn_verify').click (function(e) {
 	rcNo: $('#rcNo').val()			
 	};
 	//alert(params.hdrID);
-	$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+	$.smkConfirm({text:'Are you sure to Verify ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_confirm_ajax.php',
+			url: 'receive_confirm_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -305,110 +293,6 @@ $('#btn_verify').click (function(e) {
 			alert(response.responseText);
 		});
 		//.post		
-	}});
-	//smkConfirm
-});
-//.btn_click
-
-$('#btn_reject').click (function(e) {				 
-	var params = {					
-	rcNo: $('#rcNo').val()					
-	};
-	//alert(params.hdrID);
-	$.smkConfirm({text:'Are you sure to Reject ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
-		$.post({
-			url: '<?=$rootPage;?>_reject_ajax.php',
-			data: params,
-			dataType: 'json'
-		}).done(function(data) {
-			if (data.success){  
-				$.smkAlert({
-					text: data.message,
-					type: 'success',
-					position:'top-center'
-				});					
-				location.reload();
-			}else{
-				$.smkAlert({
-					text: data.message,
-					type: 'danger',
-					position:'top-center'
-				});
-			}
-			//e.preventDefault();		
-		}).error(function (response) {
-			alert(response.responseText);
-		});
-		//.post		
-	}});
-	//smkConfirm
-});
-//.btn_click
-
-$('#btn_approve').click (function(e) {				 
-	var params = {					
-	rcNo: $('#rcNo').val()				
-	};
-	//alert(params.hdrID);
-	$.smkConfirm({text:'Are you sure to Approve ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
-		$.post({
-			url: '<?=$rootPage;?>_approve_ajax.php',
-			data: params,
-			dataType: 'json'
-		}).done(function(data) {
-			if (data.success){  
-				$.smkAlert({
-					text: data.message,
-					type: 'success',
-					position:'top-center'
-				});
-				$('#audioSuccess').get(0).play();
-				alert('Success.');
-				window.location.href = '<?=$rootPage;?>_view.php?rcNo=' + data.rcNo;
-			}else{
-				$.smkAlert({
-					text: data.message,
-					type: 'danger',
-					position:'top-center'
-				});
-			}
-			//e.preventDefault();		
-		}).error(function (response) {
-			alert(response.responseText);
-		});
-		//.post
-	}});
-	//smkConfirm
-});
-//.btn_click
-
-
-$('#btn_delete').click (function(e) {				 
-	var params = {					
-	rcNo: $('#rcNo').val()				
-	};
-	//alert(params.hdrID);
-	$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
-		$.post({
-			url: '<?=$rootPage;?>_delete_ajax.php',
-			data: params,
-			dataType: 'json'
-		}).done(function(data) {
-			if (data.success){  
-				alert(data.message);
-				window.location.href = '<?=$rootPage;?>.php';
-			}else{
-				$.smkAlert({
-					text: data.message,
-					type: 'danger',
-					position:'top-center'
-				});
-			}
-			//e.preventDefault();		
-		}).error(function (response) {
-			alert(response.responseText);
-		});
-		//.post
 	}});
 	//smkConfirm
 });

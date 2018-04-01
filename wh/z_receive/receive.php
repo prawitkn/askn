@@ -13,8 +13,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		$s_userGroupCode = $row_user['userGroupCode'];
 		$s_userDeptCode = $row_user['userDeptCode'];
 		$s_userID=$_SESSION['userID'];*/
-$rootPage="send2";
-$tb="send";
+$rootPage="receive";		
 ?>
 
 <div class="wrapper">
@@ -24,17 +23,16 @@ $tb="send";
   
   <!-- Left side column. contains the logo and sidebar -->
    <?php include 'leftside.php'; ?>
-
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
-    <section class="content-header">	  
-	  <h1><i class="glyphicon glyphicon-arrow-up"></i>
-       Send
-        <small>Send management</small>
+    <section class="content-header">
+		<h1><i class="glyphicon glyphicon-arrow-down"></i>
+       Receive
+        <small>Receive management</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Send List</a></li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Receive List</a></li>
       </ol>
     </section>
 
@@ -45,51 +43,57 @@ $tb="send";
     <div class="box box-primary">
         <div class="box-header with-border">
 		<div class="form-inline">
-			<label class="box-title">Send List</label>
-			<a href="<?=$rootPage;?>_hdr.php?sdNo=" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add Send</a>
+			<label class="box-title">Receive List</label>
+			<a href="<?=$rootPage;?>_add.php?rcNo=" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add Receive</a>
 		</div>
 		
 		
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
-          <?php
-				$search_word = (isset($_GET['search_word'])?$_GET['search_word']:'');
-                $sql = "
-				SELECT COUNT(hdr.sdNo) AS countTotal
-				FROM `".$tb."` hdr 
-				WHERE 1 
-				AND hdr.statusCode<>'X' ";
+          <?php				
+                $sql = "SELECT COUNT(hdr.rcNo) AS countTotal
+				FROM `receive` hdr
+				LEFT JOIN sloc fsl on hdr.fromCode=fsl.code 
+				LEFT JOIN sloc tsl on hdr.toCode=tsl.code
+				left join user d on hdr.createByID=d.userID
+				WHERE 1=1
+				AND hdr.type='S' 
+				AND hdr.statusCode<>'X' ";					
 				switch($s_userGroupCode){ 
 					case 'whOff' :
 					case 'whSup' :
 					case 'pdOff' :
 					case 'pdSup' :
-						$sql .= "AND hdr.fromCode=:s_userDeptCode ";
+						$sql .= "AND hdr.toCode=:s_userDeptCode ";
 						break;
 					default :	// it, admin 
 				}	
-				if(isset($_GET['search_word']) and $_GET['search_word']<>""){
-					$sql .= "AND hdr.sdNo like :search_word ";		
-				}		
-				$stmt = $pdo->prepare($sql);
+				if(isset($_GET['search_word']) and $_GET['search_word']<>"" ){
+					$sql .= "AND hdr.rcNo like :search_word ";			
+				}
+				$stmt = $pdo->prepare($sql);			
 				switch($s_userGroupCode){ 					
 					case 'whOff' : 
-					case 'whSup' :
+					case 'whSup' : 
+						$userDeptCode='8';
+						$stmt->bindParam(':s_userDeptCode', $userDeptCode);
+						break;
 					case 'pdOff' :
 					case 'pdSup' :
 						$stmt->bindParam(':s_userDeptCode', $s_userDeptCode);
 						break;
 					default :	// it, admin 
 				}
-				if( isset($_GET['search_word']) and $_GET['search_word']<>"" ){
-					$tmp='%'.$search_word.'%';
-					$stmt->bindParam(':search_word', $tmp);
+				if(isset($_GET['search_word']) and $_GET['search_word']<>"" ){
+					$stmt->bindParam(':search_word', '%'.$search_word.'%');
 				}
 				$stmt->execute();
 				$row = $stmt->fetch();
 				$countTotal = $row['countTotal'];
-								
+                //$result = mysqli_query($link, $sql);
+                //$countTotal = mysqli_fetch_assoc($result);
+				
 				$rows=20;
 				$page=0;
 				if( !empty($_GET["page"]) and isset($_GET["page"]) ) $page=$_GET["page"];
@@ -106,71 +110,75 @@ $tb="send";
         <div class="box-body">
 			<div class="row">
 				<div class="col-md-6">					
-					<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
-						<div class="form-group">
-							<label for="search_word">Send No. search key word.</label>
-							<div class="input-group">
-								<input id="search_word" type="text" class="form-control" name="search_word" data-smk-msg="Require userFullname."required>
-								<span class="input-group-addon">
-									<span class="glyphicon glyphicon-search"></span>
-								</span>
-							</div>
-						</div>						
-						<input type="submit" class="btn btn-default" value="ค้นหา">
-					</form>
-				</div>    
-			</div>
+						<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
+							<div class="form-group">
+								<label for="search_word">Receive No. search key word.</label>
+								<div class="input-group">
+									<input id="search_word" type="text" class="form-control" name="search_word" data-smk-msg="Require userFullname."required>
+									<span class="input-group-addon">
+										<span class="glyphicon glyphicon-search"></span>
+									</span>
+								</div>
+							</div>						
+							<input type="submit" class="btn btn-default" value="ค้นหา">
+						</form>
+					</div>    
+				</div>
            <?php
-                $sql = "SELECT hdr.`sdNo`, hdr.`refNo`, hdr.`sendDate`, hdr.`fromCode`, hdr.`remark`, hdr.`rcNo`, hdr.`statusCode`
-				, hdr.`createTime`, hdr.`createById`, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById` 
+                $sql = "SELECT hdr.`rcNo`, hdr.`refNo`, hdr.`receiveDate`, hdr.`fromCode`, hdr.`toCode`, hdr.`remark`, hdr.`sdNo`, hdr.`statusCode`, hdr.`createTime`, hdr.`createByID`
 				, fsl.name as fromName, tsl.name as toName
-				FROM `".$tb."` hdr 
+				, d.userFullname as createByName
+				FROM `receive` hdr
 				LEFT JOIN sloc fsl on hdr.fromCode=fsl.code 
 				LEFT JOIN sloc tsl on hdr.toCode=tsl.code
-
+				left join user d on hdr.createByID=d.userID
 				WHERE 1 
+				AND hdr.type='S' 
 				AND hdr.statusCode<>'X' ";
 				switch($s_userGroupCode){ 
 					case 'whOff' :
 					case 'whSup' :
+						$sql .= "AND hdr.toCode='8' ";
+						break;
 					case 'pdOff' :
 					case 'pdSup' :
-						$sql .= "AND hdr.fromCode=:s_userDeptCode ";
+						$sql .= "AND hdr.toCode=:s_userDeptCode ";
 						break;
 					default :	// it, admin 
 				}	
-				if(isset($_GET['search_word']) and $_GET['search_word']<>""){
-					$sql .= "AND hdr.sdNo like :search_word ";		
+				if(isset($_GET['search_word']) and $_GET['search_word']<>"" ){
+					$sql .= "AND hdr.rcNo like :search_word ";			
 				}
-				$sql .="			
-				ORDER BY hdr.createTime DESC
-				LIMIT $start, $rows 
-				";				
+				$sql .="ORDER BY hdr.createTime DESC ";
+				$sql .= "LIMIT $start, $rows ";
+				
 				$stmt = $pdo->prepare($sql);
+				//$search_word = '%'.$search_word.'%';				
 				switch($s_userGroupCode){ 					
-					case 'whOff' : 
-					case 'whSup' : 
+					case 'whOff' :
+					case 'whSup' :
 					case 'pdOff' :
 					case 'pdSup' :
 						$stmt->bindParam(':s_userDeptCode', $s_userDeptCode);
 						break;
 					default :	// it, admin 
 				}
-				if( isset($_GET['search_word']) and $_GET['search_word']<>"" ){
-					$tmp='%'.$search_word.'%';
-					$stmt->bindParam(':search_word', $tmp);
+				if(isset($_GET['search_word']) and $_GET['search_word']<>"" ){
+					$stmt->bindParam(':search_word', '%'.$search_word.'%');
 				}
 				$stmt->execute();
+				
+				//echo $sql;
+                //$result = mysqli_query($link, $sql);
            ?> 
             <div class="table-responsive">
             <table class="table table-striped">
                 <tr>
-                    <th>Send No.</th>
-					<th>Send Date</th>
-					<th>Ref. No.</th>
+                    <th>Receive No.</th>
+					<th>Receive Date</th>
 					<th>Sender</th>
 					<th>Receiver</th>
-					<th>Receive No.</th>
+					<th>Send No.</th>
 					<th>Status</th>
 					<th>#</th>
                 </tr>
@@ -185,21 +193,33 @@ $tb="send";
 					}
 					?>
                 <tr>
-					<td><?= $row['sdNo']; ?></td>
-					<td><?= date('d M Y',strtotime( $row['sendDate'] )); ?></td>
-					<td><?= $row['refNo']; ?></td>
-					<td><?= $row['fromName']; ?></td>
-					<td><?= $row['toName']; ?></td>
-					<td><?= $statusName; ?></td>	
+					<td>
+                         <?= $row['rcNo']; ?>
+                    </td>
+                    <td>
+                         <?= to_thai_date_fdt($row['receiveDate']); ?>
+                    </td>
+                    <td>
+                         <?= $row['fromName']; ?>
+                    </td>
+					<td>
+                         <?= $row['toName']; ?>
+                    </td>
+					<td>
+                         <?= $row['sdNo']; ?>
+                    </td>
+					<td>
+                         <?= $statusName; ?>
+                    </td>	
 					<td>					
 						<a class="btn btn-info " name="btn_row_search" 
-							href="<?=$rootPage;?>_view.php?sdNo=<?=$row['sdNo'];?>" 
+							href="<?=$rootPage;?>_view.php?rcNo=<?=$row['rcNo'];?>" 
 							data-toggle="tooltip" title="Search"><i class="glyphicon glyphicon-search"></i></a>
 						<a class="btn btn-success" name="btn_row_edit" 
-							<?php echo ($row['statusCode']=='B'?'href="'.$rootPage.'_hdr.php?sdNo='.$row['sdNo'].'"':' disabled '); ?> 
+							<?php echo ($row['statusCode']=='B'?'href="'.$rootPage.'_add.php?rcNo='.$row['rcNo'].'"':' disabled '); ?> 
 							data-toggle="tooltip" title="Edit" ><i class="glyphicon glyphicon-edit"></i></a>							
 						<!--<a class="btn btn-danger fa fa-trash" name="btn_row_remove" 
-							<?php echo ($row['statusCode']=='P'?'data-id="" disabled ':'data-id="'.$row['sdNo'].'" '); ?>
+							<?php echo ($row['statusCode']=='P'?'data-id="" disabled ':'data-id="'.$row['rcNo'].'" '); ?>
 							data-toggle="tooltip" title="Delete" ><i class="glyphicon glyphicon-trash"></i></a>-->
                     </td>
                 </tr>
@@ -257,53 +277,7 @@ $tb="send";
 
 <script>
 $(document).ready(function() {  
-	
-	
-	$('a[name=btn_row_remove]').click(function(){
-		var params = {
-			id: $(this).attr('data-id')
-		};
-		if(params.id==''){
-			$.smkAlert({
-				text: 'ข้อมูลรายการนี้ ไม่สามารถลบได้',
-				type: 'danger',
-				position:'top-center'
-			});
-			return false;
-		}
-		//alert(params.id);
-		$.smkConfirm({text:'คุณแน่ใจที่จะยกเลิกรายการนี้ใช่หรือไม่ ?',accept:'ยกเลิกรายการ', cancel:'ไม่ยกเลิกรายการ'}, function (e){if(e){
-			$.post({
-				url: 'order_remove_ajax.php',
-				data: params,
-				dataType: 'json'
-			}).done(function (data) {					
-				if (data.success){ 
-					$.smkAlert({
-						text: data.message,
-						type: 'success',
-						position:'top-center'
-					});
-					location.reload();
-				} else {
-					alert(data.message);
-					$.smkAlert({
-						text: data.message,
-						type: 'danger'//,
-					//                        position:'top-center'
-					});
-				}
-			}).error(function (response) {
-				alert(response.responseText);
-			}); 
-		}});
-		e.preventDefault();
-	});
-	
-	
-	
-	
-                
+	                
 });
 </script>
 <!-- Optionally, you can add Slimscroll and FastClick plugins.

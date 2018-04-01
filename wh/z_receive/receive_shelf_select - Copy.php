@@ -8,7 +8,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <?php include 'head.php'; ?>  
 
 <?php 
-	//$id = $_GET['ids'];
+	$id = $_GET['id'];
 	
 	$sqlCond = "";
 	switch($s_userGroupCode){ 
@@ -52,43 +52,20 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	<div class="col-md-12">
 		<div class="box">
 			 <?php
-				$rcNo = $_POST['rcNo'];
-				
-				$ids="";
-				if(!empty($_POST['itmId']) and isset($_POST['itmId']))
-				{
-					//$arrProdItems=explode(',', $prodItems);
-					foreach($_POST['itmId'] as $index => $item )
-					{			
-						$ids.=$item.',';
-					}
-				} echo 'ids:'.$ids;
-				$ids=substr($ids,0,strlen($ids)-1);		
-			
 			$sql = "SELECT dtl.id, dtl.rcNo, itm.prodCodeId, itm.barcode 
 			, prd.code as prodCode 
 			FROM receive_detail dtl
 			LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 			LEFT JOIN product prd ON prd.id=itm.prodCodeId 
-			WHERE dtl.id IN (:ids) 
-			";						
+			WHERE dtl.id=:id
+						";						
 			$stmt = $pdo->prepare($sql);	
-			$stmt->bindParam(':ids', $ids);
+			$stmt->bindParam(':id', $id);
 			$stmt->execute();	
-			//$hdr = $stmt->fetch();	$stmt->execute();	
-			
-			$itemsHtml='<div id="0" class="tab-pane fade in active">';
-			$itemsHtml.='		<ul>';
-			while ($row = $stmt->fetch()) { 				
-				$itemsHtml.='	  <li class="">'.$row['barcode'].'</li>';
-			}//end loop column name 
-			$itemsHtml.='		</ul>';
-			$itemsHtml.='	</div>';
-			
-			
+			$hdr = $stmt->fetch();
 			?>
 			<div class="box-header with-border">              
-				<h3 class="box-title">Receive No : <?= $rcNo; ?></h3>
+				<h3 class="box-title">Receive No : <?= $hdr['rcNo']; ?> <span class="glyphicon glyphicon-chevron-right"/> <b><?=$hdr['barcode'];?></br></h3>
 
 				<div class="box-tools pull-right">
 				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
@@ -111,69 +88,22 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			</div>
 			<!-- /.box-header -->
 			
-			 <?php  
-			 $sql = "SELECT `id`, `code`, `name`
-			FROM wh_sloc_x 
-			WHERE 1=1
-			AND statusCode='A' 
+			 <?php
+			$sql = "SELECT ws.`sloc`, ws.`X`, ws.`Y`, ws.`Z`, ws.`code`, ws.`name`, ws.`statusCode`,
+			(SELECT count(*) from wh_sloc_map_item smi WHERE smi.slocCode=ws.code) AS itemCount
+			FROM wh_sloc ws
+			GROUP BY ws.`sloc`, ws.`X`, ws.`Y`, ws.`Z`, ws.`code`, ws.`name`, ws.`statusCode`
+			ORDER BY sloc, x, cast(y as int), cast(z as int)
 						";						
 			$stmt = $pdo->prepare($sql);	
 			//$stmt->bindParam(':rcNo', $hdr['rcNo']);
 			$stmt->execute();	
-		
-			
-			 $sql = "SELECT ws.id, ws.xId, ws.yId, ws.zId, ws.code
-			, wx.code as xCode, wy.code as yCode, wz.code as zCode 
-			,(SELECT count(*) from wh_shelf_map_item smi WHERE smi.shelfId=ws.id) AS itemCount
-			FROM wh_shelf ws
-			INNER JOIN wh_sloc_x wx ON wx.id=ws.xId
-			INNER JOIN wh_sloc_y wy ON wy.id=ws.yId
-			INNER JOIN wh_sloc_z wz ON wz.id=ws.zId 
-			
-			GROUP BY ws.xId, ws.yId, ws.zId, ws.code
-			, wx.code , wy.code , wz.code 
-			ORDER BY ws.xId, ws.yId, ws.zId
-						";						
-			$stmt = $pdo->prepare($sql);	
-			//$stmt->bindParam(':rcNo', $hdr['rcNo']);
-		
-		
-			
-			echo '<div class="tab-content">';		
-			
-			
-			$tmpXCode=''; $tmpYCode=''; $irow=0; while ($itm = $stmt->fetch()) { 
-				if($irow<>0 AND $tmpYCode<>$itm['yCode']){
-					echo '</br/>';
-				}
-				if($tmpXCode<>$itm['xCode']){
-					if($irow<>0){
-						echo '</div>';
-					}
-					echo '<div id="'.$itm['xId'].'" class="tab-pane fade in">';
-				}
-				switch($itm['itemCount']){
-					case 0 : ?><a class="btn btn-success btn_set_shelf" data-id="<?=$itm['id'];?>" ><?=$itm['code'].' ['.$itm['itemCount'].']';?></a><?php break;
-					default : ?><a class="btn btn-danger btn_set_shelf" data-id="<?=$itm['id'];?>" ><?=$itm['code'].' ['.$itm['itemCount'].']';?></a><?php break;
-				}
-				
-				
-				$irow++;
-				
-				$tmpXCode=$itm['xCode'];
-				$tmpYCode=$itm['yCode'];
-		
-			}//end loop column name 
-			echo '</div>';
-			
-			echo '</div>';//tab-content 
-			
-				echo $itemsHtml;
+			$rowCount = $stmt->rowCount();
 			?>
 			<div class="box-body">
 				<div class="row col-md-12">
-				<input type="hidden" id="hid_rcNo" value="<?=$rcNo;?>" />
-				<input type="hidden" id="hid_recvProdId" value="<?=$ids;?>" />
+				<input type="hidden" id="hid_rcNo" value="<?=$hdr['rcNo'];?>" />
+				<input type="hidden" id="hid_recvProdId" value="<?=$hdr['id'];?>" />
 				
 				<?php $row_no=1; $x=''; $y=''; $z=''; while ($row = $stmt->fetch()) { 
 				if($x<>'' and $x<>$row['X']){ ?> <br/><br/><?php } 
@@ -232,7 +162,7 @@ $(document).ready(function() {
 		var params = {				
 		rcNo: $('#hid_rcNo').val(),
 		recvProdId: $('#hid_recvProdId').val(),
-		shelfId: $(this).attr('data-id')
+		slocCode: $(this).attr('data-code')
 		};
 		//alert(params.hdrID);
 		$.smkConfirm({text:'Are you sure to Set ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){

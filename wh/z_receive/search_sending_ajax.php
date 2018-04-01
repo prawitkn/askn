@@ -6,8 +6,7 @@
 		$s_userDeptCode = $row_user['userDeptCode'];
 		$s_userID=$_SESSION['userID'];*/
 
-	$search_word = $_POST['search_word'];
-	
+	$search_fullname = $_POST['search_fullname'];
 	$sql = "SELECT hdr.`sdNo`, hdr.`sendDate`, hdr.`fromCode`, hdr.`toCode`, hdr.`remark`, hdr.`statusCode`	
 	, fsl.name as fromName, tsl.name as toName 
 	FROM `send` hdr
@@ -29,8 +28,8 @@
 	$sql .= "ORDER BY hdr.createTime DESC";
 	//$result = mysqli_query($link, $sql);
 	$stmt = $pdo->prepare($sql);
-	$search_word = '%'.$search_word.'%';
-	$stmt->bindParam(':search_word', $search_word);
+	$search_fullname = '%'.$search_fullname.'%';
+	$stmt->bindParam(':search_word', $search_fullname);
 	switch($s_userGroupCode){ 
 		case 'whOff' :
 		case 'whSup' :
@@ -45,14 +44,12 @@
 	}	
 	$stmt->execute();
 
-	$rowCount=$stmt->rowCount();
-
 	$jsonData = array();
 	while ($array = $stmt->fetch()) {
 		$jsonData[] = $array;
 	}
  					   
-	echo json_encode(array('rowCount' => $rowCount, 'data' => json_encode($jsonData)));
+	echo json_encode($jsonData);
 	
 ?>
 

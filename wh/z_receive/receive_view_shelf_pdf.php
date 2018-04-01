@@ -45,7 +45,7 @@ class MYPDF extends TCPDF {
 		// Set font
 		$this->SetFont('THSarabun', '', 16, '', true);
 		// Title
-        		
+        
 		//$this->SetY(11);			
 		//if($this->page != 1){
 			$this->SetFont('Times', '', 10, '', true);
@@ -63,7 +63,7 @@ class MYPDF extends TCPDF {
 		$this->Cell(0, 5, 'Asia Kungnum Co.,Ltd.', 0, false, 'C', 0, '', 0, false, 'M', 'M');
 		$this->Ln(7);
 		$this->SetFont('Times', 'B', 14, '', true);	
-        $this->Cell(0, 5, 'Receiving', 0, false, 'C', 0, '', 0, false, 'M', 'M');
+        $this->Cell(0, 5, 'Receive Shelf Planning', 0, false, 'C', 0, '', 0, false, 'M', 'M');
     }
     // Page footer
     public function Footer() {
@@ -132,6 +132,7 @@ $pdf->SetFont('THSarabun', '', 14, '', true);
 
 
 
+
 // Set some content to print
 if( isset($_GET['rcNo']) ){
 			$rcNo = $_GET['rcNo'];
@@ -148,9 +149,9 @@ if( isset($_GET['rcNo']) ){
 			FROM `receive` hdr
 			LEFT JOIN sloc fsl on hdr.fromCode=fsl.code
 			LEFT JOIN sloc tsl on hdr.toCode=tsl.code
-			left join wh_user d on hdr.createById=d.userId
-			left join wh_user cu on hdr.confirmById=cu.userId
-			left join wh_user au on hdr.approveById=au.userId
+			left join wh_user d on hdr.createByID=d.userId
+			left join wh_user cu on hdr.confirmByID=cu.userId
+			left join wh_user au on hdr.approveByID=au.userId
 			WHERE 1
 			AND hdr.rcNo=:rcNo 					
 			ORDER BY hdr.createTime DESC
@@ -165,18 +166,21 @@ if( isset($_GET['rcNo']) ){
 	   		
 
 
-			$sql = "SELECT dtl.id, dtl.prodItemId 
-			, prd.code as prodCode, prd.name as prodName,  itm.barcode, itm.grade, itm.NW, itm.GW, itm.qty, itm.issueDate, dtl.shelfCode
-			, whs.name as shelfName
-			FROM receive_detail dtl 
-			LEFT JOIN product_item itm on itm.prodItemId=dtl.prodItemId 
-			LEFT JOIN product prd on prd.id=itm.prodCodeId 
-			LEFT JOIN wh_sloc whs on whs.code=dtl.shelfCode 
-			WHERE rcNo=:rcNo  
-			";			
-			$stmt = $pdo->prepare($sql);	
-			$stmt->bindParam(':rcNo', $hdr['rcNo']);
-			$stmt->execute();	
+			$sql = "SELECT dtl.`id`, dtl.`prodItemId`, itm.`prodCodeId`, itm.`barcode`, itm.`issueDate`
+			, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`  
+			, dtl.`statusCode`, dtl.`rcNo` 
+			, ws.code as shelfName 
+			,prd.code as prodCode , prd.name as prodName 
+			FROM `receive_detail` dtl
+			LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+			LEFT JOIN product prd ON prd.id=itm.prodCodeId 
+			LEFT JOIN wh_shelf_map_item wmi ON wmi.recvProdId=dtl.id
+			LEFT JOIN wh_shelf ws ON ws.id=wmi.shelfId 
+				WHERE rcNo=:rcNo  
+				";			
+				$stmt = $pdo->prepare($sql);	
+				$stmt->bindParam(':rcNo', $hdr['rcNo']);
+				$stmt->execute();	
 
 					
 						$html ='
@@ -188,7 +192,7 @@ if( isset($_GET['rcNo']) ){
 									<th style="font-weight: bold; text-align: right;">From :</th>
 									<th>'.$hdr['fromCode'].'-'.$hdr['fromName'].'</th>									
 									<th style="font-weight: bold; text-align: right;">Receive Date :</th>
-									<th>'.date('d M Y',strtotime( $hdr['receiveDate'] )).'</th>
+									<th>'.to_thai_date($hdr['receiveDate']).'</th>
 								</tr>
 								<tr>
 									<th style="font-weight: bold;">Ref. SD No. :</th>
@@ -207,17 +211,19 @@ if( isset($_GET['rcNo']) ){
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Gross<br/>Weight<br/>(kg.)</th>										
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Qty</th>
 										<th style="font-weight: bold; text-align: center; width: 80px;" border="1">Issue Date</th>
+										<th style="font-weight: bold; text-align: center; width: 80px;" border="1">Shelf</th>
 									</tr>
 								  </thead>
 								  <tbody>
 							'; 
 							
 					$row_no = 1; $sumQty=$sumNW=$sumGW=0; while ($row = $stmt->fetch()) { 
-							$gradeName = '<b style="color: red;">N/A</b>'; 
+						
+					$gradeName = '<b style="color: red;">N/A</b>'; 
 							switch($row['grade']){
 								case 0 : $gradeName = 'A'; break;
-								case 1 : $gradeName = '<b style="color: red;">B</b>';  break;
-								case 2 : $gradeName = '<b style="color: red;">N</b>'; break;
+								case 1 : $statusName = '<b style="color: red;">B</b>';  break;
+								case 2 : $statusName = '<b style="color: red;">N</b>'; break;
 								default : 
 							} 
 						
@@ -228,7 +234,8 @@ if( isset($_GET['rcNo']) ){
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['NW'].'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['GW'].'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['qty'],0,'.',',').'</td>
-						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.date('d M Y',strtotime( $row['issueDate'] )).'</td>
+						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.$row['issueDate'].'</td>
+						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.$row['shelfName'].'</td>
 					</tr>';			
 												
 					$sumQty+=$row['qty'] ; $sumNW+=$row['NW']; $sumGW+=$row['GW'] ;								
@@ -243,11 +250,12 @@ if( isset($_GET['rcNo']) ){
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumGW,2,'.',',').'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumQty,0,'.',',').'</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 80px;"></td>
+						<td style="border: 0.1em solid black; text-align: center; width: 80px;"></td>
 					</tr>';
 					$html .='<tr>
 						<td colspan="2"><br/><br/>
 							ผู้จัดทำ .....'.$hdr['createByName'].'.....<br/>
-							วันที่จัดทำ .....'.date('d M Y H:m',strtotime( $hdr['createTime'] )).'<br/>
+							วันที่จัดทำ .....'.to_thai_datetime_fdt($hdr['createTime']).'<br/>
 							ผู้รับ .....'.$hdr['confirmByName'].'.....<br/>
 						</td>
 						
@@ -272,7 +280,9 @@ if( isset($_GET['rcNo']) ){
 
 // Close and output PDF document
 // This method has several options, check the source code documentation for more information.
-$pdf->Output($rcNo.'.pdf', 'I');
+$pdf->Output($rcNo.'_Shelf.pdf', 'I');
+
+
 
 //============================================================+
 // END OF FILE

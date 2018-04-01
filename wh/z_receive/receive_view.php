@@ -97,7 +97,7 @@ $rcNo = $hdr['rcNo'];
 					</div><!-- /.col-md-3-->	
 					<div class="col-md-3">
 						Receive Date : <br/>
-						<b><?= date('d M Y',strtotime( $hdr['receiveDate'] )); ?></b><br/>
+						<b><?= $hdr['receiveDate']; ?></b><br/>
 					</div>	<!-- /.col-md-3-->	
 					<div class="col-md-3">
 						Remark : 
@@ -151,7 +151,7 @@ $rcNo = $hdr['rcNo'];
 							<th>Net<br/>Weight(kg.)</th>
 							<th>Gross<br/>Weight(kg.)</th>
 							<th>Qty</th>
-							<th>Issue Date</th>
+							<th>Produce Date</th>
 							<th>Is Return</th>
 						</tr>
 						<?php $row_no=1;  $sumQty=$sumNW=$sumGW=$sumGradeNotOk=0;  while ($row = $stmt->fetch()) { 
@@ -174,7 +174,7 @@ $rcNo = $hdr['rcNo'];
 							<td style="text-align: right;"><?= number_format($row['NW'],2,'.',','); ?></td>	
 							<td style="text-align: right;"><?= number_format($row['GW'],2,'.',','); ?></td>	
 							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
-							<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>	
+							<td><?= $row['issueDate']; ?></td>	
 							<td><?= $isReturn; ?></td>
 						</tr>
 						<?php $row_no+=1;  $sumQty+=$row['qty'] ; $sumNW+=$row['NW']; $sumGW+=$row['GW'] ;  } ?>

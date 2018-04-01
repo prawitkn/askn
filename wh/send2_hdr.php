@@ -64,8 +64,8 @@ $tb="send";
         <small>Send management</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Send List</a></li>
-		<!--<li><a href="#"><i class="glyphicon glyphicon-edit"></i>Send</a></li>-->
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Send List</a></li>		
+		<li><a href="<?=$rootPage;?>_hdr.php?sdNo=<?=$sdNo;?>"><i class="glyphicon glyphicon-edit"></i><?=$sdNo;?></a></li>
       </ol>
     </section>
 
@@ -93,28 +93,45 @@ $tb="send";
                 <div class="col-md-12">   
 					<div class="row">
 						<div class="col-md-3">
-							<label for="refNo" >Referene Receive No.</label>
-							<div class="form-group row">
-								<!--<div class="col-md-9">
-									<input type="text" name="refNo" id="refNo" class="form-control" <?php echo ($sdNo==''?'':' value="'.$refNo.'" disabled '); ?>  />
-								</div>
-								<div class="col-md-3">
-									<a href="#" name="btnSdNo" class="btn btn-primary" <?php echo ($sdNo==''?'':' disabled '); ?> ><i class="glyphicon glyphicon-search" ></i></a>								
-								</div>-->
-								<div class="col-md-12">									
-									<input type="hidden" name="refNo" id="refNo" value="<?=$refNo;?>" />
-									<label name="refNoName" id="refNoName" ></label>
-									<a href="#" name="btnSdNo" class="btn btn-primary" <?php echo ($sdNo==''?'':' disabled '); ?> ><i class="glyphicon glyphicon-search" ></i></a>								
-								</div>
+							<div class="from-group">
+							<label for="sendDate">Send Date</label>
+							<div class="input-group">
+								<input type="text" id="sendDate" name="sendDate" class="form-control datepicker" data-smk-msg="Require Order Date." required <?php echo ($sdNo==''?'':' disabled '); ?> >								
+							</div><!--input group-->
 							</div>
-							<!--from group-->
-														
+							<!--from group-->															
                         </div>		
 						<!--col-md-6-->			
 						<div class="col-md-3">					  
 					  <div class="from-group">
-						<label for="fromName">From</label>
-						<input type="text" id="fromName" name="fromName" value="<?=$hdr['fromName'];?>" class="form-control" disabled>
+						<label for="fromCode">From</label>
+						<select name="fromCode" class="form-control"  data-smk-msg="Require from code." required   <?php echo ($sdNo==''?'':' disabled '); ?>  >
+						<?php $fromCode=$hdr['fromCode']; 
+						switch($s_userGroupCode){
+							case 'whOff' : case 'whSup' : case 'pdOff' : case 'pdSup' :
+								$fromCode=$s_userDeptCode; ?>
+								<select name="fromCode" class="form-control" disabled >
+							<?php
+								break;
+							case 'prog' : case 'admin' : ?>
+								<select name="fromCode" class="form-control">
+							<?php
+								break;
+							default :
+						}
+						?>
+						
+							<option value="" <?php echo ($fromCode==""?'selected':''); ?> >--All--</option>
+							<?php
+							$sql = "SELECT `code`, `name` FROM sloc WHERE statusCode='A'	ORDER BY code ASC ";
+							$stmt = $pdo->prepare($sql);
+							$stmt->execute();					
+							while ($itm = $stmt->fetch()){
+								$selected=($fromCode==$itm['code']?'selected':'');						
+								echo '<option value="'.$itm['code'].'" '.$selected.'>'.$itm['code'].' : '.$itm['name'].'</option>';
+							}
+							?>
+						</select>	
 					</div>
 					<!--from group-->
 				</div>
@@ -123,8 +140,20 @@ $tb="send";
 				<div class="col-md-3">					  
 				  <!-- checkbox -->
 					<div class="from-group">
-						<label for="toName">To</label>
-						<input type="text" id="toName" name="toName" value="<?=$hdr['toName'];?>" class="form-control" disabled>
+						<label for="toCode">To</label>
+						<?php $toCode=$hdr['toCode']; ?>
+						<select name="toCode" class="form-control"  data-smk-msg="Require to code." required  <?php echo ($sdNo==''?'':' disabled '); ?> >
+							<option value="" <?php echo ($toCode==""?'selected':''); ?> >--All--</option>
+							<?php
+							$sql = "SELECT `code`, `name` FROM sloc WHERE statusCode='A'	ORDER BY code ASC ";
+							$stmt = $pdo->prepare($sql);
+							$stmt->execute();					
+							while ($itm = $stmt->fetch()){
+								$selected=($toCode==$itm['code']?'selected':'');						
+								echo '<option value="'.$itm['code'].'" '.$selected.'>'.$itm['code'].' : '.$itm['name'].'</option>';
+							}
+							?>
+						</select>	
 					</div>
 					<!--from group-->		  
 				</div>
@@ -134,23 +163,16 @@ $tb="send";
 					<!--row-->
 					
 		<div class="row">
-			<div class="col-md-3">		
-				<div class="from-group">
-				<label for="sendDate">Send Date</label>
-				<input type="text" id="sendDate" name="sendDate" class="form-control datepicker" data-smk-msg="Require Order Date." required <?php echo ($sdNo==''?'':' disabled '); ?> >
-				</div>
-				<!--from group-->				
-			</div>
-			<!--col-md-->
-			<div class="col-md-6">	
+			<div class="col-md-6">		
 				<div class="from-group">
 					<label for="remark">Remark</label>
 					<input type="text" id="remark" name="remark" value="<?=$hdr['remark'];?>" class="form-control" <?php echo ($sdNo==''?'':' disabled '); ?> >
 				</div>
-				<!--from group-->
+				<!--from group-->			
 			</div>
 			<!--col-md-->
-			<div class="col-md-3">	
+			<div class="col-md-6">	
+				
 			</div>
 			<!--col-md-->
 		</div>
@@ -176,7 +198,7 @@ $tb="send";
 			
 			
 			<?php
-			$sql = "SELECT dtl.`id`, dtl.`prodItemId`,itm.`barcode`, itm.`issueDate`, itm.`machineId`, dtl.`seqNo`, dtl.`NW`, dtl.`GW`
+			$sql = "SELECT dtl.`refNo`, dtl.`id`, dtl.`prodItemId`,itm.`barcode`, itm.`issueDate`, itm.`machineId`, dtl.`seqNo`, dtl.`NW`, dtl.`GW`
 			, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId`
 			,prd.id as prodId, prd.code as prodCode 
 			, dtl.`sdNo` 
@@ -214,19 +236,24 @@ $tb="send";
 						<th>Grade</th>
 						<th>Qty</th>
 						<th>Issue Date</th>
-						<th>#</th>
+						<th>#</th>					
+						<th>Ref.No.</th>
 					</tr>
-					<?php $row_no=1; $sumQty=0;  $sumGradeNotOk=0; while ($row = $stmt->fetch()) { 
-							$gradeName = '<b style="color: red;">N/A</b>'; 
-							switch($row['grade']){
-								case 0 : $gradeName = 'A'; break;
-								case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
-								case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
-								default : 
-									$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
-							} $sumGradeNotOk=0;
+					<?php $row_no=1;  $prevNo=""; $rowColor='lightBlue';  $sumQty=0;  $sumGradeNotOk=0; while ($row = $stmt->fetch()) { 
+						$gradeName = '<b style="color: red;">N/A</b>'; 
+						switch($row['grade']){
+							case 0 : $gradeName = 'A'; break;
+							case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
+							case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+							default : 
+								$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
+						} $sumGradeNotOk=0;
+						if($prevNo<>"" AND $prevNo<>$row['refNo']){
+							if($rowColor=="lightBlue"){$rowColor="lightGreen";}else{$rowColor="lightBlue";}
+						}
+						$prevNo=$row['refNo'];
 					?>
-					<tr>
+					<tr style="background-color: <?=$rowColor;?>;" >
 						<td><?= $row_no; ?></td>
 						<td><?= $row['prodCode']; ?></td>	
 						<td><?= $row['barcode']; ?></td>	
@@ -234,8 +261,12 @@ $tb="send";
 						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
 						<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>		
 						<td><a class="btn btn-danger fa fa-trash" name="btn_row_delete" <?php echo ($hdr['statusCode']=='B'?' data-id="'.$row['id'].'" ':' disabled '); ?> > Delete</a></td>
+						<td><?= $row['refNo']; ?></td>
 					</tr>
-					<?php $row_no+=1; $sumQty+=$row['qty']; } ?>
+					<?php $row_no+=1; 
+						$sumQty+=$row['qty']; 
+						
+					} ?>
 					<tr>
 						<td></td>
 						<td>Total</td>	
@@ -260,55 +291,6 @@ $tb="send";
   
   
   
-  
-<!-- Modal -->
-<div id="modal_search_person" class="modal fade" role="dialog">
-  <div class="modal-dialog modal-lg">
-
-    <!-- Modal content-->
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title">Search Product Send Date</h4>
-      </div>
-      <div class="modal-body">
-        <div class="form-horizontal">
-			<div class="form-group">	
-				<label for="year_month" class="control-label col-md-2">Production Sending Date</label>
-				<div class="col-md-2">
-					<!--<input type="text" class="form-control" id="txt_search_fullname" />-->
-					<input type="text" id="txt_search_fullname" name="txt_search_fullname" class="form-control datepicker" >
-				</div>
-				<div class="col-md-2">
-					<a name="btn_search_ref_no" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-search" ></i> Search</a>
-				</div>
-			</div>
-		
-		<table id="tbl_search_person_main" class="table">
-			<thead>
-				<tr bgcolor="4169E1" style="color: white; text-align: center;">
-					<td>#Select</td>
-					<td>Production Sending No.</td>
-					<td>Production Sending Date</td>
-					<td>Sending From</td>
-					<td>Sending To</td>
-				</tr>
-			</thead>
-			<tbody>
-			</tbody>
-		</table>
-		</form>
-		<div id="div_search_person_result">
-		</div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-      </div>
-    </div>
-
-  </div>
-</div>
-
 
 
 
@@ -358,86 +340,17 @@ $("#spin").show();
 //   
 
 $(document).ready(function() {
-//       alert("jquery ok");
-	$("#custName").focus();
+	
+	$('a[name=btn_search_prod]').click(function(e){
+		var queryDate = $('#sendDate').val(); 
+		window.location.href = "<?=$rootPage;?>_hdr_item.php?sdNo=<?=$sdNo;?>&sendDate="+queryDate+"&fromCode=<?=$fromCode;?>&toCode=<?=$toCode;?>";
+	});
 	
 // Append and Hide spinner.          
 	var spinner = new Spinner().spin();
 	$("#spin").append(spinner.el);
 	$("#spin").hide();
   //           
-
-  
-	//SEARCH Begin
-	$('a[name="btnSdNo"]').click(function(){
-		curId = $(this).prev().prev().attr('id');
-		curName = $(this).prev().attr('id');
-		<?php if($sdNo==""){ ?>
-			$('#modal_search_person').modal('show');
-		<?php } ?>
-	});	
-	
-	$('a[name=btn_search_ref_no]').click(function(e){
-		var params = {
-			search_fullname: $('#txt_search_fullname').val()
-		};
-		if(params.search_fullname.length < 3){
-			alert('search keyword must more than 3 character.');
-			return false;
-		}
-		/* Send the data using post and put the results in a div */
-		  $.ajax({
-			  url: "search_send_prod_ajax.php",
-			  type: "post",
-			  data: params,
-			datatype: 'json',
-			  success: function(data){	
-							alert(data);
-							$('#tbl_search_person_main tbody').empty();
-							$.each($.parseJSON(data), function(key,value){
-								$('#tbl_search_person_main tbody').append(
-								'<tr>' +
-									'<td>' +
-									'	<div class="btn-group">' +
-									'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
-									'	class="btn" title="เลือก"> ' +
-									'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
-									'	</div>' +
-									'</td>' +
-									'<td>'+ value.sdNo +'</td>' +
-									'<td>'+ value.sendDate +'</td>' +
-									'<td>'+ value.fromCode+' : '+value.fromName+'</td>' +
-									'<td>'+ value.toCode+' : '+value.toName+'</td>' +
-								'</tr>'
-								);			
-							});
-						
-			  }, //success
-			  error:function(){
-				  alert('error');
-			  }   
-			}); 
-	});
-	
-	$(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
-		
-		//$('input[name='+curId+']').val($(this).closest("tr").find('td:eq(1)').text());
-		//$('#'+curTxtFullName).val($(this).closest("tr").find('td:eq(2)').text());
-		//$('#'+curTxtMobilePhoneNo).val($(this).closest('tr').find('td:eq(3)').text());	
-		$('#'+curId).val($(this).closest("tr").find('td:eq(1)').text());
-		$('#'+curName).text($(this).closest("tr").find('td:eq(1)').text());
-		$('#'+curName).text($(this).closest("tr").find('td:eq(1)').text());
-		
-		var queryDate = $(this).closest("tr").find('td:eq(2)').text(),
-		dateParts = queryDate.match(/(\d+)/g)
-		realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
-		$('#sendDate').datepicker('setDate', realDate);
-		$('#sendDate').attr('disabled','disabled');
-		
-		$('#modal_search_person').modal('hide');
-	});
-	//Search End
-
 
 	
 	$('#form1 a[name=btn_create]').click (function(e) {
@@ -504,18 +417,6 @@ $(document).ready(function() {
 		e.preventDefault();
 	});
 	//btn_click
-	
-	$('a[name=btn_search_prod]').click(function(e){
-		var sdNo = $('#sdNo').val();
-		var refNo = $('#refNo').val();
-		window.location.href = "<?=$rootPage;?>_hdr_item.php?sdNo="+sdNo+"&refNo="+refNo;
-	});
-	
-	$("html,body").scrollTop(0);
-	$("#statusName").fadeOut('slow').fadeIn('slow').fadeOut('slow').fadeIn('slow');
-	
-	$('#txt_row_first').select();
-	
 });
         
         

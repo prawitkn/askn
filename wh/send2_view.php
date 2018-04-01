@@ -57,9 +57,9 @@ $sdNo = $hdr['sdNo'];
         <small>Send management</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Send List</a></li>
-		<li><a href="#"><i class="glyphicon glyphicon-edit"></i>Send</a></li>
-		<li><a href="#"><i class="glyphicon glyphicon-list"></i> View</a></li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Send List</a></li>		
+		<li><a href="<?=$rootPage;?>_hdr.php?sdNo=<?=$sdNo;?>"><i class="glyphicon glyphicon-edit"></i><?=$sdNo;?></a></li>
+		<li><a href="<?=$rootPage;?>_view.php?sdNo=<?=$sdNo;?>"><i class="glyphicon glyphicon-search"></i> View</a></li>
       </ol>
     </section>
 
@@ -121,7 +121,7 @@ $sdNo = $hdr['sdNo'];
 				</div><!-- /.box-header -->
 				<div class="box-body">
 				   <?php
-						$sql = "SELECT dtl.id, dtl.prodItemId 
+						$sql = "SELECT dtl.refNo, dtl.id, dtl.prodItemId 
 						, itm.barcode, itm.grade, itm.qty, itm.issueDate 
 						, prd.code as prodCode 
 						FROM send_detail dtl 
@@ -141,7 +141,7 @@ $sdNo = $hdr['sdNo'];
 							<th>Grade</th>
 							<th>Qty</th>
 							<th>Issue Date</th>
-							<th>#</th>
+							<th>Ref.No.</th>
 						</tr>
 						<?php $row_no=1; $sumQty=0; $sumGradeNotOk=0; while ($row = $stmt->fetch()) { $sumQty+=$row['qty']; 
 							$gradeName = '<b style="color: red;">N/A</b>'; 
@@ -159,7 +159,9 @@ $sdNo = $hdr['sdNo'];
 							<td><?= $row['barcode']; ?></td>
 							<td><?= $gradeName; ?></td>
 							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
-							<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>							
+							<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>	
+							<td><?= $row['refNo']; ?></td>
+							
 						</tr>
 						<?php $row_no+=1; } ?>
 						<tr style="font-weight: bold;">
