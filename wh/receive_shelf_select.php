@@ -63,10 +63,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			$stmt->bindParam(':id', $id);
 			$stmt->execute();	
 			$hdr = $stmt->fetch();
+			$rcNo=$hdr['rcNo'];
 			?>
 			<div class="box-header with-border">              
-				<h3 class="box-title">Receive No : <?= $hdr['rcNo']; ?> <span class="glyphicon glyphicon-chevron-right"/> <b><?=$hdr['barcode'];?></br></h3>
-
+				<h3 class="box-title">Receive No : <?= $rcNo; ?> <span class="glyphicon glyphicon-chevron-right"/> <b><?=$hdr['barcode'];?></br></h3>
+					
 				<div class="box-tools pull-right">
 				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
 				</button>
@@ -88,6 +89,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			</div>
 			<!-- /.box-header -->
 			
+			<div class="box-body">
+				
+				<div class="row col-md-12">
+				<input type="hidden" name="rcNo" id="rcNo" value="<?= $rcNo; ?>" />
+				<input type="hidden" name="recvProdId" id="recvProdId" value="<?=$id;?>" />
 			 <?php  
 			 $sql = "SELECT `id`, `code`, `name`
 			FROM wh_sloc_x 
@@ -97,6 +103,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			$stmt = $pdo->prepare($sql);	
 			//$stmt->bindParam(':rcNo', $hdr['rcNo']);
 			$stmt->execute();	
+			
+			
 			echo '<ul class="nav nav-tabs">';
 			$irow=0; while ($itm = $stmt->fetch()) { 
 				echo '	  <li class="'.($irow==0?'active':'').'"><a data-toggle="tab" href="#'.$itm['id'].'">'.$itm['code'].'</a></li>';
@@ -122,7 +130,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			echo '<div class="tab-content">';
 			$tmpXCode=''; $tmpYCode=''; $irow=0; while ($itm = $stmt->fetch()) { 
 				if($irow<>0 AND $tmpYCode<>$itm['yCode']){
-					echo '</br/>';
+					echo '<br/>';
 				}
 				if($tmpXCode<>$itm['xCode']){
 					if($irow<>0){
@@ -132,42 +140,22 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				}
 				switch($itm['itemCount']){
 					case 0 : ?><a class="btn btn-success btn_set_shelf" data-id="<?=$itm['id'];?>" ><?=$itm['code'].' ['.$itm['itemCount'].']';?></a><?php break;
-					default : ?><a class="btn btn-danger btn_set_shelf" data-id="<?=$itm['id'];?>" ><?=$itm['code'].' ['.$itm['itemCount'].']';?></a><?php break;
-				}
-				
-				
-				$irow++;
-				
+					default : ?><a class="btn btn-danger btn_set_shelf" data-id="<?=$itm['id'];?>" ><?=$itm['code'].' ['.$itm['itemCount'].']';?></a><?php 
+				}								
+				$irow++;				
 				$tmpXCode=$itm['xCode'];
-				$tmpYCode=$itm['yCode'];
-		
+				$tmpYCode=$itm['yCode'];		
 			}//end loop column name 
-			echo '</div>';
-			echo '</div>';
-			
-			
+			echo '</div><!--tab-pane-->';
+			echo '</div><!--tab-content-->';	
 			?>
-			<div class="box-body">
-				<div class="row col-md-12">
-				<input type="hidden" id="hid_rcNo" value="<?=$hdr['rcNo'];?>" />
-				<input type="hidden" id="hid_recvProdId" value="<?=$hdr['id'];?>" />
-				
-				<?php $row_no=1; $x=''; $y=''; $z=''; while ($row = $stmt->fetch()) { 
-				if($x<>'' and $x<>$row['X']){ ?> <br/><br/><?php } 
-					$aColor = '';
-					switch($row['itemCount']){
-						case 0 : ?><a class="btn btn-success btn_set_shelf" data-code="<?=$row['code'];?>" ><?=$row['name'].' ['.$row['itemCount'].']';?></a><?php break;
-						default : ?><a class="btn btn-danger btn_set_shelf" data-code="<?=$row['code'];?>" ><?=$row['name'].' ['.$row['itemCount'].']';?></a><?php break;
-					}
-				?>
-						
-				<?php $row_no+=1; $x=$row['X']; } ?>
 				</div>
 				<!--row-->
 			</div>
 			<!--box-body-->
 		</div>
 		<!--box-->
+		
 	</div>
 	<!--col-md-12-->
 </div>
@@ -207,8 +195,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 $(document).ready(function() {
 	$('.btn_set_shelf').click (function(e) {				 
 		var params = {				
-		rcNo: $('#hid_rcNo').val(),
-		recvProdId: $('#hid_recvProdId').val(),
+		rcNo: $("#rcNo").val(),
+		recvProdId: $('#recvProdId').val(),
 		shelfId: $(this).attr('data-id')
 		};
 		//alert(params.hdrID);

@@ -51,9 +51,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <div class="row">
 	<div class="col-md-12">
 		<div class="box">
-			 <?php
+			 <?php 		
 				$rcNo = $_POST['rcNo'];
-				
 				$ids="";
 				if(!empty($_POST['itmId']) and isset($_POST['itmId']))
 				{
@@ -62,9 +61,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					{			
 						$ids.=$item.',';
 					}
-				} echo 'ids:'.$ids;
+				} 
 				$ids=substr($ids,0,strlen($ids)-1);		
-			
+				
 			$sql = "SELECT dtl.id, dtl.rcNo, itm.prodCodeId, itm.barcode 
 			, prd.code as prodCode 
 			FROM receive_detail dtl
@@ -75,15 +74,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			$stmt = $pdo->prepare($sql);	
 			$stmt->bindParam(':ids', $ids);
 			$stmt->execute();	
-			//$hdr = $stmt->fetch();	$stmt->execute();	
-			
-			$itemsHtml='<div id="0" class="tab-pane fade in active">';
-			$itemsHtml.='		<ul>';
-			while ($row = $stmt->fetch()) { 				
-				$itemsHtml.='	  <li class="">'.$row['barcode'].'</li>';
-			}//end loop column name 
-			$itemsHtml.='		</ul>';
-			$itemsHtml.='	</div>';
+			$rcNo="";
+			$itemsHtml='<div id="0" class="tab-pane fade in active"><ol type="1">';
+			if($stmt->rowCount()>0){
+				while ($row = $stmt->fetch()) { 	
+					$rcNo=$row['rcNo'];
+					$itemsHtml.='<li>'.$row['barcode'].'</li>';
+				}//end loop column name 
+			}
+			$itemsHtml.='</ol></div>'; //tab-pane
 			
 			
 			?>
@@ -111,6 +110,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			</div>
 			<!-- /.box-header -->
 			
+			
+			
+			<div class="box-body">
+				<div class="row col-md-12">
+				<input type="hidden" name="rcNo" id="rcNo" value="<?= $rcNo; ?>" />
+				<input type="hidden" name="recvProdId" id="recvProdId" value="<?=$ids;?>" />
 			 <?php  
 			 $sql = "SELECT `id`, `code`, `name`
 			FROM wh_sloc_x 
@@ -118,9 +123,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			AND statusCode='A' 
 						";						
 			$stmt = $pdo->prepare($sql);	
-			//$stmt->bindParam(':rcNo', $hdr['rcNo']);
 			$stmt->execute();	
 		
+			echo '<ul class="nav nav-tabs">';
+			echo '	  <li class="active"><a data-toggle="tab" href="#0">Checked Items</a></li>';
+			$irow=0; while ($itm = $stmt->fetch()) { 
+				echo '	  <li class=""><a data-toggle="tab" href="#'.$itm['id'].'">'.$itm['code'].'</a></li>';
+				$irow++;
+			}//end loop column name 
+			echo '</ul>';
+			
 			
 			 $sql = "SELECT ws.id, ws.xId, ws.yId, ws.zId, ws.code
 			, wx.code as xCode, wy.code as yCode, wz.code as zCode 
@@ -135,56 +147,36 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			ORDER BY ws.xId, ws.yId, ws.zId
 						";						
 			$stmt = $pdo->prepare($sql);	
-			//$stmt->bindParam(':rcNo', $hdr['rcNo']);
-		
-		
+			$stmt->execute();
 			
-			echo '<div class="tab-content">';		
+			echo '<div class="tab-content">';
 			
+			echo $itemsHtml; 
 			
 			$tmpXCode=''; $tmpYCode=''; $irow=0; while ($itm = $stmt->fetch()) { 
 				if($irow<>0 AND $tmpYCode<>$itm['yCode']){
-					echo '</br/>';
+					echo '<br/>';
 				}
 				if($tmpXCode<>$itm['xCode']){
 					if($irow<>0){
-						echo '</div>';
+						echo '</div>';//tab-pane
 					}
 					echo '<div id="'.$itm['xId'].'" class="tab-pane fade in">';
 				}
 				switch($itm['itemCount']){
 					case 0 : ?><a class="btn btn-success btn_set_shelf" data-id="<?=$itm['id'];?>" ><?=$itm['code'].' ['.$itm['itemCount'].']';?></a><?php break;
-					default : ?><a class="btn btn-danger btn_set_shelf" data-id="<?=$itm['id'];?>" ><?=$itm['code'].' ['.$itm['itemCount'].']';?></a><?php break;
+					default : ?><a class="btn btn-danger btn_set_shelf" data-id="<?=$itm['id'];?>" ><?=$itm['code'].' ['.$itm['itemCount'].']';?></a><?php 
 				}
-				
-				
-				$irow++;
-				
+				$irow++;				
 				$tmpXCode=$itm['xCode'];
-				$tmpYCode=$itm['yCode'];
-		
+				$tmpYCode=$itm['yCode'];		
 			}//end loop column name 
-			echo '</div>';
-			
-			echo '</div>';//tab-content 
-			
-				echo $itemsHtml;
+			echo '</div><!--tab-pane-->';
+			echo '</div><!--tab-content-->';	
 			?>
-			<div class="box-body">
-				<div class="row col-md-12">
-				<input type="hidden" id="hid_rcNo" value="<?=$rcNo;?>" />
-				<input type="hidden" id="hid_recvProdId" value="<?=$ids;?>" />
 				
-				<?php $row_no=1; $x=''; $y=''; $z=''; while ($row = $stmt->fetch()) { 
-				if($x<>'' and $x<>$row['X']){ ?> <br/><br/><?php } 
-					$aColor = '';
-					switch($row['itemCount']){
-						case 0 : ?><a class="btn btn-success btn_set_shelf" data-code="<?=$row['code'];?>" ><?=$row['name'].' ['.$row['itemCount'].']';?></a><?php break;
-						default : ?><a class="btn btn-danger btn_set_shelf" data-code="<?=$row['code'];?>" ><?=$row['name'].' ['.$row['itemCount'].']';?></a><?php break;
-					}
-				?>
-						
-				<?php $row_no+=1; $x=$row['X']; } ?>
+				
+				
 				</div>
 				<!--row-->
 			</div>
@@ -229,9 +221,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <script>
 $(document).ready(function() {
 	$('.btn_set_shelf').click (function(e) {				 
-		var params = {				
-		rcNo: $('#hid_rcNo').val(),
-		recvProdId: $('#hid_recvProdId').val(),
+		var params = {			
+		rcNo: $("#rcNo").val(),
+		recvProdId: $('#recvProdId').val(),
 		shelfId: $(this).attr('data-id')
 		};
 		//alert(params.hdrID);
