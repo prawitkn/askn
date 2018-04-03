@@ -486,6 +486,7 @@ $(document).ready(function() {
 	$('#form1 a[name=btn_create]').click (function(e) {
 		if ($('#form1').smkValidate()){
 			$.smkConfirm({text:'Are you sure to Create ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
+				$('#sdNo').prop('disabled','');
 				$.post({
 					url: 'receive_add_insert_ajax.php',
 					data: $("#form1").serialize(),
@@ -510,6 +511,7 @@ $(document).ready(function() {
 					alert(response.responseText);
 				});
 				//.post
+				$('#sdNo').prop('disabled','disabled');
 			}});
 			//smkConfirm
 		e.preventDefault();
