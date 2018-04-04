@@ -104,19 +104,8 @@ $tb="send";
 						<!--col-md-6-->			
 						<div class="col-md-3">					  
 					  <div class="from-group">
-<<<<<<< HEAD
-<<<<<<< HEAD
-						<label for="fromName">From</label>
-						<input type="text" id="fromName" name="fromName" value="<?=$hdr['fromName'];?>" class="form-control" disabled>
-						<select name="fromCode" class="form-control">
-=======
 						<label for="fromCode">From</label>
 						<select name="fromCode" class="form-control"  data-smk-msg="Require from code." required   <?php echo ($sdNo==''?'':' disabled '); ?>  >
->>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
-=======
-						<label for="fromCode">From</label>
-						<select name="fromCode" class="form-control"  data-smk-msg="Require from code." required   <?php echo ($sdNo==''?'':' disabled '); ?>  >
->>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
 						<?php $fromCode=$hdr['fromCode']; 
 						switch($s_userGroupCode){
 							case 'whOff' : case 'whSup' : case 'pdOff' : case 'pdSup' :
@@ -151,22 +140,9 @@ $tb="send";
 				<div class="col-md-3">					  
 				  <!-- checkbox -->
 					<div class="from-group">
-<<<<<<< HEAD
-<<<<<<< HEAD
-						<label for="toName">To</label>
-						<input type="text" id="toName" name="toName" value="<?=$hdr['toName'];?>" class="form-control" disabled>
-						<?php $toCode=$hdr['toCode']; ?>
-						<select name="toCode" class="form-control">
-=======
 						<label for="toCode">To</label>
 						<?php $toCode=$hdr['toCode']; ?>
 						<select name="toCode" class="form-control"  data-smk-msg="Require to code." required  <?php echo ($sdNo==''?'':' disabled '); ?> >
->>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
-=======
-						<label for="toCode">To</label>
-						<?php $toCode=$hdr['toCode']; ?>
-						<select name="toCode" class="form-control"  data-smk-msg="Require to code." required  <?php echo ($sdNo==''?'':' disabled '); ?> >
->>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
 							<option value="" <?php echo ($toCode==""?'selected':''); ?> >--All--</option>
 							<?php
 							$sql = "SELECT `code`, `name` FROM sloc WHERE statusCode='A'	ORDER BY code ASC ";
@@ -187,26 +163,7 @@ $tb="send";
 					<!--row-->
 					
 		<div class="row">
-<<<<<<< HEAD
-<<<<<<< HEAD
-			<div class="col-md-3">		
-				<div class="from-group">
-				<label for="sendDate">Send Date</label>
-				<div class="input-group">
-					<input type="text" id="sendDate" name="sendDate" class="form-control datepicker" data-smk-msg="Require Order Date." required <?php echo ($sdNo==''?'':' disabled '); ?> >
-					<a href="#" name="btnItemSearch" class="btn btn-primary" <?php echo ($sdNo==''?'':' disabled '); ?> ><i class="glyphicon glyphicon-search" ></i> Add Item</a>								
-				</div><!--input group-->
-				</div>
-				<!--from group-->				
-			</div>
-			<!--col-md-->
-			<div class="col-md-6">	
-=======
 			<div class="col-md-6">		
->>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
-=======
-			<div class="col-md-6">		
->>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
 				<div class="from-group">
 					<label for="remark">Remark</label>
 					<input type="text" id="remark" name="remark" value="<?=$hdr['remark'];?>" class="form-control" <?php echo ($sdNo==''?'':' disabled '); ?> >
@@ -241,15 +198,7 @@ $tb="send";
 			
 			
 			<?php
-<<<<<<< HEAD
-<<<<<<< HEAD
-			$sql = "SELECT 'big' as `refNo`, dtl.`id`, dtl.`prodItemId`,itm.`barcode`, itm.`issueDate`, itm.`machineId`, dtl.`seqNo`, dtl.`NW`, dtl.`GW`
-=======
 			$sql = "SELECT dtl.`refNo`, dtl.`id`, dtl.`prodItemId`,itm.`barcode`, itm.`issueDate`, itm.`machineId`, dtl.`seqNo`, dtl.`NW`, dtl.`GW`
->>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
-=======
-			$sql = "SELECT dtl.`refNo`, dtl.`id`, dtl.`prodItemId`,itm.`barcode`, itm.`issueDate`, itm.`machineId`, dtl.`seqNo`, dtl.`NW`, dtl.`GW`
->>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
 			, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId`
 			,prd.id as prodId, prd.code as prodCode 
 			, dtl.`sdNo` 
@@ -396,14 +345,6 @@ $(document).ready(function() {
 		var queryDate = $('#sendDate').val(); 
 		window.location.href = "<?=$rootPage;?>_hdr_item.php?sdNo=<?=$sdNo;?>&sendDate="+queryDate+"&fromCode=<?=$fromCode;?>&toCode=<?=$toCode;?>";
 	});
-<<<<<<< HEAD
-	
-	$('a[name=btnItemSearch]').click(function(e){		
-		var queryDate = $('#sendDate').val(); 
-		window.location.href = "<?=$rootPage;?>_hdr_item.php?sdNo=<?=$sdNo;?>&sendDate="+queryDate+"&fromCode=<?=$fromCode;?>&toCode=<?=$toCode;?>";
-	});
-=======
->>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
 	
 // Append and Hide spinner.          
 	var spinner = new Spinner().spin();

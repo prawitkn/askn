@@ -70,14 +70,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 			LEFT JOIN product prd ON prd.id=itm.prodCodeId 
 			WHERE dtl.id IN (:ids) 
-			";		
+			";						
 			$stmt = $pdo->prepare($sql);	
 			$stmt->bindParam(':ids', $ids);
 			$stmt->execute();	
 			$rcNo="";
 			$itemsHtml='<div id="0" class="tab-pane fade in active"><ol type="1">';
 			if($stmt->rowCount()>0){
-				while ($row = $stmt->fetch()) {  echo $row['barcode'];	
+				while ($row = $stmt->fetch()) { 	
 					$rcNo=$row['rcNo'];
 					$itemsHtml.='<li>'.$row['barcode'].'</li>';
 				}//end loop column name 
