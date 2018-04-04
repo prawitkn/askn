@@ -4,7 +4,7 @@ include 'session.php';
 
 //Check user roll.
 switch($s_userGroupCode){
-	case 'admin' : case 'salesAdmin' : 
+	case 'it' : case 'admin' : case 'salesAdmin' : 
 		break;
 	default : 
 		//return JSON

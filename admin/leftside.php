@@ -124,7 +124,7 @@
 			<li><a href=""><i class="fa fa-table"></i> <span>Salesman Target List (SS)</span></a></li>	-->		
 		<?php } ?>
 		
-		<?php switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' : case 'sales' : ?>
+		<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'salesAdmin' : case 'sales' : ?>
 			<li class="header">Transaction Menu</li>
 			<li><a href="sale.php"><i class="fa fa-cart-plus"></i> <span>Sales Order</span></a></li>		
 			<!--<li><a href="delivery.php"><i class="fa fa-truck"></i> <span>Delivery</span></a></li>
@@ -145,7 +145,7 @@
 		<?php break; default : } ?>
 		
 			<li class="header">Report</li>
-		<?php switch($s_userGroupCode){ case 'admin' : case 'sales' : case 'salesAdmin' : ?>			
+		<?php switch($s_userGroupCode){  case 'it' :  case 'admin' : case 'sales' : case 'salesAdmin' : ?>			
 			<li><a href="report_sale.php"><i class="fa fa-bars"></i> <span>Sales Order </span></a></li>			
 			<li><a href="report_sale_pending_by_prod.php"><i class="fa fa-bars"></i> <span>Sales Order Pending by Product </span></a></li>	
 			<li><a href="report_prod_stk.php"><i class="fa fa-list-alt"></i> <span>Stock Report</span></a></li>

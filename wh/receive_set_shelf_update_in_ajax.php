@@ -27,9 +27,9 @@ try{
 	}
 	
 	//Query 1: Check Status for is  return item.
-	$sql = "SELECT * FROM receive_detail WHERE statusCode='R' AND id IN (:recvProdId) LIMIT 1";
+	$sql = "SELECT * FROM receive_detail WHERE statusCode='R' AND id IN (".$recvProdId.") LIMIT 1";
 	$stmt = $pdo->prepare($sql);
-	$stmt->bindParam(':recvProdId', $recvProdId);
+	//$stmt->bindParam(':recvProdId', $recvProdId);
 	$stmt->execute();
 	$row_count = $stmt->rowCount();	
 	if($row_count == 1 ){
@@ -41,18 +41,18 @@ try{
 	
 	
 	//Query 1: Delete old wh sloc.
-	$sql = "DELETE FROM wh_shelf_map_item WHERE recvProdId IN (:recvProdId)";
+	$sql = "DELETE FROM wh_shelf_map_item WHERE recvProdId IN (".$recvProdId.")";
     $stmt = $pdo->prepare($sql);
-	$stmt->bindParam(':recvProdId', $recvProdId);
+	//$stmt->bindParam(':recvProdId', $recvProdId);
     $stmt->execute();
 	
 	//Query 1: Delete old wh sloc.
 	$sql = "INSERT INTO wh_shelf_map_item (shelfId, recvProdId, statusCode) 
-	SELECT :shelfId, id, 'A' FROM receive_detail WHERE id IN (:recvProdId) ";
+	SELECT :shelfId, id, 'A' FROM receive_detail WHERE id IN (".$recvProdId.") ";
     $stmt = $pdo->prepare($sql);
 	$stmt->bindParam(':shelfId', $shelfId);
-	$stmt->bindParam(':recvProdId', $recvProdId);
-    $stmt->execute();
+	//$stmt->bindParam(':recvProdId', $recvProdId);
+    $stmt->execute();	
 	
 	//Query 1: Delete old wh sloc.
 	/*$sql = "UPDATE receive_detail set shelfCode=:slocCode WHERE id=:recvProdId ";

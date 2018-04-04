@@ -86,7 +86,7 @@ $hdr = $stmt->fetch();
 						
 					</div><!-- /.col-md-3-->	
 					<div class="col-md-3">
-						Pick Date : <b><?= $hdr['pickDate']; ?></b><br/>
+						Pick Date : <b><?= date('d M Y',strtotime( $hdr['pickDate'] )); ?></b><br/>
 						SO No : <b><?= $hdr['soNo']; ?></b><br/><input type="hidden" id="soNo" value="<?=$hdr['soNo'];?>" />		
 					</div>	<!-- /.col-md-3-->	
 					<div class="col-md-3">
@@ -200,11 +200,11 @@ $hdr = $stmt->fetch();
 				</div>
 				<div class="col-md-8">
 					<label class=""><?php echo $hdr['createByName']; ?></label></br>
-					<label class=""><?php echo to_thai_datetime_fdt($hdr['createTime']); ?></label></br>
+					<label class=""><?php echo date('d M Y H:m',strtotime( $hdr['createTime'] )); ?></label></br>
 					<label class=""><?php echo $hdr['confirmByName']; ?></label></br>
-					<label class=""><?php echo to_thai_datetime_fdt($hdr['confirmTime']); ?></label></br>
+					<label class=""><?php echo date('d M Y H:m',strtotime( $hdr['confirmTime'] )); ?></label></br>
 					<label class=""><?php echo $hdr['approveByName']; ?></label></br>
-					<label class=""><?php echo to_thai_datetime_fdt($hdr['approveTime']); ?></label>	
+					<label class=""><?php echo date('d M Y H:m',strtotime( $hdr['approveTime'] )); ?></label>	
 				</div>				
 			</div>			
 		</div>

@@ -53,32 +53,31 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		<div class="box">
 			 <?php 		
 				$rcNo = $_POST['rcNo'];
-				$ids="";
+				$ids="";		
 				if(!empty($_POST['itmId']) and isset($_POST['itmId']))
 				{
-					//$arrProdItems=explode(',', $prodItems);
 					foreach($_POST['itmId'] as $index => $item )
 					{			
 						$ids.=$item.',';
 					}
 				} 
 				$ids=substr($ids,0,strlen($ids)-1);		
-				
 			$sql = "SELECT dtl.id, dtl.rcNo, itm.prodCodeId, itm.barcode 
 			, prd.code as prodCode 
 			FROM receive_detail dtl
 			LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 			LEFT JOIN product prd ON prd.id=itm.prodCodeId 
-			WHERE dtl.id IN (:ids) 
+			WHERE dtl.id IN (".$ids.")
 			";						
 			$stmt = $pdo->prepare($sql);	
-			$stmt->bindParam(':ids', $ids);
+			//$stmt->bindParam(':ids', $ids);
 			$stmt->execute();	
+			
 			$rcNo="";
 			$itemsHtml='<div id="0" class="tab-pane fade in active"><ol type="1">';
-			if($stmt->rowCount()>0){
+			if($stmt->rowCount()>0){ 
 				while ($row = $stmt->fetch()) { 	
-					$rcNo=$row['rcNo'];
+					$rcNo=$row['rcNo']; 
 					$itemsHtml.='<li>'.$row['barcode'].'</li>';
 				}//end loop column name 
 			}
@@ -229,7 +228,7 @@ $(document).ready(function() {
 		//alert(params.hdrID);
 		$.smkConfirm({text:'Are you sure to Set ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 			$.post({
-				url: 'receive_set_shelf_update_ajax.php',
+				url: 'receive_set_shelf_update_in_ajax.php',
 				data: params,
 				dataType: 'json'
 			}).done(function(data) {
