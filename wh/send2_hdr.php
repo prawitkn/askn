@@ -115,6 +115,33 @@ $tb="send";
 					  <div class="from-group">
 						<label for="fromName">From</label>
 						<input type="text" id="fromName" name="fromName" value="<?=$hdr['fromName'];?>" class="form-control" disabled>
+						<select name="fromCode" class="form-control">
+						<?php $fromCode=$hdr['fromCode']; 
+						switch($s_userGroupCode){
+							case 'whOff' : case 'whSup' : case 'pdOff' : case 'pdSup' :
+								$fromCode=$s_userDeptCode; ?>
+								<select name="fromCode" class="form-control" disabled >
+							<?php
+								break;
+							case 'prog' : case 'admin' : ?>
+								<select name="fromCode" class="form-control">
+							<?php
+								break;
+							default :
+						}
+						?>
+						
+							<option value="" <?php echo ($fromCode==""?'selected':''); ?> >--All--</option>
+							<?php
+							$sql = "SELECT `code`, `name` FROM sloc WHERE statusCode='A'	ORDER BY code ASC ";
+							$stmt = $pdo->prepare($sql);
+							$stmt->execute();					
+							while ($itm = $stmt->fetch()){
+								$selected=($fromCode==$itm['code']?'selected':'');						
+								echo '<option value="'.$itm['code'].'" '.$selected.'>'.$itm['code'].' : '.$itm['name'].'</option>';
+							}
+							?>
+						</select>	
 					</div>
 					<!--from group-->
 				</div>
@@ -125,6 +152,19 @@ $tb="send";
 					<div class="from-group">
 						<label for="toName">To</label>
 						<input type="text" id="toName" name="toName" value="<?=$hdr['toName'];?>" class="form-control" disabled>
+						<?php $toCode=$hdr['toCode']; ?>
+						<select name="toCode" class="form-control">
+							<option value="" <?php echo ($toCode==""?'selected':''); ?> >--All--</option>
+							<?php
+							$sql = "SELECT `code`, `name` FROM sloc WHERE statusCode='A'	ORDER BY code ASC ";
+							$stmt = $pdo->prepare($sql);
+							$stmt->execute();					
+							while ($itm = $stmt->fetch()){
+								$selected=($toCode==$itm['code']?'selected':'');						
+								echo '<option value="'.$itm['code'].'" '.$selected.'>'.$itm['code'].' : '.$itm['name'].'</option>';
+							}
+							?>
+						</select>	
 					</div>
 					<!--from group-->		  
 				</div>
@@ -137,7 +177,10 @@ $tb="send";
 			<div class="col-md-3">		
 				<div class="from-group">
 				<label for="sendDate">Send Date</label>
-				<input type="text" id="sendDate" name="sendDate" class="form-control datepicker" data-smk-msg="Require Order Date." required <?php echo ($sdNo==''?'':' disabled '); ?> >
+				<div class="input-group">
+					<input type="text" id="sendDate" name="sendDate" class="form-control datepicker" data-smk-msg="Require Order Date." required <?php echo ($sdNo==''?'':' disabled '); ?> >
+					<a href="#" name="btnItemSearch" class="btn btn-primary" <?php echo ($sdNo==''?'':' disabled '); ?> ><i class="glyphicon glyphicon-search" ></i> Add Item</a>								
+				</div><!--input group-->
 				</div>
 				<!--from group-->				
 			</div>
@@ -176,7 +219,7 @@ $tb="send";
 			
 			
 			<?php
-			$sql = "SELECT dtl.`id`, dtl.`prodItemId`,itm.`barcode`, itm.`issueDate`, itm.`machineId`, dtl.`seqNo`, dtl.`NW`, dtl.`GW`
+			$sql = "SELECT 'big' as `refNo`, dtl.`id`, dtl.`prodItemId`,itm.`barcode`, itm.`issueDate`, itm.`machineId`, dtl.`seqNo`, dtl.`NW`, dtl.`GW`
 			, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId`
 			,prd.id as prodId, prd.code as prodCode 
 			, dtl.`sdNo` 
@@ -214,19 +257,24 @@ $tb="send";
 						<th>Grade</th>
 						<th>Qty</th>
 						<th>Issue Date</th>
-						<th>#</th>
+						<th>#</th>					
+						<th>Ref.No.</th>
 					</tr>
-					<?php $row_no=1; $sumQty=0;  $sumGradeNotOk=0; while ($row = $stmt->fetch()) { 
-							$gradeName = '<b style="color: red;">N/A</b>'; 
-							switch($row['grade']){
-								case 0 : $gradeName = 'A'; break;
-								case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
-								case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
-								default : 
-									$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
-							} $sumGradeNotOk=0;
+					<?php $row_no=1;  $prevNo=""; $rowColor='lightBlue';  $sumQty=0;  $sumGradeNotOk=0; while ($row = $stmt->fetch()) { 
+						$gradeName = '<b style="color: red;">N/A</b>'; 
+						switch($row['grade']){
+							case 0 : $gradeName = 'A'; break;
+							case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
+							case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+							default : 
+								$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
+						} $sumGradeNotOk=0;
+						if($prevNo<>"" AND $prevNo<>$row['refNo']){
+							if($rowColor=="lightBlue"){$rowColor="lightGreen";}else{$rowColor="lightBlue";}
+						}
+						$prevNo=$row['refNo'];
 					?>
-					<tr>
+					<tr style="background-color: <?=$rowColor;?>;" >
 						<td><?= $row_no; ?></td>
 						<td><?= $row['prodCode']; ?></td>	
 						<td><?= $row['barcode']; ?></td>	
@@ -234,8 +282,12 @@ $tb="send";
 						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
 						<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>		
 						<td><a class="btn btn-danger fa fa-trash" name="btn_row_delete" <?php echo ($hdr['statusCode']=='B'?' data-id="'.$row['id'].'" ':' disabled '); ?> > Delete</a></td>
+						<td><?= $row['refNo']; ?></td>
 					</tr>
-					<?php $row_no+=1; $sumQty+=$row['qty']; } ?>
+					<?php $row_no+=1; 
+						$sumQty+=$row['qty']; 
+						
+					} ?>
 					<tr>
 						<td></td>
 						<td>Total</td>	
@@ -360,6 +412,11 @@ $("#spin").show();
 $(document).ready(function() {
 //       alert("jquery ok");
 	$("#custName").focus();
+	
+	$('a[name=btnItemSearch]').click(function(e){		
+		var queryDate = $('#sendDate').val(); 
+		window.location.href = "<?=$rootPage;?>_hdr_item.php?sdNo=<?=$sdNo;?>&sendDate="+queryDate+"&fromCode=<?=$fromCode;?>&toCode=<?=$toCode;?>";
+	});
 	
 // Append and Hide spinner.          
 	var spinner = new Spinner().spin();

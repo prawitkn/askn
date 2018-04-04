@@ -5,7 +5,7 @@ include 'session.php';
 try{	
     $sdNo = $_POST['sdNo'];
 	
-	$pdo->beginTransaction();
+	$pdo->beginTransaction();	
 	
 	if(!empty($_POST['itmId']) and isset($_POST['itmId']))
     {
@@ -13,13 +13,15 @@ try{
         foreach($_POST['itmId'] as $index => $item )
         {	
 			$sql = "INSERT INTO `send_detail`
-			(`prodItemId`, `sdNo`)
-			SELECT rc.`prodItemId`, :sdNo 
+			(`refNo`, `prodItemId`, `sdNo`)
+			SELECT :refProdSdNo, rc.`prodItemId`, :sdNo 
 			FROM send_prod_detail rc 
 			WHERE rc.id=:id 
-			";						
-			$stmt = $pdo->prepare($sql);	
-			$stmt->bindParam(':sdNo', $sdNo);	
+			";			
+			$arrItm=explode(',', $item)
+			$stmt = $pdo->prepare($sql);
+			$stmt->bindParam(':id', $arrItm[0]);		
+			$stmt->bindParam(':refProdSdNo', $arrItm[1]);	
 			$stmt->bindParam(':id', $item);		
 			$stmt->execute();			
         }

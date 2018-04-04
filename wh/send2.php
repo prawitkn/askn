@@ -106,20 +106,20 @@ $tb="send";
         <div class="box-body">
 			<div class="row">
 				<div class="col-md-6">					
-						<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
-							<div class="form-group">
-								<label for="search_word">Send No. search key word.</label>
-								<div class="input-group">
-									<input id="search_word" type="text" class="form-control" name="search_word" data-smk-msg="Require userFullname."required>
-									<span class="input-group-addon">
-										<span class="glyphicon glyphicon-search"></span>
-									</span>
-								</div>
-							</div>						
-							<input type="submit" class="btn btn-default" value="ค้นหา">
-						</form>
-					</div>    
-				</div>
+					<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
+						<div class="form-group">
+							<label for="search_word">Send No. search key word.</label>
+							<div class="input-group">
+								<input id="search_word" type="text" class="form-control" name="search_word" data-smk-msg="Require userFullname."required>
+								<span class="input-group-addon">
+									<span class="glyphicon glyphicon-search"></span>
+								</span>
+							</div>
+						</div>						
+						<input type="submit" class="btn btn-default" value="ค้นหา">
+					</form>
+				</div>    
+			</div>
            <?php
                 $sql = "SELECT hdr.`sdNo`, hdr.`refNo`, hdr.`sendDate`, hdr.`fromCode`, hdr.`remark`, hdr.`rcNo`, hdr.`statusCode`
 				, hdr.`createTime`, hdr.`createById`, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById` 
@@ -257,6 +257,8 @@ $tb="send";
 
 <script>
 $(document).ready(function() {  
+	
+	
 	$('a[name=btn_row_remove]').click(function(){
 		var params = {
 			id: $(this).attr('data-id')
