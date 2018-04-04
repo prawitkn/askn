@@ -192,7 +192,7 @@ if( isset($_GET['rcNo']) ){
 									<th style="font-weight: bold; text-align: right;">From :</th>
 									<th>'.$hdr['fromCode'].'-'.$hdr['fromName'].'</th>									
 									<th style="font-weight: bold; text-align: right;">Receive Date :</th>
-									<th>'.to_thai_date($hdr['receiveDate']).'</th>
+									<th>'.date('d M Y',strtotime( $hdr['receiveDate'] )).'</th>
 								</tr>
 								<tr>
 									<th style="font-weight: bold;">Ref. SD No. :</th>
@@ -234,7 +234,7 @@ if( isset($_GET['rcNo']) ){
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['NW'].'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['GW'].'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['qty'],0,'.',',').'</td>
-						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.$row['issueDate'].'</td>
+						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.date('d M Y',strtotime( $row['issueDate'] )).'</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.$row['shelfName'].'</td>
 					</tr>';			
 												
@@ -255,7 +255,7 @@ if( isset($_GET['rcNo']) ){
 					$html .='<tr>
 						<td colspan="2"><br/><br/>
 							ผู้จัดทำ .....'.$hdr['createByName'].'.....<br/>
-							วันที่จัดทำ .....'.to_thai_datetime_fdt($hdr['createTime']).'<br/>
+							วันที่จัดทำ .....'.date('d M Y H:m',strtotime( $hdr['createTime'] )).'<br/>
 							ผู้รับ .....'.$hdr['confirmByName'].'.....<br/>
 						</td>
 						

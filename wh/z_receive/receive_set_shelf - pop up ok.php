@@ -8,44 +8,7 @@ This is a starter template page. Use this page to start your new project from
 scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
-<?php include 'head.php'; 
-
-$rootPage="receive";
-
-switch($s_userGroupCode){ 	
-	case 'pdOff' :
-	case 'pdSup' :
-		if($hdr['toCode']!=$s_userDeptCode) { header("Location: access_denied.php"); exit();}			
-		break;
-	default :	// it, admin 
-}
-
-$rcNo = $_GET['rcNo'];
-$sql = "SELECT rc.`rcNo`, rc.`refNo`, rc.`receiveDate`, rc.`fromCode`, rc.`remark`, rc.`statusCode`
-, rc.`createTime`, rc.`createById`, rc.`confirmTime`, rc.`confirmById`, rc.`approveTime`, rc.`approveById` 
-, fsl.name as fromName, tsl.name as toName
-, d.userFullname as createByName
-, rc.confirmTime, cu.userFullname as confirmByName
-, rc.approveTime, au.userFullname as approveByName
-FROM `receive` rc 
-LEFT JOIN sloc fsl on rc.fromCode=fsl.code 
-LEFT JOIN sloc tsl on rc.toCode=tsl.code 
-left join wh_user d on rc.createById=d.userId
-left join wh_user cu on rc.confirmById=cu.userId
-left join wh_user au on rc.approveById=au.userId
-WHERE 1
-AND rc.rcNo=:rcNo 					
-ORDER BY rc.createTime DESC
-LIMIT 1
-		
-";
-$stmt = $pdo->prepare($sql);			
-$stmt->bindParam(':rcNo', $rcNo);	
-$stmt->execute();
-$hdr = $stmt->fetch();			
-$rcNo = $hdr['rcNo'];
-
-?>
+<?php include 'head.php'; ?>
 <!-- iCheck for checkboxes and radio inputs -->
 <link rel="stylesheet" href="plugins/iCheck/all.css">
 
@@ -53,6 +16,7 @@ $rcNo = $hdr['rcNo'];
 
   <!-- Main Header -->
   <?php include 'header.php'; ?>
+  <?php $soNo = $_GET['soNo']; ?>
   
   <!-- Left side column. contains the logo and sidebar -->
    <?php include 'leftside.php'; ?>
@@ -61,20 +25,44 @@ $rcNo = $hdr['rcNo'];
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-      <h1><i class="glyphicon glyphicon-arrow-down"></i>
-       Receive
+      <h1>
+       Receive Information
         <small>Receive management</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Receive List</a></li>
-		<li><a href="<?=$rootPage;?>_add.php?rcNo=<?=$rcNo;?>"><i class="glyphicon glyphicon-edit"></i>RC No.<?=$rcNo;?></a></li>
-		<li><a href="<?=$rootPage;?>_view.php?rcNo=<?=$rcNo;?>"><i class="glyphicon glyphicon-list"></i>View</a></li>
-		<li><a href="<?=$rootPage;?>_set_shelf.php?rcNo=<?=$rcNo;?>"><i class="glyphicon glyphicon-download-alt"></i>Set Shelf</a></li>
+        <li><a href="sale.php"><i class="fa fa-list"></i>Receive List</a></li>
+		<li><a href="sale_item.php?soNo=<?=$soNo;?>"><i class="fa fa-edit"></i>RC No.<?=$soNo;?></a></li>
       </ol>
     </section>
 
     <!-- Main content -->
     <section class="content">
+		<?php
+			$rcNo = $_GET['rcNo'];
+			$sql = "SELECT rc.`rcNo`, rc.`refNo`, rc.`receiveDate`, rc.`fromCode`, rc.`remark`, rc.`statusCode`
+			, rc.`createTime`, rc.`createByID`, rc.`confirmTime`, rc.`confirmById`, rc.`approveTime`, rc.`approveById` 
+			, fsl.name as fromName, tsl.name as toName
+			, d.userFullname as createByName
+			, rc.confirmTime, cu.userFullname as confirmByName
+			, rc.approveTime, au.userFullname as approveByName
+			FROM `receive` rc 
+			LEFT JOIN sloc fsl on rc.fromCode=fsl.code 
+			LEFT JOIN sloc tsl on rc.toCode=tsl.code 
+			left join user d on rc.createByID=d.userID
+			left join user cu on rc.confirmByID=cu.userID
+			left join user au on rc.approveByID=au.userID
+			WHERE 1
+			AND rc.rcNo=:rcNo 					
+			ORDER BY rc.createTime DESC
+			LIMIT 1
+					
+			";
+			$stmt = $pdo->prepare($sql);			
+			$stmt->bindParam(':rcNo', $rcNo);	
+			$stmt->execute();
+			$hdr = $stmt->fetch();			
+			$rcNo = $hdr['rcNo'];
+	   ?> 
       <!-- Your Page Content Here -->
     <div class="box box-primary">
         <div class="box-header with-border">
@@ -103,20 +91,15 @@ $rcNo = $hdr['rcNo'];
 					</div><!-- /.col-md-3-->	
 					<div class="col-md-3">
 						Receive Date : <br/>
-						<b><?= date('d M Y',strtotime( $hdr['receiveDate'] )); ?></b><br/>
+						<b><?= $hdr['receiveDate']; ?></b><br/>
 					</div>	<!-- /.col-md-3-->	
 					<div class="col-md-3">
-						Remark : 
-						<b><?= $hdr['remark']; ?></b>
 					</div>	<!-- /.col-md-3-->	
 			</div> <!-- row add items -->
 		
 			<div class="row"><!-- row show items -->
 				<div class="box-header with-border">
-				<form id="form1" action="receive_shelf_selects.php" method="post" class="form" novalidate>
 				<h3 class="box-title">Product List</h3>
-				<input type="hidden" name="rcNo" value="<?=$rcNo;?>" />
-				<input type="submit" id="set_checked_shelf" class="btn btn-primary" value="Set Checked"></button>
 				<div class="box-tools pull-right">
 				  <!-- Buttons, labels, and many other things can be placed here! -->
 				  <!-- Here is a label for example -->
@@ -135,18 +118,11 @@ $rcNo = $hdr['rcNo'];
 				<div class="box-body">
 				   <?php
 						$sql = "
-						SELECT dtl.`id`, dtl.`prodItemId`, itm.`prodCodeId`, itm.`barcode`, itm.`issueDate`
-						, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`  
-						, dtl.`statusCode`, dtl.`rcNo` 
-						, ws.code as shelfName 
-						,prd.code as prodCode , prd.name as prodName 
-						FROM `receive_detail` dtl
-						LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-						LEFT JOIN product prd ON prd.id=itm.prodCodeId 
-						LEFT JOIN wh_shelf_map_item wmi ON wmi.recvProdId=dtl.id
-						LEFT JOIN wh_shelf ws ON ws.id=wmi.shelfId 
-						WHERE 1=1 
-						AND dtl.`rcNo`=:rcNo 
+								SELECT dtl.*
+								FROM `receive_detail` dtl
+								LEFT JOIN product b on dtl.prodCode=b.code
+								WHERE 1
+								AND dtl.`rcNo`=:rcNo 
 						";
 						$stmt = $pdo->prepare($sql);	
 						$stmt->bindParam(':rcNo', $hdr['rcNo']);
@@ -154,50 +130,27 @@ $rcNo = $hdr['rcNo'];
 				   ?>	
 					<table class="table table-striped">
 						<tr>
-							<th style="text-align: center;"><input type="checkbox" id="checkAll"  />Select All<br/>No.</th>
+							<th>No.</th>
+							<th>barcode</th>
 							<th>Product Code</th>
-							<th>Barcode</th>
-							<th>Grade</th>
-							<th>Net<br/>Weight(kg.)</th>
-							<th>Gross<br/>Weight(kg.)</th>
 							<th>Qty</th>
-							<th>Issue Date</th>
-							<th>Is Return</th>
+							<th>Remark</th>
 							<th>Shelf</th>
 						</tr>
-						<?php $row_no=1; while ($row = $stmt->fetch()) { 
-							$isReturn = "";
-							if($row['statusCode']=='R') { $isReturn = '<label class="label label-danger">Yes</label>'; }
-							
-							$gradeName = '<b style="color: red;">N/A</b>'; 
-								switch($row['grade']){
-									case 0 : $gradeName = 'A'; break;
-									case 1 : $statusName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
-									case 2 : $statusName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
-									default : 
-										$statusName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
-								} 
-						?>
+						<?php $row_no=1; while ($row = $stmt->fetch()) { ?>
 						<tr>
-							<td style="text-align: center;"><input type="checkbox" name="itmId[]" value="<?=$row['id'];?>"  />
-							&nbsp;<?= $row_no; ?></td>							
+							<td style="text-align: center;"><?= $row_no; ?></td>							
 							<td><?= $row['prodCode']; ?></td>
 							<td><?= $row['barcode']; ?></td>
-							<td style="text-align: center;"><?= $gradeName; ?></td>	
-							<td style="text-align: right;"><?= $row['NW']; ?></td>	
-							<td style="text-align: right;"><?= $row['GW']; ?></td>	
 							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
-							<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>	
-							<td><?= $isReturn; ?></td>
+							<td><?= $row['remark']; ?></td>
 							<td>
 								<input type="hidden" id="hid_shelf_code_<?=$row_no;?>" />
-								<label id="lbl_shelf_name_<?=$row_no;?>"><?=$row['shelfName'];?></label>
-								<a href="receive_shelf_select.php?id=<?=$row['id'];?>" name="" class="btn btn-default btn_set_shelf">...</a>
+								<label id="lbl_shelf_name_<?=$row_no;?>"><?=$row['shelfNo'];?></label><button name="" class="btn btn-default btn_set_shelf" data-id="<?=$row['id'];?>">...</button>
 							</td>						
 						</tr>
 						<?php $row_no+=1; } ?>
 					</table>
-					</form>
 				</div><!-- /.box-body -->
 	</div><!-- /.row add items -->
 
@@ -209,16 +162,71 @@ $rcNo = $hdr['rcNo'];
   <div class="box-footer">
     <div class="col-md-12">
 		<?php if($hdr['statusCode']=='P'){ ?>
-          <a href="receive_view_shelf_pdf.php?rcNo=<?=$rcNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
+          <a href="invoice-print.html" target="_blank" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
 		<?php } ?>
 	
 		
 		  
-		 	      
+		 	  
+          <button type="button" id="btn_verify" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='P'?'':'disabled'); ?> >
+            <i class="glyphicon glyphicon-ok"></i> Verify
+          </button>      
 		  </button>   
 	</div><!-- /.col-md-12 -->
   </div><!-- box-footer -->
 </div><!-- /.box -->
+
+
+
+
+
+
+
+<!-- Modal -->
+<div id="search_modal" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-lg">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Warehouse Shelf Search.</h4>
+      </div>
+      <div class="modal-body">
+        <form id="formSearch" class="form-inline">			
+			Warehouse : 
+			<select name="search_sloc" id="search_ddl_sloc" class="form-control">
+				<option value="WH1" selected>WH1 : Warehouse 1</option>
+				<option value="WH2">WH2 : Warehouse 2</option>
+			</select>
+			<a id="search_btn_submit" class="btn btn-default">Submit</a>
+		</form>
+		<div class="table-responsive">
+			<table id="search_tbl_main" class="table table-striped">
+				<thead>
+					<tr bgcolor="4169E1" style="color: white; text-align: center;">
+						<td>#</td>
+						<td>Code</td>
+						<td>Name</td>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+		</div>
+		<!--div table-responsive-->
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+
 
 
 
@@ -253,6 +261,8 @@ $rcNo = $hdr['rcNo'];
 
 <!-- Add Spinner feature -->
 <script src="bootstrap/js/spin.min.js"></script>
+<!-- Add _.$ jquery coding -->
+<script src="..\asset\js\underscore-min.js"></script>
 
 <script> 
 // to start and stop spiner.  
@@ -268,12 +278,7 @@ $(document).ready(function() {
 var spinner = new Spinner().spin();
 $("#spin").append(spinner.el);
 $("#spin").hide();
-//
-  
-$("#checkAll").click(function(){
-	$('input:checkbox').not(this).prop('checked', this.checked);
-});
-	
+//           
 $('#btn_verify').click (function(e) {				 
 	var params = {					
 	rcNo: $('#rcNo').val()			
@@ -309,12 +314,91 @@ $('#btn_verify').click (function(e) {
 });
 //.btn_click
 
-
-
 	$("html,body").scrollTop(0);
 	$("#statusName").fadeOut('slow').fadeIn('slow').fadeOut('slow').fadeIn('slow');
 });
 </script>
+
+
+
+
+
+<!-- search modal dialog box. -->
+<script>
+	var hid_code = "";
+	var lbl_name = "";
+	$(document).ready(function(){
+		$('.btn_set_shelf').click(function(){
+			hid_code = $(this).prev().prev().attr('id');
+			lbl_name = $(this).prev().attr('id');
+			
+			//show modal.
+			$('#search_modal').modal('show');
+		});	
+		
+		$('#search_modal').on('shown.bs.modal', function () {
+			//$('#txt_search_fullname').focus();
+		});
+		$(document).on("click",'a[data-name="search_btn_checked"]',function() {
+			$('#'+hid_code).val($(this).attr('attr-id'));
+			$('#'+lbl_name).text($(this).closest("tr").find('td.search_td_name').text());
+			
+			//hide modal.
+			$('#search_modal').modal('hide');
+		});
+		$('#search_btn_submit').click(function(e){
+			/*var params = {
+				search_sloc: $('#search_ddl_sloc').val()
+			};
+			if(params.search_fullname.length < 3){
+				alert('search name surname must more than 3 character.');
+				return false;
+			}*/
+			/* Send the data using post and put the results in a div */
+			  $.ajax({
+				  url: "search_shelf_ajax.php",
+				  type: "post",
+				  data: $('#formSearch').serialize(),
+				  //data: params,
+				datatype: 'json',
+				  success: function(data){	
+							if(data.success){
+								console.log(data);
+								console.log(data.rows);
+								//alert(data);
+								$('#search_tbl_main tbody').empty();
+								_.each(data.rows, function(v){										
+									$('#search_tbl_main tbody').append(										
+										'<tr>' +
+											'<td>' +
+											'	<div class="btn-group">' +
+											'	<a href="javascript:void(0);" data-name="search_btn_checked" ' +
+											'   attr-id="'+v['code']+'" '+
+											'	class="btn" title="เลือก"> ' +
+											'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
+											'	</div>' +
+											'</td>' +
+											'<td class="search_td_name">'+ v['name'] +'</td>' +
+										'</tr>'
+									);			
+								}); 
+							}else{
+								alert('data.success = '+data.success);
+							}
+				  }, //success
+				  error:function(response){
+					  alert('error');
+					  alert(response.responseText);
+				  }		  
+				}); 
+		});
+	});	
+</script>
+<!-- search modal dialog box. END -->
+
+
+
+
 
 
 

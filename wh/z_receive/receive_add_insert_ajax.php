@@ -13,10 +13,7 @@ try{
 	$receiveDate = $_POST['receiveDate'];	
 	$remark = $_POST['remark'];	
 	
-	//$receiveDate = to_mysql_date($receiveDate);
-	$receiveDate = str_replace('/', '-', $receiveDate);
-	$receiveDate = date("Y-m-d",strtotime($receiveDate));
-	
+	$receiveDate = to_mysql_date($receiveDate);
 	//We start our transaction.
 	$pdo->beginTransaction();
 	
@@ -34,7 +31,7 @@ try{
 		exit();
 	}	
 	
-	$rcNo = 'RS-'.substr(str_shuffle(MD5(microtime())), 0, 7);
+	$rcNo = 'RC-'.substr(str_shuffle(MD5(microtime())), 0, 7);
 	//Query 1: DELETE Detail
 	$sql = "INSERT INTO `receive`(`rcNo`, `receiveDate`, `type`, `fromCode`, `toCode`, `remark`, `sdNo`, `statusCode`, `createByID`) 
 	SELECT :rcNo,:receiveDate, 'S',`fromCode`, `toCode`,:remark,`sdNo`, 'B',:s_userId  

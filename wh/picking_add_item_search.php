@@ -139,7 +139,10 @@ desired effect
 					
 					<td><input type="textbox" name="pickQty" class="form-control" value=""  
 					data-prodId="<?=$row['prodId'];?>" data-issueDate="<?=$row['issueDate'];?>" 
-					data-grade="<?=$row['grade'];?>" /></td>
+					data-grade="<?=$row['grade'];?>" 
+					onkeypress="return numbersOnly(this, event);" 
+					onpaste="return false;"
+					/></td>
 					
 					<td><a href="#" name="btn_row_submit" class="btn btn-default" 
 					data-prodId="<?=$row['prodId'];?>" data-issueDate="<?=$row['issueDate'];?>" 
@@ -174,7 +177,7 @@ desired effect
   <!-- /.content-wrapper -->
 
   <!-- Main Footer -->
-  <?php include'footer.php'; ?>  
+  <?php include 'footer.php'; ?>  
   
 </div>
 <!-- ./wrapper -->
@@ -229,6 +232,14 @@ $(document).ready(function() {
 			grade: $(this).attr('data-grade'),
 			pickQty: $(this).closest("tr").find('input[name="pickQty"]').val()
 		};
+		if(params.pickQty==0){
+			$.smkAlert({
+				text: 'Quantity can not be zero.',
+				type: 'danger',
+				position:'top-center'
+			});
+			return false;
+		}
 		post_data(params);
 	});
 	//.btn_click
@@ -271,3 +282,12 @@ $(document).ready(function() {
 </script>
 
 </html>
+
+
+<!--Integers (non-negative)-->
+<script>
+  function numbersOnly(oToCheckField, oKeyEvent) {
+    return oKeyEvent.charCode === 0 ||
+        /\d/.test(String.fromCharCode(oKeyEvent.charCode));
+  }
+</script>

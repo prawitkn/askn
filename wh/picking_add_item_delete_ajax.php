@@ -2,9 +2,7 @@
 include 'session.php';	
 	
 try{
-	
-	$s_userID = $_SESSION['userID']; 
-	
+		
     $id = $_POST['id'];
 	
 	$sql = "DELETE FROM picking_detail WHERE id=:id 

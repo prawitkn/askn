@@ -69,7 +69,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <!-- Your Page Content Here -->
     <div class="box box-primary">
         <div class="box-header with-border">
-        <h3 class="box-title">Add Receive No. : <?=$rcNo;?></h3>		
+        <h3 class="box-title">Add Receive No. : <?=$rcNo;?></h3>
+		
 		
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
@@ -86,14 +87,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							<label for="sdNo" >Sending No.</label>
 							<div class="form-group row">
 								<div class="col-md-9">
-									<input type="text" name="sdNo" id="sdNo" class="form-control" 
+									<input type="text" name="sdNo" class="form-control" 
 									<?php if($sdNo==''){ 
 											if(isset($_GET['sdNo'])) { ?>
 												value="<?=$_GET['sdNo'];?>" 
 									<?php  }										
 										}else { ?>
 											value="<?=$sdNo;?>" disabled <?php
-										} ?>										
+										}?>										
 									/>
 								</div>
 								<div class="col-md-3">
@@ -211,7 +212,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						<th>Net<br/>Weight(kg.)</th>
 						<th>Gross<br/>Weight(kg.)</th>
 						<th>Qty</th>
-						<th>Issue Date</th>
+						<th>Produce Date</th>
 					</tr>
 					<?php $row_no=1; $sumQty=$sumNW=$sumGW=0;  while ($row = $stmt->fetch()) { 
 							$gradeName = '<b style="color: red;">N/A</b>'; 
@@ -230,7 +231,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						<td style="text-align: right;"><?= $row['NW']; ?></td>	
 						<td style="text-align: right;"><?= $row['GW']; ?></td>	
 						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
-						<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>	
+						<td><?= $row['issueDate']; ?></td>	
 						<td>
 							
 						</td>
@@ -425,68 +426,11 @@ $(document).ready(function() {
 		$('#modal_search_person').modal('hide');
 	});
 	//Search End
-	
-	
-	$('#sdNo').keyup(function(e){
-		if(e.keyCode == 13)
-		{	curId = $(this).attr('name');
-			var params = {
-				search_word: $(this).val()
-			};
-			if(params.search_word.length < 3){
-				alert('search word must more than 3 character.');
-				return false;
-			}
-			/* Send the data using post and put the results in a div */
-			  $.ajax({
-				  url: "search_sending_ajax.php",
-				  type: "post",
-				  data: params,
-				datatype: 'json'})
-				.done(function (data) {
-						data=$.parseJSON(data);
-						switch(data.rowCount){
-							case 0 : alert('Data not found.');
-								return false; break;
-							case 1 :
-								$.each($.parseJSON(data.data), function(key,value){
-									$('#sdNo').val(value.sdNo).prop('disabled','disabled');
-									$('input[name=fromName]').val(value.fromCode+' : '+value.fromName);
-									$('input[name=toName]').val(value.toCode+' : '+value.toName);
-								});
-								break;
-							default : 
-								$('#tbl_search_person_main tbody').empty();
-								$.each($.parseJSON(data.data), function(key,value){
-									$('#tbl_search_person_main tbody').append(
-									'<tr>' +
-										'<td>' +
-										'	<div class="btn-group">' +
-										'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
-										'	class="btn" title="เลือก"> ' +
-										'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
-										'	</div>' +
-										'</td>' +
-										'<td>'+ value.sdNo +'</td>' +
-										'<td>'+ value.sendDate +'</td>' +
-										'<td>'+ value.fromCode+' : '+value.fromName+'</td>' +
-										'<td>'+ value.toCode+' : '+value.toName+'</td>' +
-									'</tr>'
-									);			
-								});	
-							$('#modal_search_person').modal('show');	
-						}	
-			})
-			.error(function (response) {
-				  alert(response.responseText);
-			});
-		}/* e.keycode=13 */	
-	});
+
 	
 	$('#form1 a[name=btn_create]').click (function(e) {
 		if ($('#form1').smkValidate()){
 			$.smkConfirm({text:'Are you sure to Create ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
-				$('#sdNo').prop('disabled','');
 				$.post({
 					url: 'receive_add_insert_ajax.php',
 					data: $("#form1").serialize(),
@@ -511,7 +455,6 @@ $(document).ready(function() {
 					alert(response.responseText);
 				});
 				//.post
-				$('#sdNo').prop('disabled','disabled');
 			}});
 			//smkConfirm
 		e.preventDefault();
@@ -522,7 +465,7 @@ $(document).ready(function() {
 	$("html,body").scrollTop(0);
 	$("#statusName").fadeOut('slow').fadeIn('slow').fadeOut('slow').fadeIn('slow');
 	
-	$('#sdNo').select();
+	$('#txt_row_first').select();
 	
 });
         
@@ -541,8 +484,8 @@ $(document).ready(function() {
 			autoclose: true,
 			format: 'dd/mm/yyyy',
 			todayBtn: true,
-			language: 'en',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
-			thaiyear: false              //Set เป็นปี พ.ศ.
+			language: 'th',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
+			thaiyear: true              //Set เป็นปี พ.ศ.
 		});  //กำหนดเป็นวันปัจุบัน
 		//กำหนดเป็น วันที่จากฐานข้อมูล
 		<?php if(isset($hdr['receiveDate'])){ ?>

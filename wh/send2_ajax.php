@@ -16,21 +16,24 @@ if(!isset($_POST['action'])){
 			try{
 								
 				$sdNo = 'SD-'.substr(str_shuffle(MD5(microtime())), 0, 7);
-				$refNo = $_POST['refNo'];
-				//$sendDate = $_POST['sendDate'];
-				//$fromCode = $_POST['fromCode'];
-				//$toCode = $_POST['toCode'];
+				$sendDate = $_POST['sendDate'];
+				$fromCode = $_POST['fromCode'];
+				$toCode = $_POST['toCode'];
+				$remark = $_POST['remark'];
 				
-				//$sendDate = to_mysql_date($sendDate);
+				$sendDate = str_replace('/', '-', $sendDate);
+				$sendDate = date("Y-m-d",strtotime($sendDate));
 				
 				$sql = "INSERT INTO `".$tb."`
-				(`sdNo`, `refNo`, `sendDate`, `fromCode`, `toCode`, `statusCode`, `createTime`, `createByID`) 
-				SELECT :sdNo, hdr.sdNo, hdr.sendDate, hdr.fromCode, hdr.toCode, 'B', NOW(), :s_userId 
-				FROM send_prod hdr 
-				WHERE hdr.sdNo=:refNo ";
+				(`sdNo`, `sendDate`, `fromCode`, `toCode`, `remark`, `statusCode`, `createTime`, `createByID`) 
+				VALUES
+				(:sdNo, :sendDate, :fromCode, :toCode, :remark, 'B', NOW(), :s_userId) ";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->bindParam(':refNo', $refNo);
+				$stmt->bindParam(':sendDate', $sendDate);
+				$stmt->bindParam(':fromCode', $fromCode);
+				$stmt->bindParam(':toCode', $toCode);
+				$stmt->bindParam(':remark', $remark);
 				$stmt->bindParam(':s_userId', $s_userId);	
 				$stmt->execute();
 						
@@ -50,7 +53,7 @@ if(!isset($_POST['action'])){
 			try{	
 				$sdNo = $_POST['sdNo'];
 				
-				$pdo->beginTransaction();
+				$pdo->beginTransaction();	
 				
 				if(!empty($_POST['itmId']) and isset($_POST['itmId']))
 				{
@@ -58,14 +61,17 @@ if(!isset($_POST['action'])){
 					foreach($_POST['itmId'] as $index => $item )
 					{	
 						$sql = "INSERT INTO `send_detail`
-						(`prodItemId`, `sdNo`)
-						SELECT rc.`prodItemId`, :sdNo 
-						FROM send_prod_detail rc 
-						WHERE rc.id=:id 
-						";						
-						$stmt = $pdo->prepare($sql);	
-						$stmt->bindParam(':sdNo', $sdNo);	
-						$stmt->bindParam(':id', $item);		
+						(`refNo`, `prodItemId`, `sdNo`)
+						SELECT dtl.sendId, dtl.productItemId, :sdNo 
+						FROM send_detail_mssql dtl 
+						WHERE dtl.sendId=:sendId 
+						AND dtl.productItemId=:productItemId 
+						";			
+						$arrItm=explode(',', $item);
+						$stmt = $pdo->prepare($sql);			
+						$stmt->bindParam(':sendId', $arrItm[0]);	
+						$stmt->bindParam(':productItemId', $arrItm[1]);		
+						$stmt->bindParam(':sdNo', $sdNo);		
 						$stmt->execute();			
 					}
 				}
