@@ -28,12 +28,18 @@ $tb="send";
 	<?php
 	$sdNo = $_GET['sdNo'];
 <<<<<<< HEAD
+<<<<<<< HEAD
 	$sendDate=(isset($_GET['sendDate'])? $_GET['sendDate'] : '01/01/1900' );	
 =======
+=======
+>>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
 	$sendDate=(isset($_GET['sendDate'])? $_GET['sendDate'] : '01/01/1900' );
 	$sendDate=str_replace('/', '-', $sendDate);
 	$sendDate=date('Y-m-d', strtotime($sendDate));
 	
+<<<<<<< HEAD
+>>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
+=======
 >>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
 	$fromCode=(isset($_GET['fromCode'])?$_GET['fromCode']:'');
 	$toCode=(isset($_GET['toCode'])?$_GET['toCode']:'');
@@ -403,7 +409,11 @@ $tb="send";
 			if($toCode<>"") $sql.="AND hdr.toCode=:toCode ";
 			$stmt = $pdo->prepare($sql);
 <<<<<<< HEAD
+<<<<<<< HEAD
 			if($sendDate<>"") $stmt->bindParam(':sendDate', date("Y-m-d",strtotime($sendDate)) );
+=======
+			if($sendDate<>"") $stmt->bindParam(':sendDate', $sendDate );
+>>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
 =======
 			if($sendDate<>"") $stmt->bindParam(':sendDate', $sendDate );
 >>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
@@ -426,7 +436,10 @@ $tb="send";
         </div><!-- /.box-header -->
         <div class="box-body">			
 <<<<<<< HEAD
+<<<<<<< HEAD
        					
+=======
+>>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
 =======
 >>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
 			<div class="row" >
@@ -446,7 +459,11 @@ $tb="send";
 					<div class="row">
 						<div class="col-md-6">					
 <<<<<<< HEAD
+<<<<<<< HEAD
 							<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
+=======
+							<form id="form1" action="#" method="get" class="form" novalidate>
+>>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
 =======
 							<form id="form1" action="#" method="get" class="form" novalidate>
 >>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
@@ -456,9 +473,14 @@ $tb="send";
 									<input type="text" id="sendDate" name="sendDate" class="form-control datepicker" />
 								</div>						
 <<<<<<< HEAD
+<<<<<<< HEAD
 								<input type="submit" class="btn btn-default" value="ค้นหา">
 								<a name="btnSubmit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-search"></i> Submit</a>
 								<a name="btnSyncSubmit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-retweet"></i> Submit</a>
+=======
+								<a name="btnSubmit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-search"></i> Search</a>
+								<a name="btnSyncSubmit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-retweet"></i> Sync & Search</a>
+>>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
 =======
 								<a name="btnSubmit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-search"></i> Search</a>
 								<a name="btnSyncSubmit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-retweet"></i> Sync & Search</a>
@@ -483,9 +505,15 @@ $tb="send";
 							<th>Qty</th>
 							<th>Issue Date</th>							
 <<<<<<< HEAD
+<<<<<<< HEAD
 							<th>Ref.No.</th>
 						</tr>
 						<?php $row_no=1; $prevNo=""; $rowColor='lightBlue'; while ($row = $stmt->fetch()) { 
+=======
+							<th>Ref.ID</th>
+						</tr>
+						<?php $row_no=1; $prevSendId=""; $rowColor='lightBlue'; $optItmHtml=""; while ($row = $stmt->fetch()) { 
+>>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
 =======
 							<th>Ref.ID</th>
 						</tr>
@@ -498,6 +526,7 @@ $tb="send";
 							case 2 : $gradeName = '<b style="color: red;">N</b>'; break;
 							default : 
 						} 
+<<<<<<< HEAD
 <<<<<<< HEAD
 						if($prevNo<>"" AND $prevNo<>$row['sdNo']){
 							if($rowColor=="lightBlue"){$rowColor="lightGreen";}else{$rowColor="lightBlue";}
@@ -523,17 +552,40 @@ $tb="send";
 						<tr style="background-color: <?=$rowColor;?>;"  >
 							<td><input type="checkbox" name="itmId[]" value="<?=$row['sendId'].','.$row['productItemId'];?>"  /><?= $row_no; ?></td>
 >>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
+=======
+						if($prevSendId=="") {
+							$optItmHtml='<option value="">Clear All</option>'
+							.'<option value="0">Select All</option>'
+							.'<option value="'.$row['sendId'].'" >'.$row['sendId'].'</option>';
+						}
+						if($prevSendId<>"" AND $prevSendId<>$row['sendId']){
+							if($rowColor=="lightBlue"){$rowColor="lightGreen";}else{$rowColor="lightBlue";}
+							$optItmHtml.='<option value="'.$row['sendId'].'">'.$row['sendId'].'</option>';
+						}
+						$prevSendId=$row['sendId'];
+						?>
+						<tr style="background-color: <?=$rowColor;?>;"  >
+							<td><input type="checkbox" name="itmId[]" value="<?=$row['sendId'].','.$row['productItemId'];?>"  /><?= $row_no; ?></td>
+>>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
 							<td><?= $row['prodCode']; ?></td>
 							<td><?= $row['barcode']; ?></td>
 							<td><?= $gradeName; ?></td>
 							<td><?= $row['qty']; ?></td>
 							<td><?= date('d M Y',strtotime( $row['gradeDate'] )); ?></td>			
 <<<<<<< HEAD
+<<<<<<< HEAD
 							<td><?= $row['sdNo']; ?></td>				
 						</tr>
 						<?php $row_no+=1;
 							
 						} ?>
+=======
+							<td><?= $row['sendId']; ?></td>				
+						</tr>
+						<?php $row_no+=1;
+						} 
+							?>
+>>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
 =======
 							<td><?= $row['sendId']; ?></td>				
 						</tr>
@@ -704,15 +756,21 @@ $(document).ready(function() {
 		});  //กำหนดเป็นวันปัจุบัน
 		//กำหนดเป็น วันที่จากฐานข้อมูล
 <<<<<<< HEAD
+<<<<<<< HEAD
 		<?php if(isset($_GET['sendDate'])){ ?>
 		var queryDate = '<?=date("Y-m-d", strtotime($_GET['sendDate']));?>',
 		dateParts = queryDate.match(/(\d+)/g)
 		realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
 =======
+=======
+>>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
 		<?php if(isset($sendDate)){ ?>
 		var queryDate = '<?=$sendDate;?>',
 		dateParts = queryDate.match(/(\d+)/g)
 		realDate = new Date(dateParts[0], dateParts[1] - 1,dateParts[2]); 
+<<<<<<< HEAD
+>>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
+=======
 >>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a
 		$('#sendDate').datepicker('setDate', realDate);
 		<?php }else{ ?> $('#sendDate').datepicker('setDate', '0'); <?php } ?>

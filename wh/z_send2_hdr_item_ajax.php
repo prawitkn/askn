@@ -14,6 +14,7 @@ try{
         {	
 			$sql = "INSERT INTO `send_detail`
 			(`refNo`, `prodItemId`, `sdNo`)
+<<<<<<< HEAD:wh/z_send2_hdr_item_ajax.php
 <<<<<<< HEAD:wh/send2_hdr_item_ajax.php
 			SELECT :refProdSdNo, rc.`prodItemId`, :sdNo 
 			FROM send_prod_detail rc 
@@ -25,6 +26,8 @@ try{
 			$stmt->bindParam(':refProdSdNo', $arrItm[1]);	
 			$stmt->bindParam(':id', $item);		
 =======
+=======
+>>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a:wh/z_send2_hdr_item_ajax.php
 			SELECT dtl.sendId, dtl.productItemId, :sdNo 
 			FROM send_detail_mssql dtl 
 			WHERE dtl.sendId=:sendId 
@@ -35,6 +38,9 @@ try{
 			$stmt->bindParam(':sendId', $arrItm[0]);	
 			$stmt->bindParam(':productItemId', $arrItm[1]);		
 			$stmt->bindParam(':sdNo', $sdNo);		
+<<<<<<< HEAD:wh/z_send2_hdr_item_ajax.php
+>>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a:wh/z_send2_hdr_item_ajax.php
+=======
 >>>>>>> 7ea32d11a154a011105226a8f4e310d4e4756f4a:wh/z_send2_hdr_item_ajax.php
 			$stmt->execute();			
         }
