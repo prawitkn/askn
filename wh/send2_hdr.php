@@ -104,20 +104,22 @@ $tb="send";
 						<!--col-md-6-->			
 						<div class="col-md-3">					  
 					  <div class="from-group">
-						<label for="fromCode">From</label>
-						<select name="fromCode" class="form-control"  data-smk-msg="Require from code." required   <?php echo ($sdNo==''?'':' disabled '); ?>  >
+						<label for="fromCode">From</label>						
 						<?php $fromCode=$hdr['fromCode']; 
 						switch($s_userGroupCode){
 							case 'whOff' : case 'whSup' : case 'pdOff' : case 'pdSup' :
 								$fromCode=$s_userDeptCode; ?>
-								<select name="fromCode" class="form-control" disabled >
+								<select name="fromCode" id="fromCode" class="form-control" disabled >
 							<?php
 								break;
 							case 'prog' : case 'admin' : ?>
-								<select name="fromCode" class="form-control">
+								<select name="fromCode" id="fromCode" class="form-control">
 							<?php
 								break;
 							default :
+								?>
+								<select name="fromCode" id="fromCode" class="form-control"  data-smk-msg="Require from code." required   <?php echo ($sdNo==''?'':' disabled '); ?>  >
+								<?php
 						}
 						?>
 						
@@ -355,6 +357,7 @@ $(document).ready(function() {
 	
 	$('#form1 a[name=btn_create]').click (function(e) {
 		if ($('#form1').smkValidate()){
+			$('#fromCode').prop('disabled','');
 			$.smkConfirm({text:'Are you sure to Create ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
 				$.post({
 					url: '<?=$rootPage;?>_ajax.php',
