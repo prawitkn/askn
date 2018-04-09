@@ -278,7 +278,8 @@ $('#btn_verify').click (function(e) {
 					type: 'success',
 					position:'top-center'
 				});		
-				location.reload();
+				setTimeout(function(){ window.location.href = '<?=$rootPage;?>.php'; }, 3000);
+				//location.reload();
 			}else{
 				$.smkAlert({
 					text: data.message,

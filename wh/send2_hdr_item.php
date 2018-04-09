@@ -33,6 +33,18 @@ $tb="send";
 	
 	$fromCode=(isset($_GET['fromCode'])?$_GET['fromCode']:'');
 	$toCode=(isset($_GET['toCode'])?$_GET['toCode']:'');
+	$prodId=(isset($_GET['prodId'])?$_GET['prodId']:'');
+	
+	$prodCode="";
+	if($prodId<>""){
+		$sql = "SELECT code FROM product WHERE id=:id ";			
+		$stmt = $pdo->prepare($sql);
+		$stmt->bindParam(':id', $prodId);			
+		$stmt->execute();
+		$row=$stmt->fetch();
+		$prodCode=$row['code'];
+	}
+	
 	
 	if(isset($_GET['isSync']) AND isset($_GET['sendDate'])){
 		//$sendDate = to_mysql_date($_GET['sendDate']);
@@ -388,19 +400,24 @@ $tb="send";
 			$sql = "SELECT hdr.sendId, dtl.`productItemId`, itm.`barcode`, itm.`issueDate`
 			, itm.`machineId`, itm.`seqNo`, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`
 			, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId`					
-			, itm.prodCodeId, prd.code as prodCode
-			FROM send_mssql hdr 
+			, itm.prodCodeId as prodId, prd.code as prodCode
+			, (SELECT IFNULL(sHdr.sdNo,'') FROM send sHdr
+											INNER JOIN send_detail sDtl ON sDtl.sdNo=sHdr.sdNo
+											WHERE sHdr.statusCode='P' AND sDtl.prodItemId=itm.prodItemId LIMIT 1) as sentNo 
+			FROM send_mssql hdr  
 			INNER JOIN send_detail_mssql dtl ON dtl.sendId=hdr.sendId 
 			INNER JOIN product_item itm ON itm.prodItemId=dtl.productItemId 
-			LEFT JOIN product prd ON prd.id=itm.prodCodeId  
+			LEFT JOIN product prd ON prd.id=itm.prodCodeId  	
 			WHERE 1=1 ";
 			if($sendDate<>"") $sql.="AND hdr.issueDate=:sendDate ";
 			if($fromCode<>"") $sql.="AND hdr.fromCode=:fromCode ";
 			if($toCode<>"") $sql.="AND hdr.toCode=:toCode ";
+			if($prodId<>"") $sql.="AND itm.prodCodeId=:prodId ";
 			$stmt = $pdo->prepare($sql);
 			if($sendDate<>"") $stmt->bindParam(':sendDate', $sendDate );
 			if($fromCode<>"") $stmt->bindParam(':fromCode', $fromCode);
 			if($toCode<>"") $stmt->bindParam(':toCode', $toCode);
+			if($prodId<>"") $stmt->bindParam(':prodId', $prodId);
 			$sql.="ORDER BY hdr.sendId  "; 
 			$stmt->execute();
 		?>
@@ -432,16 +449,22 @@ $tb="send";
 				</div><!-- /.box-header -->
 				<div class="box-body">
 					<div class="row">
-						<div class="col-md-6">					
-							<form id="form1" action="#" method="get" class="form" novalidate>
-								<div class="form-inline">
-								<div class="form-group">
+						<div class="col-md-12">					
+							<form id="form1" action="#" method="get" class="form-inline" novalidate>
+							
 									<label for="sendDate">Sending Date</label> 
 									<input type="text" id="sendDate" name="sendDate" class="form-control datepicker" />
-								</div>						
-								<a name="btnSubmit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-search"></i> Search</a>
-								<a name="btnSyncSubmit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-retweet"></i> Sync & Search</a>
-								</div>
+								
+									<label for="prodCode">Product Code</label> 
+									<?php 
+									?>
+									<input type="hidden" name="prodId" id="prodId" class="form-control" value="<?=$prodId;?>"  />
+									<input type="text" name="prodCode" id="prodCode" class="form-control" value="<?=$prodCode;?>"  />
+									<a href="#" name="btnSdNo" class="btn btn-primary" ><i class="glyphicon glyphicon-search" ></i> Search Product</a>	
+																
+								<a name="btnSubmit" href="#" class="btn btn-danger"><i class="glyphicon glyphicon-search"></i> Search</a>
+								<a name="btnSyncSubmit" href="#" class="btn btn-danger"><i class="glyphicon glyphicon-retweet"></i> Sync & Search</a>
+							
 							</form>  
 						</div>    
 					</div>	
@@ -482,7 +505,13 @@ $tb="send";
 						$prevSendId=$row['sendId'];
 						?>
 						<tr style="background-color: <?=$rowColor;?>;"  >
-							<td><input type="checkbox" name="itmId[]" value="<?=$row['sendId'].','.$row['productItemId'];?>"  /><?= $row_no; ?></td>
+							<td>
+							<?php if($row['sentNo']==''){ ?>
+								<input type="checkbox" name="itmId[]" value="<?=$row['sendId'].','.$row['productItemId'];?>"  />
+							<?php }else{ ?>
+								<label class="label label-danger" ><?=$row['sentNo'];?></label>
+							<?php } ?>							
+							<?= $row_no; ?></td>
 							<td><?= $row['prodCode']; ?></td>
 							<td><?= $row['barcode']; ?></td>
 							<td><?= $gradeName; ?></td>
@@ -492,7 +521,7 @@ $tb="send";
 						</tr>
 						<?php $row_no+=1;
 						} 
-							?>
+						?>
 					</table>
 					</div>
 					<!--/.table-responsive-->
@@ -523,6 +552,64 @@ $tb="send";
 
   <!-- Main Footer -->
   <?php include'footer.php'; ?>
+
+
+
+
+
+ <!-- Modal -->
+<div id="modal_search_person" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-lg">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Search Product</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-horizontal">
+			<div class="form-group">	
+				<label for="txt_search_word" class="control-label col-md-2">Product Code </label>
+				<div class="col-md-4">
+					<input type="text" class="form-control" id="txt_search_word" />
+				</div>
+			</div>
+		
+		<table id="tbl_search_person_main" class="table">
+			<thead>
+				<tr bgcolor="4169E1" style="color: white; text-align: center;">
+					<td>#Select</td>
+					<td style="display: none;">ID</td>
+					<td>Product Code.</td>
+					<td>Product Name</td>
+					<td style="display: none;">UOM</td>
+					<td>Product Category</td>
+					<td>App ID</td>
+					<td style="display: none;">Balance</td>
+					<td style="display: none;">Sales</td>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+		
+		</form>
+		<div id="div_search_person_result">
+		</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+
+
   
  
 </div>
@@ -559,21 +646,111 @@ $(document).ready(function() {
 	$("#spin").append(spinner.el);
 	$("#spin").hide();
   //   
+  
+  
+  
+  
+  
+  	//SEARCH Begin
+	$('a[name="btnSdNo"]').click(function(){
+		curName = $(this).prev().attr('name');
+		curId = $(this).prev().prev().attr('name');
+		if(!$('#'+curName).prop('disabled')){
+			$('#modal_search_person').modal('show');
+		}
+	});	
+	$('#txt_search_word').keyup(function(e){ 
+		if(e.keyCode == 13)
+		{
+			var params = {
+				search_word: $('#txt_search_word').val()
+			};
+			if(params.search_word.length < 3){
+				alert('search word must more than 3 character.');
+				return false;
+			}
+			/* Send the data using post and put the results in a div */
+			  $.ajax({
+				  url: "search_product_ajax.php",
+				  type: "post",
+				  data: params,
+				datatype: 'json',
+				  success: function(data){	
+						data=$.parseJSON(data);
+						switch(data.rowCount){
+							case 0 : alert('Data not found.');
+								return false; break;
+							case 1 :
+								$.each($.parseJSON(data.data), function(key,value){
+									$('#prodCode').val(value.sdNo).prop('disabled','disabled');
+								});
+								break;
+							default : 
+								$('#tbl_search_person_main tbody').empty();
+								$.each($.parseJSON(data.data), function(key,value){
+									$('#tbl_search_person_main tbody').append(
+									'<tr>' +
+										'<td>' +
+										'	<div class="btn-group">' +
+										'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
+										'	class="btn" title="เลือก"> ' +
+										'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
+										'	</div>' +
+										'</td>' + 
+										'<td style="display: none;">'+ value.prodId +'</td>' +
+										'<td>'+ value.prodCode +'</td>' +
+										'<td>'+ value.prodName +'</td>' +
+										'<td style="display: none;">'+ value.prodUomCode +'</td>' +
+										'<td>'+ value.prodCatName +'</td>' +
+										'<td>'+ value.prodAppName+'</td>' +									
+										'<td style="display: none;">'+ value.balance+'</td>' +	
+										'<td style="display: none;">'+ value.sales+'</td>' +	
+									'</tr>'
+									);		
+								});
+							$('#modal_search_person').modal('show');	
+						}	
+						
+								
+							
+				  }   
+				}).error(function (response) {
+					alert(response.responseText);
+				}); 
+		}/* e.keycode=13 */	
+	});
+	
+	$(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
+		$('input[name='+curId+']').val($(this).closest("tr").find('td:eq(1)').text());
+		$('input[name='+curName+']').val($(this).closest("tr").find('td:eq(2)').text());
+						
+		$('#modal_search_person').modal('hide');
+	});
+	//Search End
+  
+  
+  
+  
 	$('#selItmId').append('<?=$optItmHtml;?>');
 	
-	$(document).on("change",'select[name="returnReasonCode[]"]',function() {
-		$(this).closest('tr').find('input[name="returnReasonRemark[]"]')
-			.val($(this).find(':selected').attr('data-name'))
-			.select()
-	});
+
+	
+	
+	
 			
 	$('a[name=btnSubmit]').click(function(e){		
-		var queryDate = $('#sendDate').val(); 
-		window.location.href = "<?=$rootPage;?>_hdr_item.php?sdNo=<?=$sdNo;?>&sendDate="+queryDate+"&fromCode=<?=$fromCode;?>&toCode=<?=$toCode;?>";
+		var queryDate = $('#sendDate').val(); 	
+		queryDate = queryDate.replace(/\//g, '%2F');
+		var prodId="";
+		if($('#prodCode').val()!=""){ prodId=$('#prodId').val(); }			
+		window.location.href = "<?=$rootPage;?>_hdr_item.php?sdNo=<?=$sdNo;?>&sendDate="+queryDate+"&prodId="+prodId+"&fromCode=<?=$fromCode;?>&toCode=<?=$toCode;?>";
 	});
 	$('a[name=btnSyncSubmit]').click(function(e){
-		var queryDate = $('#sendDate').val(); 
-		window.location.href = "<?=$rootPage;?>_hdr_item.php?sdNo=<?=$sdNo;?>&sendDate="+queryDate+"&fromCode=<?=$fromCode;?>&toCode=<?=$toCode;?>&isSync=1";
+		var queryDate = $('#sendDate').val(); 	
+		queryDate = queryDate.replace(/\//g, '%2F');  
+		var prodId="";
+		if($('#prodCode').val()!=""){ prodId=$('#prodId').val(); }	
+		window.location.href = "<?=$rootPage;?>_hdr_item.php?sdNo=<?=$sdNo;?>&sendDate="+queryDate+"&prodId="+prodId+"&fromCode=<?=$fromCode;?>&toCode=<?=$toCode;?>&isSync=1";
 	});
 	$('#form2 a[name=btn_submit]').click (function(e) {
 		if ($('#form2').smkValidate()){

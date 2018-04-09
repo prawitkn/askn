@@ -5,8 +5,7 @@
 		$s_userGroupCode = $row_user['userGroupCode'];
 		$s_userDept = $row_user['userDept'];*/
 
-	$search_word = $_POST['search_word'];
-	
+	$search_fullname = $_POST['search_fullname'];
 	$sql = "SELECT hdr.`soNo`, hdr.`saleDate`, hdr.`custId`, hdr.`smId`, hdr.`createTime`, hdr.`createById`, hdr.statusCode 
 	, ct.name as custName, ct.addr1, ct.tel, ct.fax
 	, c.name as smName 
@@ -23,19 +22,17 @@
 	";
 	//$result = mysqli_query($link, $sql);
 	$stmt = $pdo->prepare($sql);
-	$search_word = '%'.$search_word.'%';
-	$stmt->bindParam(':search_word', $search_word);
+	$search_fullname = '%'.$search_fullname.'%';
+	$stmt->bindParam(':search_word', $search_fullname);
 	$stmt->execute();
-
-	$rowCount=$stmt->rowCount();
 
 	$jsonData = array();
 	while ($array = $stmt->fetch()) {
 		$jsonData[] = $array;
 	}
  					   
-	echo json_encode(array('rowCount' => $rowCount, 'data' => json_encode($jsonData)));
-		
+	echo json_encode($jsonData);
+	
 ?>
 
 

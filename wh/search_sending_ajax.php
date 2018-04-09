@@ -34,9 +34,6 @@
 	switch($s_userGroupCode){ 
 		case 'whOff' :
 		case 'whSup' :
-			$userDeptCode='8';
-			$stmt->bindParam(':s_userDeptCode', $userDeptCode);
-			break;
 		case 'pdOff' :
 		case 'pdSup' :
 			$stmt->bindParam(':s_userDeptCode', $s_userDeptCode);

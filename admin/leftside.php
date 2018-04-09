@@ -91,7 +91,7 @@
 
 		<?php } ?>
 		
-		<?php switch($s_userGroupCode){ case 'admin' :  ?>
+		<?php switch($s_userGroupCode){ case 'admin' :   case 'it' :   ?>
 			<li class="header">Core Master Menu</li>
 			<!-- Optionally, you can add icons to the links -->
 			<li><a href="user.php"><i class="fa fa-male"></i> <span>User</span></a></li>

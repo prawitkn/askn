@@ -73,7 +73,7 @@ $soNo = $hdr['soNo'];
 							<label for="soNo" >Sales Order No.</label>
 							<div class="form-group row">
 								<div class="col-md-9">
-									<input type="text" name="soNo" class="form-control" <?php echo ($pickNo==''?'':' value="'.$soNo.'" disabled '); ?>  />
+									<input type="text" name="soNo" id="soNo" class="form-control" <?php echo ($pickNo==''?'':' value="'.$soNo.'" disabled '); ?>  />
 								</div>
 								<div class="col-md-3">
 									<a href="#" name="btnSdNo" class="btn btn-primary" <?php echo ($pickNo==''?'':' disabled '); ?> ><i class="glyphicon glyphicon-search" ></i></a>								
@@ -360,9 +360,9 @@ $("#spin").hide();
 		if(e.keyCode == 13)
 		{
 			var params = {
-				search_fullname: $('#txt_search_fullname').val()
+				search_word: $('#txt_search_fullname').val()
 			};
-			if(params.search_fullname.length < 3){
+			if(params.search_word.length < 3){
 				alert('search name surname must more than 3 character.');
 				return false;
 			}
@@ -373,24 +373,30 @@ $("#spin").hide();
 				  data: params,
 				datatype: 'json',
 				  success: function(data){	
-								$('#tbl_search_person_main tbody').empty();
-								$.each($.parseJSON(data), function(key,value){
-									$('#tbl_search_person_main tbody').append(
-									'<tr>' +
-										'<td>' +
-										'	<div class="btn-group">' +
-										'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
-										'	class="btn" title="เลือก"> ' +
-										'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
-										'	</div>' +
-										'</td>' +
-										'<td>'+ value.soNo +'</td>' +
-										'<td>'+ value.saleDate +'</td>' +
-										'<td>'+ value.custName +'</td>' +
-									'</tr>'
-									);			
-								});
-							
+								data=$.parseJSON(data);
+								switch(data.rowCount){
+									case 0 : alert('Data not found.');
+										return false; break;
+									default : 
+										$('#tbl_search_person_main tbody').empty();
+										$.each($.parseJSON(data.data), function(key,value){
+											$('#tbl_search_person_main tbody').append(
+											'<tr>' +
+												'<td>' +
+												'	<div class="btn-group">' +
+												'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
+												'	class="btn" title="เลือก"> ' +
+												'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
+												'	</div>' +
+												'</td>' +
+												'<td>'+ value.soNo +'</td>' +
+												'<td>'+ value.saleDate +'</td>' +
+												'<td>'+ value.custName +'</td>' +
+											'</tr>'
+											);			
+										});	
+									$('#modal_search_person').modal('show');	
+								}							
 				  }, //success
 				  error:function(){
 					  alert('error');
@@ -408,10 +414,65 @@ $("#spin").hide();
 	});
 	//Search End
 	
+	$('#soNo').keyup(function(e){
+		if(e.keyCode == 13)
+		{	curId = $(this).attr('name');
+			var params = {
+				search_word: $(this).val()
+			};
+			if(params.search_word.length < 3){
+				alert('search word must more than 3 character.');
+				return false;
+			} //alert(params.search_word);
+			/* Send the data using post and put the results in a div */
+			  $.ajax({
+				  url: "search_saleOrder_ajax.php",
+				  type: "post",
+				  data: params,
+				datatype: 'json'})
+				.done(function (data) {
+						data=$.parseJSON(data);
+						switch(data.rowCount){
+							case 0 : alert('Data not found.');
+								return false; break;
+							case 1 :
+								$.each($.parseJSON(data.data), function(key,value){
+									$('#soNo').val(value.soNo).prop('disabled','disabled');
+									//$('input[name=fromName]').val(value.fromCode+' : '+value.fromName);
+									//$('input[name=toName]').val(value.toCode+' : '+value.toName);
+								});
+								break;
+							default : 
+								$('#tbl_search_person_main tbody').empty();
+								$.each($.parseJSON(data.data), function(key,value){
+									$('#tbl_search_person_main tbody').append(
+									'<tr>' +
+										'<td>' +
+										'	<div class="btn-group">' +
+										'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
+										'	class="btn" title="เลือก"> ' +
+										'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
+										'	</div>' +
+										'</td>' +
+										'<td>'+ value.soNo +'</td>' +
+										'<td>'+ value.saleDate +'</td>' +
+										'<td>'+ value.custName +'</td>' +
+									'</tr>'
+									);			
+								});	
+							$('#modal_search_person').modal('show');	
+						}	
+			})
+			.error(function (response) {
+				  alert(response.responseText);
+			});
+		}/* e.keycode=13 */	
+	});
 	
 	$('#form1 a[name=btn_create]').click (function(e) {
 		if ($('#form1').smkValidate()){
 			$.smkConfirm({text:'Are you sure to Create ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
+				$('#soNo').prop('disabled','');
 				$.post({
 					url: '<?=$rootPage;?>_add_hdr_insert_ajax.php',
 					data: $("#form1").serialize(),

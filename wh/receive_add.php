@@ -377,9 +377,9 @@ $(document).ready(function() {
 		if(e.keyCode == 13)
 		{
 			var params = {
-				search_fullname: $('#txt_search_fullname').val()
+				search_word: $('#txt_search_fullname').val()
 			};
-			if(params.search_fullname.length < 3){
+			if(params.search_word.length < 3){
 				alert('search keyword must more than 3 character.');
 				return false;
 			}
@@ -390,24 +390,31 @@ $(document).ready(function() {
 				  data: params,
 				datatype: 'json',
 				  success: function(data){	
-								$('#tbl_search_person_main tbody').empty();
-								$.each($.parseJSON(data), function(key,value){
-									$('#tbl_search_person_main tbody').append(
-									'<tr>' +
-										'<td>' +
-										'	<div class="btn-group">' +
-										'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
-										'	class="btn" title="เลือก"> ' +
-										'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
-										'	</div>' +
-										'</td>' +
-										'<td>'+ value.sdNo +'</td>' +
-										'<td>'+ value.sendDate +'</td>' +
-										'<td>'+ value.fromCode+' : '+value.fromName+'</td>' +
-										'<td>'+ value.toCode+' : '+value.toName+'</td>' +
-									'</tr>'
-									);			
-								});
+								data=$.parseJSON(data);
+								switch(data.rowCount){
+									case 0 : alert('Data not found.');
+										return false; break;
+									default : 
+										$('#tbl_search_person_main tbody').empty();
+										$.each($.parseJSON(data.data), function(key,value){
+											$('#tbl_search_person_main tbody').append(
+											'<tr>' +
+												'<td>' +
+												'	<div class="btn-group">' +
+												'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
+												'	class="btn" title="เลือก"> ' +
+												'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
+												'	</div>' +
+												'</td>' +
+												'<td>'+ value.sdNo +'</td>' +
+												'<td>'+ value.sendDate +'</td>' +
+												'<td>'+ value.fromCode+' : '+value.fromName+'</td>' +
+												'<td>'+ value.toCode+' : '+value.toName+'</td>' +
+											'</tr>'
+											);			
+										});	
+									$('#modal_search_person').modal('show');	
+								}
 							
 				  }, //success
 				  error:function(){
@@ -436,7 +443,7 @@ $(document).ready(function() {
 			if(params.search_word.length < 3){
 				alert('search word must more than 3 character.');
 				return false;
-			}
+			} //alert(params.search_word);
 			/* Send the data using post and put the results in a div */
 			  $.ajax({
 				  url: "search_sending_ajax.php",
@@ -485,7 +492,8 @@ $(document).ready(function() {
 	
 	$('#form1 a[name=btn_create]').click (function(e) {
 		if ($('#form1').smkValidate()){
-			$.smkConfirm({text:'Are you sure to Create ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
+			$.smkConfirm({text:'Are you sure to Create ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){				
+				$('#sdNo').prop('disabled','');
 				$.post({
 					url: 'receive_add_insert_ajax.php',
 					data: $("#form1").serialize(),
