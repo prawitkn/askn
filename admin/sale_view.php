@@ -303,7 +303,7 @@ desired effect
 				<div class="col-md-2">
 				</div>
 				<div class="col-md-10">					
-					<i class="fa fa-<?php echo ($hdr['plac2deliCode']=='FACT'?'check-circle-o':'circle-o'); ?>"></i> AK Factory</br>
+					<i class="fa fa-<?php echo ($hdr['plac2deliCode']=='FACT'?'check-circle-o':'circle-o'); ?>"></i> Pick up by customer at AK</br>
 					<i class="fa fa-<?php echo ($hdr['plac2deliCode']=='SEND'?'check-circle-o':'circle-o'); ?>"></i> Factory Sent to
 					<label class="label label-default"><?php echo $hdr['plac2deliCodeSendRem']; ?></label></br>
 					<i class="fa fa-<?php echo ($hdr['plac2deliCode']=='MAP_'?'check-circle-o':'circle-o'); ?>"></i> Map</br>

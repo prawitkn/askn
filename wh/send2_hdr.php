@@ -282,7 +282,10 @@ $tb="send";
 				</div>
 				<!--/.table-responsive-->
 				
-				<a name="btn_view" href="<?=$rootPage;?>_view.php?sdNo=<?=$sdNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> View</a>
+				<!--<a name="btn_view" href="<?=$rootPage;?>_view.php?sdNo=<?=$sdNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> View</a>-->
+				<button type="button" id="btn_verify" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
+				<i class="glyphicon glyphicon-ok"></i> Confirm
+			  </button>      
 				</form>
 			</div>
 			<!--/.row dtl-->
@@ -419,7 +422,51 @@ $(document).ready(function() {
 		}});
 		e.preventDefault();
 	});
-	//btn_click
+	//
+	
+	$('#btn_verify').click (function(e) {			
+		<?php if($sumGradeNotOk>0){
+				echo "alert('Please check GRADE before sending.'); return false; ";
+		}?>	 
+		var params = {
+		action: 'confirm',					
+		sdNo: $('#sdNo').val()			
+		};
+		if(params.sdNo==""){
+			alert('SO No. not found.');
+			return false;
+		}
+		//alert(params.hdrID);
+		$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function(data) {
+				if (data.success){  
+					$.smkAlert({
+						text: data.message,
+						type: 'success',
+						position:'top-center'
+					});		
+					setTimeout(function(){ window.location.href = '<?=$rootPage;?>.php'; }, 3000);
+					//location.reload();
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
+				}
+				//e.preventDefault();		
+			}).error(function (response) {
+				alert(response.responseText);
+			});
+			//.post		
+		}});
+		//smkConfirm
+	});
+	//.btn_click
 });
         
         

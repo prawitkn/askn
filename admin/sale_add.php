@@ -316,7 +316,7 @@ $soNo = "";
 							<div class="col-md-6 form-group">
 								<label for="plac2deliCode">Place to Delivery</label><br/>
 								  <input type="radio" name="plac2deliCode" id="plac2deliCodeFact" value="FACT"   data-smk-msg="Require Place to Delivery." required <?php echo ($soNo==""?' checked ':($hdr['plac2deliCode']=="FACT"?' checked ':'')); ?> >
-								  AK Factory<br/>
+								  Pick up by customer at AK<br/>
 								  <input type="radio" name="plac2deliCode" id="plac2deliCodeSend" value="SEND" <?php echo ($soNo==""?'  ':($hdr['plac2deliCode']=="SEND"?' checked ':'')); ?> >
 								  Send by AK Factory
 								  <input type="textbox" name="plac2deliCodeSendRem" id="plac2deliCodeSendRem"  class="form-control"  maxlength="40" style="display: <?=($hdr['plac2deliCode']=='SEND'?'block;':'none;');?>" value="<?=$hdr['plac2deliCodeSendRem'];?>"  /><br/>

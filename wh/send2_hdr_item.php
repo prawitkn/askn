@@ -403,7 +403,7 @@ $tb="send";
 			, itm.prodCodeId as prodId, prd.code as prodCode
 			, (SELECT IFNULL(sHdr.sdNo,'') FROM send sHdr
 											INNER JOIN send_detail sDtl ON sDtl.sdNo=sHdr.sdNo
-											WHERE sHdr.statusCode='P' AND sDtl.prodItemId=itm.prodItemId LIMIT 1) as sentNo 
+											WHERE sHdr.statusCode IN ('C','P') AND sDtl.prodItemId=itm.prodItemId LIMIT 1) as sentNo 
 			FROM send_mssql hdr  
 			INNER JOIN send_detail_mssql dtl ON dtl.sendId=hdr.sendId 
 			INNER JOIN product_item itm ON itm.prodItemId=dtl.productItemId 
@@ -475,9 +475,10 @@ $tb="send";
 					
 					<div class="table-responsive">
 					<table id="tbl_items" class="table table-striped">
+						<thead>
 						<tr>
 <!--							<th><input type="checkbox" id="checkAll"  />Select All</th>-->
-							<th><select id="selItmId" class="form-control"></select> No.</th>
+							<th><select id="selItmId" class="form-control"></select> No. <input type="checkbox" id="chkPending" /> Pending</th>
 							<th>Product Code</th>
 							<th>Barcode</th>
 							<th>Grade</th>
@@ -485,6 +486,8 @@ $tb="send";
 							<th>Issue Date</th>							
 							<th>Ref.ID</th>
 						</tr>
+						</thead>
+						<tbody>
 						<?php $row_no=1; $prevSendId=""; $rowColor='lightBlue'; $optItmHtml=""; while ($row = $stmt->fetch()) { 
 						$gradeName = '<b style="color: red;">N/A</b>'; 
 						switch($row['grade']){
@@ -522,6 +525,7 @@ $tb="send";
 						<?php $row_no+=1;
 						} 
 						?>
+						</tbody>
 					</table>
 					</div>
 					<!--/.table-responsive-->
@@ -733,8 +737,23 @@ $(document).ready(function() {
   
 	$('#selItmId').append('<?=$optItmHtml;?>');
 	
-
-	
+	$('#chkPending').on('change', function() {
+		if($(this).prop('checked')){
+			$('#tbl_items > tbody  > tr').each(function() {
+				//alert($(this).find('td:eq(1) input[name=itmId]'));
+				var $tmp = $(this).find('td:eq(0)').find('input[name=itmId]');
+				//alert($tmp);
+				if($tmp){					
+					$(this).fadeOut('slow');
+				} 
+			});
+		}else{
+			$('#tbl_items > tbody  > tr').each(function() {
+				$(this).fadeIn('slow');
+			});
+		}
+		
+	});
 	
 	
 			
