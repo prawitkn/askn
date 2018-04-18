@@ -5,14 +5,7 @@
         header("Location: login.php");
     }
 	
-	//database connection string.
-	$is_local = true;
-	if($is_local){
-		include '../db/database_localhost.php';
-	}else{
-		include '../db/database.php';
-	}
-	
+	include '../db/db.php';	
     
     //$s_userId=;
     $sql = "SELECT u.`userId`, u.`userFullname`, u.`userGroupCode`, u.`smId`, u.`userEmail`, u.`userTel`, u.`userPicture`, u.`statusCode` 

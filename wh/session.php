@@ -5,13 +5,8 @@
         header("Location: login.php");
     }
     
-    $is_local = true;
-	if($is_local){
-		include '../db/database_localhost.php';
-	}else{
-		include '../db/database.php';
-	}
-    
+	include '../db/db.php';
+	
     $s_userId=$_SESSION['userId'];
     $qry_user = "SELECT * FROM wh_user WHERE userId='$s_userId'";
     $result_user = mysqli_query($link,$qry_user);
