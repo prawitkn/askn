@@ -46,334 +46,7 @@ $tb="send";
 	}
 	
 	
-	if(isset($_GET['isSync']) AND isset($_GET['sendDate'])){
-		//$sendDate = to_mysql_date($_GET['sendDate']);
-		//$sendDate = '2017-11-01';
-		
-		//TRUNCATE temp 
-		$sql = "TRUNCATE TABLE send_mssql_tmp";			
-		$stmt = $pdo->prepare($sql);
-		$stmt->execute();
-		
-		$sql = "TRUNCATE TABLE send_detail_mssql_tmp";			
-		$stmt = $pdo->prepare($sql);
-		$stmt->execute();
-			
-		$sql = "TRUNCATE TABLE product_item_temp";			
-		$stmt = $pdo->prepare($sql);
-		$stmt->execute();
-
-		$sql = "SELECT DISTINCT  hdr.[SendID], hdr.[SendNo], CONVERT(VARCHAR, hdr.[IssueDate], 121) as IssueDate
-		  , left(itm.[ItemCode],1) as fromCode 
-		  , [CustomerID]
-		  FROM [send] hdr, [askn].[dbo].[send_detail] dtl, [product_item] itm
-		  WHERE hdr.SendID=dtl.SendID 
-		  AND dtl.[ProductItemID]=itm.[ProductItemID]
-		  AND hdr.[isCustomer]='N' 
-		  AND hdr.[IssueDate] = '$sendDate'
-		  ";
-		  switch($s_userGroupCode){ 
-			case 'whOff' :  case 'whSup' : 
-					$sql .= "AND left(itm.[ItemCode],1) IN (0,7,8) ";
-				break;
-			case 'pdOff' :  case 'pdSup' :
-					$sql .= "AND left(itm.[ItemCode],1) = '".$s_userDeptCode."' ";
-				break;
-			default : //case 'it' : case 'admin' : 
-		  }
-		//echo $sql;
-		$msResult = sqlsrv_query($ssConn, $sql);
-		$msRowCount = 0;
-		$c = 1;
-		set_time_limit(0);
-		if($msResult){
-			while ($msRow = sqlsrv_fetch_array($msResult, SQLSRV_FETCH_ASSOC))  {	
-				//Insert Header mysql from mssql
-				$sql = "INSERT INTO  `send_mssql_tmp` 
-				(`sendId`, `issueDate`, `customerId`, `fromCode`) 
-				VALUES
-				(:SendID,:IssueDate,:CustomerID,:fromCode)
-				";		
-				
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':SendID', $msRow['SendID']);	
-				$stmt->bindParam(':IssueDate', $msRow['IssueDate']);
-				$stmt->bindParam(':CustomerID', $msRow['CustomerID']);	
-				$stmt->bindParam(':fromCode', $msRow['fromCode']);			
-				$stmt->execute();
-
-				$msRowCount+=1;
-			}
-			//end while mssql
-		}else{
-			echo sqlsrv_error();
-		}
-		//if
-		
-		sqlsrv_free_stmt($msResult);
-		
-		
-		
-		$sql = "  SELECT itm.[ProductItemID]
-		  ,itm.[ProductID]
-		  ,itm.[ItemCode]
-		  , CONVERT(VARCHAR, itm.[IssueDate], 121) as IssueDate
-		  ,itm.[MachineID]
-		  ,itm.[SeqNo]
-		  ,itm.[NW]
-		  ,itm.[GW]
-		  ,itm.[Length]
-		  ,itm.[Grade]
-		  , CONVERT(VARCHAR, itm.[IssueGrade], 121) as IssueGrade
-		  ,itm.[UserID]
-		  ,itm.[RefItemID]
-		  ,itm.[ItemStatus]
-		  ,itm.[Remark]
-		  ,itm.[RecordDate]
-		  ,itm.[ProblemID]
-		  ,dtl.[SendID], dtl.[Remark] 
-	  FROM [send_detail] dtl, [product_item] itm 
-	  WHERE dtl.[ProductItemID]=itm.[ProductItemID]
-	  AND dtl.[SendID] IN (  SELECT DISTINCT  hdr.[SendID] 
-						  FROM [send] hdr, [send_detail] dtl, [product_item] itm
-						  WHERE hdr.SendID=dtl.SendID 
-						  AND dtl.[ProductItemID]=itm.[ProductItemID]
-						  AND hdr.[IssueDate] = '$sendDate' )
-		  ";
-	  switch($s_userGroupCode){ 
-		case 'whOff' :  case 'whSup' : 
-				//$sql .= "AND left(itm.[ItemCode],1) IN ('0','7','8','9') ";
-			break;
-		case 'pdOff' :  case 'pdSup' :
-				$sql .= "AND left(itm.[ItemCode],1) = '".$s_userDeptCode."' ";
-			break;
-		default : //case 'it' : case 'admin' : 
-	  }
-		//echo $sql;
-		$msResult = sqlsrv_query($ssConn, $sql);
-		$msRowCount = 0;
-		$c = 1;
-		set_time_limit(0);
-		if($msResult){
-		while ($msRow = sqlsrv_fetch_array($msResult, SQLSRV_FETCH_ASSOC))  {	
-			//Insert mysql from mssql
-			$sql = "INSERT INTO  `product_item_temp` 
-			(`prodItemId`, `prodId`, `barcode`, `issueDate`, `machineId`, `seqNo`, `NW`, `GW`
-			, `qty`, `packQty`, `grade`, `gradeDate`, `refItemId`, `itemStatus`, `remark`, `problemId`) 
-			VALUES
-			(:ProductItemID,:ProductID,:ItemCode,:IssueDate,:MachineID,:SeqNo,:NW,:GW
-			,:Length,null,:Grade,:IssueGrade,:RefItemID,:ItemStatus,:Remark,:ProblemID
-			)
-			";		
-			$stmt = $pdo->prepare($sql);
-			$stmt->bindParam(':ProductItemID', $msRow['ProductItemID']);	
-			$stmt->bindParam(':ProductID', $msRow['ProductID']);	
-			$stmt->bindParam(':ItemCode', $msRow['ItemCode']);	
-			$stmt->bindParam(':IssueDate', $msRow['IssueDate']);	
-			$stmt->bindParam(':MachineID', $msRow['MachineID']);	
-			$stmt->bindParam(':SeqNo', $msRow['SeqNo']);	
-			$stmt->bindParam(':NW', $msRow['NW']);			
-			$stmt->bindParam(':GW', $msRow['GW']);	
-			
-			$stmt->bindParam(':Length', $msRow['Length']);	
-			$stmt->bindParam(':Grade', $msRow['Grade']);	
-			$stmt->bindParam(':IssueGrade', $msRow['IssueGrade']);	
-			$stmt->bindParam(':RefItemID', $msRow['RefItemID']);	
-			$stmt->bindParam(':ItemStatus', $msRow['ItemStatus']);	
-			$stmt->bindParam(':Remark', $msRow['Remark']);	
-			$stmt->bindParam(':ProblemID', $msRow['ProblemID']);		
-			
-			$stmt->execute();
-			
-			$sql = "INSERT INTO  `send_detail_mssql_tmp` 
-			(`productItemId`, `sendId`, `remark`) 
-			VALUES
-			(:ProductItemID, :SendID, :Remark)
-			";		
-			$stmt = $pdo->prepare($sql);
-			$stmt->bindParam(':ProductItemID', $msRow['ProductItemID']);	
-			$stmt->bindParam(':SendID', $msRow['SendID']);	
-			$stmt->bindParam(':Remark', $msRow['Remark']);	
-			$stmt->execute();
-
-			$msRowCount+=1;
-		}
-		//end while mssql
-		}else{
-			echo sqlsrv_error();
-		}
-		//if
-		
-		sqlsrv_free_stmt($msResult);
-		//END MSSQL 
-		
-		
-		
-		
-		
-		
-		//PRODUCT ITEM (INSERT ONLY) 
-		//Update prodCodeId in product item.////////////////////////////////////////////
-		$sql = "UPDATE product_item_temp tmp 
-		INNER JOIN product_mapping map ON map.invProdId=tmp.prodId 
-		SET tmp.prodCodeId=map.wmsProdId 
-		";			
-		$stmt = $pdo->prepare($sql);
-		$stmt->execute();	
-		//Update prodCodeId in product item.////////////////////////////////////////////
-		
-		
-		//Delete production only not approve sending.
-		/*$sql = "DELETE FROM product_item 
-		WHERE prodItemId IN (SELECT tmp.prodItemId FROM product_item_temp tmp 
-								INNER JOIN send_detail dtl ON dtl.prodItemId=tmp.prodItemId 
-								INNER JOIN send hdr ON hdr.sdNo=dtl.sdNo AND hdr.statusCode<>'P')	
-		";			
-		$stmt = $pdo->prepare($sql);
-		$stmt->execute();	*/
-			
-		//Insert prod with temp
-		$sql = "INSERT INTO product_item
-		SELECT * FROM product_item_temp 
-		WHERE prodItemId NOT IN (SELECT prodItemId FROM product_item)	
-		";			
-		$stmt = $pdo->prepare($sql);
-		$stmt->execute();	
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		/*22	COATING(5)
-		23	CUTTING(6)
-		57	Inspection(7)
-		181	Determinate 
-		191	Trash
-		209	Weaving(4)
-		212	Twisting(2)
-		213	Warping(3)
-		221	C/O=>In
-		222	Warehouse
-		223	Scrap
-		226	Extra stock
-		236	Packing
-		238	WH(Export)
-		239	ERP
-		240	160958 TW
-		241	160958 WP
-		242	160958 WV
-		243	160958 CO
-		244	160958 CT
-		245	160958 In.
-		251	R&D 
-		252	ล้างสต็อก 2017*/
-		//Begin Sync Sending data.
-		$sql = "UPDATE send_mssql_tmp prod 
-		SET prod.`toCode`= CASE customerId
-			WHEN 22 THEN '5'
-			WHEN 23 THEN '6'
-			WHEN 57 THEN '8'
-			WHEN 181 THEN 'U'
-			WHEN 191 THEN 'U' 		
-			WHEN 209 THEN '4'
-			WHEN 212 THEN '2'
-			WHEN 213 THEN '3'
-			WHEN 221 THEN 'U'
-			WHEN 222 THEN '8'
-			WHEN 223 THEN 'U'
-			WHEN 226 THEN '8'
-			WHEN 236 THEN '8'
-			WHEN 238 THEN 'E'
-			WHEN 239 THEN 'U' 
-			WHEN 240 THEN '2'
-			WHEN 241 THEN '3'
-			WHEN 242 THEN '4'
-			WHEN 243 THEN '5'
-			WHEN 244 THEN '6'
-			WHEN 245 THEN '8'
-			WHEN 251 THEN 'U'
-			WHEN 252 THEN 'U'
-			ELSE 'U' 
-		END
-		";			
-		$stmt = $pdo->prepare($sql);
-		$stmt->execute();
-			
-		//Update prod with temp
-		//$sql = "UPDATE send prod 
-		//INNER JOIN send_production tmp ON tmp.SendNo=prod.refNo AND prod.statusCode<>'P' 
-		//SET prod.`issueDate`=tmp.`issueDate`
-		//, prod.`qty`=tmp.`qty`
-		//, prod.`fromCode`=tmp.`fromCode`
-		//, prod.`isCustomer`=tmp.`isCustomer`
-		//, prod.`customerID`=tmp.`customerID`
-		//";			
-		//$stmt = $pdo->prepare($sql);
-		//$stmt->execute();
-		
-		//Insert prod with temp
-		/*$sql = "SELECT `sendID`, `sendNo`, `issueDate`, `qty`, `fromCode`, `toCode` 
-		FROM send_production 
-		WHERE SendID NOT IN (SELECT refNo FROM send) 
-		";			
-		$stmt = $pdo->prepare($sql);
-		$stmt->execute();*/
-				
-		//Update productoin header.
-		/*$sql = "INSERT INTO send_prod 
-		(`sdNo`, `refNo`, `sendDate`, `fromCode`, `toCode`, `remark`, `statusCode`, `createTime`, `createById`)
-		SELECT tmp.`sendNo`, tmp.`sendID`, tmp.`issueDate`, tmp.`fromCode`, tmp.`toCode`, tmp.`sendNo`, 'B', NOW(), :s_userId
-		FROM send_production tmp
-		WHERE NOT EXISTS (SELECT * FROM send_prod hdr WHERE hdr.sdNo=tmp.sdNo 
-		";	
-		$stmt = $pdo->prepare($sql);
-		$stmt->bindParam(':s_userId', $s_userId );	
-		$stmt->execute();*/
-		
-		
-		//Insert new productoin header.
-		$sql = "INSERT INTO send_mssql
-		(`sendId`, `issueDate`, `customerId`, `fromCode`, `toCode`, `createTime`, `createById`)
-		SELECT tmp.`sendId`, tmp.`issueDate`, tmp.customerId, tmp.`fromCode`, tmp.`toCode`, NOW(), :s_userId
-		FROM send_mssql_tmp tmp
-		WHERE NOT EXISTS (SELECT * FROM send_mssql hdr WHERE hdr.sendId=tmp.sendId )
-		";	
-		$stmt = $pdo->prepare($sql);
-		$stmt->bindParam(':s_userId', $s_userId );	
-		$stmt->execute();
-		
-		
-		
-		//Delete temp if Approved.
-		/*$sql = "DELETE FROM send_production_detail 
-		WHERE prodItemId IN (SELECT dtl.prodItemId FROM send hdr
-							INNER JOIN send_detail dtl ON dtl.sdNo=hdr.sdNo 
-							WHERE hdr.statusCode='P' )
-		";			
-		$stmt = $pdo->prepare($sql);
-		$stmt->execute();*/
-		
-		//Insert productoin detail .
-		$sql = "INSERT INTO send_detail_mssql 
-		(`sendId`, `productItemId`, `remark`)
-		SELECT dtl.sendId, dtl.`productItemId`, dtl.`remark`
-		FROM send_detail_mssql_tmp dtl
-		WHERE NOT EXISTS (SELECT x.* FROM send_detail_mssql x WHERE dtl.productItemId=x.productItemId AND dtl.sendId=x.sendId) 
-		";					
-		$stmt = $pdo->prepare($sql);
-		$stmt->execute();
-		
-		/*header("Location: ".$rootPage.".php?sendDate=".$_GET['sendDate']);
-		
-		exit();*/
-		
-		$isSync=0;
-	}
+	
 	
 	?>
   <!-- Content Wrapper. Contains page content -->
@@ -397,29 +70,7 @@ $tb="send";
       <!-- Your Page Content Here -->
     <div class="box box-primary">
 		<?php						
-			$sql = "SELECT hdr.sendId, dtl.`productItemId`, itm.`barcode`, itm.`issueDate`
-			, itm.`machineId`, itm.`seqNo`, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`
-			, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId`					
-			, itm.prodCodeId as prodId, prd.code as prodCode
-			, (SELECT IFNULL(sHdr.sdNo,'') FROM send sHdr
-											INNER JOIN send_detail sDtl ON sDtl.sdNo=sHdr.sdNo
-											WHERE sHdr.statusCode IN ('C','P') AND sDtl.prodItemId=itm.prodItemId LIMIT 1) as sentNo 
-			FROM send_mssql hdr  
-			INNER JOIN send_detail_mssql dtl ON dtl.sendId=hdr.sendId 
-			INNER JOIN product_item itm ON itm.prodItemId=dtl.productItemId 
-			LEFT JOIN product prd ON prd.id=itm.prodCodeId  	
-			WHERE 1=1 ";
-			if($sendDate<>"") $sql.="AND hdr.issueDate=:sendDate ";
-			if($fromCode<>"") $sql.="AND hdr.fromCode=:fromCode ";
-			if($toCode<>"") $sql.="AND hdr.toCode=:toCode ";
-			if($prodId<>"") $sql.="AND itm.prodCodeId=:prodId ";
-			$stmt = $pdo->prepare($sql);
-			if($sendDate<>"") $stmt->bindParam(':sendDate', $sendDate );
-			if($fromCode<>"") $stmt->bindParam(':fromCode', $fromCode);
-			if($toCode<>"") $stmt->bindParam(':toCode', $toCode);
-			if($prodId<>"") $stmt->bindParam(':prodId', $prodId);
-			$sql.="ORDER BY hdr.sendId  "; 
-			$stmt->execute();
+			
 		?>
         <div class="box-header with-border">
 			<div class="form-inline">
@@ -444,7 +95,7 @@ $tb="send";
 				  <!-- Buttons, labels, and many other things can be placed here! -->
 				  <!-- Here is a label for example -->
 				  
-				  <span class="label label-primary">Total <?php echo $stmt->rowCount(); ?> items</span>
+				  <span id="lblTotal" class="label label-primary">Total items</span>
 				</div><!-- /.box-tools -->
 				</div><!-- /.box-header -->
 				<div class="box-body">
@@ -462,8 +113,8 @@ $tb="send";
 									<input type="text" name="prodCode" id="prodCode" class="form-control" value="<?=$prodCode;?>"  />
 									<a href="#" name="btnSdNo" class="btn btn-primary" ><i class="glyphicon glyphicon-search" ></i> Search Product</a>	
 																
-								<a name="btnSubmit" href="#" class="btn btn-danger"><i class="glyphicon glyphicon-search"></i> Search</a>
-								<a name="btnSyncSubmit" href="#" class="btn btn-danger"><i class="glyphicon glyphicon-retweet"></i> Sync & Search</a>
+								<a name="btnSubmit" id="btnSubmit" href="#" class="btn btn-danger"><i class="glyphicon glyphicon-search"></i> Search</a>
+								<a name="btnSyncSubmit" href="#" onclick='getList(1)'  class="btn btn-danger"><i class="glyphicon glyphicon-retweet"></i> Sync & Search</a>
 							
 							</form>  
 						</div>    
@@ -488,43 +139,7 @@ $tb="send";
 						</tr>
 						</thead>
 						<tbody>
-						<?php $row_no=1; $prevSendId=""; $rowColor='lightBlue'; $optItmHtml=""; while ($row = $stmt->fetch()) { 
-						$gradeName = '<b style="color: red;">N/A</b>'; 
-						switch($row['grade']){
-							case 0 : $gradeName = 'A'; break;
-							case 1 : $gradeName = '<b style="color: red;">B</b>'; break;
-							case 2 : $gradeName = '<b style="color: red;">N</b>'; break;
-							default : 
-						} 
-						if($prevSendId=="") {
-							$optItmHtml='<option value="">Clear All</option>'
-							.'<option value="0">Select All</option>'
-							.'<option value="'.$row['sendId'].'" >'.$row['sendId'].'</option>';
-						}
-						if($prevSendId<>"" AND $prevSendId<>$row['sendId']){
-							if($rowColor=="lightBlue"){$rowColor="lightGreen";}else{$rowColor="lightBlue";}
-							$optItmHtml.='<option value="'.$row['sendId'].'">'.$row['sendId'].'</option>';
-						}
-						$prevSendId=$row['sendId'];
-						?>
-						<tr style="background-color: <?=$rowColor;?>;"  >
-							<td>
-							<?php if($row['sentNo']==''){ ?>
-								<input type="checkbox" name="itmId[]" value="<?=$row['sendId'].','.$row['productItemId'];?>"  />
-							<?php }else{ ?>
-								<label class="label label-danger" ><?=$row['sentNo'];?></label>
-							<?php } ?>							
-							<?= $row_no; ?></td>
-							<td><?= $row['prodCode']; ?></td>
-							<td><?= $row['barcode']; ?></td>
-							<td><?= $gradeName; ?></td>
-							<td><?= $row['qty']; ?></td>
-							<td><?= date('d M Y',strtotime( $row['gradeDate'] )); ?></td>			
-							<td><?= $row['sendId']; ?></td>				
-						</tr>
-						<?php $row_no+=1;
-						} 
-						?>
+						
 						</tbody>
 					</table>
 					</div>
@@ -651,6 +266,79 @@ $(document).ready(function() {
 	$("#spin").hide();
   //   
   
+	function getList(isSync){
+		var queryDate = $('#sendDate').val(); 	
+		//queryDate = queryDate.replace(/\//g, '%2F');
+		var prodId="";
+		if($('#prodCode').val()!=""){ prodId=$('#prodId').val(); }			
+						
+		var params = {
+			action: 'searchItem',
+			isSync: isSync,
+			sdNo: '<?=$sdNo;?>',
+			sendDate: queryDate,
+			prodId: prodId,
+			fromCode: <?=$fromCode;?>,
+			toCode: <?=$toCode;?>
+		}; //alert(params.sendDate);
+		/* Send the data using post and put the results in a div */
+		  $.ajax({
+			  url: "send2_hdr_item_ajax.php",
+			  type: "post",
+			  data: params,
+			datatype: 'json',
+			  success: function(data){	//alert(data);
+					data=$.parseJSON(data);
+					//alert(data);
+					$('#lblTotal').text('Total '+data.rowCount+' items');
+					
+					switch(data.rowCount){
+						case 0 : alert('Data not found.');
+							$('#tbl_items tbody').empty();
+							return false; break;
+						default : 
+							var prevSendId="";
+							var optItmHtml="";
+							var rowColor="lightBlue";	
+							var tmpNo="";
+							
+							$('#tbl_items tbody').empty();
+							$.each($.parseJSON(data.data), function(key,value){
+								if( prevSendId == ""){
+									$('#selItmId').append('<option value="">Clear All</option>'+
+									'<option value="0">Select All</option>');
+									$('#selItmId').append('<option value="'+value.sendId+'">'+value.sendId+'</option>');
+								}
+								if( (prevSendId != "") && (prevSendId != value.sendId) ){
+									if(rowColor=="lightBlue"){rowColor="lightGreen";}else{rowColor="lightBlue";}
+									$('#selItmId').append('<option value="'+value.sendId+'">'+value.sendId+'</option>');
+								}
+								prevSendId=value.sendId;								
+								
+								if(value.sentNo==""){
+									tmpNo='<input type="checkbox" name="itmId[]" class="itmId" value="'+value.sendId+','+value.productItemId+'"  />';
+								}else{
+									tmpNo='<label class="label label-danger" >'+value.sentNo+'</label>';
+								} //alert(tmpNo);
+								$('#tbl_items tbody').append(
+								'<tr style="background-color: '+rowColor+'" >' +	
+									'<td>'+ tmpNo +'</td>' + 
+									'<td>'+ value.prodCode +'</td>' +
+									'<td>'+ value.barcode +'</td>' + 
+									'<td>'+ value.gradeName +'</td>' +
+									'<td>'+ value.qty +'</td>' +
+									'<td>'+ value.gradeDate +'</td>' +
+									'<td>'+ value.sendId +'</td>' +
+								'</tr>'
+								);		
+							});
+						//('#modal_search_person').modal('show');	
+					}	
+			  }   
+			}).error(function (response) {
+				alert(response.responseText);
+			}); 
+	}
   
   
   
@@ -684,11 +372,6 @@ $(document).ready(function() {
 						switch(data.rowCount){
 							case 0 : alert('Data not found.');
 								return false; break;
-							case 1 :
-								$.each($.parseJSON(data.data), function(key,value){
-									$('#prodCode').val(value.sdNo).prop('disabled','disabled');
-								});
-								break;
 							default : 
 								$('#tbl_search_person_main tbody').empty();
 								$.each($.parseJSON(data.data), function(key,value){
@@ -712,7 +395,7 @@ $(document).ready(function() {
 									'</tr>'
 									);		
 								});
-							$('#modal_search_person').modal('show');	
+								$('#modal_search_person').modal('show');	
 						}	
 						
 								
@@ -720,7 +403,7 @@ $(document).ready(function() {
 				  }   
 				}).error(function (response) {
 					alert(response.responseText);
-				}); 
+				});  
 		}/* e.keycode=13 */	
 	});
 	
@@ -729,21 +412,89 @@ $(document).ready(function() {
 		$('input[name='+curName+']').val($(this).closest("tr").find('td:eq(2)').text());
 						
 		$('#modal_search_person').modal('hide');
+		getList(0);
 	});
 	//Search End
+
+	$('#prodCode').keyup(function(e){ 
+		if(e.keyCode == 13)
+		{
+			var params = {
+				search_word: $('#prodCode').val()
+			};
+			if(params.search_word.length < 3){
+				alert('search word must more than 3 character.');
+				return false;
+			}
+			curName = $(this).attr('name');
+			curId = $(this).prev().attr('name');
+			/* Send the data using post and put the results in a div */
+			  $.ajax({
+				  url: "search_product_ajax.php",
+				  type: "post",
+				  data: params,
+				datatype: 'json',
+				  success: function(data){	
+						data=$.parseJSON(data);
+						switch(data.rowCount){
+							case 0 : alert('Data not found.');
+								$('#tbl_items tbody').empty();
+								return false; break;
+							case 1 :
+								$.each($.parseJSON(data.data), function(key,value){
+									$('input[name='+curName+']').val(value.prodcode);
+									$('input[name='+curId+']').val(value.prodId);
+								});
+								getList(0);
+								break;
+							default : 
+								$('#tbl_search_person_main tbody').empty();
+								$.each($.parseJSON(data.data), function(key,value){
+									$('#tbl_search_person_main tbody').append(
+									'<tr>' +
+										'<td>' +
+										'	<div class="btn-group">' +
+										'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
+										'	class="btn" title="เลือก"> ' +
+										'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
+										'	</div>' +
+										'</td>' + 
+										'<td style="display: none;">'+ value.prodId +'</td>' +
+										'<td>'+ value.prodCode +'</td>' +
+										'<td>'+ value.prodName +'</td>' +
+										'<td style="display: none;">'+ value.prodUomCode +'</td>' +
+										'<td>'+ value.prodCatName +'</td>' +
+										'<td>'+ value.prodAppName+'</td>' +									
+										'<td style="display: none;">'+ value.balance+'</td>' +	
+										'<td style="display: none;">'+ value.sales+'</td>' +	
+									'</tr>'
+									);		
+								});								
+								$('#modal_search_person').modal('show');	
+						}	
+				  }   
+				}).error(function (response) {
+					alert(response.responseText);
+				});  
+		}/* e.keycode=13 */	
+	});
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
   
-  
-  
-  
-	$('#selItmId').append('<?=$optItmHtml;?>');
-	
 	$('#chkPending').on('change', function() {
 		if($(this).prop('checked')){
 			$('#tbl_items > tbody  > tr').each(function() {
 				//alert($(this).find('td:eq(1) input[name=itmId]'));
-				var $tmp = $(this).find('td:eq(0)').find('input[name=itmId]');
-				//alert($tmp);
-				if($tmp){					
+				var tmp = $(this).find('td:eq(0) input.itmId');
+				//alert(tmp.val());
+				if(tmp.length <= 0){
+					//alert(tmp.val());
 					$(this).fadeOut('slow');
 				} 
 			});
@@ -754,23 +505,8 @@ $(document).ready(function() {
 		}
 		
 	});
+		
 	
-	
-			
-	$('a[name=btnSubmit]').click(function(e){		
-		var queryDate = $('#sendDate').val(); 	
-		queryDate = queryDate.replace(/\//g, '%2F');
-		var prodId="";
-		if($('#prodCode').val()!=""){ prodId=$('#prodId').val(); }			
-		window.location.href = "<?=$rootPage;?>_hdr_item.php?sdNo=<?=$sdNo;?>&sendDate="+queryDate+"&prodId="+prodId+"&fromCode=<?=$fromCode;?>&toCode=<?=$toCode;?>";
-	});
-	$('a[name=btnSyncSubmit]').click(function(e){
-		var queryDate = $('#sendDate').val(); 	
-		queryDate = queryDate.replace(/\//g, '%2F');  
-		var prodId="";
-		if($('#prodCode').val()!=""){ prodId=$('#prodId').val(); }	
-		window.location.href = "<?=$rootPage;?>_hdr_item.php?sdNo=<?=$sdNo;?>&sendDate="+queryDate+"&prodId="+prodId+"&fromCode=<?=$fromCode;?>&toCode=<?=$toCode;?>&isSync=1";
-	});
 	$('#form2 a[name=btn_submit]').click (function(e) {
 		if ($('#form2').smkValidate()){
 			$.smkConfirm({text:'Are you sure to Submit ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
@@ -817,7 +553,17 @@ $(document).ready(function() {
 				$("input:checkbox[value^='"+$(this).val()+"']").prop('checked','checked');
 		}
 	});
+	
+	
+	$("#btnSubmit").click(function(){ 
+		getList(0);
+	});
+	
+	$("#btnSyncSubmit").click(function(){ 
+		getList(1);
+	});
 
+	//getList(0);
 	
 	$("html,body").scrollTop(0);
 		

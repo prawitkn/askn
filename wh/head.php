@@ -51,6 +51,25 @@
 	.content-wrapper h5{
 		font-size: 1.4em;
 	}
+	
+	
+	input[type=checkbox]
+	{
+	  /* Double-sized Checkboxes */
+	  -ms-transform: scale(1.5); /* IE */
+	  -moz-transform: scale(1.5); /* FF */
+	  -webkit-transform: scale(1.5); /* Safari and Chrome */
+	  -o-transform: scale(1.5); /* Opera */
+	  padding: 10px;
+	}
+
+	/* Might want to wrap a span around your checkbox text */
+	.checkboxtext
+	{
+	  /* Checkbox text */
+	  font-size: 110%;
+	  display: inline;
+	}
 	</style>  
 </head>
 <!--
