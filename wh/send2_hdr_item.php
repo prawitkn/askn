@@ -114,7 +114,7 @@ $tb="send";
 									<a href="#" name="btnSdNo" class="btn btn-primary" ><i class="glyphicon glyphicon-search" ></i> Search Product</a>	
 																
 								<a name="btnSubmit" id="btnSubmit" href="#" class="btn btn-danger"><i class="glyphicon glyphicon-search"></i> Search</a>
-								<a name="btnSyncSubmit" href="#" onclick='getList(1)'  class="btn btn-danger"><i class="glyphicon glyphicon-retweet"></i> Sync & Search</a>
+								<!--<a name="btnSyncSubmit" id="btnSyncSubmit" href="#" class="btn btn-danger"><i class="glyphicon glyphicon-retweet"></i> Sync & Search</a>-->
 							
 							</form>  
 						</div>    

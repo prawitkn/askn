@@ -18,4 +18,31 @@
     <link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/ico/apple-touch-icon-114-precomposed.png">
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/ico/apple-touch-icon-72-precomposed.png">
     <link rel="apple-touch-icon-precomposed" href="images/ico/apple-touch-icon-57-precomposed.png">
+	<!--background: linear-gradient(132deg, #ec5218, #1665c1);-->
+	<style type="text/css">
+            
+            body {
+                background: linear-gradient(132deg, #5CC5DF, #FBFF75);
+                background-size: 400% 400%;
+                animation: BackgroundGradient 30s ease infinite;
+            }
+            
+            @keyframes BackgroundGradient {
+                0% {background-position: 0% 50%;}
+                50% {background-position: 100% 50%;}
+                100% {background-position: 0% 50%;}
+            }
+            h1 {
+                
+                font-family: Open Sans, sans-serif;
+                color: #000;
+                font-weight: 400;
+                text-align: center;
+                font-size: 2em;
+                background-color: #fff;
+                padding: 5px;
+            }
+            
+            
+        </style>
 </head><!--/head-->

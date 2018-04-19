@@ -24,6 +24,8 @@ if(!isset($_POST['action'])){
 				$sendDate = date("Y-m-d",strtotime($sendDate));
 
 				if( $isSync == 1 AND isset($_POST['sendDate'])){
+					include_once '../db/db.php';
+					
 					//TRUNCATE temp 
 					$sql = "TRUNCATE TABLE send_mssql_tmp";			
 					$stmt = $pdo->prepare($sql);

@@ -1,5 +1,6 @@
 <?php
-  include '../db/database_sqlsrv.php';
+  //include '../db/database_sqlsrv.php';
+  include_once '../db/database_sqlsrv.php';
   include 'inc_helper.php';  
 ?>
 <!DOCTYPE html>
@@ -39,379 +40,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <section class="content">
 
       <!-- Your Page Content Here -->
-    <div class="box box-primary">
-		<?php	
-			if(isset($_GET['searchFromDate'])){
-				//TRUNCATE temp 
-				$sql = "TRUNCATE TABLE send_production_temp
-				";			
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute();
-				
-				//TRUNCATE new 
-				$sql = "TRUNCATE TABLE send_production_new
-				";			
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute();
-				
-				$sql = "SELECT TOP 100 [SendID]
-			  ,[SendNo]
-			  ,[SendNum]
-			  ,[IssueDate]
-			  ,[Quantity]
-			  ,[IsCustomer]
-			  ,[CustomerID] FROM send  
-				  ";
-				//echo $sql;
-				$msResult2 = sqlsrv_query($ssConn, $sql);
-				$msRowCount = 0;
-				
-				set_time_limit(0);
-				if($msResult2){
-				while ($msRow = sqlsrv_fetch_array($msResult2, SQLSRV_FETCH_ASSOC))  {	
-					//Insert mysql from mssql
-					$sql = "INSERT INTO  `send_production_temp` 
-					(`sendID`, `sendNo`, `issueDate`, `qty`, `isCustomer`, `customerID`) 
-					VALUES
-					(:sendID,:sendNo,null,:qty,:isCustomer,:customerID)
-					";		
-					$stmt = $pdo->prepare($sql);
-					$stmt->bindParam(':sendID', $msRow['sendID']);	
-					$stmt->bindParam(':sendNo', $msRow['sendNo']);		
-					//$stmt->bindParam(':issueDate', '2017-12-19');	
-					$stmt->bindParam(':qty', $msRow['qty']);	
-					$stmt->bindParam(':isCustomer', $msRow['isCustomer']);	
-					$stmt->bindParam(':customerID', $msRow['customerID']);		
-					$stmt->execute();
-
-					$msRowCount+=1;
-				}
-				//end while mssql
-				}else{
-					echo sqlsrv_error();
-				}
-				//if
-				
-				
-				////Product_item
-				//TRUNCATE temp 
-				$sql = "TRUNCATE TABLE product_item_temp
-				";			
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute();
-				
-				//TRUNCATE new 
-				$sql = "TRUNCATE TABLE product_item_new
-				";			
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute();
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				$searchFromDate = $_GET['searchFromDate'];
-				
-				$searchFromDate = to_mysql_date($searchFromDate);
-					$sql = "SELECT TOP 1[ProductItemID]
-				  ,[ProductID]
-				  ,[ItemCode]
-				  ,CONVERT(varchar(10),[IssueDate],126) AS IssueDate 
-				  ,[MachineID]
-				  ,[SeqNo]
-				  ,[NW]
-				  ,[GW]
-				  ,[Length]
-				  ,[Grade]
-				  ,CONVERT(varchar(10),[IssueGrade],126) AS IssueGrade 
-				  ,[UserID]
-				  ,[RefItemID]
-				  ,[ItemStatus]
-				  ,[Remark]
-				  ,[RecordDate]
-				  ,[ProblemID] FROM product_item 
-				   WHERE IssueDate = '$searchFromDate' 
-				  ";
-				//echo $sql;
-				$msResult = sqlsrv_query($ssConn, $sql);
-				$msRowCount = 0;
-				
-				set_time_limit(0);
-				while ($msRow = sqlsrv_fetch_array($msResult, SQLSRV_FETCH_ASSOC))  {
-					//Insert mysql from mssql
-					$sql = "INSERT INTO  `product_item_temp` 
-					(`prodItemId`, `prodId`, `barcode`, `issueDate`, `machineId`, `seqNo`, `NW`, `GW`, `qty`, `grade`, `gradeDate`, `refItemId`, `itemStatus`, `remark`, `problemId`) 
-					VALUES
-					(:prodItemId,:prodId,:barcode,:issueDate,:machineId,:seqNo,:NW,:GW,:qty,:grade,:gradeDate,:refItemId,:itemStatus,:remark,:problemId)
-					";			
-					$stmt = $pdo->prepare($sql);
-					$stmt->bindParam(':prodItemId', $msRow['ProductItemID']);	
-					$stmt->bindParam(':prodId', $msRow['ProductID']);	
-					$stmt->bindParam(':barcode', $msRow['ItemCode']);	
-					$stmt->bindParam(':issueDate', date($msRow['IssueDate']) );	
-					$stmt->bindParam(':machineId', $msRow['MachineID']);	
-					$stmt->bindParam(':seqNo', $msRow['SeqNo']);	
-					$stmt->bindParam(':NW', $msRow['NW']);	
-					$stmt->bindParam(':GW', $msRow['GW']);	
-					$stmt->bindParam(':qty', $msRow['Length']);	
-					$stmt->bindParam(':grade', $msRow['Grade']);	
-					$stmt->bindParam(':gradeDate', date($msRow['IssueGrade']) );	
-					$stmt->bindParam(':refItemId', $msRow['RefItemID']);	
-					$stmt->bindParam(':itemStatus', $msRow['ItemStatus']);	
-					$stmt->bindParam(':remark', $msRow['Remark']);	
-					$stmt->bindParam(':problemId', $msRow['ProblemID']);		
-					$stmt->execute();
-					
-					$msRowCount+=1;
-				}
-				//end while mssql
-				
-				//Update prodCode
-				$sql = "UPDATE product_item_temp itm
-				INNER JOIN product_mapping pm on itm.prodId=pm.invProdId
-				SET itm.prodCode=pm.prodCode
-					";
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute();
-				
-				
-				//Update prod with temp
-				$sql = "UPDATE product_item prod 
-				INNER JOIN product_item_temp tmp ON tmp.prodItemId=prod.prodItemId
-				SET prod.`prodId`=tmp.`prodId`, prod.`prodCode`=tmp.`prodCode`, prod.`barcode`=tmp.`barcode`, prod.`issueDate`=tmp.`issueDate`, prod.`machineId`=tmp.`machineId`
-				 , prod.`seqNo`=tmp.`seqNo`, prod.`NW`=tmp.`NW`, prod.`GW`=tmp.`GW`, prod.`qty`=tmp.`qty`, prod.`grade`=tmp.`grade`, prod.`gradeDate`=tmp.`gradeDate`
-				 , prod.`refItemId`=tmp.`refItemId`, prod.`itemStatus`=tmp.`itemStatus`, prod.`remark`=tmp.`remark`, prod.`problemId`=tmp.`problemId`
-				";			
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute();
-				
-				//Get only new item
-				$sql = "INSERT INTO  `product_item_new` 
-				(`prodItemId`, `prodId`, `prodCode`, `barcode`, `issueDate`, `machineId`, `seqNo`, `NW`, `GW`, `qty`, `grade`, `gradeDate`, `refItemId`, `itemStatus`, `remark`, `problemId`) 
-				SELECT 
-				prodItemId,prodId,prodCode,barcode,issueDate,machineId,seqNo,NW,GW,qty,grade,gradeDate,refItemId,itemStatus,remark,problemId 
-				FROM product_item_temp 
-				WHERE prodItemId NOT IN (SELECT prodItemId FROM product_item) 
-				";			
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute();
-								
-				//Update prod with temp
-				$sql = "INSERT INTO  `product_item` 
-				(`prodItemId`, `prodId`, `prodCode`, `barcode`, `issueDate`, `machineId`, `seqNo`, `NW`, `GW`, `qty`, `grade`, `gradeDate`, `refItemId`, `itemStatus`, `remark`, `problemId`) 
-				SELECT 
-				prodItemId,prodId,prodCode,barcode,issueDate,machineId,seqNo,NW,GW,qty,grade,gradeDate,refItemId,itemStatus,remark,problemId 
-				FROM product_item_new 
-				";			
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute();
-				
-				
-				
-				//sqlsrv_free_stmt($result);
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				//Update prod with temp
-				$sql = "UPDATE send_production prod 
-				INNER JOIN send_production_temp tmp ON tmp.sendID=prod.sendID
-				SET prod.`sendNo`=tmp.`sendNo`
-				, prod.`issueDate`=tmp.`issueDate`
-				, prod.`qty`=tmp.`qty`
-				, prod.`isCustomer`=tmp.`isCustomer`
-				, prod.`customerID`=tmp.`customerID`				
-				";
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute();
-				
-				//Get only new item
-				$sql = "INSERT INTO  `send_production_new` 
-				(`sendID`, `sendNo`, `issueDate`, `qty`, `isCustomer`, `customerID`) 
-				SELECT 
-				sendID,sendNo,issueDate,qty,isCustomer,customerID 
-				FROM send_production_temp 
-				WHERE NOT EXISTS (SELECT * FROM send_production WHERE send_production.sendID=send_production_temp.sendID
-								) 
-				";			
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute();
-				
-				//Get only new item
-				$sql = "INSERT INTO  `send_production` 
-				(`sendID`, `sendNo`, `issueDate`, `qty`, `isCustomer`, `customerID`) 
-				SELECT 
-				sendID,sendNo,issueDate,qty,isCustomer,customerID 
-				FROM send_production_new	
-				";			
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute();
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				////Detail
-				//TRUNCATE temp 
-				$sql = "TRUNCATE TABLE send_production_detail_temp
-				";			
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute();
-				
-				//TRUNCATE new 
-				$sql = "TRUNCATE TABLE send_production_detail_new
-				";			
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute();
-								
-				$sql = "SELECT [SendID]
-			  ,[ProductItemID]
-			  ,[Remark] FROM [send_detail]  
-				WHERE [SendID] IN (SELECT [SendID] FROM [send] WHERE IssueDate = '$searchFromDate') 
-				  ";
-				//echo $sql;
-				$msResult = sqlsrv_query($ssConn, $sql);
-				$msRowCount = 0;
-				
-				set_time_limit(0);
-				while ($msRow = sqlsrv_fetch_array($msResult, SQLSRV_FETCH_ASSOC))  {										
-					//Insert mysql from mssql
-					$sql = "INSERT INTO  `send_production_detail_temp` 
-					(`sendID`, `ProdItemID`) 
-					VALUES
-					(:sendID,:ProductItemID)
-					";			
-					$stmt = $pdo->prepare($sql);
-					$stmt->bindParam(':sendID', $msRow['sendID']);	
-					$stmt->bindParam(':ProductItemID', $msRow['ProductItemID']);
-					$stmt->execute();
-
-					$msRowCount+=1;
-				}
-				//end while mssql
-				
-				//update send_production_detail_temp
-				//Update prod with temp
-				$sql = "UPDATE send_production_detail_temp prod 
-				INNER JOIN product_item tmp ON tmp.prodItemId=prod.prodItemId
-				SET prod.`prodId`=tmp.`prodId`, prod.`prodCode`=tmp.`prodCode`, prod.`barcode`=tmp.`barcode`, prod.`issueDate`=tmp.`issueDate`, prod.`machineId`=tmp.`machineId`
-				 , prod.`seqNo`=tmp.`seqNo`, prod.`NW`=tmp.`NW`, prod.`GW`=tmp.`GW`, prod.`qty`=tmp.`qty`, prod.`grade`=tmp.`grade`, prod.`gradeDate`=tmp.`gradeDate`
-				 , prod.`refItemId`=tmp.`refItemId`, prod.`itemStatus`=tmp.`itemStatus`, prod.`remark`=tmp.`remark`, prod.`problemId`=tmp.`problemId`
-				";			
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute();				
-				
-				//Update prod with temp
-				$sql = "UPDATE send_production_detail prod 
-				INNER JOIN send_production_detail_temp tmp ON tmp.prodItemId=prod.prodItemId
-				SET prod.`prodId`=tmp.`prodId`, prod.`prodCode`=tmp.`prodCode`, prod.`barcode`=tmp.`barcode`, prod.`issueDate`=tmp.`issueDate`, prod.`machineId`=tmp.`machineId`
-				 , prod.`seqNo`=tmp.`seqNo`, prod.`NW`=tmp.`NW`, prod.`GW`=tmp.`GW`, prod.`qty`=tmp.`qty`, prod.`grade`=tmp.`grade`, prod.`gradeDate`=tmp.`gradeDate`
-				 , prod.`refItemId`=tmp.`refItemId`, prod.`itemStatus`=tmp.`itemStatus`, prod.`remark`=tmp.`remark`, prod.`problemId`=tmp.`problemId`
-				";			
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute();
-				
-				//Get only new item
-				$sql = "INSERT INTO  `send_production_detail` 
-				(`prodItemId`, `prodId`, `prodCode`, `barcode`, `issueDate`, `machineId`, `seqNo`, `NW`, `GW`, `qty`, `grade`, `gradeDate`, `refItemId`, `itemStatus`, `remark`, `problemId`) 
-				SELECT 
-				prodItemId,prodId,prodCode,barcode,issueDate,machineId,seqNo,NW,GW,qty,grade,gradeDate,refItemId,itemStatus,remark,problemId 
-				FROM send_production_detail_temp 
-				WHERE NOT EXISTS (SELECT * FROM send_production_detail WHERE send_production_detail.sendID=send_production_detail_temp.sendID
-									AND send_production_detail.prodItemId=send_production_detail_temp.prodItemId ) 
-				";			
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute();
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-								
-				
-				
-				
-				
-							
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				//STOCK
-				//Update Stock balance
-				$sql = "UPDATE stk_bal sb 
-						INNER JOIN (SELECT left(barcode,1) as sloc,
-									prodCode,
-									IFNULL(SUM(qty),0) as qty 
-									FROM `product_item_new` 
-									group by left(barcode,1), prodCode) as temp on temp.prodCode=sb.prodCode AND temp.sloc=sb.sloc
-					SET sb.produce=sb.produce+temp.qty
-					, sb.balance=sb.balance+temp.qty 
-				";			
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute();
-				
-				//Insert Stock balance
-				$sql = "INSERT INTO stk_bal (prodCode,sloc,produce,balance)
-				SELECT temp.prodCode, temp.sloc, temp.qty, temp.qty
-				FROM (SELECT left(barcode,1) as sloc,
-										prodCode,
-										IFNULL(SUM(qty),0) as qty 
-										FROM `product_item_new` 
-										group by left(barcode,1), prodCode) as temp 
-				WHERE NOT EXISTS (SELECT * FROM stk_bal sb 
-									WHERE sb.prodCode=temp.prodCode
-									AND sb.sloc=temp.sloc) 
-				";			
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute();
-				
-				
-				
-
-			}
-			//end if isset fromDate and toDate 
-		?>
+    <div class="box box-primary">		
         <div class="box-header with-border">
         <h3 class="box-title">Product Item Sync</h3>
         <div class="box-tools pull-right">
@@ -424,17 +53,351 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <div class="row">
 				<form id="form1" action="<?=basename($_SERVER['PHP_SELF']);?>" method="get" class="form-inline" novalidate>				
 			<div class="col-md-12">	
-				<label for="searchFromDate">From Date</label>
-				<input type="text" id="searchFromDate" name="searchFromDate" class="form-control datepicker" data-smk-msg="Require Order Date." required >
+				<label for="sendDate">Send Date</label>
+				<input type="text" id="sendDate" name="sendDate" class="form-control datepicker" data-smk-msg="Require Order Date." required >
 				
 				<input type="submit" class="btn btn-primary" value="Submit" />
-				<?php if(isset($_GET['searchFromDate'])) echo 'Updated '.$msRowCount.' items'; ?>
 			</div>
 			<!--col-md-->
 				</form>
 				<!--from1-->
 			</div>
 			<!--/.row-->
+			<div class="row col-md-12">
+			<?php	
+				if(isset($_GET['sendDate'])){
+						$sendDate = $_GET['sendDate'];
+						//$fromCode = $_POST['fromCode'];
+						//$toCode = $_POST['toCode'];
+						//$prodId = $_POST['prodId'];
+						//$sendDate = to_mysql_date($sendDate);
+						$sendDate = str_replace('/', '-', $sendDate);
+						$sendDate = date("Y-m-d",strtotime($sendDate));
+						//echo date("Y-m-d",strtotime($sendDate));
+						//echo $sendDate;
+						
+						
+					//TRUNCATE temp 
+						echo "Clear temp header...";
+						$sql = "TRUNCATE TABLE send_mssql_tmp";			
+						$stmt = $pdo->prepare($sql);
+						if($stmt->execute()){
+							echo "success!<br/>";
+						}
+						
+						echo "Clear temp detail...";
+						$sql = "TRUNCATE TABLE send_detail_mssql_tmp";			
+						$stmt = $pdo->prepare($sql);
+						if($stmt->execute()){
+							echo "success!<br/>";
+						}
+						
+						echo "Clear temp product item...";
+						$sql = "TRUNCATE TABLE product_item_temp";			
+						$stmt = $pdo->prepare($sql);
+						if($stmt->execute()){
+							echo "success!<br/>";
+						}
+						
+						echo "Get Production data ";
+						$sql = "SELECT DISTINCT  hdr.[SendID], hdr.[SendNo], CONVERT(VARCHAR, hdr.[IssueDate], 121) as IssueDate
+						  , left(itm.[ItemCode],1) as fromCode 
+						  , [CustomerID]
+						  FROM [send] hdr, [askn].[dbo].[send_detail] dtl, [product_item] itm
+						  WHERE hdr.SendID=dtl.SendID 
+						  AND dtl.[ProductItemID]=itm.[ProductItemID]
+						  AND hdr.[isCustomer]='N' 
+						  AND hdr.[IssueDate] = '$sendDate'
+						  ";
+						  switch($s_userGroupCode){ 
+							case 'whOff' :  case 'whSup' : 
+									$sql .= "AND left(itm.[ItemCode],1) IN (0,7,8) ";
+								break;
+							case 'pdOff' :  case 'pdSup' :
+									$sql .= "AND left(itm.[ItemCode],1) = '".$s_userDeptCode."' ";
+								break;
+							default : //case 'it' : case 'admin' : 
+						  }
+						//echo $sql;
+						$msResult = sqlsrv_query($ssConn, $sql);
+						$msRowCount = 0;
+						$c = 1;
+						set_time_limit(0);
+						if($msResult){
+							while ($msRow = sqlsrv_fetch_array($msResult, SQLSRV_FETCH_ASSOC))  {	
+								//Insert Header mysql from mssql
+								$sql = "INSERT INTO  `send_mssql_tmp` 
+								(`sendId`, `issueDate`, `customerId`, `fromCode`) 
+								VALUES
+								(:SendID,:IssueDate,:CustomerID,:fromCode)
+								";		
+								
+								$stmt = $pdo->prepare($sql);
+								$stmt->bindParam(':SendID', $msRow['SendID']);	
+								$stmt->bindParam(':IssueDate', $msRow['IssueDate']);
+								$stmt->bindParam(':CustomerID', $msRow['CustomerID']);	
+								$stmt->bindParam(':fromCode', $msRow['fromCode']);			
+								$stmt->execute();
+
+								$msRowCount+=1;
+							}
+							//end while mssql
+						}else{
+							echo sqlsrv_error();
+						}
+						//if
+						
+						sqlsrv_free_stmt($msResult);
+										
+						
+						$sql = "  SELECT itm.[ProductItemID]
+						  ,itm.[ProductID]
+						  ,itm.[ItemCode]
+						  , CONVERT(VARCHAR, itm.[IssueDate], 121) as IssueDate
+						  ,itm.[MachineID]
+						  ,itm.[SeqNo]
+						  ,itm.[NW]
+						  ,itm.[GW]
+						  ,itm.[Length]
+						  ,itm.[Grade]
+						  , CONVERT(VARCHAR, itm.[IssueGrade], 121) as IssueGrade
+						  ,itm.[UserID]
+						  ,itm.[RefItemID]
+						  ,itm.[ItemStatus]
+						  ,itm.[Remark]
+						  ,itm.[RecordDate]
+						  ,itm.[ProblemID]
+						  ,dtl.[SendID], dtl.[Remark] 
+					  FROM [send_detail] dtl, [product_item] itm 
+					  WHERE dtl.[ProductItemID]=itm.[ProductItemID]
+					  AND dtl.[SendID] IN (  SELECT DISTINCT  hdr.[SendID] 
+										  FROM [send] hdr, [send_detail] dtl, [product_item] itm
+										  WHERE hdr.SendID=dtl.SendID 
+										  AND dtl.[ProductItemID]=itm.[ProductItemID]
+										  AND hdr.[IssueDate] = '$sendDate' )
+						  ";
+					  switch($s_userGroupCode){ 
+						case 'whOff' :  case 'whSup' : 
+								//$sql .= "AND left(itm.[ItemCode],1) IN ('0','7','8','9') ";
+							break;
+						case 'pdOff' :  case 'pdSup' :
+								$sql .= "AND left(itm.[ItemCode],1) = '".$s_userDeptCode."' ";
+							break;
+						default : //case 'it' : case 'admin' : 
+					  }
+						//echo $sql;
+						$msResult = sqlsrv_query($ssConn, $sql);
+						$msRowCount = 0;
+						$c = 1;
+						set_time_limit(0);
+						if($msResult){
+						while ($msRow = sqlsrv_fetch_array($msResult, SQLSRV_FETCH_ASSOC))  {	
+							//Insert mysql from mssql
+							$sql = "INSERT INTO  `product_item_temp` 
+							(`prodItemId`, `prodId`, `barcode`, `issueDate`, `machineId`, `seqNo`, `NW`, `GW`
+							, `qty`, `packQty`, `grade`, `gradeDate`, `refItemId`, `itemStatus`, `remark`, `problemId`) 
+							VALUES
+							(:ProductItemID,:ProductID,:ItemCode,:IssueDate,:MachineID,:SeqNo,:NW,:GW
+							,:Length,null,:Grade,:IssueGrade,:RefItemID,:ItemStatus,:Remark,:ProblemID
+							)
+							";		
+							$stmt = $pdo->prepare($sql);
+							$stmt->bindParam(':ProductItemID', $msRow['ProductItemID']);	
+							$stmt->bindParam(':ProductID', $msRow['ProductID']);	
+							$stmt->bindParam(':ItemCode', $msRow['ItemCode']);	
+							$stmt->bindParam(':IssueDate', $msRow['IssueDate']);	
+							$stmt->bindParam(':MachineID', $msRow['MachineID']);	
+							$stmt->bindParam(':SeqNo', $msRow['SeqNo']);	
+							$stmt->bindParam(':NW', $msRow['NW']);			
+							$stmt->bindParam(':GW', $msRow['GW']);	
+							
+							$stmt->bindParam(':Length', $msRow['Length']);	
+							$stmt->bindParam(':Grade', $msRow['Grade']);	
+							$stmt->bindParam(':IssueGrade', $msRow['IssueGrade']);	
+							$stmt->bindParam(':RefItemID', $msRow['RefItemID']);	
+							$stmt->bindParam(':ItemStatus', $msRow['ItemStatus']);	
+							$stmt->bindParam(':Remark', $msRow['Remark']);	
+							$stmt->bindParam(':ProblemID', $msRow['ProblemID']);		
+							
+							$stmt->execute();
+							
+							$sql = "INSERT INTO  `send_detail_mssql_tmp` 
+							(`productItemId`, `sendId`, `remark`) 
+							VALUES
+							(:ProductItemID, :SendID, :Remark)
+							";		
+							$stmt = $pdo->prepare($sql);
+							$stmt->bindParam(':ProductItemID', $msRow['ProductItemID']);	
+							$stmt->bindParam(':SendID', $msRow['SendID']);	
+							$stmt->bindParam(':Remark', $msRow['Remark']);	
+							$stmt->execute();
+
+							$msRowCount+=1;
+						}
+						//end while mssql
+						}else{
+							echo sqlsrv_error();
+						}
+						//if
+						
+						sqlsrv_free_stmt($msResult);
+						//END MSSQL 
+												
+						//PRODUCT ITEM (INSERT ONLY) 
+						//Update prodCodeId in product item.////////////////////////////////////////////
+						$sql = "UPDATE product_item_temp tmp 
+						INNER JOIN product_mapping map ON map.invProdId=tmp.prodId 
+						SET tmp.prodCodeId=map.wmsProdId 
+						";			
+						$stmt = $pdo->prepare($sql);
+						$stmt->execute();	
+						//Update prodCodeId in product item.////////////////////////////////////////////
+												
+						//Delete production only not approve sending.
+						/*$sql = "DELETE FROM product_item 
+						WHERE prodItemId IN (SELECT tmp.prodItemId FROM product_item_temp tmp 
+												INNER JOIN send_detail dtl ON dtl.prodItemId=tmp.prodItemId 
+												INNER JOIN send hdr ON hdr.sdNo=dtl.sdNo AND hdr.statusCode<>'P')	
+						";			
+						$stmt = $pdo->prepare($sql);
+						$stmt->execute();	*/
+							
+						//Insert prod with temp
+						$sql = "INSERT INTO product_item
+						SELECT * FROM product_item_temp 
+						WHERE prodItemId NOT IN (SELECT prodItemId FROM product_item)	
+						";			
+						$stmt = $pdo->prepare($sql);
+						$stmt->execute();	
+												
+						
+						/*22	COATING(5)
+						23	CUTTING(6)
+						57	Inspection(7)
+						181	Determinate 
+						191	Trash
+						209	Weaving(4)
+						212	Twisting(2)
+						213	Warping(3)
+						221	C/O=>In
+						222	Warehouse
+						223	Scrap
+						226	Extra stock
+						236	Packing
+						238	WH(Export)
+						239	ERP
+						240	160958 TW
+						241	160958 WP
+						242	160958 WV
+						243	160958 CO
+						244	160958 CT
+						245	160958 In.
+						251	R&D 
+						252	ล้างสต็อก 2017*/
+						//Begin Sync Sending data.
+						$sql = "UPDATE send_mssql_tmp prod 
+						SET prod.`toCode`= CASE customerId
+							WHEN 22 THEN '5'
+							WHEN 23 THEN '6'
+							WHEN 57 THEN '8'
+							WHEN 181 THEN 'U'
+							WHEN 191 THEN 'U' 		
+							WHEN 209 THEN '4'
+							WHEN 212 THEN '2'
+							WHEN 213 THEN '3'
+							WHEN 221 THEN 'U'
+							WHEN 222 THEN '8'
+							WHEN 223 THEN 'U'
+							WHEN 226 THEN '8'
+							WHEN 236 THEN '8'
+							WHEN 238 THEN 'E'
+							WHEN 239 THEN 'U' 
+							WHEN 240 THEN '2'
+							WHEN 241 THEN '3'
+							WHEN 242 THEN '4'
+							WHEN 243 THEN '5'
+							WHEN 244 THEN '6'
+							WHEN 245 THEN '8'
+							WHEN 251 THEN 'U'
+							WHEN 252 THEN 'U'
+							ELSE 'U' 
+						END
+						";			
+						$stmt = $pdo->prepare($sql);
+						$stmt->execute();
+							
+						//Update prod with temp
+						//$sql = "UPDATE send prod 
+						//INNER JOIN send_production tmp ON tmp.SendNo=prod.refNo AND prod.statusCode<>'P' 
+						//SET prod.`issueDate`=tmp.`issueDate`
+						//, prod.`qty`=tmp.`qty`
+						//, prod.`fromCode`=tmp.`fromCode`
+						//, prod.`isCustomer`=tmp.`isCustomer`
+						//, prod.`customerID`=tmp.`customerID`
+						//";			
+						//$stmt = $pdo->prepare($sql);
+						//$stmt->execute();
+						
+						//Insert prod with temp
+						/*$sql = "SELECT `sendID`, `sendNo`, `issueDate`, `qty`, `fromCode`, `toCode` 
+						FROM send_production 
+						WHERE SendID NOT IN (SELECT refNo FROM send) 
+						";			
+						$stmt = $pdo->prepare($sql);
+						$stmt->execute();*/
+								
+						//Update productoin header.
+						/*$sql = "INSERT INTO send_prod 
+						(`sdNo`, `refNo`, `sendDate`, `fromCode`, `toCode`, `remark`, `statusCode`, `createTime`, `createById`)
+						SELECT tmp.`sendNo`, tmp.`sendID`, tmp.`issueDate`, tmp.`fromCode`, tmp.`toCode`, tmp.`sendNo`, 'B', NOW(), :s_userId
+						FROM send_production tmp
+						WHERE NOT EXISTS (SELECT * FROM send_prod hdr WHERE hdr.sdNo=tmp.sdNo 
+						";	
+						$stmt = $pdo->prepare($sql);
+						$stmt->bindParam(':s_userId', $s_userId );	
+						$stmt->execute();*/
+						
+						
+						//Insert new productoin header.
+						$sql = "INSERT INTO send_mssql
+						(`sendId`, `issueDate`, `customerId`, `fromCode`, `toCode`, `createTime`, `createById`)
+						SELECT tmp.`sendId`, tmp.`issueDate`, tmp.customerId, tmp.`fromCode`, tmp.`toCode`, NOW(), :s_userId
+						FROM send_mssql_tmp tmp
+						WHERE NOT EXISTS (SELECT * FROM send_mssql hdr WHERE hdr.sendId=tmp.sendId )
+						";	
+						$stmt = $pdo->prepare($sql);
+						$stmt->bindParam(':s_userId', $s_userId );	
+						$stmt->execute();
+												
+						
+						//Delete temp if Approved.
+						/*$sql = "DELETE FROM send_production_detail 
+						WHERE prodItemId IN (SELECT dtl.prodItemId FROM send hdr
+											INNER JOIN send_detail dtl ON dtl.sdNo=hdr.sdNo 
+											WHERE hdr.statusCode='P' )
+						";			
+						$stmt = $pdo->prepare($sql);
+						$stmt->execute();*/
+						
+						//Insert productoin detail .
+						$sql = "INSERT INTO send_detail_mssql 
+						(`sendId`, `productItemId`, `remark`)
+						SELECT dtl.sendId, dtl.`productItemId`, dtl.`remark`
+						FROM send_detail_mssql_tmp dtl
+						WHERE NOT EXISTS (SELECT x.* FROM send_detail_mssql x WHERE dtl.productItemId=x.productItemId AND dtl.sendId=x.sendId) 
+						";					
+						$stmt = $pdo->prepare($sql);
+						$stmt->execute();
+					
+					
+					
+
+				}
+				//end if isset fromDate and toDate 
+			?>
+			
+				<?php if(isset($_GET['sendDate'])) echo 'Updated '.$msRowCount.' items'; ?>
+			</div>
 		</div>   
 		<!--/.row body-->	
 		<div class="box-footer">
@@ -510,19 +473,17 @@ $("html,body").scrollTop(0);
 			autoclose: true,
 			format: 'dd/mm/yyyy',
 			todayBtn: true,
-			language: 'th',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
-			thaiyear: true              //Set เป็นปี พ.ศ.
-		});  
-				
-		<?php if(isset($searchFromDate)){ ?>
+			language: 'en',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
+			thaiyear: false              //Set เป็นปี พ.ศ.
+		}); 
 		//กำหนดเป็น วันที่จากฐานข้อมูล
-		var queryDate = '<?= $searchFromDate;?>',
+		<?php if(isset($sendDate)){ ?>
+		var queryDate = '<?=$sendDate;?>',
 		dateParts = queryDate.match(/(\d+)/g)
-		realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
-		$('#searchFromDate').datepicker('setDate', realDate);		
-		<?php }else{ ?> $('#searchFromDate').datepicker('setDate', '0'); <?php } ?>
+		realDate = new Date(dateParts[0], dateParts[1] - 1,dateParts[2]); 
+		$('#sendDate').datepicker('setDate', realDate);
+		<?php }else{ ?> $('#sendDate').datepicker('setDate', '0'); <?php } ?>
 		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
-		
 	});
 </script>
 
