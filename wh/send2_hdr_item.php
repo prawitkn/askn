@@ -278,8 +278,8 @@ $(document).ready(function() {
 			sdNo: '<?=$sdNo;?>',
 			sendDate: queryDate,
 			prodId: prodId,
-			fromCode: <?=$fromCode;?>,
-			toCode: <?=$toCode;?>
+			fromCode: '<?=$fromCode;?>',
+			toCode: '<?=$toCode;?>'
 		}; //alert(params.sendDate);
 		/* Send the data using post and put the results in a div */
 		  $.ajax({

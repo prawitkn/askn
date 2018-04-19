@@ -360,7 +360,7 @@ if(!isset($_POST['action'])){
 				if($fromCode<>"") $sql.="AND hdr.fromCode=:fromCode ";
 				if($toCode<>"") $sql.="AND hdr.toCode=:toCode ";
 				if($prodId<>"") $sql.="AND itm.prodCodeId=:prodId ";
-				$sql.="ORDER BY hdr.sendId  LIMIT 200  "; 
+				$sql.="ORDER BY hdr.sendId, itm.barcode "; 
 				
 				$stmt = $pdo->prepare($sql);
 				if($sendDate<>"") $stmt->bindParam(':sendDate', $sendDate );

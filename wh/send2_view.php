@@ -128,6 +128,7 @@ $sdNo = $hdr['sdNo'];
 						LEFT JOIN product_item itm on itm.prodItemId=dtl.prodItemId 
 						LEFT JOIN product prd ON prd.id=itm.prodCodeId 
 						WHERE sdNo=:sdNo  
+						ORDER BY dtl.refNo, itm.barcode
 						";			
 						$stmt = $pdo->prepare($sql);	
 						$stmt->bindParam(':sdNo', $hdr['sdNo']);

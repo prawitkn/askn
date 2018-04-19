@@ -209,6 +209,7 @@ $tb="send";
 			LEFT JOIN product prd ON prd.id=itm.prodCodeId  
 			WHERE 1
 			AND dtl.sdNo=:sdNo  
+			ORDER BY dtl.refNo, itm.barcode
 			";
 			$stmt = $pdo->prepare($sql);
 			$stmt->bindParam(':sdNo', $sdNo);		
