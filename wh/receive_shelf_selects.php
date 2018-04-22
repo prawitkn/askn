@@ -68,6 +68,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 			LEFT JOIN product prd ON prd.id=itm.prodCodeId 
 			WHERE dtl.id IN (".$ids.")
+			ORDER BY itm.barcode 
 			";						
 			$stmt = $pdo->prepare($sql);	
 			//$stmt->bindParam(':ids', $ids);

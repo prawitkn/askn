@@ -147,6 +147,7 @@ $rcNo = $hdr['rcNo'];
 						LEFT JOIN wh_shelf ws ON ws.id=wmi.shelfId 
 						WHERE 1=1 
 						AND dtl.`rcNo`=:rcNo 
+						ORDER BY  itm.`barcode`
 						";
 						$stmt = $pdo->prepare($sql);	
 						$stmt->bindParam(':rcNo', $hdr['rcNo']);
@@ -154,7 +155,9 @@ $rcNo = $hdr['rcNo'];
 				   ?>	
 					<table class="table table-striped">
 						<tr>
-							<th style="text-align: center;"><input type="checkbox" id="checkAll"  />Select All<br/>No.</th>
+							<th style="text-align: center;">No.<br/>
+								<input type="checkbox" id="checkAll"  /> <span style="font-size: 80%">Select All</span>
+							</th>
 							<th>Product Code</th>
 							<th>Barcode</th>
 							<th>Grade</th>

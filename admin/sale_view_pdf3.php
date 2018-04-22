@@ -108,8 +108,7 @@ if( isset($_GET['soNo']) ){
 						
 			$soNo = $_GET['soNo'];
 			$sql = "
-			SELECT a.`soNo`, a.`saleDate`,a.`poNo`,a.`piNo`, a.`custId`, a.`smId`, a.`total`, a.`vatAmount`
-			, a.`netTotal`, a.`prodGFC`, a.`prodGFM`, a.`prodGFT`, a.`prodSC`, a.`prodCFC`, a.`prodEGWM`
+			SELECT a.`soNo`, a.`saleDate`,a.`poNo`,a.`piNo`, a.`custId`, a.`smId`, a.`prodGFT`, a.`prodSC`, a.`prodCFC`, a.`prodEGWM`
 			, a.`prodGT`, a.`prodCSM`, a.`prodWR`
 			, a.`deliveryDate`, a.`shipByLcl`, a.`shipByFcl`, a.`shipByRem`, a.`shippingMarksId`, a.`suppTypeFact`
 			, a.`suppTypeImp`, a.`prodTypeOld`, a.`prodTypeNew`, a.`custTypeOld`, a.`custTypeNew`

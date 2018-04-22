@@ -348,6 +348,7 @@ desired effect
 	
 		<?php if($hdr['statusCode']=='P'){ ?>
           <a href="<?=$rootPage;?>_view_pdf.php?soNo=<?=$soNo;?>" target="_blank" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
+		  <a href="<?=$rootPage;?>_view_pdf_new.php?soNo=<?=$soNo;?>" target="_blank" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print (New)</a>
 		
 			<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'salesAdmin' : ?>
 			  <button type="button" id="btn_revise" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['isClose']=='N'?'':'disabled'); ?> >

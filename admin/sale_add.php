@@ -200,9 +200,9 @@ $soNo = "";
 							<div class="col-md-6 form-group">
 								 <label for="shippingMarks">by</label><br/>
 								<input type="checkbox" name="shipByLcl" id="shipByLcl" <?php echo ($hdr['shipByLcl']==1?' checked ':''); ?> >
-								  LCL&nbsp;&nbsp;
+								  <span class="checkboxtext">LCL</span>&nbsp;&nbsp;
 								  <input type="checkbox" name="shipByFcl" id="shipByFcl"  <?php echo ($hdr['shipByFcl']==1?' checked ':''); ?>  >
-								  FCL
+								   <span class="checkboxtext">FCL</span>
 									<input type="text" id="shipByRem" name="shipByRem" class="form-control"  maxlength="40" <?=$hdr['shipByRem'];?> />
 							</div>
 						</div>
@@ -221,11 +221,11 @@ $soNo = "";
 							<div class="col-md-12 form-group">
 								  <label for="remOption">Remark Option</label><br/>
 									<input type="checkbox" name="remCoa" id="remCoa" <?php echo ($hdr['remCoa']==1?' checked ':''); ?> >
-									  ขอ COA&nbsp;&nbsp;
+									 <span class="checkboxtext">ขอ COA&nbsp;&nbsp;</span> 
 									  <input type="checkbox" name="remPalletBand" id="remPalletBand" <?php echo ($hdr['remPalletBand']==1?' checked ':''); ?> >
-									  PALLET ตีตรา&nbsp;&nbsp;
+									<span class="checkboxtext">PALLET ตีตรา&nbsp;&nbsp;</span>  
 									  <input type="checkbox" name="remFumigate" id="remFumigate" <?php echo ($hdr['remFumigate']==1?' checked ':''); ?> >
-										รมยาตู้คอนเทนเนอร์
+									<span class="checkboxtext">รมยาตู้คอนเทนเนอร์</span>	
 							  </div>
 						  </div>						  			
 						

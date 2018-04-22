@@ -54,7 +54,7 @@
 		font-size: 1.8em;
 	}
 	
-	input[type=checkbox]
+	input[type=checkbox], input[type=radio]
 	{
 	  /* Double-sized Checkboxes */
 	  -ms-transform: scale(1.5); /* IE */

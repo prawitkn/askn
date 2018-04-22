@@ -177,6 +177,7 @@ if( isset($_GET['rcNo']) ){
 			LEFT JOIN wh_shelf_map_item wmi ON wmi.recvProdId=dtl.id
 			LEFT JOIN wh_shelf ws ON ws.id=wmi.shelfId 
 				WHERE rcNo=:rcNo  
+				ORDER BY  itm.`barcode`
 				";			
 				$stmt = $pdo->prepare($sql);	
 				$stmt->bindParam(':rcNo', $hdr['rcNo']);

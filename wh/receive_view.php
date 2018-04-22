@@ -137,6 +137,7 @@ $rcNo = $hdr['rcNo'];
 						LEFT JOIN wh_sloc ws on ws.code=dtl.shelfCode 
 						WHERE 1=1 
 						AND dtl.`rcNo`=:rcNo 
+						ORDER BY  itm.`barcode`
 						";
 						$stmt = $pdo->prepare($sql);	
 						$stmt->bindParam(':rcNo', $hdr['rcNo']);

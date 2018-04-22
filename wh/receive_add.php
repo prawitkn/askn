@@ -181,7 +181,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 			LEFT JOIN product prd ON prd.id=itm.prodCodeId 
 			WHERE 1
-			AND dtl.rcNo=:rcNo  
+			AND dtl.rcNo=:rcNo  			
+			ORDER BY  itm.`barcode`
 			";
 			$stmt = $pdo->prepare($sql);
 			$stmt->bindParam(':rcNo', $rcNo);		
