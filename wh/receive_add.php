@@ -252,8 +252,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				</div>
 				<!--/.table-responsive-->
 				
-				<a name="btn_view" href="receive_view.php?rcNo=<?=$rcNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> View</a>
-				</form>
+				<!--<a name="btn_view" href="receive_view.php?rcNo=<?=$rcNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> View</a>
+				</form>-->
+				<button type="button" id="btn_verify" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
+					<i class="glyphicon glyphicon-ok"></i> Confirm
+				  </button>    
 			</div>
 			<!--/.row dtl-->
 		
@@ -526,6 +529,41 @@ $(document).ready(function() {
 	});
 	//.btn_click
 	
+	$('#btn_verify').click (function(e) {				 
+		var params = {					
+		rcNo: $('#rcNo').val()			
+		};
+		//alert(params.hdrID);
+		$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_confirm_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function(data) {
+				if (data.success){  
+					$.smkAlert({
+						text: data.message,
+						type: 'success',
+						position:'top-center'
+					});		
+					location.reload();
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
+				}
+				//e.preventDefault();		
+			}).error(function (response) {
+				alert(response.responseText);
+			});
+			//.post		
+		}});
+		//smkConfirm
+	});
+	//.btn_click
+
 	$("html,body").scrollTop(0);
 	$("#statusName").fadeOut('slow').fadeIn('slow').fadeOut('slow').fadeIn('slow');
 	
