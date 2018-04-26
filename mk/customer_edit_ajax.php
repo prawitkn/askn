@@ -16,6 +16,7 @@ try{
 	$zipcode = $_POST['zipcode'];
 	$countryName = $_POST['countryName'];
 	$locationCode = $_POST['locationCode'];
+	$creditDay = $_POST['creditDay'];
 	$marketCode = $_POST['marketCode'];
 	$contact = $_POST['contact'];
 	$contactPosition = $_POST['contactPosition'];
@@ -37,6 +38,7 @@ try{
     $sql = "UPDATE `customer` SET  `code`=:code, `name`=:name 
 	, `addr1`=:addr1, `addr2`=:addr2, `addr3`=:addr3
 	, `zipcode`=:zipcode, `countryName`=:countryName
+	, `creditDay`=:creditDay
 	, `locationCode`=:locationCode, `marketCode`=:marketCode
 	, `contact`=:contact, `contactPosition`=:contactPosition
 	, `email`=:email, `tel`=:tel, `fax`=:fax	
@@ -50,7 +52,7 @@ try{
 	$stmt->bindParam(':code', $code); $stmt->bindParam(':name', $name); 
 	$stmt->bindParam(':addr1', $addr1); $stmt->bindParam(':addr2', $addr2); $stmt->bindParam(':addr3', $addr3); 
 	$stmt->bindParam(':zipcode', $zipcode); $stmt->bindParam(':countryName', $countryName); $stmt->bindParam(':locationCode', $locationCode); $stmt->bindParam(':marketCode', $marketCode); 
-	$stmt->bindParam(':contact', $contact); $stmt->bindParam(':contactPosition', $contactPosition); 
+	$stmt->bindParam(':creditDay', $creditDay); $stmt->bindParam(':contact', $contact); $stmt->bindParam(':contactPosition', $contactPosition); 
 	$stmt->bindParam(':email', $email); $stmt->bindParam(':tel', $tel); $stmt->bindParam(':fax', $fax); 
 	$stmt->bindParam(':smId', $smId); $stmt->bindParam(':smAdmId', $smAdmId); 
 	$stmt->bindParam(':statusCode', $statusCode);

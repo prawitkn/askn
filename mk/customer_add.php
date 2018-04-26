@@ -84,7 +84,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
 								<input id="countryName" type="text" class="form-control" name="countryName" value="" data-smk-msg="Require Country Name" required>							
 								</div>
 							</div>
-							
+							<div class="row col-md-12">
+							<div class="form-group col-md-12">
+                            <label for="creditDay">Credit Days</label>                            
+							<input id="creditDay" type="text" class="form-control" name="creditDay" value="0" >							
+                        	</div>
+						</div>
 							
 							
 						

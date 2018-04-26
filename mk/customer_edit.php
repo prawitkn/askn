@@ -92,6 +92,12 @@ include 'head.php';
 							<input id="countryName" type="text" class="form-control" name="countryName" value="<?= $row['countryName']; ?>" data-smk-msg="Require Country Name" required>							
                         	</div>
 						</div>
+						<div class="row col-md-12">
+							<div class="form-group col-md-12">
+                            <label for="creditDay">Credit Days</label>                            
+							<input id="creditDay" type="text" class="form-control" name="creditDay" value="<?= $row['creditDay']; ?>" >							
+                        	</div>
+						</div>
 						
 						
 						
