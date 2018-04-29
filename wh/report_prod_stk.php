@@ -15,7 +15,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	$rootPage="report_prod_stk";
 	
 	$search_word = (isset($_GET['search_word'])?$_GET['search_word']:'');
-	$sloc = (isset($_GET['sloc'])?$_GET['sloc']:'');
+	$sloc = (isset($_GET['sloc'])?$_GET['sloc']:'8');
 	$catCode = (isset($_GET['catCode'])?$_GET['catCode']:'');
 	
 ?>    
@@ -126,7 +126,7 @@ desired effect
 					<select name="sloc" class="form-control">
 						<option value="" <?php echo ($sloc==""?'selected':''); ?> >--All--</option>
 						<?php
-						$sql = "SELECT `code`, `name` FROM sloc WHERE statusCode='A'	ORDER BY code ASC ";
+						$sql = "SELECT `code`, `name` FROM sloc WHERE statusCode='A' AND code IN ('8','E') ORDER BY code ASC ";
 						$stmt = $pdo->prepare($sql);
 						$stmt->execute();					
 						while ($row = $stmt->fetch()){
@@ -183,7 +183,7 @@ desired effect
                   </thead>
                   <tbody>
 					<?php
-						$sql = "SELECT prd.*
+						$sql = "SELECT DISTINCT prd.*
 						,sb.sloc, sb.`open`, sb.`produce`, sb.`onway`, sb.`receive`, sb.`send`, sb.`sales`, sb.`delivery`, sb.`balance` 
 						FROM stk_bal sb 
 						INNER JOIN product prd on prd.id=sb.prodId  
@@ -191,7 +191,7 @@ desired effect
 						if($search_word<>""){ $sql = "and (prd.code like '%".$search_word."%' OR prd.name like '%".$search_word."%') "; }
 						if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
 						if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
-						$sql.="ORDER BY prd.code desc ";
+						$sql.="ORDER BY prd.code  ";
 						$sql.="LIMIT $start, $rows ";
 						$result = mysqli_query($link, $sql);                
 				   ?>             

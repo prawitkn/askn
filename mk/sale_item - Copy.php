@@ -137,7 +137,7 @@ desired effect
 				</div><!-- /.box-tools -->
 				</div><!-- /.box-header -->
 				<div class="box-body">
-					<form id="form1" action="sale_item_insert.php" method="post" class="form-inline" novalidate>
+					<form id="form1" action="sale_item_insert.php" method="post" class="form" novalidate>
 					<input type="hidden" id="soNo" value="<?= $hdr['soNo']; ?>" />
 						<div class="row" style="padding-bottom: 3px;">						
 							<div class="col-md-2"><div class="pull-right">
@@ -149,32 +149,34 @@ desired effect
 						</div><!--row-->
 						
 						<div class="row" style="padding-bottom: 3px;">
-							<div class="col-md-2">
-							<div class="pull-right">
-							<label for="prodId">Product </label></div>
-							</div>
-							<div class="col-md-4">							
-								<div class="form-group row">
-									<input type="hidden" name="prodId" id="prodId" class="form-control" value=""   data-smk-msg="Require Product ID" required   />
-									<input type="text" name="prodCode" id="prodCode" class="form-control" value=""  data-smk-msg="Require Product" required  />
+						<div class="col-md-2">
+						<div class="pull-right">
+						<label for="prodId">Product </label></div>
+						</div>
+						<div class="col-md-4">							
+							<div class="form-group row">
+								<div class="col-md-9">
+									<input type="hidden" name="prodId" id="prodId" class="form-control" value=""  />
+									<input type="text" name="prodCode" class="form-control" value=""  />
+								</div>
+								<div class="col-md-3">
 									<a href="#" name="btnSdNo" class="btn btn-primary" ><i class="glyphicon glyphicon-search" ></i></a>	
 								</div>
-								<!--from group-->
-								
-							</div><!-- /.col-md-3-->
-							<div class="col-md-2">
-								<a id="aCheckStock" href="#" target="_blank" class="btn btn-default"><i class="glyphicon glyphicon-stat"></i> Check Stock</a>
 							</div>
-							<div class="col-md-2">
-
-							</div><!-- /.col-md-2-->								
-							<div class="col-md-2">
-								
-							</div><!-- /.col-md-4-->	
+							<!--from group-->
+							
+					</div><!-- /.col-md-3-->
+						<div class="col-md-2">
+							<a id="aCheckStock" href="#" target="_blank" class="btn btn-default"><i class="glyphicon glyphicon-stat"></i> Check Stock</a>
+						</div>
+						<div class="col-md-2">
+						
+						</div><!-- /.col-md-2-->								
+						<div class="col-md-2">
+							
+						</div><!-- /.col-md-4-->	
 						
 						</div>
-						
-						
 						<div class="row" style="padding-bottom: 3px;">						
 							<div class="col-md-2"><div class="pull-right">
 							<label>Product Desc : </label>
@@ -410,41 +412,28 @@ desired effect
         });
   //   
   
-	function getRollLength(prodId){
-		//Get Roll Length
-		var params = {
-			id: prodId //$('option:selected', this).val();
-		}; 
-		$.ajax({
-		  url: "get_prod_roll_length_ajax.php",
-		  type: "post",
-		  data: params,
-		datatype: 'json',
-		  success: function(data){
-				//alert(data);
-				$('#rollLengthId').empty();
-				$.each($.parseJSON(data), function(key,value){
-					$('#rollLengthId').append('<option value="'+value.id+'" >'+value.name+'</option>' );		
-				});		
-		  }, //success
-		  error:function(){
-			  alert('error');
-		  }   
-		}); 
-			
-		$('#qty').focus().select();
-	}
-  
-  
-	
-	
 	//SEARCH Begin
 	$('a[name="btnSdNo"]').click(function(){
-		curName = $(this).prev().attr('name');
-		curId = $(this).prev().prev().attr('name');
-		if(!$('#'+curName).prop('disabled')){
+		//prev() and next() count <br/> too.		
+		/*$btn = $(this).closest("div").prev().find('input');
+		curId = $btn.attr('name');
+		//curId = $(this).prev().attr('name');
+		curTxtFullName = $(this).attr('id');
+		if(!$btn.prop('disabled')){
+			$('#modal_search_person').modal('show');
+		}*/
+		$txtName = $(this).closest("div").prev().find('input[type="text"]');
+		//alert($btn.attr('name'));
+		//curId = $btn.attr('name');
+		curId = $(this).closest("div").prev().find('input[type="hidden"]').attr('name');
+		curName = $(this).closest("div").prev().find('input[type="text"]').attr('name');
+		//alert($txtName);
+		if(!$txtName.prop('disabled')){
 			$('#modal_search_person').modal('show');
 		}
+		
+		//alert(curHidMid+' '+curSlOrgCode+' '+curTxtFullName+' ' +curTxtMobilePhoneNo);
+		
 	});	
 	$('#txt_search_word').keyup(function(e){ 
 		if(e.keyCode == 13)
@@ -463,13 +452,8 @@ desired effect
 				  data: params,
 				datatype: 'json',
 				  success: function(data){	
-						data=$.parseJSON(data);
-						switch(data.rowCount){
-							case 0 : alert('Data not found.');
-								return false; break;
-							default : 
 								$('#tbl_search_person_main tbody').empty();
-								$.each($.parseJSON(data.data), function(key,value){
+								$.each($.parseJSON(data), function(key,value){
 									$('#tbl_search_person_main tbody').append(
 									'<tr>' +
 										'<td>' +
@@ -490,109 +474,53 @@ desired effect
 									'</tr>'
 									);		
 								});
-								$('#modal_search_person').modal('show');	
-						}	
-						
-								
 							
+				  }, //success
+				  error:function(){
+					  alert('error');
 				  }   
-				}).error(function (response) {
-					alert(response.responseText);
-				});  
+				}); 
 		}/* e.keycode=13 */	
 	});
 	
 	$(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
 		$('input[name='+curId+']').val($(this).closest("tr").find('td:eq(1)').text());
 		$('input[name='+curName+']').val($(this).closest("tr").find('td:eq(2)').text());
+		//alert($(this).closest("tr").find('td:eq(1)').text());
 		
 		$('#prodDesc').html($(this).closest('tr').find('td:eq(3)').text()+' / <span style="color: red;">'+$(this).closest('tr').find('td:eq(7)').text()+'(-'+$(this).closest('tr').find('td:eq(8)').text()+')</span>');	
-
+		
 		$('#lblUom').text($(this).closest('tr').find('td:eq(4)').text());	
 		//$('#prodPrice').val($(this).closest('tr').find('td:eq(4)').text());	
 		//$('#salesPrice').val($(this).closest('tr').find('td:eq(4)').text());	
-
+		
 		//Get Roll Length
-		var prodId=$(this).closest("tr").find('td:eq(1)').text();
-		
-		getRollLength(prodId);
-		
+		var params = {
+			id: $(this).closest("tr").find('td:eq(1)').text() //$('option:selected', this).val();
+		}; 
+		$.ajax({
+		  url: "get_prod_roll_length_ajax.php",
+		  type: "post",
+		  data: params,
+		datatype: 'json',
+		  success: function(data){
+				//alert(data);
+				$('#rollLengthId').empty();
+				$.each($.parseJSON(data), function(key,value){
+					$('#rollLengthId').append('<option value="'+value.id+'" >'+value.name+'</option>' );		
+				});		
+		  }, //success
+		  error:function(){
+			  alert('error');
+		  }   
+		}); 
+			
+		$('#qty').focus().select();
+
+				
 		$('#modal_search_person').modal('hide');
 	});
 	//Search End
-
-	$('#prodCode').keyup(function(e){ 
-		if(e.keyCode == 13)
-		{
-			var params = {
-				search_word: $('#prodCode').val()
-			};
-			if(params.search_word.length < 3){
-				alert('search word must more than 3 character.');
-				return false;
-			}
-			curName = $(this).attr('name');
-			curId = $(this).prev().attr('name'); //alert(curName); alert(curId);
-			/* Send the data using post and put the results in a div */
-			  $.ajax({
-				  url: "search_product_ajax.php",
-				  type: "post",
-				  data: params,
-				datatype: 'json',
-				  success: function(data){	
-						data=$.parseJSON(data);
-						switch(data.rowCount){
-							case 0 : alert('Data not found.');
-								$('#tbl_items tbody').empty();
-								return false; break;
-							case 1 :
-								$.each($.parseJSON(data.data), function(key,value){
-									$('input[name='+curName+']').val(value.prodCode);
-									$('input[name='+curId+']').val(value.prodId);									
-									alert(value.prodId);
-									getRollLength(value.prodId);
-								});
-								break;
-							default : 
-								$('#tbl_search_person_main tbody').empty();
-								$.each($.parseJSON(data.data), function(key,value){
-									$('#tbl_search_person_main tbody').append(
-									'<tr>' +
-										'<td>' +
-										'	<div class="btn-group">' +
-										'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
-										'	class="btn" title="เลือก"> ' +
-										'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
-										'	</div>' +
-										'</td>' + 
-										'<td style="display: none;">'+ value.prodId +'</td>' +
-										'<td>'+ value.prodCode +'</td>' +
-										'<td>'+ value.prodName +'</td>' +
-										'<td style="display: none;">'+ value.prodUomCode +'</td>' +
-										'<td>'+ value.prodCatName +'</td>' +
-										'<td>'+ value.prodAppName+'</td>' +									
-										'<td style="display: none;">'+ value.balance+'</td>' +	
-										'<td style="display: none;">'+ value.sales+'</td>' +	
-									'</tr>'
-									);	
-								});								
-								$('#modal_search_person').modal('show');	
-						}	
-				  }   
-				}).error(function (response) {
-					alert(response.responseText);
-				});  
-		}/* e.keycode=13 */	
-	});
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	

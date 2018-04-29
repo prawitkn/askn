@@ -15,7 +15,11 @@ $objPHPExcel->getProperties()->setCreator("Prawit Khamnet")
         ->setKeywords("Sales Order")
         ->setCategory("Sales Order");
 		
-$dateFrom = (isset($_GET['dateFrom'])? to_mysql_date($_GET['dateFrom']):'');
+$dateFrom = (isset($_GET['dateFrom'])?$_GET['dateFrom']: date('d-m-Y') );
+
+$dateFrom = str_replace('/', '-', $dateFrom);
+$dateFromYmd=$dateToYmd="";
+if($dateFrom<>""){ $dateFromYmd = date('Y-m-d', strtotime($dateFrom));	}
 
 $sql = "SELECT count(*) as countTotal
 FROM `sale_header` sh

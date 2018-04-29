@@ -34,7 +34,6 @@
   <!-- /.login-logo -->
   <div class="login-box-body">
     <p class="login-box-msg">Sign in to start your session</p>
-
     <form id="form1" action="login_go.php" method="post" novalidate>
       <div class="form-group has-feedback">
         <input type="text" id="userName" name="userName"  class="form-control" placeholder="User Name" data-smk-msg="Require name." required>

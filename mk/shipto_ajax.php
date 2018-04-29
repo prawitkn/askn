@@ -66,6 +66,7 @@ function to_mysql_date($thai_date){
 				$zipcode = $_POST['zipcode'];
 				$countryName = $_POST['countryName'];
 				$locationCode = $_POST['locationCode'];
+				$creditDay = $_POST['creditDay'];
 				$marketCode = $_POST['marketCode'];
 				$contact = $_POST['contact'];
 				$contactPosition = $_POST['contactPosition'];
@@ -87,18 +88,18 @@ function to_mysql_date($thai_date){
 					exit;
 				}		
 				//INsert customer
-				$sql = "INSERT INTO `".$tb."`(`custId`, `code`, `name`, `addr1`, `addr2`, `addr3`, `zipcode`, `countryName`, `locationCode`, `marketCode`
+				$sql = "INSERT INTO `".$tb."`(`custId`, `code`, `name`, `addr1`, `addr2`, `addr3`, `zipcode`, `countryName`, `locationCode`, `creditDay`, `marketCode`
 				, `contact`, `contactPosition`, `email`, `tel`, `fax`, `smId`, `smAdmId`
 				, `statusCode`, `createTime`, `createById`) 
 				 VALUES 
-				(:custId,:code,:name,:addr1,:addr2,:addr3,:zipcode,:countryName,:locationCode,:marketCode
+				(:custId,:code,:name,:addr1,:addr2,:addr3,:zipcode,:countryName,:locationCode,:creditDay,:marketCode
 				,:contact,:contactPosition,:email,:tel,:fax,:smId,:smAdmId
 				,:statusCode, now(), :s_userId)";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':custId', $custId); $stmt->bindParam(':code', $code); $stmt->bindParam(':name', $name); 
 				$stmt->bindParam(':addr1', $addr1); $stmt->bindParam(':addr2', $addr2); $stmt->bindParam(':addr3', $addr3); 
-				$stmt->bindParam(':zipcode', $zipcode); $stmt->bindParam(':countryName', $countryName); $stmt->bindParam(':locationCode', $locationCode); $stmt->bindParam(':marketCode', $marketCode); 
-				$stmt->bindParam(':contact', $contact); $stmt->bindParam(':contactPosition', $contactPosition); 
+				$stmt->bindParam(':zipcode', $zipcode); $stmt->bindParam(':countryName', $countryName); $stmt->bindParam(':locationCode', $locationCode); $stmt->bindParam(':creditDay', $creditDay);
+				$stmt->bindParam(':marketCode', $marketCode); $stmt->bindParam(':contact', $contact); $stmt->bindParam(':contactPosition', $contactPosition); 
 				$stmt->bindParam(':email', $email); $stmt->bindParam(':tel', $tel); $stmt->bindParam(':fax', $fax); 
 				$stmt->bindParam(':smId', $smId); $stmt->bindParam(':smAdmId', $smAdmId); 
 				$stmt->bindParam(':statusCode', $statusCode);
@@ -126,6 +127,7 @@ function to_mysql_date($thai_date){
 				$zipcode = $_POST['zipcode'];
 				$countryName = $_POST['countryName'];
 				$locationCode = $_POST['locationCode'];
+				$creditDay = $_POST['creditDay'];
 				$marketCode = $_POST['marketCode'];
 				$contact = $_POST['contact'];
 				$contactPosition = $_POST['contactPosition'];
@@ -137,7 +139,7 @@ function to_mysql_date($thai_date){
 				$statusCode = (isset($_POST['statusCode'])? $_POST['statusCode'] : 'I' );
 								
 				$sql = "UPDATE `".$tb."` SET `custId`=:custId, `code`=:code, `name`=:name, `addr1`=:addr1, `addr2`=:addr2
-				, `addr3`=:addr3, `zipcode`=:zipcode, `countryName`=:countryName, `locationCode`=:locationCode, `marketCode`=:marketCode
+				, `addr3`=:addr3, `zipcode`=:zipcode, `countryName`=:countryName, `locationCode`=:locationCode, `creditDay`=:creditDay, `marketCode`=:marketCode
 				, `contact`=:contact, `contactPosition`=:contactPosition, `email`=:email, `tel`=:tel, `fax`=:fax, `smId`=:smId, `smAdmId`=:smAdmId
 				, `statusCode`=:statusCode 				
 				WHERE id=:id 
@@ -152,6 +154,7 @@ function to_mysql_date($thai_date){
 				$stmt->bindParam(':zipcode', $zipcode);
 				$stmt->bindParam(':countryName', $countryName);
 				$stmt->bindParam(':locationCode', $locationCode);
+				$stmt->bindParam(':creditDay', $creditDay);
 				$stmt->bindParam(':marketCode', $marketCode);
 				$stmt->bindParam(':contact', $contact);
 				$stmt->bindParam(':contactPosition', $contactPosition);

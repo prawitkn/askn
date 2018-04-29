@@ -46,12 +46,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
           <?php
-				$dateFrom = (isset($_GET['dateFrom'])?$_GET['dateFrom']:'');
-				$dateTo = (isset($_GET['dateTo'])?$_GET['dateTo']:'');
-				
-				$dateFromYmd=$dateToYmd="";
-				if($dateFrom<>""){ $dateFromYmd = to_mysql_date($_GET['dateFrom']);	}
-				if($dateFrom<>""){ $dateToYmd = to_mysql_date($_GET['dateTo']);	}
+$dateFrom = (isset($_GET['dateFrom'])?$_GET['dateFrom']: date('d-m-Y') );
+$dateTo = (isset($_GET['dateTo'])?$_GET['dateTo']: date('d-m-Y') );
+
+$dateFrom = str_replace('/', '-', $dateFrom);
+$dateTo = str_replace('/', '-', $dateTo);
+$dateFromYmd=$dateToYmd="";
+if($dateFrom<>""){ $dateFromYmd = date('Y-m-d', strtotime($dateFrom));	}
+if($dateTo<>""){ $dateToYmd =  date('Y-m-d', strtotime($dateTo));	}
 				
 				
 $sql = "
@@ -281,11 +283,11 @@ $(document).ready(function() {
 			autoclose: true,
 			format: 'dd/mm/yyyy',
 			todayBtn: true,
-			language: 'th',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
-			thaiyear: true              //Set เป็นปี พ.ศ.
+			language: 'en',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
+			thaiyear: false              //Set เป็นปี พ.ศ.
 		});  //กำหนดเป็นวันปัจุบัน
 		//กำหนดเป็น วันที่จากฐานข้อมูล		
-		<?php if($dateFrom<>"") { ?>
+		<?php if($dateFromYmd<>"") { ?>
 			var queryDate = '<?=$dateFromYmd;?>',
 			dateParts = queryDate.match(/(\d+)/g)
 			realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
@@ -294,7 +296,7 @@ $(document).ready(function() {
 		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
 		
 		//กำหนดเป็น วันที่จากฐานข้อมูล		
-		<?php if($dateTo<>"") { ?>
+		<?php if($dateToYmd<>"") { ?>
 			var queryDate = '<?=$dateToYmd;?>',
 			dateParts = queryDate.match(/(\d+)/g)
 			realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 

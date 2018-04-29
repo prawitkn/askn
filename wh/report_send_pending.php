@@ -14,7 +14,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <!-- Main Header -->
   <?php include 'header.php';   
 	
-	$rootPage="report_sending";
+	$rootPage="report_send_pending";
   ?>  
   
   <!-- Left side column. contains the logo and sidebar -->
@@ -46,20 +46,26 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
           <?php
-				$dateFrom = (isset($_GET['dateFrom'])?$_GET['dateFrom']:'');
-				$dateTo = (isset($_GET['dateTo'])?$_GET['dateTo']:'');
+				$dateFrom = (isset($_GET['dateFrom'])?$_GET['dateFrom']: date('d-m-Y') );
+				$dateTo = (isset($_GET['dateTo'])?$_GET['dateTo']: date('d-m-Y') );
 				
+				$dateFrom = str_replace('/', '-', $dateFrom);
+				$dateTo = str_replace('/', '-', $dateTo);
 				$dateFromYmd=$dateToYmd="";
-				if($dateFrom<>""){ $dateFromYmd = to_mysql_date($_GET['dateFrom']);	}
-				if($dateFrom<>""){ $dateToYmd = to_mysql_date($_GET['dateTo']);	}
+				if($dateFrom<>""){ $dateFromYmd = date('Y-m-d', strtotime($dateFrom));	}
+				if($dateTo<>""){ $dateToYmd =  date('Y-m-d', strtotime($dateTo));	}
 				
 				
-$sql = "
-SELECT COUNT(hdr.sendId) AS countTotal
-FROM `send_mssql` hdr 
+ $sql = "SELECT COUNT(dtl.productItemId) as countTotal 
+FROM `send_mssql` hdr
+INNER JOIN `send_detail_mssql` dtl ON dtl.sendId=hdr.sendId 
+	AND dtl.productItemId NOT IN (SELECT x.prodItemId FROM send_detail x) 
+INNER JOIN `product_item` itm ON itm.prodItemId=dtl.productItemId 
+INNER JOIN `product` prd ON prd.id=itm.prodCodeId  
+LEFT JOIN sloc fsl on hdr.fromCode=fsl.code
+LEFT JOIN sloc tsl on hdr.toCode=tsl.code
+LEFT JOIN user cu on hdr.createByID=cu.userId 
 WHERE 1 ";
-if($dateFrom<>""){ $sql .= " AND hdr.issueDate>='$dateFromYmd' ";	}
-if($dateTo<>""){ $sql .= " AND hdr.issueDate<='$dateToYmd' ";	}
 switch($s_userGroupCode){ 
 	case 'whOff' :  case 'whSup' : 
 	case 'pdOff' :  case 'pdSup' :
@@ -67,21 +73,24 @@ switch($s_userGroupCode){
 		break;
 	default : //case 'it' : case 'admin' : 
   }
-                $result = mysqli_query($link, $sql);
-                $countTotal = mysqli_fetch_assoc($result);
+if($dateFrom<>""){ $sql .= " AND hdr.issueDate>='$dateFromYmd' ";	}
+if($dateTo<>""){ $sql .= " AND hdr.issueDate<='$dateToYmd' ";	}			
+				$stmt = $pdo->prepare($sql);
+				$stmt->execute();
+				$countTotal=$stmt->fetch()['countTotal'];
 				
 				$rows=20;
 				$page=0;
 				if( !empty($_GET["page"]) and isset($_GET["page"]) ) $page=$_GET["page"];
 				if($page<=0) $page=1;
-				$total_data=$countTotal['countTotal'];
+				$total_data=$countTotal;
 				$total_page=ceil($total_data/$rows);
 				if($page>=$total_page) $page=$total_page;
 				$start=($page-1)*$rows;
 				if($page==0) $start=0;
           ?>
 		  
-          <span class="label label-primary">Total <?php echo $countTotal['countTotal']; ?> items</span>
+          <span class="label label-primary">Total <?php echo $countTotal; ?> items</span>
         </div><!-- /.box-tools -->
         </div><!-- /.box-header -->
         <div class="box-body">
@@ -115,10 +124,14 @@ switch($s_userGroupCode){
 //`sendId`, `issueDate`, `customerId`, `fromCode`, `toCode`, `createTime`, `createById` 
  $sql = "SELECT hdr.sendId as 'sdNo', hdr.`issueDate` as 'sendDate', hdr.`fromCode`, hdr.`toCode`
 , hdr.`createTime`, hdr.`createByID`
+, itm.prodCodeId, itm.barcode, itm.qty, prd.code as prodCode, prd.uomCode
 , fsl.name as fromName, tsl.name as toName 
 , cu.userFullname as createByName
 FROM `send_mssql` hdr
 INNER JOIN `send_detail_mssql` dtl ON dtl.sendId=hdr.sendId 
+	AND dtl.productItemId NOT IN (SELECT x.prodItemId FROM send_detail x) 
+INNER JOIN `product_item` itm ON itm.prodItemId=dtl.productItemId 
+INNER JOIN `product` prd ON prd.id=itm.prodCodeId  
 LEFT JOIN sloc fsl on hdr.fromCode=fsl.code
 LEFT JOIN sloc tsl on hdr.toCode=tsl.code
 LEFT JOIN user cu on hdr.createByID=cu.userId 
@@ -132,14 +145,17 @@ switch($s_userGroupCode){
   }
 if($dateFrom<>""){ $sql .= " AND hdr.issueDate>='$dateFromYmd' ";	}
 if($dateTo<>""){ $sql .= " AND hdr.issueDate<='$dateToYmd' ";	}				  
-$sql .= "ORDER BY hdr.sendId DESC
-LIMIT $start, $rows 
+$sql .= "GROUP BY hdr.sendId , hdr.`issueDate` , hdr.`fromCode`, hdr.`toCode`
+, hdr.`createTime`, hdr.`createByID`, itm.prodItemId ";
+$sql .= "ORDER BY hdr.sendId , itm.barcode ";
+$sql.="LIMIT $start, $rows 
 ";
-echo $sql;
-$result = mysqli_query($link, $sql);	   
+//echo $sql;
+$stmt = $pdo->prepare($sql);
+$stmt->execute();
+//$result = mysqli_query($link, $sql);	   
                          
-           ?>             
-			
+           ?>    
 				<div class="table-responsive">
 				<table class="table table-striped">
 				<thead>
@@ -149,11 +165,14 @@ $result = mysqli_query($link, $sql);
 					<th>Date</th>
 					<th>From</th>
 					<th>To</th>
-					<th>#</th>
+					<th>Barcode</th>
+					<th>Qty</th>
 				</tr>
 				</thead>
 				<tbody>
-                <?php $c_row=($start+1); while ($row = mysqli_fetch_assoc($result)) { 
+                <?php 
+				if($stmt->rowCount() > 0){ 
+				$c_row=($start+1); while ($row = $stmt->fetch() ) { 
 					/*$isCloseName = '<label class="label label-danger">Unknown</label>';
 					switch($row['isClose']){
 						case 'N' : $isCloseName = '<label class="label label-warning">No</label>'; break;
@@ -167,9 +186,12 @@ $result = mysqli_query($link, $sql);
 						<td><?=date('d M Y',strtotime( $row['sendDate'] ));?></td>
 						<td><?=$row['fromName'];?></td>
 						<td><?=$row['toName'];?></td>
-						<td>#</td>
+						<td><?=$row['barcode'];?></td>
+						<td><?=$row['qty'];?></td>
 					</tr>
-                <?php $c_row +=1; } ?>
+                <?php $c_row +=1; } 
+				}//end if rowCount() 
+				?>
 				</tbody>
 				</table>
 				</div>
@@ -178,11 +200,11 @@ $result = mysqli_query($link, $sql);
 		<div class="col-md-12">
 			<?php $pagingString = "?dateFrom=".$dateFrom."&dateTo=".$dateTo;
 			?>
-			<!--<a href="<?=$rootPage."_dtl_xls.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
-				<i class="glyphicon glyphicon-save-file"></i> Excel (by item)</span></a>-->
+			<a href="<?=$rootPage."_dtl_xls.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
+				<i class="glyphicon glyphicon-save-file"></i> Excel (by item)</span></a>
 				
-			<a href="<?=$rootPage."_hdr_xls.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
-				<i class="glyphicon glyphicon-save-file"></i> Excel</span></a>
+			<!--<a href="<?=$rootPage."_hdr_xls.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
+				<i class="glyphicon glyphicon-save-file"></i> Excel</span></a>-->
 				
 			
 			<nav>
@@ -269,11 +291,11 @@ $(document).ready(function() {
 			autoclose: true,
 			format: 'dd/mm/yyyy',
 			todayBtn: true,
-			language: 'th',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
-			thaiyear: true              //Set เป็นปี พ.ศ.
+			language: 'en',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
+			thaiyear: false              //Set เป็นปี พ.ศ.
 		});  //กำหนดเป็นวันปัจุบัน
 		//กำหนดเป็น วันที่จากฐานข้อมูล		
-		<?php if($dateFrom<>"") { ?>
+		<?php if($dateFromYmd<>"") { ?>
 			var queryDate = '<?=$dateFromYmd;?>',
 			dateParts = queryDate.match(/(\d+)/g)
 			realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
@@ -282,7 +304,7 @@ $(document).ready(function() {
 		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
 		
 		//กำหนดเป็น วันที่จากฐานข้อมูล		
-		<?php if($dateTo<>"") { ?>
+		<?php if($dateToYmd<>"") { ?>
 			var queryDate = '<?=$dateToYmd;?>',
 			dateParts = queryDate.match(/(\d+)/g)
 			realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 

@@ -14,7 +14,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <!-- Main Header -->
   <?php include 'header.php';   
 	
-	$rootPage="report_sending";
+	$rootPage="report_send_pending";
   ?>  
   
   <!-- Left side column. contains the logo and sidebar -->
@@ -25,8 +25,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- Content Header (Page header) -->
     <section class="content-header">
       <h1>
-		Sending Report
-        <small>Sending Report</small>
+		Send Pending Report
+        <small>Send Pending Report</small>
       </h1>
       <ol class="breadcrumb">
         <li><a href="index.php"><i class="fa fa-dashboard"></i> Main</a></li>
@@ -40,7 +40,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <!-- Your Page Content Here -->
     <div class="box box-primary">
         <div class="box-header with-border">
-        <h3 class="box-title">Sending Report</h3>		
+        <h3 class="box-title">Send Pending Report</h3>		
 		
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
@@ -57,11 +57,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				
 				
 $sql = "
-SELECT COUNT(hdr.sdNo) AS countTotal
-FROM `send` hdr 
+SELECT COUNT(hdr.sendId) AS countTotal
+FROM `send_mssql` hdr 
 WHERE 1 ";
-if($dateFrom<>""){ $sql .= " AND hdr.sendDate>='$dateFromYmd' ";	}
-if($dateTo<>""){ $sql .= " AND hdr.sendDate<='$dateToYmd' ";	}
+if($dateFrom<>""){ $sql .= " AND hdr.issueDate>='$dateFromYmd' ";	}
+if($dateTo<>""){ $sql .= " AND hdr.issueDate<='$dateToYmd' ";	}
 switch($s_userGroupCode){ 
 	case 'whOff' :  case 'whSup' : 
 	case 'pdOff' :  case 'pdSup' :
@@ -69,23 +69,24 @@ switch($s_userGroupCode){
 		break;
 	default : //case 'it' : case 'admin' : 
   }
-$sql .= "AND hdr.statusCode='P' 
-";				
-                $result = mysqli_query($link, $sql);
-                $countTotal = mysqli_fetch_assoc($result);
+                ///$result = mysqli_query($link, $sql);
+                //$countTotal = mysqli_fetch_assoc($result);
+				$stmt = $pdo->prepare($sql);
+				$stmt->execute();
+				$countTotal=$stmt->fetch()['countTotal'];
 				
 				$rows=20;
 				$page=0;
 				if( !empty($_GET["page"]) and isset($_GET["page"]) ) $page=$_GET["page"];
 				if($page<=0) $page=1;
-				$total_data=$countTotal['countTotal'];
+				$total_data=$countTotal;
 				$total_page=ceil($total_data/$rows);
 				if($page>=$total_page) $page=$total_page;
 				$start=($page-1)*$rows;
 				if($page==0) $start=0;
           ?>
 		  
-          <span class="label label-primary">Total <?php echo $countTotal['countTotal']; ?> items</span>
+          <span class="label label-primary">Total <?php echo $countTotal; ?> items</span>
         </div><!-- /.box-tools -->
         </div><!-- /.box-header -->
         <div class="box-body">
@@ -116,16 +117,18 @@ $sql .= "AND hdr.statusCode='P'
                 </div>    
 			</div>
            <?php
- $sql = "SELECT hdr.`sdNo`, hdr.`refNo`, hdr.`sendDate`, hdr.`fromCode`, hdr.`toCode`, hdr.`remark`, hdr.`statusCode`
-, hdr.`createTime`, hdr.`createByID`, hdr.`updateTime`, hdr.`updateById`, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById`
+//`sendId`, `issueDate`, `customerId`, `fromCode`, `toCode`, `createTime`, `createById` 
+ $sql = "SELECT hdr.sendId as 'sdNo', hdr.`issueDate` as 'sendDate', hdr.`fromCode`, hdr.`toCode`
+, hdr.`createTime`, hdr.`createByID`
 , fsl.name as fromName, tsl.name as toName 
-, cu.userFullname as createByName, fu.userFullname as confirmByName, pu.userFullname as approveByName 
-FROM `send` hdr
+, cu.userFullname as createByName
+FROM `send_mssql` hdr
+INNER JOIN `send_detail_mssql` dtl ON dtl.sendId=hdr.sendId 
+	AND dtl.productItemId NOT IN (SELECT x.prodItemId FROM send_detail x) 
+INNER JOIN `product_item` itm ON itm.prodItemId=dtl.productItemId 
 LEFT JOIN sloc fsl on hdr.fromCode=fsl.code
 LEFT JOIN sloc tsl on hdr.toCode=tsl.code
 LEFT JOIN user cu on hdr.createByID=cu.userId 
-LEFT JOIN user fu on hdr.confirmById=fu.userId
-LEFT JOIN user pu on hdr.approveById=pu.userId  
 WHERE 1 ";
 switch($s_userGroupCode){ 
 	case 'whOff' :  case 'whSup' : 
@@ -134,15 +137,17 @@ switch($s_userGroupCode){
 		break;
 	default : //case 'it' : case 'admin' : 
   }
-if($dateFrom<>""){ $sql .= " AND hdr.sendDate>='$dateFromYmd' ";	}
-if($dateTo<>""){ $sql .= " AND hdr.sendDate<='$dateToYmd' ";	}				  
-$sql .= "AND hdr.statusCode='P' 
-
-ORDER BY hdr.createTime DESC
+if($dateFrom<>""){ $sql .= " AND hdr.issueDate>='$dateFromYmd' ";	}
+if($dateTo<>""){ $sql .= " AND hdr.issueDate<='$dateToYmd' ";	}				  
+$sql .= "GROUP BY hdr.sendId , hdr.`issueDate` , hdr.`fromCode`, hdr.`toCode`
+, hdr.`createTime`, hdr.`createByID` ";
+$sql .= "ORDER BY hdr.sendId 
 LIMIT $start, $rows 
 ";
 //echo $sql;
-$result = mysqli_query($link, $sql);	   
+$stmt = $pdo->prepare($sql);
+$stmt->execute();
+//$result = mysqli_query($link, $sql);	   
                          
            ?>             
 			
@@ -159,7 +164,9 @@ $result = mysqli_query($link, $sql);
 				</tr>
 				</thead>
 				<tbody>
-                <?php $c_row=($start+1); while ($row = mysqli_fetch_assoc($result)) { 
+                <?php 
+				if($stmt->rowCount() > 0){ 
+				$c_row=($start+1); while ($row = $stmt->fetch() ) { 
 					/*$isCloseName = '<label class="label label-danger">Unknown</label>';
 					switch($row['isClose']){
 						case 'N' : $isCloseName = '<label class="label label-warning">No</label>'; break;
@@ -169,13 +176,15 @@ $result = mysqli_query($link, $sql);
 					?>
 					<tr>
 						<td><?=$c_row;?></td>
-						<td><a href="send_view.php?sdNo=<?=$row['sdNo'];?>"><?=$row['sdNo'];?></a></td>
-					<td><?=date('d M Y',strtotime( $row['sendDate'] ));?></td>
+						<td><?=$row['sdNo'];?></td>
+						<td><?=date('d M Y',strtotime( $row['sendDate'] ));?></td>
 						<td><?=$row['fromName'];?></td>
 						<td><?=$row['toName'];?></td>
 						<td>#</td>
 					</tr>
-                <?php $c_row +=1; } ?>
+                <?php $c_row +=1; } 
+				}//end if rowCount() 
+				?>
 				</tbody>
 				</table>
 				</div>
@@ -184,11 +193,11 @@ $result = mysqli_query($link, $sql);
 		<div class="col-md-12">
 			<?php $pagingString = "?dateFrom=".$dateFrom."&dateTo=".$dateTo;
 			?>
-			<!--<a href="<?=$rootPage."_dtl_xls.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
-				<i class="glyphicon glyphicon-save-file"></i> Excel (by item)</span></a>-->
+			<a href="<?=$rootPage."_dtl_xls.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
+				<i class="glyphicon glyphicon-save-file"></i> Excel (by item)</span></a>
 				
-			<a href="<?=$rootPage."_hdr_xls.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
-				<i class="glyphicon glyphicon-save-file"></i> Excel</span></a>
+			<!--<a href="<?=$rootPage."_hdr_xls.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
+				<i class="glyphicon glyphicon-save-file"></i> Excel</span></a>-->
 				
 			
 			<nav>
@@ -279,7 +288,7 @@ $(document).ready(function() {
 			thaiyear: false              //Set เป็นปี พ.ศ.
 		});  //กำหนดเป็นวันปัจุบัน
 		//กำหนดเป็น วันที่จากฐานข้อมูล		
-		<?php if($dateFromYmd<>"") { ?>
+		<?php if($dateFrom<>"") { ?>
 			var queryDate = '<?=$dateFromYmd;?>',
 			dateParts = queryDate.match(/(\d+)/g)
 			realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
@@ -288,7 +297,7 @@ $(document).ready(function() {
 		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
 		
 		//กำหนดเป็น วันที่จากฐานข้อมูล		
-		<?php if($dateToYmd<>"") { ?>
+		<?php if($dateTo<>"") { ?>
 			var queryDate = '<?=$dateToYmd;?>',
 			dateParts = queryDate.match(/(\d+)/g)
 			realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 

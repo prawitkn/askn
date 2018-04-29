@@ -46,12 +46,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
           <?php
-				$dateFrom = (isset($_GET['dateFrom'])?to_mysql_date($_GET['dateFrom']):'');
-				/*$dateTo = (isset($_GET['dateTo'])?to_mysql_date($_GET['dateTo']):'');
-				$custId = (isset($_GET['custId'])?$_GET['custId']:'');
-				$smId = (isset($_GET['smId'])?$_GET['smId']:'');
-				$statusCode = (isset($_GET['statusCode'])?$_GET['statusCode']:'');
-				$search_word = (isset($_GET['search_word'])?$_GET['search_word']:'');*/
+				$dateFrom = (isset($_GET['dateFrom'])?$_GET['dateFrom']: date('d-m-Y') );
+				
+				$dateFrom = str_replace('/', '-', $dateFrom);
+				$dateFromYmd=$dateToYmd="";
+				if($dateFrom<>""){ $dateFromYmd = date('Y-m-d', strtotime($dateFrom));	}
 											
                 $sql = "SELECT DISTINCT sh.soNO, sh.createTime 
 				FROM `sale_header` sh
@@ -269,12 +268,12 @@ $(document).ready(function() {
 			autoclose: true,
 			format: 'dd/mm/yyyy',
 			todayBtn: true,
-			language: 'th',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
-			thaiyear: true              //Set เป็นปี พ.ศ.
+			language: 'en',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
+			thaiyear: false              //Set เป็นปี พ.ศ.
 		});  //กำหนดเป็นวันปัจุบัน
 		//กำหนดเป็น วันที่จากฐานข้อมูล		
-		<?php if($dateFrom<>"") { ?>
-			var queryDate = '<?=$dateFrom?>',
+		<?php if($dateFromYmd<>"") { ?>
+			var queryDate = '<?=$dateFromYmd?>',
 			dateParts = queryDate.match(/(\d+)/g)
 			realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
 			$('#dateFrom').datepicker('setDate', realDate);

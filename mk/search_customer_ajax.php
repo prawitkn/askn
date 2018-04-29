@@ -6,7 +6,7 @@
 		$s_userDept = $row_user['userDept'];*/
 
 	$search_word = $_POST['search_word'];
-	$sql = "SELECT h.`id`, h.`code`, h.`name`, h.`addr1`, h.`addr2`, h.`addr3`, h.`zipcode`,  h.`smId`, h.`smAdmId`
+	$sql = "SELECT h.`id`, h.`code`, h.`name`, h.`addr1`, h.`addr2`, h.`addr3`, h.`zipcode`,  h.`smId`, h.`smAdmId`, h.`creditDay` 	
 	, sm.name as smName, sm2.name as smAdmName
 	FROM `customer` h 
 	LEFT JOIN salesman sm ON sm.id=h.smId

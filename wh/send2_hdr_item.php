@@ -442,7 +442,7 @@ $(document).ready(function() {
 								return false; break;
 							case 1 :
 								$.each($.parseJSON(data.data), function(key,value){
-									$('input[name='+curName+']').val(value.prodcode);
+									$('input[name='+curName+']').val(value.prodCode).css("color": "green");
 									$('input[name='+curId+']').val(value.prodId);
 								});
 								getList(0);

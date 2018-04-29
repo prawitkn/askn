@@ -45,7 +45,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <section class="content-header">
       <h1>
         Welcome to Warehouse Department
-        <small><?php echo $s_userFullname; ?> [ ID: <?php echo $_SESSION['userId']; ?>] </small>
+        <small><?php echo $s_userFullname; ?> [ ID: <?php echo $s_userId; ?>] </small>
       </h1>
       <ol class="breadcrumb">
         <li><a href="index.php"><i class="fa fa-dashboard"></i> Main Page</a></li>

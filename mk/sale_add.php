@@ -333,7 +333,10 @@ $soNo = "";
 										<label for="payTypeCode">Credit</label>
 									</div>
 									<div class="col-md-5">
-										<input type="textbox" name="payTypeCreditDays" id="payTypeCreditDays"  class="form-control" value="<?=$hdr['payTypeCreditDays'];?>" />
+										<input type="textbox" name="payTypeCreditDays" id="payTypeCreditDays"  class="form-control" value="<?=$hdr['payTypeCreditDays'];?>" 
+										onkeypress="return numbersOnly(this, event);" 
+										onpaste="return false;"
+										/>
 									</div>
 									<div class="col-md-2">
 										Days
@@ -417,6 +420,7 @@ $soNo = "";
 					<td style="display: none;">Addr2</td>
 					<td style="display: none;">Addr3</td>
 					<td style="display: none;">Zipcode</td>
+					<td>Credit Day</td>
 				</tr>
 			</thead>
 			<tbody>
@@ -529,6 +533,7 @@ $("#spin").hide();
 										'<td style="display: none;">'+ value.addr2 +'</td>' +
 										'<td style="display: none;">'+ value.addr3 +'</td>' +
 										'<td style="display: none;">'+ value.zipcode +'</td>' +
+										'<td>'+ value.creditDay +'</td>' +
 									'</tr>'
 									);			
 								});
@@ -563,8 +568,9 @@ $("#spin").hide();
 						//alert(data);
 						$('#shipToId').empty();
 						$.each($.parseJSON(data), function(key,value){
-							$('#shipToId').append('<option value="'+value.id+'" >'+value.code+' : '+value.name+'</option>' );
-							$('#custAddr').text(value.addr1+value.addr2+value.addr3+value.zipcode);							
+							$('#shipToId').append('<option value="'+value.id+'" data-creditDay="'+value.creditDay+'" >'+value.code+' : '+value.name+'</option>' );
+							$('#custAddr').text(value.addr1+value.addr2+value.addr3+value.zipcode);		
+							$('#payTypeCreditDays').val(value.creditDay);	
 						});
 					
 		  }, //success
@@ -626,8 +632,10 @@ $("#spin").hide();
 					//alert(data);
 					$('#custAddr').empty();
 					$.each($.parseJSON(data), function(key,value){
-						alert(value.addr1+value.addr2+value.addr3+value.zipcode);
+						//alert(value.addr1+value.addr2+value.addr3+value.zipcode);
 						$('#custAddr').text(value.addr1+value.addr2+value.addr3+value.zipcode);
+						$('#payTypeCreditDays').val(value.creditDay);					
+						
 					});				
 			  }, //success
 			  error:function(){
@@ -728,7 +736,13 @@ $("#spin").hide();
 </script>
 
 
-
+<!--Integers (non-negative)-->
+<script>
+  function numbersOnly(oToCheckField, oKeyEvent) {
+    return oKeyEvent.charCode === 0 ||
+        /\d/.test(String.fromCharCode(oKeyEvent.charCode));
+  }
+</script>
 
 <!-- Optionally, you can add Slimscroll and FastClick plugins.
      Both of these plugins are recommended to enhance the

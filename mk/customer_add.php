@@ -87,7 +87,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							<div class="row col-md-12">
 							<div class="form-group col-md-12">
                             <label for="creditDay">Credit Days</label>                            
-							<input id="creditDay" type="text" class="form-control" name="creditDay" value="0" >							
+							<input id="creditDay" type="text" class="form-control" name="creditDay" value="0" 
+							onkeypress="return numbersOnly(this, event);" 
+							onpaste="return false;"
+							>							
                         	</div>
 						</div>
 							
@@ -311,3 +314,12 @@ $(document).ready(function() {
 	
 </body>
 </html>
+
+
+<!--Integers (non-negative)-->
+<script>
+  function numbersOnly(oToCheckField, oKeyEvent) {
+    return oKeyEvent.charCode === 0 ||
+        /\d/.test(String.fromCharCode(oKeyEvent.charCode));
+  }
+</script>

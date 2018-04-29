@@ -15,12 +15,14 @@ $objPHPExcel->getProperties()->setCreator("Prawit Khamnet")
         ->setKeywords("Sales Order")
         ->setCategory("Sales Order");
 		
-$dateFrom = (isset($_GET['dateFrom'])?$_GET['dateFrom']:'');
-$dateTo = (isset($_GET['dateTo'])?$_GET['dateTo']:'');
+$dateFrom = (isset($_GET['dateFrom'])?$_GET['dateFrom']: date('d-m-Y') );
+$dateTo = (isset($_GET['dateTo'])?$_GET['dateTo']: date('d-m-Y') );
 
+$dateFrom = str_replace('/', '-', $dateFrom);
+$dateTo = str_replace('/', '-', $dateTo);
 $dateFromYmd=$dateToYmd="";
-if($dateFrom<>""){ $dateFromYmd = to_mysql_date($_GET['dateFrom']);	}
-if($dateFrom<>""){ $dateToYmd = to_mysql_date($_GET['dateTo']);	}
+if($dateFrom<>""){ $dateFromYmd = date('Y-m-d', strtotime($dateFrom));	}
+if($dateTo<>""){ $dateToYmd =  date('Y-m-d', strtotime($dateTo));	}
 
 
 							

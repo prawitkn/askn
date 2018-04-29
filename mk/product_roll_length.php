@@ -1,174 +1,149 @@
+
 <!DOCTYPE html>
 <!--
 This is a starter template page. Use this page to start your new project from
 scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
-<?php 
-	include 'head.php'; 
-	//include 'inc_helper.php'; 
-?>    
+<?php include 'head.php'; ?>	<!-- head.php included session.php! -->
 
-<!--
-BODY TAG OPTIONS:
-=================
-Apply one or more of the following classes to get the
-desired effect
-|---------------------------------------------------------|
-| SKINS         | skin-blue                               |
-|               | skin-black                              |
-|               | skin-purple                             |
-|               | skin-yellow                             |
-|               | skin-red                                |
-|               | skin-green                              |
-|---------------------------------------------------------|
-|LAYOUT OPTIONS | fixed                                   |
-|               | layout-boxed                            |
-|               | layout-top-nav                          |
-|               | sidebar-collapse                        |
-|               | sidebar-mini                            |
-|---------------------------------------------------------|
--->
-<body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
+
   <!-- Main Header -->
-  <?php include 'header.php'; 
-  $rootPage = 'salesman';
-  $tb = 'salesman';
+  <?php 
+include 'header.php'; 
+
+$rootPage = 'product_roll_length';
+$tb = 'product_roll_length';
+
+//Check user roll.
+switch($s_userGroupCode){
+	case 'admin' : case 'salesAdmin' :
+		break;
+	default : 
+		include 'access_denied2.php';
+		exit();
+}
   
-  //Check user roll.
-	switch($s_userGroupCode){
-		case 'admin' : case 'it' : case 'salesAdmin' :
-			break;
-		default : 
-			include 'access_denied2.php';
-			exit();
-	}
-  ?>  
+  ?>
   
   <!-- Left side column. contains the logo and sidebar -->
    <?php include 'leftside.php'; ?>
-   
+
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
 	<section class="content-header">
-		<h1><i class="glyphicon glyphicon-briefcase"></i>
-       Salesman
-        <small>Salesman management</small>
+		<h1><i class="glyphicon glyphicon-compressed"></i>
+       Product Roll Length
+        <small>Product Roll Length management</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Salesman List</a></li>
-		<!--<li><a href="#"><i class="glyphicon glyphicon-edit"></i>Ship to Customer</a></li>-->
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Product Roll Length List</a></li>
+		<!--<li><a href="#"><i class="glyphicon glyphicon-edit"></i>Product Roll Length</a></li>-->
       </ol>
     </section>
 
     <!-- Main content -->
     <section class="content">
-	
-      <!-- Your Page Content Here -->
+
+<!-- To allow only admin to access the content -->      
     <div class="box box-primary">
         <div class="box-header with-border">
-		<label class="box-title">Salesman List</label>
-			<a href="<?=$rootPage;?>_dtl.php?act=add&id=" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add Salesman</a>
+		<label class="box-title">Product Roll Length List</label>
+			<a href="<?=$rootPage;?>_add.php?id=" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add Product Roll Length</a>
+		
 		
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
           <?php
-				$search_word="";
-				$sqlSearch = "";
-				if(isset($_GET['search_word']) and isset($_GET['search_word'])){
-					$search_word=$_GET['search_word'];
-					$sqlSearch = "and name like '%".$_GET['search_word']."%' or surname like '%".$_GET['search_word']."%' ";
-				}
-                $sql = "SELECT count(*) as countTotal
-						FROM ".$tb." a
-						WHERE 1 "
-						.$sqlSearch;
-				switch($s_userGroupCode){ 					
-					case 'admin' : 
-					case 'it' : 
-						break;
-					default :	
-						$sql.="AND a.statusCode IN ('A','I') "; 
-				}
-                $result = mysqli_query($link, $sql);
-                $countTotal = mysqli_fetch_assoc($result);
-				
-				$rows=20;
-				$page=0;
-				if( !empty($_GET["page"]) and isset($_GET["page"]) ) $page=$_GET["page"];
-				if($page<=0) $page=1;
-				$total_data=$countTotal['countTotal'];
-				$total_page=ceil($total_data/$rows);
-				if($page>=$total_page) $page=$total_page;
-				$start=($page-1)*$rows;
+			$search_word="";
+			if(isset($_GET['search_word']) and isset($_GET['search_word'])){
+				$search_word=trim($_GET['search_word']);
+			}	
+			$sql = "
+			SELECT COUNT(h.id) AS countTotal 
+			FROM ".$tb." h 
+			INNER JOIN product prod ON prod.id=h.prodId  
+			WHERE 1 ";
+			if($search_word<>""){				
+				$sql .= "and (prod.code like '%".$search_word."%') ";
+			}	
+			//echo $sql;
+			$result = mysqli_query($link, $sql);
+			$countTotal = mysqli_fetch_assoc($result);
+			
+			$rows=20;
+			$page=0;
+			if( !empty($_GET["page"]) and isset($_GET["page"]) ) $page=$_GET["page"];
+			if($page<=0) $page=1;
+			$total_data=$countTotal['countTotal'];
+			$total_page=ceil($total_data/$rows);
+			if($page>=$total_page) $page=$total_page;
+			$start=($page-1)*$rows;	
+			if($start<0) $start=0;		
           ?>
-          <span class="label label-primary">Total <?php echo $countTotal['countTotal']; ?> items</span>
+          <span class="label label-primary">Total <?php echo $total_data; ?> items</span>
         </div><!-- /.box-tools -->
         </div><!-- /.box-header -->
         <div class="box-body">
 			<div class="row">
-			<div class="col-md-6">					
-                    <form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
+				<div class="col-md-6">					
+					<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
 						<div class="form-group">
-                            <label for="search_word">Salesman search key word.</label>
+							<label for="search_word">Product Code search key word.</label>
 							<div class="input-group">
 								<input id="search_word" type="text" class="form-control" name="search_word" data-smk-msg="Require userFullname."required>
 								<span class="input-group-addon">
 									<span class="glyphicon glyphicon-search"></span>
 								</span>
 							</div>
-                        </div>						
+						</div>						
 						<input type="submit" class="btn btn-default" value="ค้นหา">
-                    </form>
-                </div>    
+					</form>
+				</div>  
+				<!--/.col-md-->
 			</div>
+			<!--/.row-->
            <?php
-                $sql = "SELECT a.*
-						FROM ".$tb." a
-						WHERE 1 "
-						.$sqlSearch;
-				switch($s_userGroupCode){ 					
-					case 'admin' : 
-					case 'it' : 
-						break;
-					default :	
-						$sql.="AND a.statusCode IN ('A','I') "; 
-				}
-				$sql.="ORDER BY a.name asc ";
-				$sql.="LIMIT $start, $rows ";
-				
-				
-                $result = mysqli_query($link, $sql);                
-           ?>             
+			$sql = "
+			SELECT h.`prodId`, h.`id`, h.`name`
+			, h.`statusCode`, h.`createTime`, h.`createById`
+			, prod.code as prodCode  
+			FROM ".$tb." h 
+			INNER JOIN product prod ON prod.id=h.prodId  
+			WHERE 1 ";
+			if($search_word<>""){				
+				$sql .= "and (prod.code like '%".$search_word."%') ";
+			}	
+			$sql .= "ORDER BY h.createTime DESC  ";
+			$sql.="LIMIT $start, $rows ";		
+			//$result = mysqli_query($link, $sql);
+			$stmt = $pdo->prepare($sql);	
+			$stmt->execute();	
+                
+           ?> 
+            <div class="table-responsive">
             <table class="table table-striped">
-                <tr>
+               <tr>
                     <th>No.</th>
-					<th>Photo</th>
-					<th>Code</th>
-					<th>Fullname</th>
-					<th>Position</th>
+					<th>Product Code</th>
+					<th>Roll Length</th>
 					<th>Status</th>
                     <th>#</th>
                 </tr>
-                <?php $c_row=($start+1); while ($row = mysqli_fetch_assoc($result)) { ?>
+                <?php $c_row=($start+1); while ($row = $stmt->fetch()) { 					
+						?>
                 <tr>
                     <td>
                          <?= $c_row; ?>
-                    </td>					 
+                    </td>
 					<td>
-                         <?= $row['code']; ?>
-                    </td> 
+                         <?= $row['prodCode']; ?>
+                    </td>  	 		
 					<td>
-                         <img class="img-circle" src="./dist/img/<?php echo (empty($row['photo'])? 'default-50x50.gif' : $row['photo']) ?> " width="32px" height="32px" >
-                    </td> 
-					<td>
-                         <?= $row['name'].'&nbsp;&nbsp;'.$row['surname']; ?>
-                    </td>  		
-					<td>
-                         <?= $row['positionName']; ?>
+                         <?= $row['name']; ?>
                     </td> 
 					<td>
 						 <?php
@@ -190,7 +165,7 @@ desired effect
                     <td>
 						
 						<?php if($row['statusCode']=='A' OR ($s_userGroupCode=='it' OR $s_userGroupCode=='prog')){ ?>
-							<a class="btn btn-primary" name="btn_row_edit" href="<?=$rootPage;?>_dtl.php?act=edit&id=<?= $row['id']; ?>" >
+							<a class="btn btn-primary" name="btn_row_edit" href="<?=$rootPage;?>_edit.php?act=edit&id=<?= $row['id']; ?>" >
 								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
 						<?php }else{ ?>	
 							<a class="btn btn-primary"  disabled  > 
@@ -211,27 +186,26 @@ desired effect
 						<?php } ?>
                     </td>
                 </tr>
-                <?php $c_row +=1; } ?>
+                <?php $c_row+=1; } ?>
             </table>
-			
+			</div>
+				
 			<nav>
 			<ul class="pagination">
 				<li <?php if($page==1) echo 'class="disabled"'; ?> >
-					<a href="salesman.php?search_word=<?= $search_word;?>&=page=<?= $page-1; ?>" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
+					<a href="<?=$rootPage;?>.php?search_word=<?= $search_word;?>&=page=<?= $page-1; ?>" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
 				</li>
 				<?php for($i=1; $i<=$total_page;$i++){ ?>
 				<li <?php if($page==$i) echo 'class="active"'; ?> >
-					<a href="salesman.php?search_word=<?= $search_word;?>&page=<?= $i?>" > <?= $i;?></a>			
+					<a href="<?=$rootPage;?>.php?search_word=<?= $search_word;?>&page=<?= $i?>" > <?= $i;?></a>			
 				</li>
 				<?php } ?>
 				<li <?php if($page==$total_page) echo 'class="disabled"'; ?> >
-					<a href="salesman.php?search_word=<?= $search_word;?>&page=<?=$page+1?>" aria-labels="Next"><span aria-hidden="true">&raquo;</span></a>
+					<a href="<?=$rootPage;?>.php?search_word=<?= $search_word;?>&page=<?=$page+1?>" aria-labels="Next"><span aria-hidden="true">&raquo;</span></a>
 				</li>
 			</ul>
 			</nav>
-			
-			
-        </div><!-- /.box-body -->
+    </div><!-- /.box-body -->
   <div class="box-footer">
       
       
@@ -239,49 +213,38 @@ desired effect
   </div><!-- box-footer -->
 </div><!-- /.box -->
 
-	<div id="spin"></div>
     </section>
     <!-- /.content -->
   </div>
   <!-- /.content-wrapper -->
 
   <!-- Main Footer -->
-  <?php include'footer.php'; ?>  
+  <?php include'footer.php'; ?>
+  
   
 </div>
 <!-- ./wrapper -->
 
+<!-- REQUIRED JS SCRIPTS -->
+
 <!-- jQuery 2.2.3 -->
-<!--Deprecation Notice: The jqXHR.success(), jqXHR.error(), and jqXHR.complete() callbacks are removed as of jQuery 3.0. 
-    You can use jqXHR.done(), jqXHR.fail(), and jqXHR.always() instead.-->
 <script src="plugins/jQuery/jquery-2.2.3.min.js"></script>
 <!-- Bootstrap 3.3.6 -->
 <script src="bootstrap/js/bootstrap.min.js"></script>
 <!-- AdminLTE App -->
 <script src="dist/js/app.min.js"></script>
-<!-- smoke validate -->
+
 <script src="bootstrap/js/smoke.min.js"></script>
-<!-- Add Spinner feature -->
-<script src="bootstrap/js/spin.min.js"></script>
-
-
-<script> 		
-$(document).ready(function() {    
-	//.ajaxStart inside $(document).ready to start and stop spiner.  
-	$( document ).ajaxStart(function() {
-		$("#spin").show();
-	}).ajaxStop(function() {
-		$("#spin").hide();
+<script>
+$(document).ready(function() {
+	$("a[name=btn_row_delete]").click(function(e) {
+	  var row_id = $(this).attr('data-id');
+	  $.smkConfirm({text:'Are you sure you want to delete?',accept:'OK Sure.', cancel:'Do not Delete.'}, function (e){if(e){
+			  window.location.replace('<?=$rootPage;?>_delete.php?id='+row_id);
+	  }});
+	  e.preventDefault();
 	});
-	//.ajaxStart inside $(document).ready END
 	
-	$("#title").focus();
-	var spinner = new Spinner().spin();
-	$("#spin").append(spinner.el);
-	$("#spin").hide();
-			
-	  
-			   
 	$('a[name=btn_row_setActive]').click(function(){
 		var params = {
 			action: 'setActive',
@@ -383,9 +346,15 @@ $(document).ready(function() {
 		}});
 		e.preventDefault();
 	});
-	//end btn_row_delete
 });
-</script>
+  
+  
 
+
+</script>
+<!-- Optionally, you can add Slimscroll and FastClick plugins.
+     Both of these plugins are recommended to enhance the
+     user experience. Slimscroll is required when using the
+     fixed layout. -->
 </body>
 </html>
