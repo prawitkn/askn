@@ -58,6 +58,7 @@ include 'head.php';
         <div class="box-body">
            <div class="row">
 				<form id="form1" action="#" method="post" class="form" novalidate>
+				<input type="hidden" name="action" value="edit" />
                 <div class="col-md-6">				
 						<input type="hidden" name="id" id="id" value="<?= $row['id']; ?>" />
 						<div class="row col-md-12">
@@ -274,41 +275,44 @@ $(document).ready(function() {
 	$("#spin").append(spinner.el);
 	$("#spin").hide();
 						
-	$('#form1').on("submit",function(e) {
-		if($('#form1').smkValidate()) {    
-			$.post("customer_edit_ajax.php", $("#form1").serialize() )
-			
-			.done(function(data) {
-				if (data.success) {         
-					//$.smkAlert({text: data.message, type: data.status});
-					//$('#form1').smkClear();
-					//$("#userName").focus();
-					$.smkAlert({
-						 text: data.message,
-						 type: 'success',
-						 position:'top-center'
-					 });
-				} else {
-					 $.smkAlert({
-						 text: data.message,
-						 type: 'danger'//,
-	//                        position:'top-center'
-						 });
-				}
-				$('#form1').smkClear();
-			})//done
-			.error(function (response) {
-				  alert(response.responseText);
-			});//error      
-			e.preventDefault();               
-		}            
+	$('#form1').on("submit", function(e) {
+		if ($('#form1').smkValidate()) {			
+			$.ajax({
+				url: '<?=$rootPage;?>_ajax.php',
+				type: 'POST',
+				data: new FormData( this ),
+				processData: false,
+				contentType: false,
+				dataType: 'json'
+				})
+			.done(function (data) {
+					if (data.success){          
+						$.smkAlert({
+							text: data.message,
+							type: 'success',
+							position:'top-center'
+						});
+					} else {
+						$.smkAlert({
+							text: data.message,
+							type: 'danger',
+						});
+					}
+					$('#form1')[0].reset();
+					$("#userFullname").focus(); 
+				})
+				.error(function (response) {
+					  alert(response.responseText);
+				});//error  ;  
+				//.ajax
+				e.preventDefault();
+			}
+			//valided
 		e.preventDefault();
 	});
-
-		
-			
-	});
-  </script>
+	//form.submit
+});
+</script>
   
 
 

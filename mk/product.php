@@ -143,18 +143,43 @@ desired effect
                          <?= $row['name']; ?>
                     </td> 
 					<td>
-                         <?php if($row['statusCode']=='A'){ ?>
-							 <a class="btn btn-success" name="btn_row_remove" data-statusCode="X" data-id="<?= $row['id']; ?>" >Active</a>
-						 <?php }else{ ?>
-							 <a class="btn btn-default" name="btn_row_remove" data-statusCode="A" data-id="<?= $row['id']; ?>" >Inactive</a>
-						 <?php } ?>
+						 <?php
+						 switch($row['statusCode']){ 	
+							case 'A' :
+								echo '<a class="btn btn-success" name="btn_row_setActive" data-statusCode="I" data-id="'.$row['id'].'" >Active</a>';
+								break;
+							case 'I' :
+								echo '<a class="btn btn-default" name="btn_row_setActive" data-statusCode="A" data-id="'.$row['id'].'" >Inactive</a>';
+								break;
+							case 'X' : 
+								echo '<label style="color: red;" >Removed</label>';
+								break;
+							default :	
+								echo '<label style="color: red;" >N/A</label>';
+						}
+						 ?>
                     </td>					
                     <td>
-						<a class="btn btn-primary" name="btn_row_edit" href="product_edit.php?id=<?= $row['id']; ?>" >Edit</a>
-						<?php if($row['statusCode']=='X'){ ?>
-							<a class="btn btn-danger fa fa-trash" name="btn_row_delete"  data-id="<?=$row['id'];?>" ></a>  
+						
+						<?php if($row['statusCode']=='A' OR ($s_userGroupCode=='it' OR $s_userGroupCode=='prog')){ ?>
+							<a class="btn btn-primary" name="btn_row_edit" href="<?=$rootPage;?>_edit.php?act=edit&id=<?= $row['id']; ?>" >
+								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
 						<?php }else{ ?>	
-							<a class="btn btn-danger fa fa-trash"  disabled  ></a>  
+							<a class="btn btn-primary"  disabled  > 
+								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
+						<?php } ?>
+						
+						<?php if($row['statusCode']=='I'){ ?>
+							<a class="btn btn-danger" name="btn_row_remove"  data-id="<?=$row['id'];?>" > 
+								<i class="glyphicon glyphicon-remove"></i> Remove</a>	
+						<?php }else{ ?>	
+							<a class="btn btn-danger"  disabled  >
+								<i class="glyphicon glyphicon-remove"></i> Remove</a>	
+						<?php } ?>
+						
+						<?php if($row['statusCode']=='X' AND ($s_userGroupCode=='admin' OR $s_userGroupCode=='it' OR $s_userGroupCode=='prog')){ ?>
+							<a class="btn btn-danger" name="btn_row_delete"  data-id="<?=$row['id'];?>" > 
+								<i class="glyphicon glyphicon-trash"></i> Delete</a>	
 						<?php } ?>
                     </td>
                 </tr>
@@ -214,61 +239,30 @@ desired effect
 
 <script> 		
 $(document).ready(function() {    
-			//.ajaxStart inside $(document).ready to start and stop spiner.  
-			$( document ).ajaxStart(function() {
-				$("#spin").show();
-			}).ajaxStop(function() {
-				$("#spin").hide();
-			});
-			//.ajaxStart inside $(document).ready END
-			
-            $("#title").focus();
-            var spinner = new Spinner().spin();
-            $("#spin").append(spinner.el);
-            $("#spin").hide();
+	//.ajaxStart inside $(document).ready to start and stop spiner.  
+	$( document ).ajaxStart(function() {
+		$("#spin").show();
+	}).ajaxStop(function() {
+		$("#spin").hide();
+	});
+	//.ajaxStart inside $(document).ready END
+	
+	$("#title").focus();
+	var spinner = new Spinner().spin();
+	$("#spin").append(spinner.el);
+	$("#spin").hide();
 			
 	  
 			   
-	$('a[name=btn_row_delete]').click(function(){
+	$('a[name=btn_row_setActive]').click(function(){
 		var params = {
-			id: $(this).attr('data-id')
-		};
-		$.smkConfirm({text:'คุณแน่ใจที่จะลบรายการนี้ใช่หรือไม่ ?',accept:'ลบรายการ', cancel:'ไม่ลบรายการ'}, function (e){if(e){
-			$.post({
-				url: 'product_del_ajax.php',
-				data: params,
-				dataType: 'json'
-			}).done(function (data) {					
-				if (data.success){ 
-					$.smkAlert({
-						text: data.message,
-						type: 'success',
-						position:'top-center'
-					});
-					location.reload();
-				} else {
-					alert(data.message);
-					$.smkAlert({
-						text: data.message,
-						type: 'danger'//,
-					//                        position:'top-center'
-					});
-				}
-			}).error(function (response) {
-				alert(response.responseText);
-			}); 
-		}});
-		e.preventDefault();
-	});
-	
-	$('a[name=btn_row_remove]').click(function(){
-		var params = {
+			action: 'setActive',
 			id: $(this).attr('data-id'),
-			statusCode: $(this).attr('data-statusCode')
+			statusCode: $(this).attr('data-statusCode')			
 		};
 		$.smkConfirm({text:'Are you sure ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 			$.post({
-				url: 'product_set_status_ajax.php',
+				url: '<?=$rootPage;?>_ajax.php',
 				data: params,
 				dataType: 'json'
 			}).done(function (data) {					
@@ -293,8 +287,75 @@ $(document).ready(function() {
 		}});
 		e.preventDefault();
 	});
-	//end remove
+	//end btn_row_setActive
 	
+	$('a[name=btn_row_remove]').click(function(){
+		var params = {
+			action: 'remove',
+			id: $(this).attr('data-id')
+		};
+		$.smkConfirm({text:'Are you sure to Remove ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function (data) {					
+				if (data.success){ 
+					$.smkAlert({
+						text: data.message,
+						type: 'success',
+						position:'top-center'
+					});
+					location.reload();
+				} else {
+					alert(data.message);
+					$.smkAlert({
+						text: data.message,
+						type: 'danger'//,
+					//                        position:'top-center'
+					});
+				}
+			}).error(function (response) {
+				alert(response.responseText);
+			}); 
+		}});
+		e.preventDefault();
+	});
+	//end btn_row_remove
+	
+	$('a[name=btn_row_delete]').click(function(){
+		var params = {
+			action: 'delete',
+			id: $(this).attr('data-id')
+		};
+		$.smkConfirm({text:'Are you sure to Delete ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function (data) {					
+				if (data.success){ 
+					$.smkAlert({
+						text: data.message,
+						type: 'success',
+						position:'top-center'
+					});
+					location.reload();
+				} else {
+					alert(data.message);
+					$.smkAlert({
+						text: data.message,
+						type: 'danger'//,
+					//                        position:'top-center'
+					});
+				}
+			}).error(function (response) {
+				alert(response.responseText);
+			}); 
+		}});
+		e.preventDefault();
+	});
+	//end btn_row_delete
 });
 </script>
 

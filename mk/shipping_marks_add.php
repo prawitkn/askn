@@ -42,6 +42,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
            <div class="row">
                 <div class="col-md-6">
                     <form id="form1" action="#" method="post" class="form" validate>
+						<input type="hidden" name="action" value="add" />
 						<?php						
 							$typeCode="";
 						?>
@@ -151,7 +152,7 @@ $( document ).ajaxStart(function() {
 	$('#form1').on("submit", function(e) {
 		if ($('#form1').smkValidate()) {			
 			$.ajax({
-				url: '<?=$rootPage;?>_add_ajax.php',
+				url: '<?=$rootPage;?>_ajax.php',
 				type: 'POST',
 				data: new FormData( this ),
 				processData: false,

@@ -58,6 +58,7 @@ switch($s_userGroupCode){
         <div class="box-body">            
             <div class="row">                
                     <form id="form1" method="post" class="form" enctype="multipart/form-data" validate>
+					<input type="hidden" name="action" value="add" />
 					<div class="col-md-6">	
 						<div class="form-group">
                             <label for="userName" style="color: blue;">Username</label>
@@ -187,7 +188,7 @@ $(document).ready(function() {
 	$('#form1').on("submit", function(e) {
 		if ($('#form1').smkValidate()) {
 			$.ajax({
-			url: '<?=$rootPage;?>_add_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
 			type: 'POST',
 			data: new FormData( this ),
 			processData: false,
@@ -208,7 +209,7 @@ $(document).ready(function() {
 					});
 				}
 				$('#form1')[0].reset();
-				$("#userFullname").focus(); 
+				$("#title").focus(); 
 			})
 			.error(function (response) {
 				  alert(response.responseText);

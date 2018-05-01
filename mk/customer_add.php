@@ -51,6 +51,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <div class="box-body">
            <div class="row col-md-12">
 				<form id="form1" action="customer_add_ajax.php" method="post" class="form" novalidate>
+				<input type="hidden" name="action" value="add" />
                         <div class="col-md-6">				
 							<div class="row col-md-12">
 								<div class="form-group col-md-6">
@@ -268,39 +269,43 @@ $(document).ready(function() {
 	$("#spin").append(spinner.el);
 	$("#spin").hide();
 	
-	$('#form1').on("submit",function(e) {
-		if($('#form1').smkValidate()) {    
-			$.post("customer_add_ajax.php", $("#form1").serialize() )
-			.done(function(data) {
-				if (data.success) {         
-					//$.smkAlert({text: data.message, type: data.status});
-					//$('#form1').smkClear();
-					//$("#userName").focus();
+	$('#form1').on("submit", function(e) {
+		if ($('#form1').smkValidate()) {
+			$.ajax({
+			url: '<?=$rootPage;?>_ajax.php',
+			type: 'POST',
+			data: new FormData( this ),
+			processData: false,
+			contentType: false,
+			dataType: 'json'
+			}).done(function (data) {
+				if (data.success){  
 					$.smkAlert({
-						 text: data.message,
-						 type: 'success',
-						 position:'top-center'
-					 });
-				} else {
-					 $.smkAlert({
-						 text: data.message,
-						 type: 'danger'//,
-	//                        position:'top-center'
-						 });
+						text: data.message,
+						type: 'success',
+						position:'top-center'
+					});
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
 				}
-				//$('#form1').smkClear();
-			})//done
+				$('#form1')[0].reset();
+				$("#title").focus(); 
+			})
 			.error(function (response) {
 				  alert(response.responseText);
-			});//error      
-			e.preventDefault();               
-		}            
+			});  
+			//.ajax		
+			e.preventDefault();
+		}   
+		//end if 
 		e.preventDefault();
-	});	
-						
-				
-			
 	});
+	//form.submit
+});
 </script>
   
 

@@ -236,15 +236,7 @@ switch($s_userGroupCode){
 
 <script src="bootstrap/js/smoke.min.js"></script>
 <script>
-$(document).ready(function() {
-	$("a[name=btn_row_delete]").click(function(e) {
-	  var row_id = $(this).attr('data-id');
-	  $.smkConfirm({text:'Are you sure you want to delete?',accept:'OK Sure.', cancel:'Do not Delete.'}, function (e){if(e){
-			  window.location.replace('<?=$rootPage;?>_delete.php?id='+row_id);
-	  }});
-	  e.preventDefault();
-	});
-	
+$(document).ready(function() {	
 	$('a[name=btn_row_setActive]').click(function(){
 		var params = {
 			action: 'setActive',
@@ -347,10 +339,6 @@ $(document).ready(function() {
 		e.preventDefault();
 	});
 });
-  
-  
-
-
 </script>
 <!-- Optionally, you can add Slimscroll and FastClick plugins.
      Both of these plugins are recommended to enhance the

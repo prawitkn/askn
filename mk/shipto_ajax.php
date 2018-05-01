@@ -94,7 +94,7 @@ function to_mysql_date($thai_date){
 				 VALUES 
 				(:custId,:code,:name,:addr1,:addr2,:addr3,:zipcode,:countryName,:locationCode,:creditDay,:marketCode
 				,:contact,:contactPosition,:email,:tel,:fax,:smId,:smAdmId
-				,:statusCode, now(), :s_userId)";
+				,'A', now(), :s_userId)";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':custId', $custId); $stmt->bindParam(':code', $code); $stmt->bindParam(':name', $name); 
 				$stmt->bindParam(':addr1', $addr1); $stmt->bindParam(':addr2', $addr2); $stmt->bindParam(':addr3', $addr3); 
@@ -102,7 +102,6 @@ function to_mysql_date($thai_date){
 				$stmt->bindParam(':marketCode', $marketCode); $stmt->bindParam(':contact', $contact); $stmt->bindParam(':contactPosition', $contactPosition); 
 				$stmt->bindParam(':email', $email); $stmt->bindParam(':tel', $tel); $stmt->bindParam(':fax', $fax); 
 				$stmt->bindParam(':smId', $smId); $stmt->bindParam(':smAdmId', $smAdmId); 
-				$stmt->bindParam(':statusCode', $statusCode);
 				$stmt->bindParam(':s_userId', $s_userId);
 				$stmt->execute();
 
@@ -213,7 +212,6 @@ function to_mysql_date($thai_date){
 				break;
 			case 'delete' :
 				$id = $_POST['id'];
-				$statusCode = $_POST['statusCode'];	
 				
 				$sql = "DELETE FROM `".$tb."` WHERE id=:id ";
 				$stmt = $pdo->prepare($sql);	

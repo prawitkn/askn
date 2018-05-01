@@ -152,19 +152,43 @@ switch($s_userGroupCode){
                          <?= $row['name']; ?>
                     </td> 
 					<td>
-                         <?php //echo ($row['statusCode']=='A' ? 'Active' : 'Inactive'); 
-						 if($row['statusCode']=='A'){ ?>
-							 <a class="btn btn-danger" name="btn_row_setActive" data-statusCode="I" data-id="<?= $row['id']; ?>" >Active</a>
-						 <?php }else{ ?>
-							 <a class="btn btn-default" name="btn_row_setActive" data-statusCode="A" data-id="<?= $row['id']; ?>" >Inactive</a>
-						 <?php } ?>
+						 <?php
+						 switch($row['statusCode']){ 	
+							case 'A' :
+								echo '<a class="btn btn-success" name="btn_row_setActive" data-statusCode="I" data-id="'.$row['id'].'" >Active</a>';
+								break;
+							case 'I' :
+								echo '<a class="btn btn-default" name="btn_row_setActive" data-statusCode="A" data-id="'.$row['id'].'" >Inactive</a>';
+								break;
+							case 'X' : 
+								echo '<label style="color: red;" >Removed</label>';
+								break;
+							default :	
+								echo '<label style="color: red;" >N/A</label>';
+						}
+						 ?>
                     </td>					
                     <td>
-						<a class="btn btn-success" name="btn_row_edit" href="<?=$rootPage;?>_edit.php?id=<?= $row['id']; ?>" >Edit</a>	
-						<?php if($row['statusCode']=='X'){ ?>
-							<a class="btn btn-danger fa fa-trash" name="btn_row_delete"  data-id="<?=$row['id'];?>" ></a>  
+						
+						<?php if($row['statusCode']=='A' OR ($s_userGroupCode=='it' OR $s_userGroupCode=='prog')){ ?>
+							<a class="btn btn-primary" name="btn_row_edit" href="<?=$rootPage;?>_edit.php?act=edit&id=<?= $row['id']; ?>" >
+								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
 						<?php }else{ ?>	
-							<a class="btn btn-danger fa fa-trash"  disabled  >Delete</a>  
+							<a class="btn btn-primary"  disabled  > 
+								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
+						<?php } ?>
+						
+						<?php if($row['statusCode']=='I'){ ?>
+							<a class="btn btn-danger" name="btn_row_remove"  data-id="<?=$row['id'];?>" > 
+								<i class="glyphicon glyphicon-remove"></i> Remove</a>	
+						<?php }else{ ?>	
+							<a class="btn btn-danger"  disabled  >
+								<i class="glyphicon glyphicon-remove"></i> Remove</a>	
+						<?php } ?>
+						
+						<?php if($row['statusCode']=='X' AND ($s_userGroupCode=='admin' OR $s_userGroupCode=='it' OR $s_userGroupCode=='prog')){ ?>
+							<a class="btn btn-danger" name="btn_row_delete"  data-id="<?=$row['id'];?>" > 
+								<i class="glyphicon glyphicon-trash"></i> Delete</a>	
 						<?php } ?>
                     </td>
                 </tr>
@@ -218,15 +242,7 @@ switch($s_userGroupCode){
 
 <script src="bootstrap/js/smoke.min.js"></script>
 <script>
-$(document).ready(function() {
-	$("a[name=btn_row_delete]").click(function(e) {
-	  var row_id = $(this).attr('data-id');
-	  $.smkConfirm({text:'Are you sure you want to delete?',accept:'OK Sure.', cancel:'Do not Delete.'}, function (e){if(e){
-			  window.location.replace('<?=$rootPage;?>_delete.php?id='+row_id);
-	  }});
-	  e.preventDefault();
-	});
-	
+$(document).ready(function() {	
 	$('a[name=btn_row_setActive]').click(function(){
 		var params = {
 			action: 'setActive',
@@ -262,6 +278,40 @@ $(document).ready(function() {
 	});
 	//end btn_row_setActive
 	
+	$('a[name=btn_row_remove]').click(function(){
+		var params = {
+			action: 'remove',
+			id: $(this).attr('data-id')
+		};
+		$.smkConfirm({text:'Are you sure to Remove ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function (data) {					
+				if (data.success){ 
+					$.smkAlert({
+						text: data.message,
+						type: 'success',
+						position:'top-center'
+					});
+					location.reload();
+				} else {
+					alert(data.message);
+					$.smkAlert({
+						text: data.message,
+						type: 'danger'//,
+					//                        position:'top-center'
+					});
+				}
+			}).error(function (response) {
+				alert(response.responseText);
+			}); 
+		}});
+		e.preventDefault();
+	});
+	//end btn_row_remove
+	
 	$('a[name=btn_row_delete]').click(function(){
 		var params = {
 			action: 'delete',
@@ -295,10 +345,6 @@ $(document).ready(function() {
 		e.preventDefault();
 	});
 });
-  
-  
-
-
 </script>
 <!-- Optionally, you can add Slimscroll and FastClick plugins.
      Both of these plugins are recommended to enhance the

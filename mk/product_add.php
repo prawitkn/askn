@@ -42,6 +42,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
            <div class="row">
                 <div class="col-md-6">
                     <form id="form1" action="#" method="post" class="form" validate>
+						<input type="hidden" name="action" value="add" />
 						<?php											
 							$appCode="";
 							$sourceTypeCode="";
@@ -223,38 +224,38 @@ $( document ).ajaxStart(function() {
 						
 				
 	$('#form1').on("submit", function(e) {
-		if ($('#form1').smkValidate()) {			
+		if ($('#form1').smkValidate()) {
 			$.ajax({
-				url: 'product_add_ajax.php',
-				type: 'POST',
-				data: new FormData( this ),
-				processData: false,
-				contentType: false,
-				dataType: 'json'
-				})
-			.done(function (data) {
-					if (data.success){          
-						$.smkAlert({
-							text: data.message,
-							type: 'success',
-							position:'top-center'
-						});
-					} else {
-						$.smkAlert({
-							text: data.message,
-							type: 'danger',
-						});
-					}
-					$('#form1')[0].reset();
-					$("#userFullname").focus(); 
-				})
-				.error(function (response) {
-					  alert(response.responseText);
-				});//error  ;  
-				//.ajax
-				e.preventDefault();
-			}
-			//valided
+			url: '<?=$rootPage;?>_ajax.php',
+			type: 'POST',
+			data: new FormData( this ),
+			processData: false,
+			contentType: false,
+			dataType: 'json'
+			}).done(function (data) {
+				if (data.success){  
+					$.smkAlert({
+						text: data.message,
+						type: 'success',
+						position:'top-center'
+					});
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
+				}
+				$('#form1')[0].reset();
+				$("#title").focus(); 
+			})
+			.error(function (response) {
+				  alert(response.responseText);
+			});  
+			//.ajax		
+			e.preventDefault();
+		}   
+		//end if 
 		e.preventDefault();
 	});
 	//form.submit

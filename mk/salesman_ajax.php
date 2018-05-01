@@ -90,7 +90,7 @@ function to_mysql_date($thai_date){
 				//INsert 
 				$sql = "INSERT INTO `".$tb."`(`code`, `name`, `surname`, `smType`, `photo`, `positionName`, `mobileNo`, `email`, `statusCode`)
 				 VALUES 
-				(:code,:name,:surname,:smType,:new_picture_name,:positionName,:mobileNo,:email,:statusCode)";
+				(:code,:name,:surname,:smType,:new_picture_name,:positionName,:mobileNo,:email,'A')";
 				$stmt = $pdo->prepare($sql);
 				
 				$stmt->bindParam(':code', $code);
@@ -101,7 +101,6 @@ function to_mysql_date($thai_date){
 				$stmt->bindParam(':positionName', $positionName);
 				$stmt->bindParam(':mobileNo', $mobileNo);
 				$stmt->bindParam(':email', $email);
-				$stmt->bindParam(':statusCode', $statusCode);
 				//$stmt->bindParam(':id', $id);
 				
 				if ($stmt->execute()) {
@@ -125,7 +124,7 @@ function to_mysql_date($thai_date){
 				$positionName = trim($_POST['positionName']);
 				$mobileNo = trim($_POST['mobileNo']);
 				$email = trim($_POST['email']);
-				$statusCode = $_POST['statusCode'];
+				$statusCode = (isset($_POST['statusCode'])? $_POST['statusCode'] : 'I' );
 				
 				$curPhoto = $_POST['curPhoto'];
 				$new_picture_name=$curPhoto;
@@ -239,6 +238,23 @@ function to_mysql_date($thai_date){
 				exit();
 			case 'delete' :
 				$id = $_POST['id'];
+				
+				//Check exists?
+				$sql = "SELECT hdr.`id`, hdr.`code`, hdr.`name`, hdr.`surname`,hdr.`photo` FROM ".$tb." hdr WHERE hdr.id=$id LIMIT 1 ";				
+				$stmt = $pdo->prepare($sql);	
+				$stmt->execute();	
+				if ($stmt->rowCount() <> 1){
+				  header('Content-Type: application/json');
+				  $errors = "Error on Data Update. Please try new data. " . $pdo->errorInfo();
+				  echo json_encode(array('success' => false, 'message' => $errors));  
+				  exit;    
+				}
+				
+				$row=$stmt->fetch();
+				$curPhoto=$row['photo'];
+							  
+				//inputFile
+				if (file_exists('dist/img/'.$curPhoto)) unlink('dist/img/'.$curPhoto); 
 				
 				$sql = "DELETE FROM `".$tb."` WHERE id=:id ";
 				$stmt = $pdo->prepare($sql);	
