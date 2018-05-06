@@ -12,7 +12,7 @@ $rootPage = 'user';
 
 //Check user roll.
 switch($s_userGroupCode){
-	case 'it' : 
+	case 'admin' : case 'it' : 
 		break;
 	default : 
 		header('Location: access_denied.php');
@@ -73,6 +73,7 @@ $row = $stmt->fetch();
         <div class="box-body">            
             <div class="row">                
                     <form id="form1" method="post" class="form" enctype="multipart/form-data" validate>
+					<input type="hidden" name="action" value="edit" />
 					<div class="col-md-6">	
 						<input id="userId" type="hidden" name="userId" value="<?=$row['id'];?>" />				
                         <div class="form-group">
@@ -142,7 +143,7 @@ $row = $stmt->fetch();
 						<div class="form-group">
                             <label for="statusCode">Status</label>
 							<input type="radio" name="statusCode" value="A" <?php echo ($row['statusCode']=='A'?' checked ':'');?> >Active
-							<input type="radio" name="statusCode" value="X" <?php echo ($row['statusCode']=='X'?' checked ':'');?> >Non-Active
+							<input type="radio" name="statusCode" value="I" <?php echo ($row['statusCode']=='I'?' checked ':'');?> >Non-Active
 						</div>
 						<div class="form-group">
 							<input type="hidden" name="curPhoto" id="curPhoto" value="<?=$row['userPicture'];?>" />
@@ -208,34 +209,36 @@ $(document).ready(function() {
 	$('#form1').on("submit", function(e) {
 		if ($('#form1').smkValidate()) {			
 			$.ajax({
-			url: '<?=$rootPage;?>_edit_ajax.php',
-			type: 'POST',
-			data: new FormData( this ),
-			processData: false,
-			contentType: false,
-			dataType: 'json'
-			}).done(function (data) {
-				if (data.success){  
-					$.smkAlert({
-						text: data.message,
-						type: 'success',
-						position:'top-center'
-					});
-					//window.location.href = "user_add.php";
-				}else{
-					$.smkAlert({
-						text: data.message,
-						type: 'danger',
-						position:'top-center'
-					});
-				}
-				alert('Success');
-				window.location.href = "<?=$rootPage;?>.php";
-			});  
-			//.ajax		
-			e.preventDefault();
-		}   
-		//end if 
+				url: '<?=$rootPage;?>_ajax.php',
+				type: 'POST',
+				data: new FormData( this ),
+				processData: false,
+				contentType: false,
+				dataType: 'json'
+				})
+			.done(function (data) {
+					if (data.success){          
+						$.smkAlert({
+							text: data.message,
+							type: 'success',
+							position:'top-center'
+						});
+					} else {
+						$.smkAlert({
+							text: data.message,
+							type: 'danger',
+						});
+					}
+					$('#form1')[0].reset();
+					$("#userFullname").focus(); 
+				})
+				.error(function (response) {
+					  alert(response.responseText);
+				});//error  ;  
+				//.ajax
+				e.preventDefault();
+			}
+			//valided
 		e.preventDefault();
 	});
 	//form.submit

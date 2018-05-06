@@ -1,7 +1,7 @@
 <?php
     include 'session.php';	
-	
-	$tb='user';
+		
+	$tb='wh_user';
 	
 	if(!isset($_POST['action'])){		
 		header('Content-Type: application/json');
@@ -15,7 +15,7 @@
 				$userEmail = $_POST['userEmail'];
 				$userTel = $_POST['userTel'];
 				$userGroupCode = $_POST['userGroupCode'];
-				$smId = $_POST['smId'];
+				$userDeptCode = $_POST['userDeptCode'];
 				
 			 // Check user name duplication?
 				$sql_user = "SELECT userName FROM ".$tb." WHERE userName='$userName'";
@@ -41,9 +41,9 @@
 				}
 				
 				
-				$sql = "INSERT INTO `user` (`userName`, `userPassword`, `userFullname`, `userEmail`, `userTel`, `userPicture`, `userGroupCode`,  `smId`, `statusCode`)"
-						. " VALUES ('$userName', '$hash_userPassword', '$userFullname', '$userEmail', '$userTel', '$new_picture_name', '$userGroupCode', $smId,'A')";
-			 
+				$sql = "INSERT INTO ".$tb." (`userName`, `userPassword`, `userFullname`, `userEmail`, `userTel`, `userPicture`, `userGroupCode`,  `userDeptCode`, `statusCode`)"
+						. " VALUES ('$userName', '$hash_userPassword', '$userFullname', '$userEmail', '$userTel', '$new_picture_name', '$userGroupCode', '$userDeptCode','A')";
+						 
 				$result = mysqli_query($link, $sql);
 			 
 				if ($result) {
@@ -64,7 +64,7 @@
 				$userEmail = $_POST['userEmail'];
 				$userTel = $_POST['userTel'];
 				$userGroupCode = $_POST['userGroupCode'];
-				$smId = $_POST['smId'];
+				$userDeptCode = $_POST['userDeptCode'];
 				$statusCode = $_POST['statusCode'];
 				
 				$curPhoto = $_POST['curPhoto'];
@@ -112,14 +112,14 @@
 				}
 				
 				
-				$sql = "UPDATE `user` SET `userName`=:userName 
+				$sql = "UPDATE `wh_user` SET `userName`=:userName 
 				, `userPassword`=:userPassword
 				, `userFullname`=:userFullname
 				, `userEmail`=:userEmail 
 				, `userTel`=:userTel
 				, `userPicture`=:new_picture_name
 				, `userGroupCode`=:userGroupCode
-				, `smId`=:smId
+				, `userDeptCode`=:userDeptCode
 				, `statusCode`=:statusCode 
 				WHERE userId=:userId 
 				";	
@@ -131,7 +131,7 @@
 				$stmt->bindParam(':userTel', $userTel);
 				$stmt->bindParam(':new_picture_name', $new_picture_name);
 				$stmt->bindParam(':userGroupCode', $userGroupCode);
-				$stmt->bindParam(':smId', $smId);
+				$stmt->bindParam(':userDeptCode', $userDeptCode);
 				$stmt->bindParam(':statusCode', $statusCode);
 				$stmt->bindParam(':userId', $userId);
 				;	
@@ -202,7 +202,8 @@
 
 					$pdo->commit();	
 					
-					header("Location: user.php");
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => true, 'message' => 'Data Delete Completed.'));
 				}catch(Exception $e){
 					//Rollback the transaction.
 					$pdo->rollBack();

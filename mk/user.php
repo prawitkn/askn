@@ -15,7 +15,7 @@ include 'header.php';
 $rootPage = 'user';
 //Check user roll.
 switch($s_userGroupCode){
-	case 'it' : case 'admin' :
+	case 'it' : case 'admin' : 
 		break;
 	default : 
 		header('Location: access_denied.php');
@@ -174,7 +174,7 @@ switch($s_userGroupCode){
                     </td>					
                     <td>
 						
-						<?php if($row['statusCode']=='A' OR ($s_userGroupCode=='it' OR $s_userGroupCode=='prog')){ ?>
+						<?php if($row['statusCode']=='A' OR ($s_userGroupCode=='admin' OR $s_userGroupCode=='it' OR $s_userGroupCode=='prog')){ ?>
 							<a class="btn btn-primary" name="btn_row_edit" href="<?=$rootPage;?>_edit.php?act=edit&id=<?= $row['id']; ?>" >
 								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
 						<?php }else{ ?>	
