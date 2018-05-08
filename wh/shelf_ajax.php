@@ -1,53 +1,6 @@
 <?php
     include 'session.php';	
 	
-function to_thai_date($eng_date){
-	if(strlen($eng_date) != 10){
-		return null;
-	}else{
-		$new_date = explode('-', $eng_date);
-
-		$new_y = (int) $new_date[0] + 543;
-		$new_m = $new_date[1];
-		$new_d = $new_date[2];
-
-		$thai_date = $new_d . '/' . $new_m . '/' . $new_y;
-
-		return $thai_date;
-	}
-}
-function to_thai_datetime_fdt($eng_date){
-	//if(strlen($eng_date) != 10){
-	//    return null;
-	//}else{
-		$new_datetime = explode(' ', $eng_date);
-		$new_date = explode('-', $new_datetime[0]);
-
-		$new_y = (int) $new_date[0] + 543;
-		$new_m = $new_date[1];
-		$new_d = $new_date[2];
-
-		$thai_date = $new_d . '/' . $new_m . '/' . $new_y . ' ' . substr($new_datetime[1],0,5);
-
-		return $thai_date;
-	//}
-}
-function to_mysql_date($thai_date){
-	if(strlen($thai_date) != 10){
-		return null;
-	}else{
-		$new_date = explode('/', $thai_date);
-
-		$new_y = (int)$new_date[2] - 543;
-		$new_m = $new_date[1];
-		$new_d = $new_date[0];
-
-		$mysql_date = $new_y . '-' . $new_m . '-' . $new_d;
-
-		return $mysql_date;
-	}
-}
-	
 	$tb='wh_shelf';
 	
 	if(!isset($_POST['action'])){		
@@ -174,7 +127,6 @@ function to_mysql_date($thai_date){
 				break;
 			case 'delete' :
 				$id = $_POST['id'];
-				$statusCode = $_POST['statusCode'];	
 				
 				$sql = "DELETE FROM ".$tb." WHERE id=:id ";
 				$stmt = $pdo->prepare($sql);	

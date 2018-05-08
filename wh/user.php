@@ -352,10 +352,6 @@ $(document).ready(function() {
 	});
 	//end btn_row_delete
 });
-  
-  
-
-
 </script>
 <!-- Optionally, you can add Slimscroll and FastClick plugins.
      Both of these plugins are recommended to enhance the
