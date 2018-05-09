@@ -9,6 +9,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <html>
 <?php include 'head.php'; 
 $rootPage = 'user';
+$tb = 'wh_user';
 
 //Check user roll.
 switch($s_userGroupCode){
@@ -23,7 +24,7 @@ $id=$_GET['id'];
 $sql = "SELECT hdr.`userID` as id, hdr.`userName`, hdr.`userPassword`, hdr.`userFullname`, hdr.`userGroupCode`
 , hdr.`userDeptCode`, hdr.`userEmail`, hdr.`userTel`, hdr.`userPicture`, hdr.`statusCode` 
 , ug.`name` as userGroupName 
-FROM `wh_user` hdr 
+FROM `".$tb."` hdr 
 LEFT JOIN wh_user_group ug on ug.code=hdr.userGroupCode  
 WHERE 1=1
 AND hdr.userID=:id 
@@ -158,8 +159,11 @@ $row = $stmt->fetch();
                 <!--/.row-->       
             </div>
 			<!--.body-->    
-    </div>
-	<!-- /.box box-primary -->
+  <div class="box-footer">
+  
+    <!--The footer of the box -->
+  </div><!-- box-footer -->
+</div><!-- /.box -->
   
 
 <div id="spin"></div>
@@ -222,15 +226,14 @@ $(document).ready(function() {
 							text: data.message,
 							type: 'success',
 							position:'top-center'
-						});
+						});						
+						setTimeout(function(){history.back();}, 2000);
 					} else {
 						$.smkAlert({
 							text: data.message,
 							type: 'danger',
 						});
 					}
-					$('#form1')[0].reset();
-					$("#userFullname").focus(); 
 				})
 				.error(function (response) {
 					  alert(response.responseText);

@@ -58,6 +58,7 @@ switch($s_userGroupCode){
         <div class="box-body">            
             <div class="row">                
                     <form id="form1" action="userGroup_add_ajax.php" method="post" class="form" validate >
+					<input type="hidden" name="action" value="add" />		
 					<div class="col-md-6">					
                         <div class="form-group">
                             <label for="code">User Group Code</label>
@@ -82,11 +83,8 @@ switch($s_userGroupCode){
                 <!--/.row-->       
             </div>
 			<!--.body-->    
-    </div>
-	<!-- /.box box-primary -->
   <div class="box-footer">
-      
-      
+  
     <!--The footer of the box -->
   </div><!-- box-footer -->
 </div><!-- /.box -->
@@ -129,7 +127,7 @@ $( document ).ajaxStart(function() {
 //   
 
 $(document).ready(function() {
-	$("#name").focus();
+	$("#code").focus();
 
 	var spinner = new Spinner().spin();
 	$("#spin").append(spinner.el);
@@ -138,7 +136,7 @@ $(document).ready(function() {
 	$('#form1').on("submit", function(e) {
 		if ($('#form1').smkValidate()) {
 			$.ajax({
-			url: 'userGroup_add_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
 			type: 'POST',
 			data: new FormData( this ),
 			processData: false,
@@ -151,7 +149,6 @@ $(document).ready(function() {
 						type: 'success',
 						position:'top-center'
 					});
-					//window.location.href = "userGroup_add.php";
 				}else{
 					$.smkAlert({
 						text: data.message,
@@ -161,6 +158,9 @@ $(document).ready(function() {
 				}
 				$('#form1')[0].reset();
 				$("#code").focus(); 
+			})
+			.error(function (response) {
+				  alert(response.responseText);
 			});  
 			//.ajax		
 			e.preventDefault();

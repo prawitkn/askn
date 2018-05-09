@@ -126,11 +126,8 @@ switch($s_userGroupCode){
                 <!--/.row-->       
             </div>
 			<!--.body-->    
-    </div>
-	<!-- /.box box-primary -->
   <div class="box-footer">
-      
-      
+  
     <!--The footer of the box -->
   </div><!-- box-footer -->
 </div><!-- /.box -->

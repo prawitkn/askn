@@ -11,6 +11,7 @@
 			case 'add' :				
 				$code = $_POST['code'];
 				$name = $_POST['name'];
+				$statusCode = 'A';	
 								
 				// Check duplication?
 				$sql = "SELECT id FROM `".$tb."` WHERE code=:code OR name=:name ";
@@ -26,10 +27,11 @@
 				}   
 	
 				$sql = "INSERT INTO `".$tb."` (`code`, `name`, `statusCode`, `createTime`, `createById`)
-				 VALUES (:code,:name,'A',NOW(),:s_userId)";
+				 VALUES (:code,:name,:statusCode,NOW(),:s_userId)";
 				$stmt = $pdo->prepare($sql);	
 				$stmt->bindParam(':code', $code);
 				$stmt->bindParam(':name', $name);
+				$stmt->bindParam(':statusCode', $statusCode);
 				$stmt->bindParam(':s_userId', $s_userId);
 				if ($stmt->execute()) {
 					header('Content-Type: application/json');
@@ -45,28 +47,32 @@
 				$id = $_POST['id'];
 				$code = $_POST['code'];
 				$name = $_POST['name'];
+				$statusCode = $_POST['statusCode'];
 				
 				// Check user name duplication?
-				$sql = "SELECT id FROM `".$tb."` WHERE code=:code OR name=:name ";
+				$sql = "SELECT id FROM `".$tb."` WHERE (code=:code OR name=:name) AND id<>:id ";
 				$stmt = $pdo->prepare($sql);	
 				$stmt->bindParam(':code', $code);
 				$stmt->bindParam(':name', $name);
+				$stmt->bindParam(':id', $id);
 				$stmt->execute();
-				if ($stmt->rowCount() <> 1){
+				if ($stmt->rowCount() >= 1){
 				  header('Content-Type: application/json');
-				  $errors = "Error on Data Update. Please try new username. " . $pdo->errorInfo();
+				  $errors = "Error on Data Insertion. Duplicate data, Please try new username. " . $pdo->errorInfo()[2];
 				  echo json_encode(array('success' => false, 'message' => $errors));  
 				  exit;    
-				}			  
+				} 	  
 				
 				//Sql
 				$sql = "UPDATE `".$tb."` SET `code`=:code 
 				, `name`=:name
+				, `statusCode`=:statusCode
 				WHERE id=:id 
 				";	
 				$stmt = $pdo->prepare($sql);	
 				$stmt->bindParam(':code', $code);
 				$stmt->bindParam(':name', $name);
+				$stmt->bindParam(':statusCode', $statusCode);
 				$stmt->bindParam(':id', $id);
 				if ($stmt->execute()) {
 					  header('Content-Type: application/json');
@@ -113,7 +119,6 @@
 				break;
 			case 'delete' :
 				$id = $_POST['id'];
-				$statusCode = $_POST['statusCode'];	
 				
 				$sql = "DELETE FROM ".$tb." WHERE id=:id ";
 				$stmt = $pdo->prepare($sql);	

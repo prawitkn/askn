@@ -52,7 +52,8 @@ class MYPDF extends TCPDF {
 		
 		$this->SetFont('THSarabun', '', 12, '', true);
 		
-		$this->setCellHeightRatio(1.25);
+		//Set Line spacing
+$this->setCellHeightRatio(1.40);
 		
 		$html='<table width="100%"  >		
 		<tr>
@@ -80,8 +81,9 @@ class MYPDF extends TCPDF {
 		</table>
 		';
 		$this->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
-		$this->setCellHeightRatio(1.50);
-		
+	//Set Line spacing
+$this->setCellHeightRatio(1.40);
+
 		$html='<table width="100%"  >	
 		<tr>
 			<td colspan="3" style="border: o.1em solid black; text-align: center; font-size: large;">SALES ORDER FORM (ใบสั่งขาย)</td>
@@ -119,7 +121,8 @@ class MYPDF extends TCPDF {
 		</table>
 		';
 		$this->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
-		$this->setCellHeightRatio(1.50);
+		//Set Line spacing
+$this->setCellHeightRatio(1.40);
 	}
 	
 	public function foot($hdr, $html){
@@ -281,7 +284,7 @@ $pdf->setFontSubsetting(true);
 $pdf->SetFont('THSarabun', '', 16, '', true);
 
 //Set Line spacing
-$pdf->setCellHeightRatio(1.50);
+$pdf->setCellHeightRatio(1.40);
 
 // Set some content to print
 if( isset($_GET['soNo']) ){			
@@ -373,10 +376,10 @@ if( isset($_GET['soNo']) ){
 									<tr>										
 										<th style="font-weight: bold; text-align: center; width: 150px; border: 0.1em solid black;">Product Name</th>
 										<th style="font-weight: bold; text-align: center; width: 150px; border: 0.1em solid black;">Product Code</th>
-										<th style="font-weight: bold; text-align: center; width: 150px; border: 0.1em solid black;">Specification</th>								
+										<th style="font-weight: bold; text-align: center; width: 170px; border: 0.1em solid black;">Specification</th>								
 										<th style="font-weight: bold; text-align: center; width: 60px; border: 0.1em solid black;">Qty</th>								
 										<th style="font-weight: bold; text-align: center; width: 40px; border: 0.1em solid black;">Unit</th>
-										<th style="font-weight: bold; text-align: center; width: 70px; border: 0.1em solid black;">Delivery / Load Date</th>
+										<th style="font-weight: bold; text-align: center; width: 80px; border: 0.1em solid black;"><span style="font-size: 75%">Delivery/Load Date</span></th>
 									</tr>
 								</thead>
 								  <tbody>
@@ -389,13 +392,13 @@ if( isset($_GET['soNo']) ){
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 150px;
 										border: 0.1em solid black; padding: 10px; width: 150px;"> '.$row['prodCode'].'</td>
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 150px;
-										border: 0.1em solid black; padding: 10px; width: 150px;"> '.$row['remark'].' '.($row['rollLengthId']<>'0'?'[RL:'.$row['rollLengthName'].']':'').'</td>
+										border: 0.1em solid black; padding: 10px; width: 170px;"> '.$row['remark'].' '.($row['rollLengthId']<>'0'?'[RL:'.$row['rollLengthName'].']':'').'</td>
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 60px;
 										border: 0.1em solid black; text-align: right; width: 60px;">'.number_format($row['qty'],0,'.',',').'</td>						
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 40px;
 										border: 0.1em solid black; text-align: right; width: 40px;">'.$row['prodUomCode'].'</td>						
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65px;
-										border: 0.1em solid black; padding: 10px; width: 70px;"> '.date('d M Y',strtotime( $row['deliveryDate'] )).'</td>
+										border: 0.1em solid black; padding: 10px; width: 80px;"> '.date('d M Y',strtotime( $row['deliveryDate'] )).'</td>
 						</tr>';	
 				
 				//Loop item per page
@@ -413,10 +416,10 @@ if( isset($_GET['soNo']) ){
 					$html .='<tr>
 							<td style="font-weight: bold; text-align: center; width: 150px;border: 0.1em solid black;"></td>
 							<td style="font-weight: bold; text-align: center; width: 150px;border: 0.1em solid black;"></td>
-							<td style="font-weight: bold; text-align: center; width: 150px;border: 0.1em solid black;"></td>								
+							<td style="font-weight: bold; text-align: center; width: 170px;border: 0.1em solid black;"></td>								
 							<td style="font-weight: bold; text-align: center; width: 60px;border: 0.1em solid black;"></td>								
 							<td style="font-weight: bold; text-align: center; width: 40px;border: 0.1em solid black;"></td>
-							<td style="font-weight: bold; text-align: center; width: 70px;border: 0.1em solid black;"></td>							
+							<td style="font-weight: bold; text-align: center; width: 80px;border: 0.1em solid black;"></td>							
 						</tr>';	
 				}
 			}

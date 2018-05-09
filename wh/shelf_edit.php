@@ -133,7 +133,7 @@ $row=$stmt->fetch();
 						<div class="form-group">
                             <label for="statusCode">Status</label>
 							<input type="radio" name="statusCode" value="A" <?php echo ($row['statusCode']=='A'?' checked ':'');?> >Active
-							<input type="radio" name="statusCode" value="I" <?php echo ($row['statusCode']=='I'?' checked ':'');?> >Non-Active
+							<input type="radio" name="statusCode" value="I" <?php echo ($row['statusCode']=='I'?' checked ':'');?> >Inactive
 						</div>
                         <button id="btn1" type="submit" class="btn btn-default">Submit</button>
 					</div>
@@ -147,11 +147,8 @@ $row=$stmt->fetch();
                 <!--/.row-->       
             </div>
 			<!--.body-->    
-    </div>
-	<!-- /.box box-primary -->
   <div class="box-footer">
-      
-      
+  
     <!--The footer of the box -->
   </div><!-- box-footer -->
 </div><!-- /.box -->
@@ -216,6 +213,7 @@ $(document).ready(function() {
 						type: 'success',
 						position:'top-center'
 					});
+					setTimeout(function(){history.back();}, 2000);
 				}else{
 					$.smkAlert({
 						text: data.message,

@@ -166,7 +166,7 @@ switch($s_userGroupCode){
                     </td>					
                     <td>
 						
-						<?php if($row['statusCode']=='A' OR ($s_userGroupCode=='it' OR $s_userGroupCode=='prog')){ ?>
+						<?php if($row['statusCode']=='A'){ ?>
 							<a class="btn btn-primary" name="btn_row_edit" href="<?=$rootPage;?>_edit.php?act=edit&id=<?= $row['id']; ?>" >
 								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
 						<?php }else{ ?>	

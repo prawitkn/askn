@@ -94,11 +94,8 @@ $row=$stmt->fetch();
                 <!--/.row-->       
             </div>
 			<!--.body-->    
-    </div>
-	<!-- /.box box-primary -->
   <div class="box-footer">
-      
-      
+  
     <!--The footer of the box -->
   </div><!-- box-footer -->
 </div><!-- /.box -->
@@ -163,6 +160,7 @@ $(document).ready(function() {
 						type: 'success',
 						position:'top-center'
 					});
+					setTimeout(function(){history.back();}, 2000);
 				}else{
 					$.smkAlert({
 						text: data.message,
@@ -170,8 +168,6 @@ $(document).ready(function() {
 						position:'top-center'
 					});
 				}
-				$('#form1')[0].reset();
-				$("#title").focus(); 
 			})
 			.error(function (response) {
 				  alert(response.responseText);

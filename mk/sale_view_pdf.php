@@ -27,7 +27,6 @@ class MYPDF extends TCPDF {
 		//$img = file_get_contents('img\logo-asia-kangnam.jpg');
         //$this->Image($image_file, 10, 10, 15, 15, 'JPG', '', 'T', false, 300, '', false, false, 0, false, false, false);
 		
-		
 		/*$this->SetFont('Times', 'B', 16, '', true);		
 		$this->SetY(11);	
 		$this->Cell(0, 5, 'Asia Kungnum Co.,Ltd.', 0, false, 'C', 0, '', 0, false, 'M', 'M');
@@ -40,7 +39,7 @@ class MYPDF extends TCPDF {
         // Position at 15 mm from bottom
         ///$this->SetY(-15);
         // Set font 
-        $this->SetFont('THSarabun', '', 14, '', true);
+        $this->SetFont('THSarabun', '', 12, '', true);
         // Page number
 		$tmp = date('Y-m-d H:i:s');
 		//$tmp = to_thai_short_date_fdt($tmp);
@@ -50,73 +49,77 @@ class MYPDF extends TCPDF {
 	public function head($hdr){
 		//head 
 		$this->AddPage('P');
-
-		$image_file = '../asset/img/logo-asia-kangnam.jpg';	
-		$img = file_get_contents($image_file);
-		$this->Image('@' . $img);
-						
-		$this->SetFont('THSarabun', '', 10, '', true);
-
-		//$pdf->RadioButton('drink', 5, array('readonly' => 'true'), array(), 'Water');
-		$this->Cell(120, 0, '');
-		$this->RadioButton('sourceType', 5, array(), array(), 'ที่มาสินค้า', ($hdr['suppTypeFact']==0?false:true));
-		$this->Cell(30, 5, 'สินค้าผลิตในโรงงาน');
-		$this->Ln(4);
-		
-		$this->Cell(120, 0, '');			
-		$this->RadioButton('sourceType', 5, array(), array(), 'ที่มาสินค้า', ($hdr['suppTypeImp']==0?false:true));
-		$this->Cell(30, 5, 'สินค้านำเข้าจากต่างประเทศ');
-		$this->Ln(4);
-		
-		$this->Cell(100, 0, '');
-		$this->RadioButton('productType', 5, array(), array(), 'สินค้าเก่าใหม่', ($hdr['prodTypeOld']==0?false:true));
-		$this->Cell(40, 5, 'สินค้าเก่า (Current Product)');
-		$this->RadioButton('productType', 5, array(), array(), 'สินค้าเก่าใหม่', ($hdr['prodTypeNew']==0?false:true));
-		$this->Cell(40, 5, 'สินค้าใหม่ (New Product)');
-		$this->Ln(4);
-		
-		$this->Cell(100, 0, '');
-		$this->RadioButton('customerType', 5, array(), array(), 'ลูกค้าเก่าใหม่', ($hdr['custTypeOld']==0?false:true));
-		$this->Cell(40, 5, 'ลูกค้าเก่า (Current Customer)');
-		$this->RadioButton('customerType', 5, array(), array(), 'ลูกค้าเก่าใหม่', ($hdr['custTypeNew']==0?false:true));
-		$this->Cell(40, 5, 'ลูกค้าใหม่ (New Customer)');
-		$this->Ln(10);
 		
 		$this->SetFont('THSarabun', '', 12, '', true);
-		$this->SetFillColor(255,255,255); //255,255,255 white
 		
-		$this->Cell(50, 0, 'SALES ORDER FORM (ใบสั่งขาย)', 1, $ln=0, 'C', 0, '', 0, false, 'T', 'B');
-		$this->Cell(50, 0, '');
-		$this->Cell(45, 0, 'รหัสลูกค้า (Customer Code) : ', 0, $ln=0, 'L', 0, '', 0, false, 'T', 'B');			
-		$this->Cell(30, 0, $hdr['custCode'], 'B', 0, 'C', 1, '', 0, false, 'T', 'C');
-		$this->Ln(8);
+		$this->setCellHeightRatio(1.25);
 		
-		$this->Cell(45, 0, 'ชื่อลูกค้า (Customer Name) : ', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-		$this->Cell(55, 0, $hdr['custName'], 'B', 0, 'L', 1, '', 0, false, 'T', 'C');
-		$this->Cell(25, 0, 'วันที่ (Date) : ', 0, $ln=0, 'L', 0, '', 0, false, 'T', 'B');
-		$this->Cell(50, 0, date('d M Y',strtotime( $hdr['saleDate'] )), 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
-		$this->Ln(6);
+		$html='<table width="100%"  >		
+		<tr>
+			<td rowspan="3" ><img src="../asset/img/logo-ak_60x60.jpg" /></td>
+			<td colspan="5"><span style="font-size: 120%;" >บริษัท เอเชีย กังนัม จำกัด</span></td>
+			<td></td>
+			<td colspan="3" >&nbsp;<img src="dist/img/icon/radio-'.($hdr['suppTypeFact']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> <span style="font-size: 85%;" >สินค้าผลิตในโรงงาน</span></td>
+		</tr>
+		<tr>
+			<td colspan="5"><span style="font-size: 120%;" >ASIA KANGNAM  COMPANY LIMITED</span></td>
+			<td></td>
+			<td colspan="3" >&nbsp;<img src="dist/img/icon/radio-'.($hdr['suppTypeImp']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> <span style="font-size: 85%;" >สินค้านำเข้าจากต่างประเทศ</span></td>
+		</tr>
+		<tr>
+			<td colspan="5"><span style="font-size: 60%;" >69/1 ม.6 ต.ท่าข้าม อ.บางปะกง จ.ฉะเชิงเทรา 24130  โทร 0 – 3857 – 3635 แฟ็กซ์ 0 – 3857 – 3634</span></td>
+			<td colspan="2">&nbsp;<img src="dist/img/icon/radio-'.($hdr['prodTypeOld']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> <span style="font-size: 85%;" >สินค้าเก่า (Current Product)</span></td>
+			<td colspan="2">&nbsp;<img src="dist/img/icon/radio-'.($hdr['prodTypeNew']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> <span style="font-size: 85%;" >สินค้าใหม่ (New Product)</span></td>
+		</tr>
+		<tr>
+			<td style="text-align: center;"><span style="font-size: 60%;" >www.askn.com</span></td>
+			<td colspan="5"><span style="font-size: 60%;" >69/1 Moo 6, Thakam, Bangpakong, Chachoengsao 24130 Thailand Tel: 66 – 3857 – 3635 Fax: 66 – 3857 – 3634</span></td>
+			<td colspan="2">&nbsp;<img src="dist/img/icon/radio-'.($hdr['custTypeOld']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> <span style="font-size: 85%;" >ลูกค้าเก่า (Current Customer)</span></td>
+			<td colspan="2">&nbsp;<img src="dist/img/icon/radio-'.($hdr['custTypeNew']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> <span style="font-size: 85%;" >ลูกค้าใหม่ (New Customer)</span></td>
+		</tr>
+		</table>
+		';
+		$this->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
+		$this->setCellHeightRatio(1.50);
 		
-		$this->Cell(45, 0, 'ที่อยู่เปิด Invoice (Destination) : ', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-		$this->Cell(55, 0, $hdr['shipToName'], 'B', 0, 'L', 1, '', 0, false, 'T', 'C');
-		$this->Cell(25, 0, 'SO No. : ', 0, $ln=0, 'L', 0, '', 0, false, 'T', 'B');
-		$this->Cell(50, 0, $hdr['soNo'].($hdr['revCount']<>0?' rev.'.$hdr['revCount']:''), 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
-		$this->Ln(6);
-								
-		$this->Cell(100, 0, $hdr['shipToAddr1'], 'B', 0, 'L', 1, '', 0, false, 'T', 'C');
-		$this->Cell(25, 0, 'PO No. : ', 0, $ln=0, 'L', 0, '', 0, false, 'T', 'B');
-		$this->Cell(50, 0, $hdr['poNo'], 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
-		$this->Ln(6);
-		
-		$this->Cell(100, 0, $hdr['shipToAddr2'], 'B', 0, 'L', 1, '', 0, false, 'T', 'C');
-		$this->Cell(25, 0, 'PI No. : ', 0, $ln=0, 'L', 0, '', 0, false, 'T', 'B');
-		$this->Cell(50, 0, $hdr['piNo'], 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
-		$this->Ln(6);
-		
-		$this->Cell(100, 0, $hdr['shipToAddr3'].$hdr['shipToZipcode'], 'B', 0, 'L', 1, '', 0, false, 'T', 'C');
-		//$pdf->Cell(25, 0, 'PI No. : ', 0, $ln=0, 'L', 0, '', 0, false, 'T', 'B');
-		//$pdf->Cell(50, 0, $hdr['piNo'], 'B', 0, 'L', 1, 'B', 0, false, 'T', 'B');
-		$this->Ln(8);
+		$html='<table width="100%"  >	
+		<tr>
+			<td colspan="3" style="border: o.1em solid black; text-align: center; font-size: large;">SALES ORDER FORM (ใบสั่งขาย)</td>
+			<td colspan="3" ></td>
+			<td colspan="2" >&nbsp;รหัสลูกค้า (Customer Code) : </td>
+			<td colspan="2"  style="border-bottom: 0.1em solid black;">'.$hdr['custCode'].'</td>
+		</tr>
+		<tr>
+			<td colspan="2" >ชื่อลูกค้า (Customer Name) : </td>
+			<td colspan="4"  style="border-bottom: 0.1em solid black;">'.$hdr['custName'].'</td>			
+			<td colspan="2" >&nbsp;วันที่ (Date) : </td>
+			<td colspan="2" style="border-bottom: 0.1em solid black;">'.date('d M Y',strtotime( $hdr['saleDate'] )).'</td>			
+		</tr>
+		<tr>
+			<td colspan="2" ><span style="font-size: 90%;" >ที่อยู่เปิด Invoice (Destination) : </span></td>
+			<td colspan="4"  style="border-bottom: 0.1em solid black;">'.$hdr['shipToName'].'</td>	
+			<td colspan="2" >&nbsp;SO No. : </td>
+			<td colspan="2"  style="border-bottom: 0.1em solid black;">'.$hdr['soNo'].($hdr['revCount']<>0?' rev.'.$hdr['revCount']:'').'</td>
+		</tr>
+		<tr>
+			<td colspan="6"  style="border-bottom: 0.1em solid black;">'.$hdr['shipToAddr1'].'</td>
+			<td colspan="2" >&nbsp;PO No. : </td>
+			<td colspan="2"  style="border-bottom: 0.1em solid black;">'.$hdr['poNo'].'</td>
+		</tr>
+		<tr>
+			<td colspan="6" style="border-bottom: 0.1em solid black;">'.$hdr['shipToAddr2'].'</td>
+			<td colspan="2" >&nbsp;PI No. : </td>
+			<td colspan="2"  style="border-bottom: 0.1em solid black;">'.$hdr['piNo'].'</td>
+		</tr>
+		<tr>
+			<td colspan="6"  style="border-bottom: 0.1em solid black;">'.$hdr['shipToAddr3'].$hdr['shipToZipcode'].'</td>
+			<td colspan="2" ></td>
+			<td colspan="2" ></td>
+		</tr>
+		</table>
+		';
+		$this->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
+		$this->setCellHeightRatio(1.50);
 	}
 	
 	public function foot($hdr, $html){
@@ -124,168 +127,115 @@ class MYPDF extends TCPDF {
 		$this->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
 		//$pdf->Ln(2);
 		
-		$this->CheckBox('stockType', 5, ($hdr['prodStkInStk']==0?false:true), array(), array());
-		$this->Cell(45, 5, 'สินค้ามีในสต๊อกทั้งหมด / บางส่วน');
-		$this->CheckBox('stockType', 5, ($hdr['prodStkOrder']==0?false:true), array(), array());
-		$this->Cell(40, 5, 'สินค้าสั่งผลิต');
-		$this->CheckBox('stockType', 5, ($hdr['prodStkOther']==0?false:true), array(), array());
-		$this->Cell(20, 5, 'อื่นๆ  (Other)');
-		$this->Cell(55, 0, $hdr['prodStkRem'], 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
-		$this->Ln(6);
+		$html='<table width="100%"  >
+		<tr>
+			<td colspan="3" >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['prodStkInStk']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> สินค้ามีในสต๊อกทั้งหมด / บางส่วน</td>
+			<td colspan="2"  >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['prodStkOrder']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> สินค้าสั่งผลิต</td>
+			<td colspan="1"  >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['prodStkOther']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> 
+				<span style="font-size: 80%;">อื่นๆ  (Other)</span></td>		
+			<td colspan="4" style="border-bottom: 0.1em solid black;" >'.$hdr['prodStkRem'].'</td>
+		</tr>
+		<tr>
+			<td colspan="2" ><span style="text-decoration: underline;">การบรรจุ (Packing)</span> : </td>
+			<td colspan="2"  >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['packTypeAk']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" />  มี LOGO AK</td>
+			<td colspan="1" >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['packTypeNone']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" />  ไม่มี LOGO</td>
+			<td colspan="1" >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['packTypeOther']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> 
+				<span style="font-size: 80%;">อื่นๆ  (Other)</span></td>	
+			<td colspan="4" style="border-bottom: 0.1em solid black;" >'.$hdr['packTypeRem'].'</td>
+		</tr>
+		<tr>
+			<td colspan="2" ><span style="text-decoration: underline; font-size: 90%;">กรณีส่งต่างประเทศ (Export) by</span> : </td>
+			<td >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['shipByLcl']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> LCL</td>
+			<td >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['shipByFcl']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> FCL</td>
+			<td colspan="1" >Load Remark : </td>
+			<td colspan="5" style="border-bottom: 0.1em solid black;" >'.$hdr['shipByRem'].'</td>
+		</tr>
+		<tr>
+			<td colspan="2" ><span style="text-decoration: underline;">Shipping Options</span></td>
+			<td colspan="2" >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['remCoa']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" />  ขอ COA</td>
+			<td colspan="2" ><span style="text-decoration: underline;">Shipping Mark</span> : </td>
+		</tr>
+		<tr>
+			<td colspan="2" ><span style="text-decoration: underline;"></span></td>
+			<td colspan="2" >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['remPalletBand']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> PALLET ตีตรา </td>
+			<td colspan="2" rowspan="2" >'.
+			($hdr['shippingMarksFilePath']!=""?'<img src="../images/shippingMarks/'.$hdr['shippingMarksFilePath'].'" />':'<img src="../images/shippingMarks/default.jpg" />').
+			'</td>
+		</tr>
+		<tr>
+			<td colspan="2" ></td>
+			<td colspan="2" >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['remFumigate']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> รมยาตู้คอนเทนเนอร์</td>			
+		</tr>
+		<tr>
+			<td colspan="2" >ราคา (Price) : </td>
+			<td colspan="2" >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['priceOnOrder']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" />  ตามใบสั่งซื้อ</td>
+			<td colspan="1" >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['priceOnOther']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> 
+				<span style="font-size: 80%;">อื่นๆ  (Other)</span></td>	
+			<td colspan="5" style="border-bottom: 0.1em solid black;" >'.$hdr['priceOnRem'].'</td>
+		</tr>
+		<tr>
+			<td colspan="2" >ผู้เสนอขาย (Sales) : </td>
+			<td colspan="8" style="border-bottom: 0.1em solid black;" >'.$hdr['smName'].'</td>
+		</tr>
+		<tr>
+			<td colspan="2" >หมายเหตุ : </td>
+			<td colspan="8" style="border-bottom: 0.1em solid black;" >'.$hdr['remark'].'</td>
+		</tr>		
+		</table>
+		';
+		$this->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
 		
-		//การบรรจุ (Packing) : 	□ มี LOGO AK	□ ไม่มี LOGO AK	□ อื่นๆ (Other) ____________________________
-		$this->Cell(25, 5, 'การบรรจุ (Packing) : ', 'B', 0, 'L', 1, '', 0, false, 'T', 'C');
-		$this->CheckBox('packingType', 5, ($hdr['packTypeAk']==0?false:true), array(), array());
-		$this->Cell(20, 5, 'มี LOGO AK');
-		$this->CheckBox('packingType', 5, ($hdr['packTypeNone']==0?false:true), array(), array());
-		$this->Cell(40, 5, 'ไม่มี LOGO');
-		$this->CheckBox('packingType', 5, ($hdr['packTypeOther']==0?false:true), array(), array());
-		$this->Cell(20, 5, 'อื่นๆ  (Other)');
-		$this->Cell(55, 0, $hdr['packTypeRem'], 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
-		$this->Ln(6);
-		//กรณีส่งในประเทศ (Domestic) วันที่ รับ – ส่ง สินค้า (Delivery Date)
-		
-		/*$pdf->Cell(40, 5, 'กรณีส่งในประเทศ (Domestic)');
-		$pdf->Cell(45, 5, 'วันที่ รับ – ส่ง สินค้า (Delivery Date) : ');
-		$pdf->Cell(30, 5, ($hdr['custLocCode']=='L'?$hdr['deliveryDate']:''), 'B', 0, 'C', 1, 'B', 0, false, 'T', 'C');
-		$pdf->Ln(6);*/
-		
-		//กรณีส่งต่างประเทศ (Export)   วันที่ Load _______________  by   □ LCL	□ FCL : 1x20’ 	□ FCL : 1x40’
-		//$pdf->Cell(40, 5, 'กรณีส่งต่างประเทศ (Export)');
-		$this->Cell(40, 5, 'กรณีส่งต่างประเทศ (Export) by ', 'B', 0, 'L', 1, '', 0, false, 'T', 'C');
-		$this->CheckBox('shipByType', 5, ($hdr['shipByLcl']==0?false:true), array(), array());
-		$this->Cell(5, 5, 'LCL');
-		$this->CheckBox('shipByType', 5, ($hdr['shipByFcl']==0?false:true), array(), array());
-		$this->Cell(40, 5, 'FCL');
-		$this->Cell(20, 5, 'Load Remark : ');
-		$this->Cell(60, 0, $hdr['shipByRem'], 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
-		
-		
-		$this->Ln(6);
-		
-		$this->Cell(25, 5, 'Shipping Options :');
-		$this->CheckBox('shipOpt', 5, ($hdr['remCoa']==0?false:true), array(), array());
-		$this->Cell(20, 5, 'ขอ COA');
-					
-		$this->Cell(23, 5, 'Shipping Mark : ');
-		$breaks = array("<br />","<br>","<br/>");  
-		$text = str_ireplace($breaks, "\r\n", $hdr['shippingMarksName']);  
-		$shippingMarkTextArr = explode("\r\n", $text);
-		if($hdr['shippingMarksFilePath']==""){				
-			$this->Cell(110, 5, $shippingMarkTextArr[0], 'B', 0, 'L', 1, '', 0, false, 'T', 'C');
-		}else{	
-			$this->Cell(110, 5, $text, 'B', 0, 'L', 1, '', 0, false, 'T', 'C');
-			
-			$image_file = '../images/shippingMarks/'.$hdr['shippingMarksFilePath'];
-			$img = file_get_contents($image_file);
-			// Image example with resizing
-			//image width=150px;
-			//$this->Image('@' . $img,xFromTop, yFromTop,'JPG'); 
-			//$this->SetLineWidth( 1 );
-			$this->Image('@' . $img,150,180, 45, 'JPG');
-		}
-		$this->Ln(6);
-		
-		$this->Cell(25, 5, '');
-		$this->CheckBox('shipOpt', 5, ($hdr['remPalletBand']==0?false:true), array(), array());
-		$this->Cell(15, 5, 'PALLET ตีตรา');
-		if(isset($shippingMarkTextArr[1])){
-			$this->Cell(28, 5, '');
-			$this->Cell(110, 5, $shippingMarkTextArr[1], 'B', 0, 'L', 1, '', 0, false, 'T', 'C'); 
-		}
-		$this->Ln(6);
-
-		$this->Cell(25, 5, '');
-		$this->CheckBox('shipOpt', 5, ($hdr['remFumigate']==0?false:true), array(), array());
-		$this->Cell(15, 5, 'รมยาตู้คอนเทนเนอร์');
-		if(isset($shippingMarkTextArr[2])){
-			$this->Cell(28, 5, '');
-			$this->Cell(110, 5, $shippingMarkTextArr[2], 'B', 0, 'L', 1, '', 0, false, 'T', 'C'); 
-		}
-		$this->Ln(33);
-					
-		$this->Cell(25, 5, 'ราคา (Price) : ');
-		$this->CheckBox('priceType', 5, ($hdr['priceOnOrder']==0?false:true), array(), array());
-		$this->Cell(20, 5, 'ตามใบสั่งซื้อ');
-		$this->CheckBox('priceType', 5, ($hdr['priceOnOther']==0?false:true), array(), array());
-		$this->Cell(10, 5, 'อื่นๆ');
-		$this->Cell(55, 0, $hdr['priceOnRem'], 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
-		$this->Ln(6);
-		
-		$this->Cell(25, 5, 'ผู้เสนอขาย (Sales) : ');
-		$this->Cell(55, 0, $hdr['smName'], 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
-		$this->Ln(6);
-		
-		$remStr = '';
-		/*if($hdr['remCoa']==0){}else{$remStr.=($remStr==""?"":",  ")."ขอ COA";}
-		if($hdr['remPalletBand']==0){}else{$remStr.=($remStr==""?"":",  ")."PALLET ตีตรา";}
-		if($hdr['remFumigate']==0){}else{$remStr.=($remStr==""?"":",  ")."รมยาตู้คอนเทนเนอร์";}*/
-		if($hdr['remark']==""){}else{$remStr.=($remStr==""?"":",  ").$hdr['remark'];}
-		$this->Cell(20, 5, 'หมายเหตุ : ');
-		//$remStr=str_replace('\n',"<br/>", $remStr);
-		//$needles = array("<br>", "&#13;", "<br/>", "\n");
-		//$replacement = "<br />";
-		//$remStr = str_replace($needles, $replacement, $remStr);
-		//$pdf->MultiCell(150, 0, $remStr, 'B', 0, 'L', 1);
-		$this->MultiCell(150, 0, $remStr, 'B', 0, 'L', 1);  //, 'B'
-		//$pdf->MultiCell(30, 0, $remStr, 'B', 0, 'L', 1, 'B', 0, false, 'T', 'C');
-		$this->Ln(9);
-		
-		
-		//a.`remCoa`, a.`remPalletBand`, a.`remFumigate`
-		
-		
-		
-		//box
-		$this->Cell(45, 35, '', 1, $ln=0, 'L', 0, '', 0, false, 'T', 'T');
-		$this->Cell(65, 35, 'สถานที่ส่งสินค้า (Place to Delivery)', 1, $ln=0, 'L', 0, '', 0, false, 'T', 'T');
-		$this->Cell(65, 35, '', 1, $ln=0, 'C', 0, '', 0, false, 'T', 'T');
-		$this->Ln(4);
-		
-		//in box
-		$this->Cell(20, 5, 'เครดิต (Credit)');
-		$this->Cell(10, 5, $hdr['payTypeCreditDays'], 'B', 0, 'C', 1, '', 0, false, 'T', 'C');
-		$this->Cell(15, 5, 'วัน (Days)');
-		$this->Cell(5, 5, '');
-		$this->RadioButton('payTypeCode', 5, array(), array(), 'สินค้านำเข้าจากต่างประเทศ', ($hdr['plac2deliCode']=='FACT'?true:false));
-		$this->Cell(55, 5, 'ลูกค้ามารับที่โรงงาน AK');
-		$this->Cell(35, 5, 'จัดทำโดย (Issue By) : ');
-		$this->Cell(30, 5, $hdr['createByName'], 'B', 0, 'C', 1, '', 0, false, 'T', 'C');
-		$this->Ln(6);
-		
-		$this->Cell(5, 5, '');
-		$this->RadioButton('payTypeCode', 5, array(), array(), 'สินค้านำเข้าจากต่างประเทศ', ($hdr['payTypeCode']=='CASH'?true:false));
-		$this->Cell(40, 5, 'เก็บเงินสด');
-		$this->RadioButton('payTypeCode', 5, array(), array(), 'สินค้านำเข้าจากต่างประเทศ', ($hdr['plac2deliCode']=='SEND'?true:false));
-		$this->Cell(30, 5, 'ส่งสินค้าจากโรงงาน AK ที่');
-		$this->Cell(25, 0, $hdr['plac2deliCodeSendRem'], 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
-		$this->Cell(35, 5, 'วันที่ (Date) : ');
-		$this->Cell(30, 5, date('d M Y H:m',strtotime( $hdr['createTime'] )), 'B', 0, 'C', 1, '', 0, false, 'T', 'C');
-		$this->Ln(6);
-		
-		$this->Cell(5, 5, '');
-		$this->RadioButton('payTypeCode', 5, array(), array(), 'สินค้านำเข้าจากต่างประเทศ',  ($hdr['payTypeCode']=='CHEQ'?true:false));
-		$this->Cell(40, 5, 'เก็บเช็คล่วงหน้า');
-		$this->RadioButton('payTypeCode', 5, array(), array(), 'สินค้านำเข้าจากต่างประเทศ', ($hdr['plac2deliCode']=='MAPS'?true:false));
-		$this->Cell(55, 5, 'ตามแผนที่');
-		$this->Cell(35, 5, 'ตรวจสอบโดย (ผู้ขาย) ');
-		$this->Cell(30, 5, $hdr['confirmByName'], 'B', 0, 'C', 1, '', 0, false, 'T', 'C');
-		$this->Ln(6);
-		
-		$this->Cell(5, 5, '');
-		$this->RadioButton('payTypeCode', 5, array(), array(), 'สินค้านำเข้าจากต่างประเทศ',  ($hdr['payTypeCode']=='TRAN'?true:false));
-		$this->Cell(40, 5, 'ลูกค้าโอนเงินเข้าบัญชี');
-		$this->RadioButton('payTypeCode', 5, array(), array(), 'สินค้านำเข้าจากต่างประเทศ', ($hdr['plac2deliCode']=='LOGI'?true:false));
-		$this->Cell(10, 5, 'ขนส่ง');
-		$this->Cell(45, 0, $hdr['plac2deliCodeLogiRem'], 'B', 0, 'L', 1, '', 0, false, 'T', 'B');
-		$this->Cell(35, 5, 'ผู้อนุมัติ (Approved by) ');
-		$this->Cell(30, 5, $hdr['approveByName'], 'B', 0, 'C', 1, '', 0, false, 'T', 'C');
-		$this->Ln(6);
-		
-		$this->Cell(5, 5, '');
-		$this->Cell(55, 5, '');
-		$this->Cell(65, 5, '(เก็บเงินปลายทาง)');
-		$this->Ln(6);
+		$html='<table width="100%"  >
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td colspan="3"  style="border-top: 0.1em solid black; border-left: 0.1em solid black;" ></td>
+			<td colspan="3"  style="border-top: 0.1em solid black; border-left: 0.1em solid black; border-right: 0.1em solid black;" >&nbsp;สถานที่ส่งสินค้า (Place to Delivery)</td>
+			<td colspan="4"  style="border-top: 0.1em solid black; border-left: 0.1em solid black; border-right: 0.1em solid black;" ></td>
+		</tr>
+		<tr>
+			<td colspan="3" style="border-left: 0.1em solid black;">&nbsp;เครดิต (Credit) '.'<span style="text-decoration: underline; font-size: 120%; font-weight: bold;">'.$hdr['payTypeCreditDays'].'</span> วัน (Days)</td>
+			<td colspan="3" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['plac2deliCode']=='FACT'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;ลูกค้ามารับที่โรงงาน AK</td>
+			<td colspan="4" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;จัดทำโดย (Issue By) : <span style="text-decoration: underline;">'.$hdr['createByName'].'</span></td>
+		</tr>
+		<tr>
+			<td colspan="3" style="border-left: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['payTypeCode']=='CASH'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;เก็บเงินสด</td>
+			<td colspan="3" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['plac2deliCode']=='SEND'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;ส่งสินค้าจากโรงงาน AK ที่ 
+				<span style="text-decoration: underline; ">'.$hdr['plac2deliCodeSendRem'].'</span>
+			</td>
+			<td colspan="4" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;วันที่ (Date) : <span style="text-decoration: underline;">'.date('d M Y H:m',strtotime( $hdr['createTime'] )).'</span></td>
+		</tr>
+		<tr>
+			<td colspan="3" style="border-left: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['payTypeCode']=='CHEQ'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;เก็บเช็คล่วงหน้า</td>
+			<td colspan="3" style="border-left: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['plac2deliCode']=='MAPS'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;ตามแผนที่ </td>
+			<td colspan="4" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;ตรวจสอบโดย (ผู้ขาย) : <span style="text-decoration: underline;">
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td>
+		</tr>
+		<tr>
+			<td colspan="3" style="border-left: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['payTypeCode']=='TRAN'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;ลูกค้าโอนเงินเข้าบัญชี</td>
+			<td colspan="3" style="border-left: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['plac2deliCode']=='LOGI'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;ขนส่ง </td>
+			<td colspan="4" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;ผู้อนุมัติ (Approved by) : <span style="text-decoration: underline;">
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td>
+		</tr>
+		<tr>
+			<td colspan="3"  style="border-bottom: 0.1em solid black; border-left: 0.1em solid black;"  ></td>
+			<td colspan="3"  style="border-bottom: 0.1em solid black; border-left: 0.1em solid black;" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(เก็บเงินปลายทาง)</td>
+			<td colspan="4"  style="border-bottom: 0.1em solid black; border-left: 0.1em solid black; border-right: 0.1em solid black;" ></td>
+		</tr>
+		</table>
+		';
+		$this->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
+				
 	}
 }
 
@@ -306,8 +256,7 @@ $pdf->SetTitle('PDF');
 $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
 // set margins (left, top, right)
-//$pdf->SetMargins(24, 26, 30);	//หน้า ๓ บนถึงตูดเลขหน้า ๒ ตูดเลขหน้าถึงตูดบรรทัดแรก ๑.๕
-$pdf->SetMargins(20, 20, 10);	//หน้า ๓ บนถึงตูดเลขหน้า ๒ ตูดเลขหน้าถึงตูดบรรทัดแรก ๑.๕
+$pdf->SetMargins(15, 15, 10);	//หน้า ๓ บนถึงตูดเลขหน้า ๒ ตูดเลขหน้าถึงตูดบรรทัดแรก ๑.๕
 $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
 $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
 
@@ -329,19 +278,10 @@ if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
 $pdf->setFontSubsetting(true);
 
 // Set font
-$pdf->SetFont('THSarabun', '', 14, '', true);
+$pdf->SetFont('THSarabun', '', 16, '', true);
 
-
-
-
-
-
-
-
-
-
-
-
+//Set Line spacing
+$pdf->setCellHeightRatio(1.50);
 
 // Set some content to print
 if( isset($_GET['soNo']) ){			
@@ -433,10 +373,10 @@ if( isset($_GET['soNo']) ){
 									<tr>										
 										<th style="font-weight: bold; text-align: center; width: 150px; border: 0.1em solid black;">Product Name</th>
 										<th style="font-weight: bold; text-align: center; width: 150px; border: 0.1em solid black;">Product Code</th>
-										<th style="font-weight: bold; text-align: center; width: 150px; border: 0.1em solid black;">Specification</th>								
+										<th style="font-weight: bold; text-align: center; width: 170px; border: 0.1em solid black;">Specification</th>								
 										<th style="font-weight: bold; text-align: center; width: 60px; border: 0.1em solid black;">Qty</th>								
 										<th style="font-weight: bold; text-align: center; width: 40px; border: 0.1em solid black;">Unit</th>
-										<th style="font-weight: bold; text-align: center; width: 70px; border: 0.1em solid black;">Delivery / Load Date</th>
+										<th style="font-weight: bold; text-align: center; width: 80px; border: 0.1em solid black;"><span style="font-size: 75%">Delivery/Load Date</span></th>
 									</tr>
 								</thead>
 								  <tbody>
@@ -449,13 +389,13 @@ if( isset($_GET['soNo']) ){
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 150px;
 										border: 0.1em solid black; padding: 10px; width: 150px;"> '.$row['prodCode'].'</td>
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 150px;
-										border: 0.1em solid black; padding: 10px; width: 150px;"> '.$row['remark'].' '.($row['rollLengthId']<>'0'?'[RL:'.$row['rollLengthName'].']':'').'</td>
+										border: 0.1em solid black; padding: 10px; width: 170px;"> '.$row['remark'].' '.($row['rollLengthId']<>'0'?'[RL:'.$row['rollLengthName'].']':'').'</td>
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 60px;
 										border: 0.1em solid black; text-align: right; width: 60px;">'.number_format($row['qty'],0,'.',',').'</td>						
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 40px;
 										border: 0.1em solid black; text-align: right; width: 40px;">'.$row['prodUomCode'].'</td>						
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65px;
-										border: 0.1em solid black; padding: 10px; width: 70px;"> '.date('d M Y',strtotime( $row['deliveryDate'] )).'</td>
+										border: 0.1em solid black; padding: 10px; width: 80px;"> '.date('d M Y',strtotime( $row['deliveryDate'] )).'</td>
 						</tr>';	
 				
 				//Loop item per page
@@ -473,10 +413,10 @@ if( isset($_GET['soNo']) ){
 					$html .='<tr>
 							<td style="font-weight: bold; text-align: center; width: 150px;border: 0.1em solid black;"></td>
 							<td style="font-weight: bold; text-align: center; width: 150px;border: 0.1em solid black;"></td>
-							<td style="font-weight: bold; text-align: center; width: 150px;border: 0.1em solid black;"></td>								
+							<td style="font-weight: bold; text-align: center; width: 170px;border: 0.1em solid black;"></td>								
 							<td style="font-weight: bold; text-align: center; width: 60px;border: 0.1em solid black;"></td>								
 							<td style="font-weight: bold; text-align: center; width: 40px;border: 0.1em solid black;"></td>
-							<td style="font-weight: bold; text-align: center; width: 70px;border: 0.1em solid black;"></td>							
+							<td style="font-weight: bold; text-align: center; width: 80px;border: 0.1em solid black;"></td>							
 						</tr>';	
 				}
 			}

@@ -79,7 +79,8 @@ switch($s_userGroupCode){
 			$total_data=$countTotal;
 			$total_page=ceil($total_data/$rows);
 			if($page>=$total_page) $page=$total_page;
-			$start=($page-1)*$rows;			                
+			$start=($page-1)*$rows;		
+			if($start<0) $start=0;		
           ?>
           <span class="label label-primary">Total <?php echo $countTotal; ?> items</span>
         </div><!-- /.box-tools -->
@@ -165,7 +166,7 @@ switch($s_userGroupCode){
                     </td>					
                     <td>
 						
-						<?php if($row['statusCode']=='A' OR ($s_userGroupCode=='it' OR $s_userGroupCode=='prog')){ ?>
+						<?php if($row['statusCode']=='A'){ ?>
 							<a class="btn btn-primary" name="btn_row_edit" href="<?=$rootPage;?>_edit.php?act=edit&id=<?= $row['id']; ?>" >
 								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
 						<?php }else{ ?>	

@@ -9,6 +9,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <html>
 <?php include 'head.php'; 
 $rootPage = 'user';
+$tb = 'wh_user';
 
 //Check user roll.
 switch($s_userGroupCode){
@@ -132,11 +133,8 @@ switch($s_userGroupCode){
                 <!--/.row-->       
             </div>
 			<!--.body-->    
-    </div>
-	<!-- /.box box-primary -->
   <div class="box-footer">
-      
-      
+  
     <!--The footer of the box -->
   </div><!-- box-footer -->
 </div><!-- /.box -->

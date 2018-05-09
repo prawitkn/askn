@@ -1,7 +1,7 @@
 <?php
     include 'session.php';	
 		
-	$tb='wh_sloc_x';
+	$tb='wh_user_group';
 	
 	if(!isset($_POST['action'])){		
 		header('Content-Type: application/json');
@@ -11,7 +11,6 @@
 			case 'add' :				
 				$code = $_POST['code'];
 				$name = $_POST['name'];
-				$statusCode = 'A';	
 								
 				// Check duplication?
 				$sql = "SELECT id FROM `".$tb."` WHERE code=:code OR name=:name ";
@@ -27,11 +26,10 @@
 				}   
 	
 				$sql = "INSERT INTO `".$tb."` (`code`, `name`, `statusCode`, `createTime`, `createById`)
-				 VALUES (:code,:name,:statusCode,NOW(),:s_userId)";
+				 VALUES (:code,:name,'A',NOW(),:s_userId)";
 				$stmt = $pdo->prepare($sql);	
 				$stmt->bindParam(':code', $code);
 				$stmt->bindParam(':name', $name);
-				$stmt->bindParam(':statusCode', $statusCode);
 				$stmt->bindParam(':s_userId', $s_userId);
 				if ($stmt->execute()) {
 					header('Content-Type: application/json');
@@ -61,7 +59,7 @@
 				  $errors = "Error on Data Insertion. Duplicate data, Please try new username. " . $pdo->errorInfo()[2];
 				  echo json_encode(array('success' => false, 'message' => $errors));  
 				  exit;    
-				} 	  
+				} 	   
 				
 				//Sql
 				$sql = "UPDATE `".$tb."` SET `code`=:code 

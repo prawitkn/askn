@@ -7,9 +7,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <html>
 <?php include 'head.php'; 
 $rootPage = 'userGroup';
+$tb = 'wh_user_group';
 //Check user roll.
 switch($s_userGroupCode){
-	case 'it' : 
+	case 'it' : case 'admin' :
 		break;
 	default : 
 		header('Location: access_denied.php');
@@ -78,6 +79,7 @@ switch($s_userGroupCode){
 				$total_page=ceil($total_data/$rows);
 				if($page>=$total_page) $page=$total_page;
 				$start=($page-1)*$rows;
+				if($start<0) $start=0;		
           ?>
           <span class="label label-primary">Total <?php echo $countTotal['countTotal']; ?> items</span>
         </div><!-- /.box-tools -->
@@ -134,12 +136,6 @@ switch($s_userGroupCode){
                     <th>#</th>
                 </tr>
                 <?php $c_row=($start+1); while ($row = $stmt->fetch()) { 
-					$statusName = '<label class="label label-info">Unknow</label>';
-						switch($row['statusCode']){
-							case 'A' : $statusName = '<label class="label label-success">Active</label>'; break;
-							case 'X' : $statusName = '<label class="label label-danger">Inactive</label>'; break;
-							default : 						
-						}
 						?>
                 <tr>
 					<td>
@@ -155,12 +151,44 @@ switch($s_userGroupCode){
                          <?= $row['name']; ?>
                     </td>
                     <td>
-                         <?=$statusName; ?>
-                    </td>
-					<td>					
-						<a class="btn btn-success fa fa-edit" name="btn_row_edit" <?php echo ($row['statusCode']<>'X'?' href="'.$rootPage.'_edit.php?id='.$row['id'].'" ':' disabled '); ?> ></a>						
-						<!--<a class="btn btn-danger fa fa-remove" name="btn_row_remove" <?php echo ($row['statusCode']<>'X'?' data-id="'.$row['id'].'" ':' disabled '); ?> ></a>	-->
-						<a class="btn btn-danger fa fa-trash" name="btn_row_delete" <?php echo ($row['statusCode']=='X'?' data-id="'.$row['id'].'" ':' disabled '); ?> ></a>	
+						 <?php
+						 switch($row['statusCode']){ 	
+							case 'A' :
+								echo '<a class="btn btn-success" name="btn_row_setActive" data-statusCode="I" data-id="'.$row['id'].'" >Active</a>';
+								break;
+							case 'I' :
+								echo '<a class="btn btn-default" name="btn_row_setActive" data-statusCode="A" data-id="'.$row['id'].'" >Inactive</a>';
+								break;
+							case 'X' : 
+								echo '<label style="color: red;" >Removed</label>';
+								break;
+							default :	
+								echo '<label style="color: red;" >N/A</label>';
+						}
+						 ?>
+                    </td>					
+                    <td>
+						
+						<?php if($row['statusCode']=='A'){ ?>
+							<a class="btn btn-primary" name="btn_row_edit" href="<?=$rootPage;?>_edit.php?act=edit&id=<?= $row['id']; ?>" >
+								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
+						<?php }else{ ?>	
+							<a class="btn btn-primary"  disabled  > 
+								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
+						<?php } ?>
+						
+						<?php if($row['statusCode']=='I'){ ?>
+							<a class="btn btn-danger" name="btn_row_remove"  data-id="<?=$row['id'];?>" > 
+								<i class="glyphicon glyphicon-remove"></i> Remove</a>	
+						<?php }else{ ?>	
+							<a class="btn btn-danger"  disabled  >
+								<i class="glyphicon glyphicon-remove"></i> Remove</a>	
+						<?php } ?>
+						
+						<?php if($row['statusCode']=='X' AND ($s_userGroupCode=='admin' OR $s_userGroupCode=='it' OR $s_userGroupCode=='prog')){ ?>
+							<a class="btn btn-danger" name="btn_row_delete"  data-id="<?=$row['id'];?>" > 
+								<i class="glyphicon glyphicon-trash"></i> Delete</a>	
+						<?php } ?>
                     </td>
                 </tr>
                 <?php $c_row+=1; } ?>
@@ -214,18 +242,109 @@ switch($s_userGroupCode){
 <script src="bootstrap/js/smoke.min.js"></script>
 <script>
 $(document).ready(function() {
-	$("a[name=btn_row_delete]").click(function(e) {
-	  var row_id = $(this).attr('data-id');
-	  $.smkConfirm({text:'Are you sure you want to delete?',accept:'OK Sure.', cancel:'Do not Delete.'}, function (e){if(e){
-			  window.location.replace('<?=$rootPage;?>_delete.php?id='+row_id);
-	  }});
-	  e.preventDefault();
-	});	
+	$('a[name=btn_row_setActive]').click(function(){
+		var params = {
+			action: 'setActive',
+			id: $(this).attr('data-id'),
+			statusCode: $(this).attr('data-statusCode')			
+		};
+		$.smkConfirm({text:'Are you sure ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function (data) {					
+				if (data.success){ 
+					$.smkAlert({
+						text: data.message,
+						type: 'success',
+						position:'top-center'
+					});
+					location.reload();
+				} else {
+					alert(data.message);
+					$.smkAlert({
+						text: data.message,
+						type: 'danger'//,
+					//                        position:'top-center'
+					});
+				}
+			}).error(function (response) {
+				alert(response.responseText);
+			}); 
+		}});
+		e.preventDefault();
+	});
+	//end btn_row_setActive
+	
+	$('a[name=btn_row_remove]').click(function(){
+		var params = {
+			action: 'remove',
+			id: $(this).attr('data-id')
+		};
+		$.smkConfirm({text:'Are you sure to Remove ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function (data) {					
+				if (data.success){ 
+					$.smkAlert({
+						text: data.message,
+						type: 'success',
+						position:'top-center'
+					});
+					location.reload();
+				} else {
+					alert(data.message);
+					$.smkAlert({
+						text: data.message,
+						type: 'danger'//,
+					//                        position:'top-center'
+					});
+				}
+			}).error(function (response) {
+				alert(response.responseText);
+			}); 
+		}});
+		e.preventDefault();
+	});
+	//end btn_row_remove
+	
+	$('a[name=btn_row_delete]').click(function(){
+		var params = {
+			action: 'delete',
+			id: $(this).attr('data-id')
+		};
+		$.smkConfirm({text:'Are you sure to Delete ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function (data) {					
+				if (data.success){ 
+					$.smkAlert({
+						text: data.message,
+						type: 'success',
+						position:'top-center'
+					});
+					location.reload();
+				} else {
+					alert(data.message);
+					$.smkAlert({
+						text: data.message,
+						type: 'danger'//,
+					//                        position:'top-center'
+					});
+				}
+			}).error(function (response) {
+				alert(response.responseText);
+			}); 
+		}});
+		e.preventDefault();
+	});
+	//end btn_row_delete
 });
-  
-  
-
-
 </script>
 <!-- Optionally, you can add Slimscroll and FastClick plugins.
      Both of these plugins are recommended to enhance the

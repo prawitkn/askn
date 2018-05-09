@@ -76,6 +76,7 @@ $row=$stmt->fetch();
         <div class="box-body">            
             <div class="row">                
                     <form id="form1" method="post" class="form" validate>
+					<input type="hidden" name="action" value="edit" />				
 					<div class="col-md-6">	
 						<input id="id" type="hidden" name="id" value="<?=$row['id'];?>" />				
                         <div class="form-group">
@@ -90,7 +91,7 @@ $row=$stmt->fetch();
 						<div class="form-group">
                             <label for="statusCode">Status</label>
 							<input type="radio" name="statusCode" value="A" <?php echo ($row['statusCode']=='A'?' checked ':'');?> >Active
-							<input type="radio" name="statusCode" value="X" <?php echo ($row['statusCode']=='X'?' checked ':'');?> >Non-Active
+							<input type="radio" name="statusCode" value="I" <?php echo ($row['statusCode']=='I'?' checked ':'');?> >Inactive
 						</div>
 						
 						<button id="btn1" type="submit" class="btn btn-default">Submit</button>
@@ -105,8 +106,11 @@ $row=$stmt->fetch();
                 <!--/.row-->       
             </div>
 			<!--.body-->    
-    </div>
-	<!-- /.box box-primary -->
+  <div class="box-footer">
+  
+    <!--The footer of the box -->
+  </div><!-- box-footer -->
+</div><!-- /.box -->
   
 
 <div id="spin"></div>
@@ -147,16 +151,16 @@ $( document ).ajaxStart(function() {
 //   
 
 $(document).ready(function() {
-	$("#userFullname").focus();
+	$("#title").focus();
 
 	var spinner = new Spinner().spin();
 	$("#spin").append(spinner.el);
 	$("#spin").hide();
 //           
-	$('#form1').on("submit", function(e) {
+	$('#form1').on("submit", function(e) { 
 		if ($('#form1').smkValidate()) {
 			$.ajax({
-			url: '<?=$rootPage;?>_edit_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
 			type: 'POST',
 			data: new FormData( this ),
 			processData: false,
@@ -168,8 +172,8 @@ $(document).ready(function() {
 						text: data.message,
 						type: 'success',
 						position:'top-center'
-					});
-					//window.location.href = "user_add.php";
+					});					
+					setTimeout(function(){history.back();}, 2000);
 				}else{
 					$.smkAlert({
 						text: data.message,
@@ -177,8 +181,9 @@ $(document).ready(function() {
 						position:'top-center'
 					});
 				}
-				alert('Success');
-				window.location.href = "<?=$rootPage;?>.php";
+			})
+			.error(function (response) {
+				  alert(response.responseText);
 			});  
 			//.ajax		
 			e.preventDefault();
