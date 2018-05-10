@@ -1,6 +1,6 @@
 <?php
   //include '../db/database_sqlsrv.php';
-  include_once '../db/database_sqlsrv.php';
+  include_once '../db/db_sqlsrv.php';
   include 'inc_helper.php';  
 ?>
 <!DOCTYPE html>
@@ -111,7 +111,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						  ";
 						  switch($s_userGroupCode){ 
 							case 'whOff' :  case 'whSup' : 
-									$sql .= "AND left(itm.[ItemCode],1) IN (0,7,8) ";
+									$sql .= "AND left(itm.[ItemCode],1) IN ('0','7','8','9') ";
 								break;
 							case 'pdOff' :  case 'pdSup' :
 									$sql .= "AND left(itm.[ItemCode],1) = '".$s_userDeptCode."' ";
@@ -178,7 +178,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						  ";
 					  switch($s_userGroupCode){ 
 						case 'whOff' :  case 'whSup' : 
-								//$sql .= "AND left(itm.[ItemCode],1) IN ('0','7','8','9') ";
+								$sql .= "AND left(itm.[ItemCode],1) IN ('0','7','8','9') ";
 							break;
 						case 'pdOff' :  case 'pdSup' :
 								$sql .= "AND left(itm.[ItemCode],1) = '".$s_userDeptCode."' ";
