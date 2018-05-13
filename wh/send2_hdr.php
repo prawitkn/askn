@@ -90,6 +90,7 @@ $tb="send";
             <div class="row">
 				<form id="form1" action="#" method="post" class="form" novalidate>	
 				<input type="hidden" name="action" value="add" />
+				<input type="hidden" name="userDeptCode" id="userDeptCode" value="<?=$s_userDeptCode;?>" />
                 <div class="col-md-12">   
 					<div class="row">
 						<div class="col-md-3">
@@ -107,13 +108,9 @@ $tb="send";
 						<label for="fromCode">From</label>						
 						<?php $fromCode=$hdr['fromCode']; 
 						switch($s_userGroupCode){
-							case 'whOff' : case 'whSup' : case 'pdOff' : case 'pdSup' :
+							case 'pdOff' : case 'pdSup' :
 								$fromCode=$s_userDeptCode; ?>
-								<select name="fromCode" id="fromCode" class="form-control" disabled >
-							<?php
-								break;
-							case 'prog' : case 'admin' : ?>
-								<select name="fromCode" id="fromCode" class="form-control">
+								<select name="fromCode" id="fromCode" class="form-control" data-smk-msg="Require from code." required disabled >
 							<?php
 								break;
 							default :
@@ -168,7 +165,7 @@ $tb="send";
 			<div class="col-md-6">		
 				<div class="from-group">
 					<label for="remark">Remark</label>
-					<input type="text" id="remark" name="remark" value="<?=$hdr['remark'];?>" class="form-control" <?php echo ($sdNo==''?'':' disabled '); ?> >
+					<input type="text" id="remark" name="remark" value="<?=$hdr['remark'];?>" class="form-control" <?php echo ($sdNo==''?'':' disabled '); ?> data-smk-msg="Require froddm code." required  >
 				</div>
 				<!--from group-->			
 			</div>
@@ -359,9 +356,9 @@ $(document).ready(function() {
   //           
 
 	
-	$('#form1 a[name=btn_create]').click (function(e) {
+	$('#form1 a[name=btn_create]').click (function(e) {		
+		if($('#userDeptCode').val() != "") { $('#fromCode').prop('disabled',''); }
 		if ($('#form1').smkValidate()){
-			$('#fromCode').prop('disabled','');
 			$.smkConfirm({text:'Are you sure to Create ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
 				$.post({
 					url: '<?=$rootPage;?>_ajax.php',
@@ -391,6 +388,7 @@ $(document).ready(function() {
 			//smkConfirm
 		e.preventDefault();
 		}//.if end
+		if($('#userDeptCode').val() != "") { $('#fromCode').prop('disabled','disabled'); }
 	});
 	//.btn_click
 	
@@ -450,7 +448,7 @@ $(document).ready(function() {
 						type: 'success',
 						position:'top-center'
 					});		
-					setTimeout(function(){ window.location.href = '<?=$rootPage;?>.php'; }, 3000);
+					setTimeout(function(){ window.location.href = '<?=$rootPage;?>.php'; }, 2000);
 					//location.reload();
 				}else{
 					$.smkAlert({

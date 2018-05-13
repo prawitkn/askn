@@ -6,7 +6,7 @@
 		$s_userDeptCode = $row_user['userDeptCode'];
 		$s_userID=$_SESSION['userID'];*/
 
-	$search_word = $_POST['search_word'];
+	$search_word = trim($_POST['search_word']);
 	
 	$sql = "SELECT hdr.`sdNo`, hdr.`sendDate`, hdr.`fromCode`, hdr.`toCode`, hdr.`remark`, hdr.`statusCode`	
 	, fsl.name as fromName, tsl.name as toName 
@@ -18,11 +18,13 @@
 	AND (hdr.rcNo IS NULL OR hdr.rcNo='') 
 	AND hdr.sdNo like :search_word ";
 	switch($s_userGroupCode){ 
-		case 'whOff' :
-		case 'whSup' :
 		case 'pdOff' :
 		case 'pdSup' :
 			$sql .= "AND hdr.toCode=:s_userDeptCode ";
+			break;
+		case 'whOff' :
+		case 'whSup' :
+			$sql .= "AND hdr.toCode IN ('0','7','8','E') ";
 			break;
 		default :	// it, admin 
 	}	
@@ -32,8 +34,6 @@
 	$search_word = '%'.$search_word.'%';
 	$stmt->bindParam(':search_word', $search_word);
 	switch($s_userGroupCode){ 
-		case 'whOff' :
-		case 'whSup' :
 		case 'pdOff' :
 		case 'pdSup' :
 			$stmt->bindParam(':s_userDeptCode', $s_userDeptCode);

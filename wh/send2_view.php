@@ -181,7 +181,11 @@ $sdNo = $hdr['sdNo'];
   <div class="box-footer">
     <div class="col-md-12">
 		<?php if($hdr['statusCode']=='P'){ ?>
-          <a href="<?=$rootPage;?>_view_pdf.php?sdNo=<?=$sdNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
+          <a href="<?=$rootPage;?>_view_pdf.php?sdNo=<?=$sdNo;?>" class="btn btn-primary"><i class="glyphicon glyphicon-print"></i> Print</a>
+		  <button type="button" id="btn_remove" class="btn btn-default" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='P'?'':'disabled'); ?> >
+		 <i class="glyphicon glyphicon-trash">
+			</i> Remove Approved
+          </button>
 		<?php } ?>
 	
 		
@@ -403,6 +407,43 @@ $('#btn_delete').click (function(e) {
 			alert(response.responseText);
 		});
 		//.post
+	}});
+	//smkConfirm
+});
+//.btn_click
+
+$('#btn_remove').click (function(e) {				 
+	var params = {
+	action: 'remove',					
+	sdNo: $('#sdNo').val()					
+	};
+	//alert(params.hdrID);
+	$.smkConfirm({text:'Are you sure to Remove Approved ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+		$.post({
+			url: '<?=$rootPage;?>_ajax.php',
+			data: params,
+			dataType: 'json'
+		}).done(function(data) {
+			if (data.success){  
+				$.smkAlert({
+					text: data.message,
+					type: 'success',
+					position:'top-center'
+				});		
+				alert(data.message);
+				window.location.href = '<?=$rootPage;?>.php';
+			}else{
+				$.smkAlert({
+					text: data.message,
+					type: 'danger',
+					position:'top-center'
+				});
+			}
+			//e.preventDefault();		
+		}).error(function (response) {
+			alert(response.responseText);
+		});
+		//.post		
 	}});
 	//smkConfirm
 });

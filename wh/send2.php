@@ -54,18 +54,20 @@ $tb="send";
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
           <?php
-				$search_word = (isset($_GET['search_word'])?$_GET['search_word']:'');
+				$search_word = (isset($_GET['search_word'])?trim($_GET['search_word']):'');
                 $sql = "
 				SELECT COUNT(hdr.sdNo) AS countTotal
 				FROM `".$tb."` hdr 
 				WHERE 1 
 				AND hdr.statusCode<>'X' ";
 				switch($s_userGroupCode){ 
-					case 'whOff' :
-					case 'whSup' :
 					case 'pdOff' :
 					case 'pdSup' :
 						$sql .= "AND hdr.fromCode=:s_userDeptCode ";
+						break;
+					case 'whOff' :
+					case 'whSup' :
+						$sql .= "AND hdr.fromCode in ('0','7','8','E') ";
 						break;
 					default :	// it, admin 
 				}	
@@ -73,9 +75,7 @@ $tb="send";
 					$sql .= "AND hdr.sdNo like :search_word ";		
 				}		
 				$stmt = $pdo->prepare($sql);
-				switch($s_userGroupCode){ 					
-					case 'whOff' : 
-					case 'whSup' :
+				switch($s_userGroupCode){ 	
 					case 'pdOff' :
 					case 'pdSup' :
 						$stmt->bindParam(':s_userDeptCode', $s_userDeptCode);
@@ -131,11 +131,13 @@ $tb="send";
 				WHERE 1 
 				AND hdr.statusCode<>'X' ";
 				switch($s_userGroupCode){ 
-					case 'whOff' :
-					case 'whSup' :
 					case 'pdOff' :
 					case 'pdSup' :
 						$sql .= "AND hdr.fromCode=:s_userDeptCode ";
+						break;
+					case 'whOff' :
+					case 'whSup' :
+						$sql .= "AND hdr.fromCode in ('0','7','8','E') ";
 						break;
 					default :	// it, admin 
 				}	
@@ -190,6 +192,7 @@ $tb="send";
 					<td><?= $row['refNo']; ?></td>
 					<td><?= $row['fromName']; ?></td>
 					<td><?= $row['toName']; ?></td>
+					<td><?= $row['rcNo']; ?></td>
 					<td><?= $statusName; ?></td>	
 					<td>					
 						<a class="btn btn-info " name="btn_row_search" 

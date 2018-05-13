@@ -79,7 +79,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         </div><!-- /.box-header -->
         <div class="box-body">			
             <div class="row">
-				<form id="form1" action="delivery_add_insert.php" method="post" class="form" novalidate>				
+				<form id="form1" action="" method="post" class="form" novalidate>				
                 <div class="col-md-12">   
 					<div class="row">
 						<div class="col-md-3">
@@ -199,7 +199,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				</div><!-- /.box-tools -->
 			</div><!-- /.box-header -->
 				
-			<form id="form2" action="delivery_add_item_submit_ajax.php" method="post" class="form" novalidate>
+			<form id="form2" action="#" method="post" class="form" novalidate>
 				<input type="hidden" name="rcNo" value="<?=$hdr['rcNo'];?>" />
 				
 				<div class="table-responsive">
@@ -397,6 +397,7 @@ $(document).ready(function() {
 								data=$.parseJSON(data);
 								switch(data.rowCount){
 									case 0 : alert('Data not found.');
+										$('#tbl_search_person_main tbody').empty();
 										return false; break;
 									default : 
 										$('#tbl_search_person_main tbody').empty();
@@ -417,7 +418,7 @@ $(document).ready(function() {
 											'</tr>'
 											);			
 										});	
-									$('#modal_search_person').modal('show');	
+										$('#modal_search_person').modal('show');	
 								}
 							
 				  }, //success
