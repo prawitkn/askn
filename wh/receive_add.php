@@ -200,7 +200,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			</div><!-- /.box-header -->
 				
 			<form id="form2" action="#" method="post" class="form" novalidate>
-				<input type="hidden" name="rcNo" value="<?=$hdr['rcNo'];?>" />
+				<input type="hidden" name="rcNo" id="rcNo" value="<?=$hdr['rcNo'];?>" />
 				
 				<div class="table-responsive">
 				<table id="tbl_items" class="table table-striped">
@@ -252,8 +252,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				</div>
 				<!--/.table-responsive-->
 				
-				<!--<a name="btn_view" href="receive_view.php?rcNo=<?=$rcNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> View</a>
-				</form>-->
+				<!--<a name="btn_view" href="receive_view.php?rcNo=<?=$rcNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> View</a>-->
+				</form>
 				<button type="button" id="btn_verify" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
 					<i class="glyphicon glyphicon-ok"></i> Confirm
 				  </button>    
@@ -296,9 +296,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <div class="modal-body">
         <div class="form-horizontal">
 			<div class="form-group">	
-				<label for="year_month" class="control-label col-md-2">SD NO.</label>
+				<label for="txt_search_word" class="control-label col-md-2">SD NO.</label>
 				<div class="col-md-4">
-					<input type="text" class="form-control" id="txt_search_fullname" />
+					<input type="text" class="form-control" id="txt_search_word" />
 				</div>
 			</div>
 		
@@ -363,74 +363,78 @@ $(document).ready(function() {
 	$("#spin").hide();
   //           
   
-	//SEARCH Begin
+	//SEARCH Begin	
 	$('a[name="btnSdNo"]').click(function(){
-		//prev() and next() count <br/> too.		
-		$btn = $(this).closest("div").prev().find('input');
-		curId = $btn.attr('name');
-		//curId = $(this).prev().attr('name');
-		curTxtFullName = $(this).attr('id');
-		if(!$btn.prop('disabled')){
+		
+		//$btn = $(this).closest("div").prev().find('input').attr('name');
+		
+		//curName = $(this).closest("div").prev().find('input').attr('name');
+		curId = $(this).closest("div").prev().find('input').attr('name');
+		alert(curId);
+		
+		if(!$('#'+curId).prop('disabled')){
 			$('#modal_search_person').modal('show');
 		}
-		
-		//alert(curHidMid+' '+curSlOrgCode+' '+curTxtFullName+' ' +curTxtMobilePhoneNo);
-		
 	});	
-	$('#txt_search_fullname').keyup(function(e){
+	$('#txt_search_word').keyup(function(e){
 		if(e.keyCode == 13)
 		{
 			var params = {
-				search_word: $('#txt_search_fullname').val()
+				search_word: $('#txt_search_word').val()
 			};
 			if(params.search_word.length < 3){
 				alert('search keyword must more than 3 character.');
 				return false;
 			}
 			/* Send the data using post and put the results in a div */
-			  $.ajax({
+			 //alert(params.search_word);
+			$.ajax({
 				  url: "search_sending_ajax.php",
 				  type: "post",
 				  data: params,
-				datatype: 'json',
-				  success: function(data){	
-								data=$.parseJSON(data);
-								switch(data.rowCount){
-									case 0 : alert('Data not found.');
-										$('#tbl_search_person_main tbody').empty();
-										return false; break;
-									default : 
-										$('#tbl_search_person_main tbody').empty();
-										$.each($.parseJSON(data.data), function(key,value){
-											$('#tbl_search_person_main tbody').append(
-											'<tr>' +
-												'<td>' +
-												'	<div class="btn-group">' +
-												'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
-												'	class="btn" title="เลือก"> ' +
-												'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
-												'	</div>' +
-												'</td>' +
-												'<td>'+ value.sdNo +'</td>' +
-												'<td>'+ value.sendDate +'</td>' +
-												'<td>'+ value.fromCode+' : '+value.fromName+'</td>' +
-												'<td>'+ value.toCode+' : '+value.toName+'</td>' +
-											'</tr>'
-											);			
-										});	
-										$('#modal_search_person').modal('show');	
-								}
-							
-				  }, //success
-				  error:function(){
-					  alert('error');
-				  }   
-				}); 
+				datatype: 'json'})
+				.done(function (data) {
+					data=$.parseJSON(data);
+					switch(data.rowCount){
+						case 0 : alert('Data not found.');
+							return false; break;
+						case 1 :
+							$.each($.parseJSON(data.data), function(key,value){
+								$('#sdNo').val(value.sdNo).prop('disabled','disabled');
+								$('input[name=fromName]').val(value.fromCode+' : '+value.fromName);
+								$('input[name=toName]').val(value.toCode+' : '+value.toName);
+							});
+							break;
+						default : 
+							$('#tbl_search_person_main tbody').empty();
+							$.each($.parseJSON(data.data), function(key,value){
+								$('#tbl_search_person_main tbody').append(
+								'<tr>' +
+									'<td>' +
+									'	<div class="btn-group">' +
+									'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
+									'	class="btn" title="เลือก"> ' +
+									'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
+									'	</div>' +
+									'</td>' +
+									'<td>'+ value.sdNo +'</td>' +
+									'<td>'+ value.sendDate +'</td>' +
+									'<td>'+ value.fromCode+' : '+value.fromName+'</td>' +
+									'<td>'+ value.toCode+' : '+value.toName+'</td>' +
+								'</tr>'
+								);			
+							});	
+						$('#modal_search_person').modal('show');	
+					}	
+			})
+			.error(function (response) {
+				  alert(response.responseText);
+			});	
+			
 		}/* e.keycode=13 */	
 	});
 	
-	$(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
-		
+	$(document).on("click",'a[data-name="search_person_btn_checked"]',function() {		
 		$('input[name='+curId+']').val($(this).closest("tr").find('td:eq(1)').text());
 		//$('#'+curTxtFullName).val($(this).closest("tr").find('td:eq(2)').text());
 		//$('#'+curTxtMobilePhoneNo).val($(this).closest('tr').find('td:eq(3)').text());		
@@ -456,38 +460,38 @@ $(document).ready(function() {
 				  data: params,
 				datatype: 'json'})
 				.done(function (data) {
-						data=$.parseJSON(data);
-						switch(data.rowCount){
-							case 0 : alert('Data not found.');
-								return false; break;
-							case 1 :
-								$.each($.parseJSON(data.data), function(key,value){
-									$('#sdNo').val(value.sdNo).prop('disabled','disabled');
-									$('input[name=fromName]').val(value.fromCode+' : '+value.fromName);
-									$('input[name=toName]').val(value.toCode+' : '+value.toName);
-								});
-								break;
-							default : 
-								$('#tbl_search_person_main tbody').empty();
-								$.each($.parseJSON(data.data), function(key,value){
-									$('#tbl_search_person_main tbody').append(
-									'<tr>' +
-										'<td>' +
-										'	<div class="btn-group">' +
-										'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
-										'	class="btn" title="เลือก"> ' +
-										'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
-										'	</div>' +
-										'</td>' +
-										'<td>'+ value.sdNo +'</td>' +
-										'<td>'+ value.sendDate +'</td>' +
-										'<td>'+ value.fromCode+' : '+value.fromName+'</td>' +
-										'<td>'+ value.toCode+' : '+value.toName+'</td>' +
-									'</tr>'
-									);			
-								});	
-							$('#modal_search_person').modal('show');	
-						}	
+					data=$.parseJSON(data);
+					switch(data.rowCount){
+						case 0 : alert('Data not found.');
+							return false; break;
+						case 1 :
+							$.each($.parseJSON(data.data), function(key,value){
+								$('#sdNo').val(value.sdNo).prop('disabled','disabled');
+								$('input[name=fromName]').val(value.fromCode+' : '+value.fromName);
+								$('input[name=toName]').val(value.toCode+' : '+value.toName);
+							});
+							break;
+						default : 
+							$('#tbl_search_person_main tbody').empty();
+							$.each($.parseJSON(data.data), function(key,value){
+								$('#tbl_search_person_main tbody').append(
+								'<tr>' +
+									'<td>' +
+									'	<div class="btn-group">' +
+									'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
+									'	class="btn" title="เลือก"> ' +
+									'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
+									'	</div>' +
+									'</td>' +
+									'<td>'+ value.sdNo +'</td>' +
+									'<td>'+ value.sendDate +'</td>' +
+									'<td>'+ value.fromCode+' : '+value.fromName+'</td>' +
+									'<td>'+ value.toCode+' : '+value.toName+'</td>' +
+								'</tr>'
+								);			
+							});	
+						$('#modal_search_person').modal('show');	
+					}	
 			})
 			.error(function (response) {
 				  alert(response.responseText);
@@ -555,6 +559,7 @@ $(document).ready(function() {
 						position:'top-center'
 					});
 				}
+				window.location.href = "<?=$rootPage;?>_view.php?rcNo=<?=$rcNo;?>";
 				//e.preventDefault();		
 			}).error(function (response) {
 				alert(response.responseText);

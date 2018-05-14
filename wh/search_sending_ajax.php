@@ -6,8 +6,9 @@
 		$s_userDeptCode = $row_user['userDeptCode'];
 		$s_userID=$_SESSION['userID'];*/
 
-	$search_word = trim($_POST['search_word']);
-	
+	$search_word = $_POST['search_word'];
+
+try{	
 	$sql = "SELECT hdr.`sdNo`, hdr.`sendDate`, hdr.`fromCode`, hdr.`toCode`, hdr.`remark`, hdr.`statusCode`	
 	, fsl.name as fromName, tsl.name as toName 
 	FROM `send` hdr
@@ -43,14 +44,23 @@
 	$stmt->execute();
 
 	$rowCount=$stmt->rowCount();
-
+	
 	$jsonData = array();
 	while ($array = $stmt->fetch()) {
 		$jsonData[] = $array;
 	}
  					   
 	echo json_encode(array('rowCount' => $rowCount, 'data' => json_encode($jsonData)));
-	
+} 
+//Our catch block will handle any exceptions that are thrown.
+catch(Exception $e){
+	//Rollback the transaction.
+    $pdo->rollBack();
+	//return JSON
+	header('Content-Type: application/json');
+	$errors = "Error on data approval. Please try again. " . $e->getMessage();
+	echo json_encode(array('success' => false, 'message' => $errors));
+}	
 ?>
 
 
