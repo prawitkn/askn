@@ -111,7 +111,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						  ";
 						  switch($s_userGroupCode){ 
 							case 'whOff' :  case 'whSup' : 
-									$sql .= "AND left(itm.[ItemCode],1) IN ('0','7','8','9') ";
+									$sql .= "AND left(itm.[ItemCode],1) IN ('0','7','8','9','E') ";
 								break;
 							case 'pdOff' :  case 'pdSup' :
 									$sql .= "AND left(itm.[ItemCode],1) = '".$s_userDeptCode."' ";
@@ -264,7 +264,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							
 						//Insert prod with temp
 						$sql = "INSERT INTO product_item
-						SELECT * FROM product_item_temp 
+						SELECT *,1,'' FROM product_item_temp 
 						WHERE prodItemId NOT IN (SELECT prodItemId FROM product_item)	
 						";			
 						$stmt = $pdo->prepare($sql);
@@ -292,7 +292,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						243	160958 CO
 						244	160958 CT
 						245	160958 In.
-						251	R&D 
+						251	R&D 	*** Technic **
 						252	ล้างสต็อก 2017*/
 						//Begin Sync Sending data.
 						$sql = "UPDATE send_mssql_tmp prod 
@@ -318,7 +318,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							WHEN 243 THEN '5'
 							WHEN 244 THEN '6'
 							WHEN 245 THEN '8'
-							WHEN 251 THEN 'U'
+							WHEN 251 THEN 'T'
 							WHEN 252 THEN 'U'
 							ELSE 'U' 
 						END

@@ -196,9 +196,7 @@ $rootPage="receive";
 					<td>
                          <?= $row['rcNo']; ?>
                     </td>
-                    <td>
-                         <?= to_thai_date_fdt($row['receiveDate']); ?>
-                    </td>
+					<td><?= date('d M Y',strtotime( $row['receiveDate'] )); ?></td>
                     <td>
                          <?= $row['fromName']; ?>
                     </td>

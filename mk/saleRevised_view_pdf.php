@@ -284,12 +284,12 @@ $pdf->SetFont('THSarabun', '', 16, '', true);
 $pdf->setCellHeightRatio(1.50);
 
 // Set some content to print
-if( isset($_GET['soNo']) ){			
-			$pdf->SetTitle($_GET['soNo']);
+if( isset($_GET['logId']) ){			
+			$pdf->SetTitle($_GET['logId']);
 						
-			$soNo = $_GET['soNo'];
+			$logId = $_GET['logId'];
 			$sql = "
-			SELECT a.`soNo`, a.`saleDate`,a.`poNo`,a.`piNo`, a.`custId`,  a.`shipToId`, a.`smId`, a.`revCount`
+			SELECT  a.`logId`, a.`soNo`, a.`saleDate`,a.`poNo`,a.`piNo`, a.`custId`,  a.`shipToId`, a.`smId`, a.`revCount`
 			, a.`deliveryDate`, a.`shipByLcl`, a.`shipByFcl`, a.`shipByRem`, a.`shippingMarksId`, a.`suppTypeFact`
 			, a.`suppTypeImp`, a.`prodTypeOld`, a.`prodTypeNew`, a.`custTypeOld`, a.`custTypeNew`
 			, a.`prodStkInStk`, a.`prodStkOrder`, a.`prodStkOther`, a.`prodStkRem`, a.`packTypeAk`
@@ -305,7 +305,7 @@ if( isset($_GET['soNo']) ){
 			, d.userFullname as createByName
 			, a.confirmTime, cu.userFullname as confirmByName
 			, a.approveTime, au.userFullname as approveByName
-			FROM `sale_header` a
+			FROM `sale_rev_hdr` a
 			left join customer b on b.id=a.custId 
 			left join shipto st on st.id=a.shipToId  
 			left join salesman c on c.id=a.smId 
@@ -314,12 +314,12 @@ if( isset($_GET['soNo']) ){
 			left join user cu on a.confirmById=cu.userId
 			left join user au on a.approveById=au.userId
 			WHERE 1
-			AND a.soNo=:soNo 					
+			AND a.logId=:logId 					
 			ORDER BY a.createTime DESC
 			LIMIT 1
 			";
 			$stmt = $pdo->prepare($sql);			
-			$stmt->bindParam(':soNo', $soNo);	
+			$stmt->bindParam(':logId', $logId);	
 			$stmt->execute();
 			$hdr = $stmt->fetch();	
 	   		
@@ -328,11 +328,11 @@ if( isset($_GET['soNo']) ){
 			FROM `sale_detail` a
 			LEFT JOIN product b on b.id=a.prodId 
 			WHERE 1
-			AND a.`soNo`=:soNo 
+			AND a.`logId`=:logId 
 			ORDER BY a.createTime
 			";
 			$stmt = $pdo->prepare($sql);	
-			$stmt->bindParam(':soNo', $hdr['soNo']);
+			$stmt->bindParam(':logId', $hdr['logId']);
 			$stmt->execute();
 			$row = $stmt->fetch();
 			$countTotal = $row['countTotal'];
@@ -345,15 +345,15 @@ if( isset($_GET['soNo']) ){
 					INNER JOIN delivery_header dh on dh.doNo=ih.doNo 
 					WHERE dh.soNo=a.soNo AND id.prodCode=a.prodId ) as sentQty 
 			, rl.name as rollLengthName 
-			FROM `sale_detail` a
+			FROM `sale_rev_dtl` a
 			LEFT JOIN product b on a.prodId=b.id
 			LEFT JOIN product_roll_length rl ON rl.id=a.rollLengthId 
 			WHERE 1
-			AND a.`soNo`=:soNo 
+			AND a.`logId`=:logId 
 			ORDER BY a.createTime
 			";
 			$stmt = $pdo->prepare($sql);	
-			$stmt->bindParam(':soNo', $hdr['soNo']);
+			$stmt->bindParam(':logId', $hdr['logId']);
 			$stmt->execute();	
 			
 			

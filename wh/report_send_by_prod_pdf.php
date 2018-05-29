@@ -10,9 +10,13 @@ require_once('../tcpdf/tcpdf.php');
 class MYPDF extends TCPDF {
 
     //Page header
-    public function Header() {
-		// Set font
-		$this->SetFont('THSarabun', '', 16, '', true);
+    public function Header() {		
+		/*	Courier (fixed-width)
+			Helvetica or Arial (synonymous; sans serif)
+			Times (serif)
+			Symbol (symbolic)
+			ZapfDingbats (symbolic)*/
+		
 		// Title
         
 		//$this->SetY(11);			
@@ -32,7 +36,7 @@ class MYPDF extends TCPDF {
 		$this->Cell(0, 5, 'Asia Kungnum Co.,Ltd.', 0, false, 'C', 0, '', 0, false, 'M', 'M');
 		$this->Ln(7);
 		$this->SetFont('Times', 'B', 14, '', true);	
-        $this->Cell(0, 5, 'Sending Return', 0, false, 'C', 0, '', 0, false, 'M', 'M');
+        $this->Cell(0, 5, 'Send by Product', 0, false, 'C', 0, '', 0, false, 'M', 'M');
     }
     // Page footer
     public function Footer() {
@@ -53,7 +57,7 @@ $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8',
 // set document information
 $pdf->SetCreator(PDF_CREATOR);
 $pdf->SetAuthor('Prawit Khamnet');
-$pdf->SetTitle('PDF');
+$pdf->SetTitle('RTARF DUTY');
 //$pdf->SetSubject('TCPDF Tutorial');
 //$pdf->SetKeywords('TCPDF, PDF, example, test, guide');
 
@@ -87,7 +91,7 @@ if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
 $pdf->setFontSubsetting(true);
 
 // Set font
-$pdf->SetFont('THSarabun', '', 14, '', true);
+$pdf->SetFont('THSarabun', '', 12, '', true);
 
 
 
@@ -102,75 +106,74 @@ $pdf->SetFont('THSarabun', '', 14, '', true);
 
 
 // Set some content to print
-if( isset($_GET['rtNo']) ){
+if( isset($_GET['dateFrom']) AND isset($_GET['dateTo']) AND isset($_GET['prodId']) ){
+	$dateFrom = (isset($_GET['dateFrom'])?$_GET['dateFrom']: date('d-m-Y') );
+	$dateTo = (isset($_GET['dateTo'])?$_GET['dateTo']: date('d-m-Y') );
+	$prodId = (isset($_GET['prodId'])?$_GET['prodId']: "" );
 
-		$rtNo = $_GET['rtNo'];
-		$sql = "SELECT hdr.`rtNo`, hdr.`refNo`, hdr.`returnDate`, hdr.`fromCode`, hdr.toCode, hdr.`statusCode`,  hdr.`remark`
-		, hdr.`createTime`, hdr.`createById`, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById` 
-		, fsl.name as fromName, tsl.name as toName
-		, d.userFullname as createByName
-		, hdr.confirmTime, cu.userFullname as confirmByName
-		, hdr.approveTime, au.userFullname as approveByName
-		FROM `rt` hdr
-		LEFT JOIN sloc fsl on hdr.fromCode=fsl.code
-		LEFT JOIN sloc tsl on hdr.toCode=tsl.code
-		left join wh_user d on hdr.createById=d.userId
-		left join wh_user cu on hdr.confirmById=cu.userId
-		left join wh_user au on hdr.approveById=au.userId
-		WHERE 1
-		AND hdr.rtNo=:rtNo 					
-		ORDER BY hdr.createTime DESC
-		LIMIT 1
-				
-		";
-		$stmt = $pdo->prepare($sql);			
-		$stmt->bindParam(':rtNo', $rtNo);	
-		$stmt->execute();
-		$hdr = $stmt->fetch();
-		
+	$dateFrom = str_replace('/', '-', $dateFrom);
+	$dateTo = str_replace('/', '-', $dateTo);
+	$dateFromYmd=$dateToYmd="";
+	if($dateFrom<>""){ $dateFromYmd = date('Y-m-d', strtotime($dateFrom));	}
+	if($dateTo<>""){ $dateToYmd =  date('Y-m-d', strtotime($dateTo));	}						
+
+			$sql = "SELECT code as prodCode FROM product prd WHERE prd.id=:prodId 
+			";			
+	
+			$stmt = $pdo->prepare($sql);			
+			if($prodId<>"") $stmt->bindParam(':prodId', $prodId);	
+			$stmt->execute();
+			$hdr = $stmt->fetch();	
+			$prodCode=$hdr['prodCode'];
+			
+			$sql = "SELECT hdr.`sdNo`, hdr.`sendDate`, hdr.`fromCode`, hdr.toCode
+			, fsl.name as fromName, tsl.name as toName
+			FROM send hdr 
+			INNER JOIN send_detail dtl ON dtl.sdNo=hdr.sdNo 
+			LEFT JOIN product_item itm on itm.prodItemId=dtl.prodItemId 	
+			LEFT JOIN sloc fsl on hdr.fromCode=fsl.code
+			LEFT JOIN sloc tsl on hdr.toCode=tsl.code					
+			WHERE hdr.`statusCode`='P' 
+			";			
+			if($dateFrom<>""){ $sql .= " AND hdr.sendDate>=:dateFrom ";	}
+			if($dateTo<>""){ $sql .= " AND hdr.sendDate<=:dateTo ";	}	
+			if($prodId<>""){ $sql .= " AND itm.prodId=:prodId ";	}
+			$sql.="ORDER BY hdr.`sendDate`, hdr.`sdNo`, itm.barcode ";
+	
+			$stmt = $pdo->prepare($sql);			
+			if($dateFrom<>"") $stmt->bindParam(':dateFrom', $dateFrom);	
+			if($dateTo<>"") $stmt->bindParam(':dateTo', $dateTo);	
+			if($prodId<>"") $stmt->bindParam(':prodId', $prodId);	
+			$stmt->execute();
+			$hdr = $stmt->fetch();	
+	   		
 
 
-		$sql = "SELECT dtl.`id`, dtl.`prodItemId`, itm.`barcode`, itm.`issueDate`, itm.`machineId`, itm.`seqNo`, itm.`NW`, itm.`GW`
-		, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId`
-		, prd.id as prodId, prd.code as prodCode 
-		, dtl.`returnReasonCode`, dtl.`returnReasonRemark`, dtl.`rtNo` 
-		, rrt.name as returnReasonName 
-		FROM `rt_detail` dtl
-		LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 		
-		LEFT JOIN product prd ON prd.id=itm.prodCodeId 
-		LEFT JOIN wh_return_reason_type rrt on rrt.code=dtl.returnReasonCode 
-		WHERE 1
-		AND dtl.rtNo=:rtNo  
-		";
-		$stmt = $pdo->prepare($sql);
-		$stmt->bindParam(':rtNo', $rtNo);		
-		$stmt->execute();
-		$rowCount = $stmt->rowCount();
+						/*$sql = "SELECT dtl.id, dtl.prodItemId 
+						, itm.prodCodeId, itm.barcode, itm.NW, itm.GW, itm.grade, itm.qty, itm.issueDate 
+						FROM send_detail dtl 
+						LEFT JOIN product_item itm on itm.prodItemId=dtl.prodItemId 						
+						WHERE sdNo=:sdNo  
+						ORDER BY dtl.refNo, itm.barcode
+						";			
+						$stmt = $pdo->prepare($sql);	
+						$stmt->bindParam(':sdNo', $hdr['sdNo']);
+						$stmt->execute();	*/
 
-					
 						$html ='
 							<table class="table table-striped no-margin" >
-								  <thead>
-								<tr>
-									<th style="font-weight: bold;">Return No. :</th>
-									<th style="font-weight: bold; text-align: left;">'.$hdr['rtNo'].'</th>
-									<th style="font-weight: bold; text-align: right;">From :</th>
-									<th>'.$hdr['fromCode'].'-'.$hdr['fromName'].'</th>									
-									<th style="font-weight: bold; text-align: right;">Return Date :</th>
-									<th>'.date("d M Y",strtotime($hdr['returnDate'])).'</th>
-								</tr>
-								<tr>
-									<th style="font-weight: bold;">Ref. RC No. :</th>
-									<th style="text-align: left;">'.$hdr['refNo'].'</th>
+								<thead>									
+								  <tr>									
+									<th style="font-weight: bold; text-align: right;">Sending Date :</th>
+									<th>'.date('d M Y',strtotime( $dateFrom )).'</th>
 									<th style="font-weight: bold; text-align: right;">To :</th>
-									<th>'.$hdr['toCode'].'-'.$hdr['toName'].'</th>
-									<th colspan="2">
-										Remark : '.($hdr['remark']==''?'-':$hdr['remark']).'
-									</th>	
-									</tr>
+									<th>'.date('d M Y',strtotime( $dateTo )).'</th>	
+									<th style="font-weight: bold; text-align: right;">Product :</th>
+									<th>'.$prodCode.'</th>	
+								</tr>
 								  <tr>
 										<th style="font-weight: bold; text-align: center; width: 30px;" border="1">No.</th>
-										<th style="font-weight: bold; text-align: center; width: 300px;" border="1">Barcode</th>
+										<th style="font-weight: bold; text-align: center; width: 250px;" border="1">Barcode</th>
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Grade</th>
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Net<br/>Weight<br/>(kg.)</th>
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Gross<br/>Weight<br/>(kg.)</th>										
@@ -181,17 +184,46 @@ if( isset($_GET['rtNo']) ){
 								  <tbody>
 							'; 
 							
+							
+					$sql = "SELECT hdr.`sdNo`, hdr.`sendDate`, hdr.`fromCode`, hdr.toCode
+					, dtl.id, dtl.prodItemId 
+					, itm.prodCodeId, itm.barcode, itm.NW, itm.GW, itm.grade, itm.qty, itm.issueDate 
+					, fsl.name as fromName, tsl.name as toName
+					FROM send hdr 
+					INNER JOIN send_detail dtl ON dtl.sdNo=hdr.sdNo 
+					LEFT JOIN product_item itm on itm.prodItemId=dtl.prodItemId 	
+					LEFT JOIN sloc fsl on hdr.fromCode=fsl.code
+					LEFT JOIN sloc tsl on hdr.toCode=tsl.code					
+					WHERE hdr.`statusCode`='P' 
+					";			
+					if($dateFrom<>""){ $sql .= " AND hdr.sendDate>=:dateFrom ";	}
+					if($dateTo<>""){ $sql .= " AND hdr.sendDate<=:dateTo ";	}	
+					if($prodId<>""){ $sql .= " AND itm.prodCodeId=:prodId ";	}
+					$sql.="ORDER BY hdr.`sendDate`, hdr.`sdNo`, itm.barcode ";
+
+					$stmt = $pdo->prepare($sql);			
+					if($dateFrom<>"") $stmt->bindParam(':dateFrom', $dateFrom);	
+					if($dateTo<>"") $stmt->bindParam(':dateTo', $dateTo);	
+					if($prodId<>"") $stmt->bindParam(':prodId', $prodId);	
+					$stmt->execute();
+					$hdr = $stmt->fetch();			
 					$row_no = 1; $sumQty=$sumNW=$sumGW=0; while ($row = $stmt->fetch()) { 
-						
+						$gradeName = '<b style="color: red;">N/A</b>'; 
+							switch($row['grade']){
+								case 0 : $gradeName = 'A'; break;
+								case 1 : $statusName = '<b style="color: red;">B</b>';  break;
+								case 2 : $statusName = '<b style="color: red;">N</b>'; break;
+								default : 
+							} 
 						
 					$html .='<tr>
 						<td style="border: 0.1em solid black; text-align: center; width: 30px;">'.$row_no.'</td>
-						<td style="border: 0.1em solid black; padding: 10px; width: 300px;"> '.$row['barcode'].'<br/><label style="color: red;"> '.$row['returnReasonCode'].':'.$row['returnReasonRemark'].'</label></td>
-						<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$row['grade'].'</td>
+						<td style="border: 0.1em solid black; padding: 10px; width: 250px;"> '.$row['barcode'].'</td>
+						<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$gradeName.'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['NW'].'</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['GW'].'</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['qty'],0,'.',',').'</td>
-						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.date("d M Y",strtotime($row['issueDate'])).'</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['GW'].' </td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['qty'],0,'.',',').' </td>
+						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.date('d M Y',strtotime( $row['issueDate'] )).'</td>
 					</tr>';			
 												
 					$sumQty+=$row['qty'] ; $sumNW+=$row['NW']; $sumGW+=$row['GW'] ;								
@@ -200,35 +232,26 @@ if( isset($_GET['rtNo']) ){
 					
 					$html .='<tr>
 						<td style="border: 0.1em solid black; text-align: center; width: 30px;"></td>
-						<td style="border: 0.1em solid black; text-align: center; padding: 10px; width: 300px;">Total</td>
+						<td style="border: 0.1em solid black; text-align: center; padding: 10px; width: 250px;">Total</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 50px;"></td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumNW,2,'.',',').'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumGW,2,'.',',').'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumQty,0,'.',',').'</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 80px;"></td>
-					</tr>';
-					$html .='<tr>
-						<td colspan="2"><br/><br/>
-							ผู้จัดทำ : <span style="text-decoration: underline;">
-							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-							<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('.$hdr['createByName'].')<br/>
-							วันที่จัดทำ : '.date('d M Y H:i',strtotime( $hdr['createTime'] )).'<br/>
-							ผู้ส่งคืน  : <span style="text-decoration: underline;">
-							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-							<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('.$hdr['confirmByName'].')<br/>
-						</td>
-						
-						<td colspan="6" style="text-align: left;"><br/><br/>							
-							ผู้อนุมัติ : <span style="text-decoration: underline;">
-							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-							<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('.$hdr['approveByName'].')<br/>
-						</td>
-						
-					</tr>';
+					</tr>';					
 					
 					$html .='</tbody></table>';
+					
+					
+					
+					
+					
+					
+					
+					
 						
 					$pdf->AddPage('P');
+										
 					$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
 					}
 					//<!--if isset $_GET['from_date']-->
@@ -240,7 +263,7 @@ if( isset($_GET['rtNo']) ){
 
 // Close and output PDF document
 // This method has several options, check the source code documentation for more information.
-$pdf->Output($rtNo.'_Shelf.pdf', 'I');
+$pdf->Output('send_by_prod'.'.pdf', 'I');
 
 //============================================================+
 // END OF FILE

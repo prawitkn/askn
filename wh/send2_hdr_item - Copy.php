@@ -31,13 +31,6 @@ $tb="send";
 	$sendDate=str_replace('/', '-', $sendDate);
 	$sendDate=date('Y-m-d', strtotime($sendDate));
 	
-	if(isset($_GET['issueDate'])){
-		$issueDate=(isset($_GET['issueDate'])? $_GET['issueDate'] : '' );
-		$issueDate=str_replace('/', '-', $issueDate);
-		$issueDate=date('Y-m-d', strtotime($issueDate));
-	}
-	
-	
 	$fromCode=(isset($_GET['fromCode'])?$_GET['fromCode']:'');
 	$toCode=(isset($_GET['toCode'])?$_GET['toCode']:'');
 	$prodId=(isset($_GET['prodId'])?$_GET['prodId']:'');
@@ -76,64 +69,67 @@ $tb="send";
 
       <!-- Your Page Content Here -->
     <div class="box box-primary">
+		<?php						
+			
+		?>
         <div class="box-header with-border">
 			<div class="form-inline">
-				<label class="box-title">Sending No. : <?=$sdNo;?> / Item Search </label>
+				<label class="box-title">Sending No. : <?=$sdNo;?></label>
 				<a href="<?=$rootPage;?>_hdr.php?sdNo=" class="btn btn-primary"><i class="glyphicon glyphicon-arrow-left"></i> Back</a>
 			</div>
 		
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
-			<span id="lblTotal" class="label label-primary">Total items</span>
+         
         </div><!-- /.box-tools -->
         </div><!-- /.box-header -->
         <div class="box-body">			
-			<div class="row" >		
-					<div class="col-md-12 ">					
-						<form id="form1" action="#" method="get" class="form-inline" style="background-color: gray; padding: 5px;" novalidate>							
-								<input type="hidden" name="sdNo" value="<?=$sdNo;?>" />
-								
-								<label for="sendDate">Sending Date</label> 
-								<input type="text" id="sendDate" name="sendDate" class="form-control datepicker" />
-								
-								<label for="issueDate">Issue Date</label> 
-								<input type="text" id="issueDate" name="issueDate" class="form-control datepicker" />
-							
-								<label for="prodCode">Product Code</label> 
-								<input type="hidden" name="prodId" id="prodId" class="form-control" value="<?=$prodId;?>"  />
-								<input type="text" name="prodCode" id="prodCode" class="form-control" value="<?=$prodCode;?>"  />
-								<a href="#" name="btnSdNo" class="btn btn-primary" ><i class="glyphicon glyphicon-search" ></i> </a>	
-								
-							<br/><br/>
-						</form> 	
-						<a name="btnSubmit" id="btnSubmit" href="#" class="btn btn-danger"><i class="glyphicon glyphicon-search"></i> Search</a>
-					</div>   
-					
+			<div class="row" >
+				<div class="box-header with-border">
+				<h3 class="box-title">Item List From Production</h3>
+				
+				
+				
+				<div class="box-tools pull-right">
+				  <!-- Buttons, labels, and many other things can be placed here! -->
+				  <!-- Here is a label for example -->
+				  
+				  <span id="lblTotal" class="label label-primary">Total items</span>
+				</div><!-- /.box-tools -->
+				</div><!-- /.box-header -->
+				<div class="box-body">
 					<div class="row">
-						<div class="col-md-12">
+						<div class="col-md-12">					
+							<form id="form1" action="#" method="get" class="form-inline" novalidate>
+							
+									<label for="sendDate">Sending Date</label> 
+									<input type="text" id="sendDate" name="sendDate" class="form-control datepicker" />
+								
+									<label for="prodCode">Product Code</label> 
+									<?php 
+									?>
+									<input type="hidden" name="prodId" id="prodId" class="form-control" value="<?=$prodId;?>"  />
+									<input type="text" name="prodCode" id="prodCode" class="form-control" value="<?=$prodCode;?>"  />
+									<a href="#" name="btnSdNo" class="btn btn-primary" ><i class="glyphicon glyphicon-search" ></i> Search Product</a>	
+																
+								<a name="btnSubmit" id="btnSubmit" href="#" class="btn btn-danger"><i class="glyphicon glyphicon-search"></i> Search</a>
+								<!--<a name="btnSyncSubmit" id="btnSyncSubmit" href="#" class="btn btn-danger"><i class="glyphicon glyphicon-retweet"></i> Sync & Search</a>-->
+							
+							</form>  
+						</div>    
+					</div>	
+					
 					<form id="form2" action="" method="post" class="form" novalidate>
 						<input type="hidden" name="sdNo" value="<?=$sdNo;?>" />
 						<input type="hidden" name="action" value="item_add" />		
-						
-					<div class="row">
-						<div class="col-md-12">
-							<div class="col-md-3">
-								<select id="selItmId" class="form-control"></select> 
-							</div><!--col-md-3-->
-							<div class="col-md-3">
-								<input type="checkbox" id="chkPending" /> Pending Item Only
-							</div>
-						</div><!--col-md-12-->
-					</div><!--row-->
 					
-					<div class="col-md-12">
 					<div class="table-responsive">
 					<table id="tbl_items" class="table table-striped">
 						<thead>
 						<tr>
 <!--							<th><input type="checkbox" id="checkAll"  />Select All</th>-->
-							<th>No. </th>
+							<th><select id="selItmId" class="form-control"></select> No. <input type="checkbox" id="chkPending" /> Pending</th>
 							<th>Product Code</th>
 							<th>Barcode</th>
 							<th>Grade</th>
@@ -148,19 +144,13 @@ $tb="send";
 					</table>
 					</div>
 					<!--/.table-responsive-->
-					</div><!--col-md-12-->
-					
-						<div class="col-md-12">
-							<a name="btn_submit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-save"></i> Submit</a>
-						</div>
-						<!--col-md-12-->
-					
+					<a name="btn_submit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-save"></i> Submit</a>
 					</form>
-						</div><!--col-md-12-->
-					</div><!--row-->
-			
+					
+				</div>
+				<!--/box-body-->
 			</div>
-			<!--/.row-->
+			<!--/.row table-responsive-->
 			
 		</div>
 		<!-- form-->
@@ -277,8 +267,7 @@ $(document).ready(function() {
   //   
   
 	function getList(isSync){
-		var sendDate = $('#sendDate').val(); 	
-		var issueDate = $('#issueDate').val(); 	
+		var queryDate = $('#sendDate').val(); 	
 		//queryDate = queryDate.replace(/\//g, '%2F');
 		var prodId="";
 		if($('#prodCode').val()!=""){ prodId=$('#prodId').val(); }			
@@ -287,8 +276,7 @@ $(document).ready(function() {
 			action: 'searchItem',
 			isSync: isSync,
 			sdNo: '<?=$sdNo;?>',
-			sendDate: sendDate,
-			issueDate: issueDate,
+			sendDate: queryDate,
 			prodId: prodId,
 			fromCode: '<?=$fromCode;?>',
 			toCode: '<?=$toCode;?>'
@@ -315,7 +303,6 @@ $(document).ready(function() {
 							var tmpNo="";
 							
 							$('#tbl_items tbody').empty();
-							var rowNo=1;
 							$.each($.parseJSON(data.data), function(key,value){
 								if( prevSendId == ""){
 									$('#selItmId').append('<option value="">Clear All</option>'+
@@ -329,11 +316,9 @@ $(document).ready(function() {
 								prevSendId=value.sendId;								
 								
 								if(value.sentNo==""){
-									var isSelected=value.isSelected;
-									if(isSelected==1){ isSelected=' checked="checked" '; }
-									tmpNo=rowNo+':'+'<input type="checkbox" name="itmId[]" class="itmId" value="'+value.sendId+','+value.productItemId+'" '+isSelected+'  />';
+									tmpNo='<input type="checkbox" name="itmId[]" class="itmId" value="'+value.sendId+','+value.productItemId+'"  />';
 								}else{
-									tmpNo=rowNo+':'+'<label class="label label-danger" >'+value.sentNo+'</label>';
+									tmpNo='<label class="label label-danger" >'+value.sentNo+'</label>';
 								} //alert(tmpNo);
 								$('#tbl_items tbody').append(
 								'<tr style="background-color: '+rowColor+'" >' +	
@@ -342,11 +327,10 @@ $(document).ready(function() {
 									'<td>'+ value.barcode +'</td>' + 
 									'<td>'+ value.gradeName +'</td>' +
 									'<td>'+ value.qty +'</td>' +
-									'<td>'+ value.issueDate +'</td>' +
+									'<td>'+ value.gradeDate +'</td>' +
 									'<td>'+ value.sendId +'</td>' +
 								'</tr>'
 								);		
-								rowNo+=1;
 							});
 						//('#modal_search_person').modal('show');	
 					}	
@@ -619,15 +603,6 @@ $(document).ready(function() {
 		realDate = new Date(dateParts[0], dateParts[1] - 1,dateParts[2]); 
 		$('#sendDate').datepicker('setDate', realDate);
 		<?php }else{ ?> $('#sendDate').datepicker('setDate', '0'); <?php } ?>
-		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
-		
-		//กำหนดเป็น วันที่จากฐานข้อมูล
-		<?php if(isset($issueDate)){ ?>
-		var queryDate = '<?=$issueDate;?>',
-		dateParts = queryDate.match(/(\d+)/g)
-		realDate = new Date(dateParts[0], dateParts[1] - 1,dateParts[2]); 
-		$('#issueDate').datepicker('setDate', realDate);
-		<?php }else{ ?> $('#issueDate').val(''); <?php } ?>
 		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
 	});
 </script>

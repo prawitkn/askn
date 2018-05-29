@@ -15,7 +15,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		$s_userDeptCode = $row_user['userDeptCode'];
 		$s_userID=$_SESSION['userID'];*/
 		
-$rootPage='receive';
+		switch($s_userGroupCode){ 
+			case 'whOff' :
+			case 'whSup' :
+				header("Location: access_denied.php"); exit();
+				break;
+			default :	// it, admin 
+		}	
+		
+$rootPage='rtrc';
 
 $rcNo = $_GET['rcNo'];
 $sql = "SELECT rc.`rcNo`, rc.`refNo`, rc.`receiveDate`, rc.`fromCode`, rc.`remark`, rc.`sdNo`, rc.`statusCode`
@@ -39,6 +47,9 @@ LIMIT 1
 $stmt = $pdo->prepare($sql);			
 $stmt->bindParam(':rcNo', $rcNo);	
 $stmt->execute();
+if($stmt->rowCount()==0){
+	header("Location: access_denied.php"); exit();
+}
 $hdr = $stmt->fetch();			
 $rcNo = $hdr['rcNo'];
 ?>

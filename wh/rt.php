@@ -62,6 +62,8 @@ $rootPage="rt";
 				switch($s_userGroupCode){ 
 					case 'whOff' :
 					case 'whSup' :
+						$sql .= "AND hdr.fromCode IN ('0','7','8','E') ";
+						break;
 					case 'pdOff' :
 					case 'pdSup' :
 						$sql .= "AND hdr.fromCode=:s_userDeptCode ";
@@ -72,9 +74,7 @@ $rootPage="rt";
 					$sql .= "AND hdr.rtNo like :search_word ";		
 				}		
 				$stmt = $pdo->prepare($sql);
-				switch($s_userGroupCode){ 					
-					case 'whOff' : 
-					case 'whSup' :
+				switch($s_userGroupCode){
 					case 'pdOff' :
 					case 'pdSup' :
 						$stmt->bindParam(':s_userDeptCode', $s_userDeptCode);
@@ -132,6 +132,8 @@ $rootPage="rt";
 				switch($s_userGroupCode){ 
 					case 'whOff' :
 					case 'whSup' :
+						$sql .= "AND hdr.fromCode IN ('0','7','8','E') ";
+						break;
 					case 'pdOff' :
 					case 'pdSup' :
 						$sql .= "AND hdr.fromCode=:s_userDeptCode ";
@@ -146,9 +148,7 @@ $rootPage="rt";
 				LIMIT $start, $rows 
 				";				
 				$stmt = $pdo->prepare($sql);
-				switch($s_userGroupCode){ 					
-					case 'whOff' : 
-					case 'whSup' : 
+				switch($s_userGroupCode){ 	
 					case 'pdOff' :
 					case 'pdSup' :
 						$stmt->bindParam(':s_userDeptCode', $s_userDeptCode);
@@ -185,7 +185,7 @@ $rootPage="rt";
 					?>
                 <tr>
 					<td><?= $row['rtNo']; ?></td>
-					<td><?= $row['returnDate']; ?></td>
+					<td><?= date('d M Y',strtotime( $row['returnDate'] )); ?></td>
 					<td><?= $row['refNo']; ?></td>
 					<td><?= $row['fromName']; ?></td>
 					<td><?= $row['toName']; ?></td>

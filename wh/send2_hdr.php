@@ -165,7 +165,7 @@ $tb="send";
 			<div class="col-md-6">		
 				<div class="from-group">
 					<label for="remark">Remark</label>
-					<input type="text" id="remark" name="remark" value="<?=$hdr['remark'];?>" class="form-control" <?php echo ($sdNo==''?'':' disabled '); ?> data-smk-msg="Require froddm code." required  >
+					<input type="text" id="remark" name="remark" value="<?=$hdr['remark'];?>" class="form-control" <?php echo ($sdNo==''?'':' disabled '); ?>  >
 				</div>
 				<!--from group-->			
 			</div>
@@ -197,8 +197,9 @@ $tb="send";
 			
 			
 			<?php
-			$sql = "SELECT dtl.`refNo`, dtl.`id`, dtl.`prodItemId`,itm.`barcode`, itm.`issueDate`, itm.`machineId`, dtl.`seqNo`, dtl.`NW`, dtl.`GW`
+			$sql = "SELECT dtl.`refNo`, dtl.`id`, dtl.`prodItemId`,itm.`barcode`, itm.`issueDate`, itm.`machineId`, itm.`NW`, itm.`GW`
 			, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId`
+			, itm.`gradeTypeId`, itm.`remarkWh`
 			,prd.id as prodId, prd.code as prodCode 
 			, dtl.`sdNo` 
 			FROM `".$tb."_detail` dtl	
@@ -225,6 +226,7 @@ $tb="send";
 			</div><!-- /.box-header -->
 				
 			<form id="form2" action="delivery_add_item_submit_ajax.php" method="post" class="form" novalidate>
+				<input type="hidden" name="action" value="item_update" />
 				<input type="hidden" name="sdNo" value="<?=$hdr['sdNo'];?>" />
 				
 				<div class="table-responsive">
@@ -233,28 +235,33 @@ $tb="send";
 						<th>No.</th>
 						<th>Product Code</th>
 						<th>Barcode</th>
-						<th>Grade</th>
+						<th>Grade</th>						
 						<th>Qty</th>
 						<th>Issue Date</th>
 						<th>#</th>					
 						<th>Ref.No.</th>
+						<th>Grade Type</th>
+						<th>Send Remark</th>
 					</tr>
 					<?php $row_no=1;  $prevNo=""; $rowColor='lightBlue';  $sumQty=0;  $sumGradeNotOk=0; while ($row = $stmt->fetch()) { 
 						$gradeName = '<b style="color: red;">N/A</b>'; 
 						switch($row['grade']){
 							case 0 : $gradeName = 'A'; break;
-							case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
+							case 1 : $gradeName = '<b style="color: red;">B</b>'; break;
 							case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
 							default : 
-								$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
-						} $sumGradeNotOk=0;
+								$sumGradeNotOk+=1;
+						} //$sumGradeNotOk=0;
 						if($prevNo<>"" AND $prevNo<>$row['refNo']){
 							if($rowColor=="lightBlue"){$rowColor="lightGreen";}else{$rowColor="lightBlue";}
 						}
 						$prevNo=$row['refNo'];
 					?>
 					<tr style="background-color: <?=$rowColor;?>;" >
-						<td><?= $row_no; ?></td>
+						<td>
+							<?= $row_no; ?>
+							<input type="hidden" name="prodItemId[]" value="<?=$row['prodItemId'];?>" />
+						</td>
 						<td><?= $row['prodCode']; ?></td>	
 						<td><?= $row['barcode']; ?></td>	
 						<td><?= $gradeName; ?></td>	
@@ -262,6 +269,24 @@ $tb="send";
 						<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>		
 						<td><a class="btn btn-danger fa fa-trash" name="btn_row_delete" <?php echo ($hdr['statusCode']=='B'?' data-id="'.$row['id'].'" ':' disabled '); ?> > Delete</a></td>
 						<td><?= $row['refNo']; ?></td>
+						<td>
+							<select name="gradeTypeId[]" class="form-control"  data-smk-msg="Require Grade Type" >
+								<?php
+								$sql = "SELECT `id`, `name` FROM `product_item_grade_type` WHERE statusCode='A' ";							
+								$stmtOpt = $pdo->prepare($sql);		
+								$stmtOpt->execute();
+								while($rOption = $stmtOpt->fetch()){
+									$selected = ($rOption['id']==$row['gradeTypeId']?' selected ':'');									
+									echo '<option value="'.$rOption['id'].'" '
+										.$selected
+										 .'>'.$rOption['name'].'</option>';
+								}
+								?>
+							</select>
+						</td>
+						<td>
+							<input type="text" name="remarkWh[]" value="<?= $row['remarkWh']; ?>" />
+						</td>
 					</tr>
 					<?php $row_no+=1; 
 						$sumQty+=$row['qty']; 
@@ -283,7 +308,16 @@ $tb="send";
 				<!--<a name="btn_view" href="<?=$rootPage;?>_view.php?sdNo=<?=$sdNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> View</a>-->
 				<button type="button" id="btn_verify" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
 				<i class="glyphicon glyphicon-ok"></i> Confirm
-			  </button>      
+			  </button>   
+			  
+			  <button type="button" id="btn_item_update" class="btn btn-warning pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
+				<i class="glyphicon glyphicon-ok"></i> Update Item
+			  </button>   
+
+			<button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']<>'P'?'':'disabled'); ?> >
+				<i class="glyphicon glyphicon-trash"></i> Delete
+			</button>
+		  
 				</form>
 			</div>
 			<!--/.row dtl-->
@@ -360,6 +394,7 @@ $(document).ready(function() {
 		if($('#userDeptCode').val() != "") { $('#fromCode').prop('disabled',''); }
 		if ($('#form1').smkValidate()){
 			$.smkConfirm({text:'Are you sure to Create ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
+				$('#fromCode').prop('disabled','');
 				$.post({
 					url: '<?=$rootPage;?>_ajax.php',
 					data: $("#form1").serialize(),
@@ -389,6 +424,38 @@ $(document).ready(function() {
 		e.preventDefault();
 		}//.if end
 		if($('#userDeptCode').val() != "") { $('#fromCode').prop('disabled','disabled'); }
+	});
+	//.btn_click
+	
+	$('#btn_item_update').click (function(e) {	
+		//alert(params.hdrID);
+		$.smkConfirm({text:'Are you sure to Update All Items ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: $("#form2").serialize(),
+				dataType: 'json'
+			}).done(function(data) {
+				if (data.success){  
+					$.smkAlert({
+						text: data.message,
+						type: 'warning',
+						position:'top-center'
+					});		
+					setTimeout(function(){ location.reload(); }, 2000);
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
+				}
+				//e.preventDefault();		
+			}).error(function (response) {
+				alert(response.responseText);
+			});
+			//.post		
+		}});
+		//smkConfirm
 	});
 	//.btn_click
 	
@@ -422,6 +489,38 @@ $(document).ready(function() {
 		e.preventDefault();
 	});
 	//
+	
+	$('#btn_delete').click (function(e) {				 
+		var params = {		
+		action: 'delete',
+		sdNo: $('#sdNo').val()				
+		};
+		//alert(params.sdNo);
+		$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function(data) {
+				if (data.success){  
+					alert(data.message);
+					window.location.href = '<?=$rootPage;?>.php';
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
+				}
+				//e.preventDefault();		
+			}).error(function (response) {
+				alert(response.responseText);
+			});
+			//.post
+		}});
+		//smkConfirm
+	});
+	//.btn_click
 	
 	$('#btn_verify').click (function(e) {			
 		<?php if($sumGradeNotOk>0){

@@ -46,6 +46,7 @@
 			
 		<?php } ?>
 		<?php switch($s_userGroupCode){ case 'it' : case 'tech' : ?>
+			<li><a href="product.php"><i class="fa fa-barcode"></i> <span>Product Data</span></a></li>
 			<li><a href="productionMappingProduct.php"><i class="fa fa-list-ol"></i> <span>Production Prod. Mapping</span></a></li>		
 		<?php } ?>
 		
@@ -61,7 +62,11 @@
 			<li><a href="send2.php"><i class="glyphicon glyphicon-arrow-up"></i> <span>Send</span></a></li>
 			<li><a href="receive.php"><i class="glyphicon glyphicon-arrow-down"></i> <span>Sending Receive</span></a></li>
 			<li><a href="rt.php"><i class="glyphicon glyphicon-arrow-left"></i> <span>Return</span></a></li>
+			
+			<?php switch($s_userGroupCode){ case 'whOff' : case 'whSup' : break; //Not Show ?>
 			<li><a href="rtrc.php"><i class="glyphicon glyphicon-retweet"></i> <span>Return Receive</span></a></li>
+			<?php break; default : } ?>		
+			
 			<!--<li><a href="wip.php"><i class="glyphicon glyphicon-hourglass"></i> <span>Work In Process</span></a></li-->
 			<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whOff' : case 'whSup' ?>
 			<li><a href="picking.php"><i class="glyphicon glyphicon-shopping-cart"></i> <span>Picking</span></a></li>			
@@ -77,6 +82,7 @@
 			<li><a href="rpt_so_by_deli.php"><i class="fa fa-list-alt"></i> <span>Sales Order by Delivery Date Report</span></a></li>			
 			<li><a href="report_prod_stk.php"><i class="fa fa-list-alt"></i> <span>Stock Report</span></a></li>
 			<li><a href="report_sending.php"><i class="fa fa-list-alt"></i> <span>Sending Report</span></a></li>
+			<li><a href="report_send_by_prod.php"><i class="fa fa-list-alt"></i> <span>Sending by Prod. Report</span></a></li>
 			<li><a href="report_send_pending.php"><i class="fa fa-list-alt"></i> <span>Send Pending Report</span></a></li>
 			<li><a href="report_receiving.php"><i class="fa fa-list-alt"></i> <span>Receiving Report</span></a></li>
 			<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whOff' : case 'whSup' : ?>

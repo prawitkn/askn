@@ -11,7 +11,7 @@ $hash_login_password = hash_hmac('sha256', $userPassword, $salt);
 //$hash_login_password ='f3597b30d60ecae02b38806634eef7c596ca25ee40521c09aef2a95464f3c594';
 
 $qry_user = "UPDATE wh_user SET loginStatus=0  
-WHERE TIME_TO_SEC(TIMEDIFF(NOW(), `lastLoginTime`))/60 > 20  ";
+WHERE NOW() > lastLoginTime + INTERVAL 30 MINUTE  ";
 $result_user = mysqli_query($link,$qry_user);	
 	
 $sql = "SELECT * FROM wh_user WHERE (userName=? AND userPassword=?) LIMIT 1";

@@ -31,7 +31,7 @@ try{
 		WHERE rcNo=? ";
     $stmt = $pdo->prepare($sql);
     $stmt->execute(array(	
-			$s_userID,
+			$s_userId,
 			$rcNo	
         )
     );

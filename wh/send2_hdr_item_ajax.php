@@ -15,14 +15,22 @@ if(!isset($_POST['action'])){
 		case 'searchItem' :				
 			try{
 				$isSync = $_POST['isSync'];
+				$sdNo = $_POST['sdNo'];
 				$sendDate = $_POST['sendDate'];
+				$issueDate = $_POST['issueDate'];
 				$fromCode = $_POST['fromCode'];
 				$toCode = $_POST['toCode'];
 				$prodId = $_POST['prodId'];
 				
-				$sendDate = str_replace('/', '-', $sendDate);
-				$sendDate = date("Y-m-d",strtotime($sendDate));
-
+				
+				if($sendDate<>""){
+					$sendDate = str_replace('/', '-', $sendDate);
+					$sendDate = date("Y-m-d",strtotime($sendDate));
+				}
+				if($issueDate<>""){
+					$issueDate = str_replace('/', '-', $issueDate);
+					$issueDate = date("Y-m-d",strtotime($issueDate));
+				}
 				if( $isSync == 1 AND isset($_POST['sendDate'])){
 					include_once '../db/db.php';
 					
@@ -344,7 +352,10 @@ if(!isset($_POST['action'])){
 				, itm.prodCodeId as prodId, prd.code as prodCode
 				, IFNULL((SELECT sHdr.sdNo FROM send sHdr
 											INNER JOIN send_detail sDtl ON sDtl.sdNo=sHdr.sdNo
-											WHERE sHdr.statusCode IN ('C','P') AND sDtl.prodItemId=itm.prodItemId LIMIT 1),'') as sentNo 
+											WHERE sHdr.statusCode IN ('C','P') AND sDtl.prodItemId=itm.prodItemId LIMIT 1),'') as sentNo
+				, IFNULL((SELECT 1 FROM send sHdr
+											INNER JOIN send_detail sDtl ON sDtl.sdNo=sHdr.sdNo
+											WHERE sHdr.sdNo=:sdNo  AND sDtl.prodItemId=itm.prodItemId LIMIT 1),0) as isSelected 
 				,CASE itm.grade
 					WHEN 0 THEN 'A' 
 					WHEN 1 THEN 'B' 	
@@ -353,17 +364,20 @@ if(!isset($_POST['action'])){
 				END AS gradeName 
 				FROM send_mssql hdr  
 				INNER JOIN send_detail_mssql dtl ON dtl.sendId=hdr.sendId 
-				INNER JOIN product_item itm ON itm.prodItemId=dtl.productItemId 
+				LEFT JOIN product_item itm ON itm.prodItemId=dtl.productItemId 
 				LEFT JOIN product prd ON prd.id=itm.prodCodeId
 				WHERE 1=1 ";
 				if($sendDate<>"") $sql.="AND hdr.issueDate=:sendDate ";
+				if($issueDate<>"") $sql.="AND itm.issueDate=:issueDate ";
 				if($fromCode<>"") $sql.="AND hdr.fromCode=:fromCode ";
 				if($toCode<>"") $sql.="AND hdr.toCode=:toCode ";
 				if($prodId<>"") $sql.="AND itm.prodCodeId=:prodId ";
 				$sql.="ORDER BY hdr.sendId, itm.barcode "; 
 				
 				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':sdNo', $sdNo );
 				if($sendDate<>"") $stmt->bindParam(':sendDate', $sendDate );
+				if($issueDate<>"") $stmt->bindParam(':issueDate', $issueDate );
 				if($fromCode<>"") $stmt->bindParam(':fromCode', $fromCode);
 				if($toCode<>"") $stmt->bindParam(':toCode', $toCode);
 				if($prodId<>"") $stmt->bindParam(':prodId', $prodId);
@@ -398,21 +412,25 @@ if(!isset($_POST['action'])){
 				
 				if(!empty($_POST['itmId']) and isset($_POST['itmId']))
 				{
+					$sql = "DELETE FROM `send_detail` WHERE sdNo=:sdNo 
+					";			
+					$stmt = $pdo->prepare($sql);			
+					$stmt->bindParam(':sdNo', $sdNo);	
+					$stmt->execute();	
+					
 					//$arrProdItems=explode(',', $prodItems);
 					foreach($_POST['itmId'] as $index => $item )
 					{	
 						$sql = "INSERT INTO `send_detail`
-						(`refNo`, `prodItemId`, `sdNo`)
-						SELECT dtl.sendId, dtl.productItemId, :sdNo 
-						FROM send_detail_mssql dtl 
-						WHERE dtl.sendId=:sendId 
-						AND dtl.productItemId=:productItemId 
+						(`refNo`, `prodItemId`, `sdNo`) 
+						VALUES 
+						(:sendId, :productItemId, :sdNo)
 						";			
 						$arrItm=explode(',', $item);
 						$stmt = $pdo->prepare($sql);			
 						$stmt->bindParam(':sendId', $arrItm[0]);	
 						$stmt->bindParam(':productItemId', $arrItm[1]);		
-						$stmt->bindParam(':sdNo', $sdNo);		
+						$stmt->bindParam(':sdNo', $sdNo);	
 						$stmt->execute();			
 					}
 				}

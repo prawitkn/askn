@@ -1,6 +1,6 @@
 <?php
   //  include '../db/database.php';
-  include 'inc_helper.php';
+  //include 'inc_helper.php';
 ?>
 <!DOCTYPE html>
 <!--
@@ -8,7 +8,12 @@ This is a starter template page. Use this page to start your new project from
 scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
-<?php include 'head.php'; ?>
+<?php include 'head.php'; 
+
+$rootPage="sale";
+
+
+?>
     
 <!--
 BODY TAG OPTIONS:
@@ -52,8 +57,8 @@ desired effect
         <small>Sales Order management</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="sale.php"><i class="fa fa-list"></i>Sales List</a></li>
-		<li><a href="sale_item.php?soNo=<?=$soNo;?>"><i class="fa fa-edit"></i>SO No.<?=$soNo;?></a></li>
+        <li><a <?php switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' : case 'sales' : ?> href="<?=$rootPage;?>.php" <?php break; default : } //end switch roll. ?> ><i class="fa fa-list"></i>Sales List</a></li>
+		<li><a <?php switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' : case 'sales' : ?> href="<?=$rootPage;?>_item.php?soNo=<?=$soNo;?>" <?php break; default : } //end switch roll. ?> ><i class="fa fa-edit"></i>SO No.<?=$soNo;?></a></li>
       </ol>
     </section>
 
@@ -62,22 +67,34 @@ desired effect
 		<?php
 			$soNo = $_GET['soNo'];
 			$sql = "
-					SELECT a.`soNo`, a.`saleDate`, a.`custCode`, a.`smCode`, a.`total`, a.`vatAmount`, a.`netTotal`, a.`prodGFC`, a.`prodGFM`, a.`prodGFT`, a.`prodSC`, a.`prodCFC`, a.`prodEGWM`, a.`prodGT`, a.`prodCSM`, a.`prodWR`, a.`deliveryDate`, a.`deliveryRem`, a.`suppTypeFact`, a.`suppTypeImp`, a.`prodTypeOld`, a.`prodTypeNew`, a.`custTypeOld`, a.`custTypeNew`, a.`prodStkInStk`, a.`prodStkOrder`, a.`prodStkOther`, a.`prodStkRem`, a.`packTypeAk`, a.`packTypeNone`, a.`packTypeOther`, a.`packTypeRem`, a.`priceOnOrder`, a.`priceOnOther`, a.`priceOnRem`, a.`remark`, a.`plac2deliCode`, a.`plac2deliRem`, a.`payTypeCode`, a.`payTypeRem`, a.`isClose`, a.`statusCode`, a.`createTime`, a.`createByID`, a.`updateTime`, a.`updateById`
-					, b.custName, b.custAddr, b.custTel, b.custFax
-					, c.name as smName, c.surname as smSurname
-					, d.userFullname as createByName
-					, a.confirmTime, cu.userFullname as confirmByName
-					, a.approveTime, au.userFullname as approveByName
-					FROM `sale_header` a
-					left join customer b on a.custCode=b.code
-					left join salesman c on a.smCode=c.code
-					left join user d on a.createByID=d.userID
-					left join user cu on a.confirmByID=cu.userID
-					left join user au on a.approveByID=au.userID
-					WHERE 1
-					AND a.soNo=:soNo 					
-					ORDER BY a.createTime DESC
-					LIMIT 100
+			SELECT a.`soNo`, a.`saleDate`,a.`poNo`,a.`piNo`, a.`custId`,  a.`shipToId`, a.`smId`, a.`revCount`
+			, a.`deliveryDate`, a.`shipByLcl`, a.`shipByFcl`, a.`shipByRem`, a.`shippingMarksId`, a.`suppTypeFact`
+			, a.`suppTypeImp`, a.`prodTypeOld`, a.`prodTypeNew`, a.`custTypeOld`, a.`custTypeNew`
+			, a.`prodStkInStk`, a.`prodStkOrder`, a.`prodStkOther`, a.`prodStkRem`, a.`packTypeAk`
+			, a.`packTypeNone`, a.`packTypeOther`, a.`packTypeRem`, a.`priceOnOrder`, a.`priceOnOther`
+			, a.`priceOnRem`, a.`remark`, a.`plac2deliCode`, a.`plac2deliCodeSendRem`, a.`plac2deliCodeLogiRem`, a.`payTypeCode`, a.`payTypeCreditDays`
+			, a.`isClose`, a.`statusCode`, a.`createTime`, a.`createByID`, a.`updateTime`, a.`updateById`
+			, a.shippingMark, a.`remCoa`, a.`remPalletBand`, a.`remFumigate`
+			, b.code as custCode, b.name as custName, b.addr1 as custAddr1, b.addr2 as custAddr2, b.addr3 as custAddr3, b.zipcode as custZipcode, b.tel as custTel, b.fax as custFax
+			, st.code as shipToCode, st.name as shipToName, st.addr1 as shipToAddr1, st.addr2 as shipToAddr2, st.addr3 as shipToAddr3, st.zipcode as shipToZipcode, st.tel as shipToTel, st.fax as shipToFax
+			, c.code as smCode, c.name as smName, c.surname as smSurname
+			, spm.name as shippingMarksName, IFNULL(spm.filePath,'') as shippingMarksFilePath
+			
+			, d.userFullname as createByName
+			, a.confirmTime, cu.userFullname as confirmByName
+			, a.approveTime, au.userFullname as approveByName
+			FROM `sale_header` a
+			left join customer b on b.id=a.custId 
+			left join shipto st on st.id=a.shipToId  
+			left join salesman c on c.id=a.smId 
+			left join shipping_marks spm on spm.id=a.shippingMarksId 
+			left join user d on a.createById=d.userId
+			left join user cu on a.confirmById=cu.userId
+			left join user au on a.approveById=au.userId
+			WHERE 1
+			AND a.soNo=:soNo 					
+			ORDER BY a.createTime DESC
+			LIMIT 1
 			";
 			$stmt = $pdo->prepare($sql);			
 			$stmt->bindParam(':soNo', $soNo);	
@@ -88,7 +105,7 @@ desired effect
       <!-- Your Page Content Here -->
     <div class="box box-primary">
         <div class="box-header with-border">
-			<h3 class="box-title">View Sales Order No : <b><?= $soNo; ?></b></h3>
+			<h3 class="box-title">View Sales Order No : <b><?= $soNo; ?><small style="color: red;"><?php echo ($hdr['revCount']<>0?' rev.'.$hdr['revCount']:'');?></small></b></h3>
 			<div class="box-tools pull-right">
 				<?php $statusName = '<b style="color: red;">Unknown</b>'; switch($hdr['statusCode']){
 					case 'A' : $statusName = '<b style="color: red;">Incompleate</b>'; break;
@@ -107,19 +124,21 @@ desired effect
 						Salesman : <br/>
 						<b><?= $hdr['smName'].'&nbsp;&nbsp;'.$hdr['smSurname']; ?></b><br/>
 						<?php
-							echo ($hdr['isClose']=='Y'?'<h1 style="color: red; font-weight: bold;text-decoration: underline;">Closed</h1>':'<h1 style="color: red; font-weight: bold;text-decoration: underline;">Opening</h1>');
+							echo ($hdr['isClose']=='Y'?'<h1 style="color: red; font-weight: bold;text-decoration: underline;">Closed</h1>':'<h1 style="color: red; font-weight: bold;text-decoration: underline;">Open</h1>');
 						?>
 					</div><!-- /.col-md-3-->	
 					<div class="col-md-3">
 						Customer : <br/>
 						<b><?= $hdr['custName']; ?></b><br/>
-						<?= $hdr['custAddr']; ?>
+						<?= $hdr['shipToAddr1']; ?><br/>
+						<?= $hdr['shipToAddr2']; ?><br/>
+						<?= $hdr['shipToAddr3'].' '.$hdr['shipToZipcode']; ?>
 					</div><!-- /.col-md-3-->	
 					<div class="col-md-3">
 						Order No : <br/>
 						<b><?= $hdr['soNo']; ?></b><br/>
 						Order Date : <br/>
-						<b><?= $hdr['saleDate']; ?></b><br/>
+						<b><?= date('d M Y',strtotime( $hdr['saleDate'] )); ?></b><br/>
 					</div>	<!-- /.col-md-3-->	
 					<div class="col-md-3">
 						<i class="fa fa-<?php echo ($hdr['suppTypeFact']==0?'square-o':'check-square-o'); ?>"></i> Factory&nbsp;&nbsp;&nbsp;    <i class="fa fa-<?php echo ($hdr['suppTypeImp']==0?'square-o':'check-square-o'); ?>"></i> Import</br>
@@ -135,32 +154,39 @@ desired effect
 				  <!-- Buttons, labels, and many other things can be placed here! -->
 				  <!-- Here is a label for example -->
 				  <?php
-						$sql = "SELECT id FROM sale_detail
-								WHERE soNo=:soNo 
-									";						
-						$stmt = $pdo->prepare($sql);	
-						$stmt->bindParam(':soNo', $hdr['soNo']);
-						$stmt->execute();	
-						$rowCount = $stmt->rowCount();
+					$sql = "
+					SELECT COUNT(*) as countTotal 
+					FROM `sale_detail` a
+					LEFT JOIN product b on a.prodId=b.id
+					WHERE 1
+					AND a.`soNo`=:soNo 
+					ORDER BY a.createTime
+					";
+					$stmt = $pdo->prepare($sql);	
+					$stmt->bindParam(':soNo', $hdr['soNo']);
+					$stmt->execute();
+					$row = $stmt->fetch();
+					$countTotal = $row['countTotal'];
 				  ?>
-				  <span class="label label-primary">Total <?php echo $rowCount; ?> items</span>
+				  <span class="label label-primary">Total <?php echo $countTotal; ?> items</span>
 				</div><!-- /.box-tools -->
 				</div><!-- /.box-header -->
 				<div class="box-body">
 				   <?php
 						$sql = "
-								SELECT a.`id`, a.`prodCode`, a.`salesPrice`, a.`qty`, a.`total`, 
-								a.`discPercent`, a.`discAmount`, a.`netTotal`, a.`soNo`,
-								b.prodName, b.salesUom
-								, (SELECT IFNULL(SUM(id.qty),0) FROM invoice_detail id 
-										INNER JOIN invoice_header ih on ih.invNo=id.invNo										
-										INNER JOIN delivery_header dh on dh.doNo=ih.doNo 
-										WHERE dh.soNo=a.soNo AND id.prodCode=a.prodCode ) as sentQty 
-								FROM `sale_detail` a
-								LEFT JOIN product b on a.prodCode=b.code
-								WHERE 1
-								AND a.`soNo`=:soNo 
-								ORDER BY a.createTime
+						SELECT a.`id`, a.`prodId`, a.`salesPrice`, a.`qty`, a.`rollLengthId`, a.`remark`, a.deliveryDate, a.`soNo`
+						, b.code as prodCode, b.name as prodName, b.uomCode as prodUomCode, b.description 
+						, (SELECT IFNULL(SUM(id.qty),0) FROM invoice_detail id 
+								INNER JOIN invoice_header ih on ih.invNo=id.invNo										
+								INNER JOIN delivery_header dh on dh.doNo=ih.doNo 
+								WHERE dh.soNo=a.soNo AND id.prodCode=a.prodId ) as sentQty 
+						, rl.name as rollLengthName 
+						FROM `sale_detail` a
+						LEFT JOIN product b on a.prodId=b.id
+						LEFT JOIN product_roll_length rl ON rl.id=a.rollLengthId 
+						WHERE 1
+						AND a.`soNo`=:soNo 
+						ORDER BY a.createTime
 						";
 						$stmt = $pdo->prepare($sql);	
 						$stmt->bindParam(':soNo', $hdr['soNo']);
@@ -168,106 +194,30 @@ desired effect
 				   ?>	
 					<table class="table table-striped">
 						<tr>
-							<th>No.</th>
+							<th>No.</th>							
 							<th>Product Name</th>
-							<th>Sales Price</th>
-							<th>Uom</th>
+							<th>Product Code</th>
+							<th>Specification</th>
 							<th>Qty</th>
+							<th>Delivery /Load Date</th>
 							<th style="color: blue;">Sent Qty</th>
-							<th>Total</th>
-							<th>disc. (%)</th>
-							<th>disc.(amount)</th>
-							<th>Total</th>
 						</tr>
 						<?php $row_no=1; while ($row = $stmt->fetch()) { ?>
 						<tr>
-							<td style="text-align: center;"><?= $row_no; ?></td>
-							<td><?= $row['prodName']; ?></td>
-							<td style="text-align: right;"><?= number_format($row['salesPrice'],2,'.',','); ?></td>							
-							<td style="text-align: left;"><?= $row['salesUom']; ?></td>
-							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
-							<td style="text-align: right; color: blue;"><?= number_format($row['sentQty'],0,'.',','); ?></td>							
-							<td style="text-align: right;"><?= number_format($row['total'],2,'.',','); ?></td>
-							<td style="text-align: right;"><?= $row['discPercent']; ?></td>
-							<td style="text-align: right;"><?= number_format($row['discAmount'],2,'.',','); ?></td>
-							<td style="text-align: right;"><?= number_format($row['netTotal'],2,'.',','); ?></td>
+							<td style="text-align: center;"><?= $row_no; ?></td>											
+							<td><?= $row['prodName']; ?></td>					
+							<td><?= $row['prodCode']; ?></td>					
+							<td><?= $row['remark'].' '.($row['rollLengthId']<>'0'?'[RL:'.$row['rollLengthName'].']':''); ?></td>		
+							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',',').' '.$row['prodUomCode']; ?></td>						
+							<td><?= date('d M Y',strtotime( $row['deliveryDate'] )); ?></td>	
+							<td style="text-align: right; color: blue;"><?= number_format($row['sentQty'],0,'.',',').'&nbsp;'.$row['prodUomCode']; ?></td>
 						</tr>
-						<?php $row_no+=1; } ?>
-				   <?php
-						$sql = "
-								SELECT sum(a.`netTotal`) as netTotal
-								FROM `sale_detail` a
-								WHERE 1
-								AND a.`soNo`=:soNo 
-						";
-						$stmt = $pdo->prepare($sql);	
-						$stmt->bindParam(':soNo', $hdr['soNo']);
-						$stmt->execute();	
-						$row = $stmt->fetch();
-				   ?> 
-						<tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td><b>Total</b></td>
-							<td style="text-align: right;"><input type="hidden" id="hdrTotal" value="<?= $row['netTotal']; ?>" />
-								<b><?= number_format($row['netTotal'],2,'.',','); ?><b>
-							</td>
-						</tr>
-						<tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td><b>Vat 7%</b></td>
-							<td style="text-align: right;"><input type="hidden" id="hdrVatAmount" value="<?= $row['netTotal']*0.07; ?>" />
-								<b><?= number_format($row['netTotal']*0.07,2,'.',','); ?><b>
-							</td>
-						</tr>
-						<tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td><b>Net Total</b></td>
-							<td style="text-align: right;"><input type="hidden" id="hdrNetTotal" value="<?= $row['netTotal'] + ($row['netTotal']*0.07); ?>" />
-								<b><?= number_format($row['netTotal'] + ($row['netTotal']*0.07),2,'.',','); ?><b>
-							</td>
-						</tr>
-						
+						<?php $row_no+=1; } ?>						
 					</table>
 				</div><!-- /.box-body -->
 	</div><!-- /.row add items -->
 	
-	<div class="row">
-		<div class="col-md-2">
-			Product :
-		</div>
-		<div class="col-md-10">
-			<i class="fa fa-<?php echo ($hdr['prodGFC']==0?'square-o':'check-square-o'); ?>"></i> Glass Fiber Cloth&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<i class="fa fa-<?php echo ($hdr['prodGFM']==0?'square-o':'check-square-o'); ?>"></i> Glass Fiber Mesh&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<i class="fa fa-<?php echo ($hdr['prodGFT']==0?'square-o':'check-square-o'); ?>"></i> Glass Fiber Tape&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<i class="fa fa-<?php echo ($hdr['prodSC']==0?'square-o':'check-square-o'); ?>"></i> Silica Cloth&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<i class="fa fa-<?php echo ($hdr['prodCFC']==0?'square-o':'check-square-o'); ?>"></i> Cabon Fiber Cloth&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</br>
-			<i class="fa fa-<?php echo ($hdr['prodEGWM']==0?'square-o':'check-square-o'); ?>"></i> E-Glass Wool Mat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<i class="fa fa-<?php echo ($hdr['prodGT']==0?'square-o':'check-square-o'); ?>"></i> Glass Tissue&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<i class="fa fa-<?php echo ($hdr['prodCSM']==0?'square-o':'check-square-o'); ?>"></i> Chopped Strand Mat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<i class="fa fa-<?php echo ($hdr['prodWR']==0?'square-o':'check-square-o'); ?>"></i> Woven Roving
-		</div>
-		
+	<div class="row">		
 		<div class="col-md-2">
 			Stock Status :
 		</div>
@@ -275,7 +225,7 @@ desired effect
 			<i class="fa fa-<?php echo ($hdr['prodStkInStk']==0?'square-o':'check-square-o'); ?>"></i> In Stock&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
 			<i class="fa fa-<?php echo ($hdr['prodStkOrder']==0?'square-o':'check-square-o'); ?>"></i> Order&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
 			<i class="fa fa-<?php echo ($hdr['prodStkOther']==0?'square-o':'check-square-o'); ?>"></i> Other 
-			<label class="label label-primary"><?php echo $hdr['prodStkRem']; ?></label>
+			<label class="label label-default"><?php echo $hdr['prodStkRem']; ?></label>
 		</div>
 		<div class="col-md-2">
 			Packing :
@@ -283,30 +233,49 @@ desired effect
 		<div class="col-md-10">
 			<i class="fa fa-<?php echo ($hdr['packTypeAk']==0?'square-o':'check-square-o'); ?>"></i> AK Logo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
 			<i class="fa fa-<?php echo ($hdr['packTypeNone']==0?'square-o':'check-square-o'); ?>"></i> None AK Logo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-			<i class="fa fa-<?php echo ($hdr['packTypeOther']==0?'square-o':'check-square-o'); ?>"></i> Other
-			<?php echo ($hdr['packTypeRem']<>""?'<label class="text-red h4">'.$hdr['packTypeRem'].'</label>':''); ?>
-              
+			<i class="fa fa-<?php echo ($hdr['packTypeOther']==0?'square-o':'check-square-o'); ?>"></i> Other	
+			<label class="label label-default"><?php echo $hdr['packTypeRem']; ?></label>
 		</div>
+		
 		<div class="col-md-2">
-			Delivery / Load Date :
+			Export Detail
 		</div>
 		<div class="col-md-10">
-			<label class="label label-primary"><?php echo $hdr['deliveryDate']; ?></label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Delivery Remark / Shipping Remark :
-			<label class="label label-primary"><?php echo $hdr['deliveryRem']; ?></label>
+			Load Date : <label class="label label-default"><?php echo date('d M Y',strtotime( $hdr['deliveryDate'] )); ?></label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;By :
+			<i class="fa fa-<?php echo ($hdr['shipByLcl']==0?'square-o':'check-square-o'); ?>"></i> LCL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+			<i class="fa fa-<?php echo ($hdr['shipByFcl']==0?'square-o':'check-square-o'); ?>"></i> FCL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+			<label class="label label-default"><?php echo $hdr['packTypeRem']; ?></label>
+			Load Remark : <label class="label label-default"><?php echo $hdr['shipByRem']; ?></label>
 		</div>
+		
+		<div class="col-md-2">
+			
+		</div>
+		<div class="col-md-10">
+			<i class="fa fa-<?php echo ($hdr['remCoa']==0?'square-o':'check-square-o'); ?>"></i> ขอ COA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+			<i class="fa fa-<?php echo ($hdr['remPalletBand']==0?'square-o':'check-square-o'); ?>"></i> PALLET ตีตรา&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+			<i class="fa fa-<?php echo ($hdr['remFumigate']==0?'square-o':'check-square-o'); ?>"></i> รมยาตู้คอนเทนเนอร์&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+			Shipping Mark : <label class="label label-default"><?php echo $hdr['shippingMarksName']; ?></label>
+			<?php if($hdr['shippingMarksFilePath']==""){
+			}else{
+				echo '<img src="images/shippingMarks/'.$hdr['shippingMarksFilePath'].'" id="shippingMarksImg" />';
+			}?>			
+		</div>
+		
 		<div class="col-md-2">
 			Pricing on :
-		</div>
+		</div>			
 		<div class="col-md-10">
 			<i class="fa fa-<?php echo ($hdr['priceOnOrder']==0?'square-o':'check-square-o'); ?>"></i> Sales Order&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
 			<i class="fa fa-<?php echo ($hdr['priceOnOther']==0?'square-o':'check-square-o'); ?>"></i> Other
-			<label class="label label-primary"><?php echo $hdr['priceOnRem']; ?></label>
+			<label class="label label-default"><?php echo $hdr['priceOnRem']; ?></label>
 		</div>
+		
 		<div class="col-md-2">
 			Remark :
 		</div>
 		<div class="col-md-10">
-			<label class="label label-primary"><?php echo $hdr['remark']; ?></label>
+			<label class="label label-default"><?php echo $hdr['remark']; ?></label>
 		</div>		
 	</div>
 	<!-- /.row -->
@@ -318,7 +287,7 @@ desired effect
 					Credit :					
 				</div>
 				<div class="col-md-8">					
-					<label class="label label-primary"><?php echo $hdr['payTypeRem']; ?></label></br>
+					<label class="label label-default"><?php echo $hdr['payTypeCreditDays']; ?></label> Days</br>
 					<i class="fa fa-<?php echo ($hdr['payTypeCode']=='CASH'?'check-circle-o':'circle-o'); ?>"></i> Cash</br>
 					<i class="fa fa-<?php echo ($hdr['payTypeCode']=='CHEQ'?'check-circle-o':'circle-o'); ?>"></i> Cheque</br>
 					<i class="fa fa-<?php echo ($hdr['payTypeCode']=='TRAN'?'check-circle-o':'circle-o'); ?>"></i> Transfer					
@@ -332,11 +301,12 @@ desired effect
 				<div class="col-md-2">
 				</div>
 				<div class="col-md-10">					
-					<i class="fa fa-<?php echo ($hdr['plac2deliCode']=='FACT'?'check-circle-o':'circle-o'); ?>"></i> AK Factory</br>
-					<i class="fa fa-<?php echo ($hdr['plac2deliCode']=='SEND'?'check-circle-o':'circle-o'); ?>"></i> Factory Sent to</br>
+					<i class="fa fa-<?php echo ($hdr['plac2deliCode']=='FACT'?'check-circle-o':'circle-o'); ?>"></i> Pick up by customer at AK</br>
+					<i class="fa fa-<?php echo ($hdr['plac2deliCode']=='SEND'?'check-circle-o':'circle-o'); ?>"></i> Factory Sent to
+					<label class="label label-default"><?php echo $hdr['plac2deliCodeSendRem']; ?></label></br>
 					<i class="fa fa-<?php echo ($hdr['plac2deliCode']=='MAP_'?'check-circle-o':'circle-o'); ?>"></i> Map</br>
 					<i class="fa fa-<?php echo ($hdr['plac2deliCode']=='LOGI'?'check-circle-o':'circle-o'); ?>"></i> Logistic</br>
-					<label class="label label-primary"><?php echo $hdr['plac2deliRem']; ?></label>
+					<label class="label label-default"><?php echo $hdr['plac2deliCodeLogiRem']; ?></label>
 				</div>
 			</div>			
 		</div>
@@ -352,11 +322,11 @@ desired effect
 				</div>
 				<div class="col-md-8">
 					<label class=""><?php echo $hdr['createByName']; ?></label></br>
-					<label class=""><?php echo to_thai_datetime_fdt($hdr['createTime']); ?></label></br>
+					<label class=""><?php echo date('d M Y H:m',strtotime( $hdr['createTime'] )); ?></label></br>
 					<label class=""><?php echo $hdr['confirmByName']; ?></label></br>
-					<label class=""><?php echo to_thai_datetime_fdt($hdr['confirmTime']); ?></label></br>
+					<label class=""><?php echo date('d M Y H:m',strtotime( $hdr['confirmTime'] )); ?></label></br>
 					<label class=""><?php echo $hdr['approveByName']; ?></label></br>
-					<label class=""><?php echo to_thai_datetime_fdt($hdr['approveTime']); ?></label>	
+					<label class=""><?php echo date('d M Y H:m',strtotime( $hdr['approveTime'] )); ?></label>	
 				</div>				
 			</div>			
 		</div>
@@ -372,23 +342,24 @@ desired effect
     
     </div><!-- /.box-body -->
   <div class="box-footer">
-    <div class="col-md-12">
-		<?php if($hdr['statusCode']=='P'){ ?>
-          <a href="invoice-print.html" target="_blank" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
-		<?php } ?>
-		
-		
+    <div class="col-md-12">	
+		<?php switch($s_userGroupCode) { case 'admin' : case 'salesAdmin' : case 'sales' : ?>		
 		
 		  <?php switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' : ?>
-		<?php if($hdr['statusCode']=='P'){ ?>
-          <button type="button" id="btn_close_so" class="btn btn-danger pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='Y')?'disabled':''); ?>>
-		 <i class="glyphicon glyphicon-ok-sign">
-			</i> Close Sales Order
-          </button>
-		  <?php } ?>
-		  <?php break; default : } ?>
+				<button type="button" id="btn_revise" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['isClose']=='N'?'':'disabled'); ?> >
+				<i class="glyphicon glyphicon-wrench"></i> Edit for Revise
+			  </button>
+			  
+				<?php if($hdr['statusCode']=='P'){ ?>
+					<a href="<?=$rootPage;?>_view_pdf.php?soNo=<?=$soNo;?>" target="_blank" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
+					
+				
+				  <button type="button" id="btn_close_so" class="btn btn-danger pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='Y')?'disabled':''); ?>>
+				 <i class="glyphicon glyphicon-ok-sign">
+					</i> Close Sales Order
+				  </button>
+				  <?php } //statusCode==P ?>
 		  
-		  <?php switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' : ?>
           <button type="button" id="btn_approve" class="btn btn-success pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='C'?'':'disabled'); ?> >
 		 <i class="glyphicon glyphicon-check">
 			</i> Approve
@@ -401,12 +372,18 @@ desired effect
 		  <?php break; default : } ?>
 		  
           <button type="button" id="btn_verify" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
-            <i class="glyphicon glyphicon-ok"></i> Verify
+            <i class="glyphicon glyphicon-ok"></i> Confirm
           </button>      
 		  </button>   
-			<button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']<>'P'?'':'disabled'); ?> >
+		  
+          <button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ((($hdr['statusCode']<>'P') AND ($hdr['revCount']==0))?'':'disabled'); ?> >
             <i class="glyphicon glyphicon-trash"></i> Delete
           </button>
+		  
+		  
+		  <?php break; 
+			default : ?>				
+			<?php } //switch sales Roll ?> 
 	</div><!-- /.col-md-12 -->
   </div><!-- box-footer -->
 </div><!-- /.box -->
@@ -420,7 +397,45 @@ desired effect
 
   <!-- Main Footer -->
   <?php include'footer.php'; ?>
-  
+ 
+
+
+
+
+<!-- Modal -->
+<div id="modal_reason" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-md">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Cancel Approved Sales Order</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-horizontal">
+			<div class="form-group">	
+				<label for="txt_reason" class="control-label col-md-4">Reason/Remark : </label>
+				<div class="col-md-6">
+					<textarea class="form-control" id="txt_reason"></textarea>
+				</div>
+			</div>
+		
+		</form>
+      </div>
+      <div class="modal-footer">
+		<button type="button" class="btn btn-danger" id="btn_reason_ok" >OK</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+
+ 
   
 </div>
 <!-- ./wrapper -->
@@ -453,7 +468,62 @@ $(document).ready(function() {
 var spinner = new Spinner().spin();
 $("#spin").append(spinner.el);
 $("#spin").hide();
-//           
+//
+
+
+	//Reason Begin
+	$('#btn_revise').click(function(){
+		$('#modal_reason').modal('show');
+	});			
+	$('#btn_reason_ok').click(function(){
+		var params = {					
+			soNo: $('#soNo').val(),
+			reason: $('#txt_reason').val()
+		};	
+		if(params.reason.trim()==""){
+			alert('Reason/Remark is required.');
+			$('#txt_reason').select();
+			return false;
+		}
+		if (confirm('Are you sure to Edit Approved Sales Order ?')) {
+			// Save it!
+			$.post({
+				url: '<?=$rootPage;?>_revise_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function(data) {
+				if (data.success){  
+					$.smkAlert({
+						text: data.message,
+						type: 'success',
+						position:'top-center'
+					});
+					window.location.href = "<?=$rootPage;?>_view.php?soNo=" + data.soNo;
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
+				}
+				//e.preventDefault();		
+			}).error(function (response) {
+				alert(response.responseText);
+			});
+			//.post
+		} else {
+			// Do nothing!
+		}
+		//$.smkConfirm({text:'Are you sure to Edit Approved Sales Order ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			
+		//}});
+		//smkConfirm
+		//$('#modal_search').modal('hide');
+	});	
+	//Reason End
+
+
+	
 $('#btn_verify').click (function(e) {				 
 	var params = {					
 	soNo: $('#soNo').val(),
@@ -462,9 +532,9 @@ $('#btn_verify').click (function(e) {
 	hdrNetTotal: $('#hdrNetTotal').val()					
 	};
 	//alert(params.hdrID);
-	$.smkConfirm({text:'Are you sure to Verify ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+	$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: 'sale_confirm_ajax.php',
+			url: '<?=$rootPage;?>_confirm_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -487,8 +557,6 @@ $('#btn_verify').click (function(e) {
 			alert(response.responseText);
 		});
 		//.post		
-	}else{ 
-		$.smkAlert({ text: 'Cancelled.', type: 'info', position:'top-center'});	
 	}});
 	//smkConfirm
 });
@@ -501,7 +569,7 @@ $('#btn_reject').click (function(e) {
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Reject ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: 'sale_reject_ajax.php',
+			url: '<?=$rootPage;?>_reject_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -524,8 +592,6 @@ $('#btn_reject').click (function(e) {
 			alert(response.responseText);
 		});
 		//.post		
-	}else{ 
-		$.smkAlert({ text: 'Cancelled.', type: 'info', position:'top-center'});	
 	}});
 	//smkConfirm
 });
@@ -538,7 +604,7 @@ $('#btn_approve').click (function(e) {
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Approve ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: 'sale_approve_ajax.php',
+			url: '<?=$rootPage;?>_approve_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -548,7 +614,7 @@ $('#btn_approve').click (function(e) {
 					type: 'success',
 					position:'top-center'
 				});
-				window.location.href = "sale_view.php?soNo=" + data.soNo;
+				window.location.href = "<?=$rootPage;?>_view.php?soNo=" + data.soNo;
 			}else{
 				$.smkAlert({
 					text: data.message,
@@ -561,12 +627,11 @@ $('#btn_approve').click (function(e) {
 			alert(response.responseText);
 		});
 		//.post
-	}else{ 
-		$.smkAlert({ text: 'Cancelled.', type: 'info', position:'top-center'});	
 	}});
 	//smkConfirm
 });
 //.btn_click
+
 
 $('#btn_close_so').click (function(e) {				 
 	var params = {					
@@ -575,7 +640,7 @@ $('#btn_close_so').click (function(e) {
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Close ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: 'sale_close_ajax.php',
+			url: '<?=$rootPage;?>_close_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -585,7 +650,7 @@ $('#btn_close_so').click (function(e) {
 					type: 'success',
 					position:'top-center'
 				});
-				window.location.href = "sale_view.php?soNo=" + data.soNo;
+				window.location.href = "<?=$rootPage;?>_view.php?soNo=" + data.soNo;
 			}else{
 				$.smkAlert({
 					text: data.message,
@@ -598,8 +663,6 @@ $('#btn_close_so').click (function(e) {
 			alert(response.responseText);
 		});
 		//.post
-	}else{ 
-		$.smkAlert({ text: 'Cancelled.', type: 'info', position:'top-center'});	
 	}});
 	//smkConfirm
 });
@@ -612,13 +675,13 @@ $('#btn_delete').click (function(e) {
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: 'sale_delete_ajax.php',
+			url: '<?=$rootPage;?>_delete_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
 			if (data.success){  
 				alert(data.message);
-				window.location.href = 'sale.php';
+				window.location.href = '<?=$rootPage;?>.php';
 			}else{
 				$.smkAlert({
 					text: data.message,
@@ -631,8 +694,6 @@ $('#btn_delete').click (function(e) {
 			alert(response.responseText);
 		});
 		//.post
-	}else{ 
-		$.smkAlert({ text: 'Cancelled', type: 'info', position:'top-center'});	
 	}});
 	//smkConfirm
 });

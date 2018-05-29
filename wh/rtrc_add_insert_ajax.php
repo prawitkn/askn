@@ -8,7 +8,8 @@ try{
 	$receiveDate = $_POST['receiveDate'];	
 	$remark = $_POST['remark'];	
 	
-	$receiveDate = to_mysql_date($receiveDate);
+	$receiveDate = str_replace('/', '-', $receiveDate);
+	$receiveDate = date("Y-m-d",strtotime($receiveDate));
 	//We start our transaction.
 	$pdo->beginTransaction();
 	

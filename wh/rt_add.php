@@ -86,7 +86,8 @@ $rootPage="rt";
         </div><!-- /.box-header -->
         <div class="box-body">			
             <div class="row">
-				<form id="form1" action="#" method="post" class="form" novalidate>				
+				<form id="form1" action="#" method="post" class="form" novalidate>		
+				<input type="hidden" name="action" value="add" />
                 <div class="col-md-12">   
 					<div class="row">
 						<div class="col-md-3">
@@ -231,8 +232,16 @@ $rootPage="rt";
 				</div>
 				<!--/.table-responsive-->
 				
-				<a name="btn_view" href="<?=$rootPage;?>_view.php?rtNo=<?=$rtNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> View</a>
+				<!--<a name="btn_view" href="<?=$rootPage;?>_view.php?rtNo=<?=$rtNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> View</a>-->
 				</form>
+				<button type="button" id="btn_verify" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
+					<i class="glyphicon glyphicon-ok"></i> Confirm
+				  </button>  
+
+<button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']<>'P'?'':'disabled'); ?> >
+            <i class="glyphicon glyphicon-trash"></i> Delete
+          </button>
+		  
 			</div>
 			<!--/.row dtl-->
 		
@@ -258,7 +267,7 @@ $rootPage="rt";
 			<div class="form-group">	
 				<label for="year_month" class="control-label col-md-2">RC NO.</label>
 				<div class="col-md-4">
-					<input type="text" class="form-control" id="txt_search_fullname" />
+					<input type="text" class="form-control" id="txt_search_word" />
 				</div>
 			</div>
 		
@@ -348,78 +357,130 @@ $(document).ready(function() {
   
 	//SEARCH Begin
 	$('a[name="btnSdNo"]').click(function(){
-		//prev() and next() count <br/> too.		
-		$btn = $(this).closest("div").prev().find('input');
-		curId = $btn.attr('name');
-		//curId = $(this).prev().attr('name');
-		curTxtFullName = $(this).attr('id');
-		if(!$btn.prop('disabled')){
+		curId = $(this).closest("div").prev().find('input').attr('name');
+		if(!$('#'+curId).prop('disabled')){
 			$('#modal_search_person').modal('show');
 		}
-		
-		//alert(curHidMid+' '+curSlOrgCode+' '+curTxtFullName+' ' +curTxtMobilePhoneNo);
-		
 	});	
-	$('#txt_search_fullname').keyup(function(e){
+	$('#txt_search_word').keyup(function(e){
 		if(e.keyCode == 13)
 		{
 			var params = {
-				search_fullname: $('#txt_search_fullname').val()
+				search_word: $('#txt_search_word').val()
 			};
-			if(params.search_fullname.length < 3){
+			if(params.search_word.length < 3){
 				alert('search keyword must more than 3 character.');
 				return false;
-			}
+			} //alert(params.search_word);
 			/* Send the data using post and put the results in a div */
 			  $.ajax({
 				  url: "search_receive_ajax.php",
 				  type: "post",
 				  data: params,
-				datatype: 'json',
-				  success: function(data){	
-								$('#tbl_search_person_main tbody').empty();
-								$.each($.parseJSON(data), function(key,value){
-									$('#tbl_search_person_main tbody').append(
-									'<tr>' +
-										'<td>' +
-										'	<div class="btn-group">' +
-										'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
-										'	class="btn" title="เลือก"> ' +
-										'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
-										'	</div>' +
-										'</td>' +
-										'<td>'+ value.rcNo +'</td>' +
-										'<td>'+ value.receiveDate +'</td>' +
-										'<td>'+ value.fromCode+' : '+value.fromName+'</td>' +
-										'<td>'+ value.toCode+' : '+value.toName+'</td>' +
-									'</tr>'
-									);			
-								});
-							
-				  }, //success
-				  error:function(){
-					  alert('error');
-				  }   
-				}); 
+				datatype: 'json'})
+				.done(function (data) {  
+					data=$.parseJSON(data); 
+					//alert('row : '+data.rowCount);
+					switch(data.rowCount){
+						case 0 : alert('Data not found.');
+							return false; break;
+						default : 
+							$('#tbl_search_person_main tbody').empty();
+							$.each($.parseJSON(data.data), function(key,value){
+							$('#tbl_search_person_main tbody').append(
+								'<tr>' +
+									'<td>' +
+									'	<div class="btn-group">' +
+									'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
+									'	class="btn" title="เลือก"> ' +
+									'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
+									'	</div>' +
+									'</td>' +
+									'<td>'+ value.rcNo +'</td>' +
+									'<td>'+ value.receiveDate +'</td>' +
+									'<td>'+ value.fromCode+' : '+value.fromName+'</td>' +
+									'<td>'+ value.toCode+' : '+value.toName+'</td>' +
+								'</tr>'
+								);			
+							});
+							$('#modal_search_person').modal('show');	
+					}	
+			})
+			.error(function (response) {
+				  alert(response.responseText);
+			});	
 		}/* e.keycode=13 */	
 	});
 	
-	$(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
-		
-		$('input[name='+curId+']').val($(this).closest("tr").find('td:eq(1)').text());
-		//$('#'+curTxtFullName).val($(this).closest("tr").find('td:eq(2)').text());
-		//$('#'+curTxtMobilePhoneNo).val($(this).closest('tr').find('td:eq(3)').text());		
+	$(document).on("click",'a[data-name="search_person_btn_checked"]',function() {	
+		$('input[name='+curId+']').val($(this).closest("tr").find('td:eq(1)').text());	
 		$('#modal_search_person').modal('hide');
 	});
 	//Search End
 
+	$('#refNo').keyup(function(e){
+		if(e.keyCode == 13)
+		{	curId = $(this).attr('name');
+			var params = {
+				search_word: $(this).val()
+			};
+			if(params.search_word.length < 3){
+				alert('search word must more than 3 character.');
+				return false;
+			} //alert(params.search_word);
+			/* Send the data using post and put the results in a div */
+			  $.ajax({
+				  url: "search_receive_ajax.php",
+				  type: "post",
+				  data: params,
+				datatype: 'json'})
+				.done(function (data) {
+					data=$.parseJSON(data);
+					switch(data.rowCount){
+						case 0 : alert('Data not found.');
+							return false; break;
+						case 1 :
+							$.each($.parseJSON(data.data), function(key,value){
+								$('#refNo').val(value.rcNo).prop('disabled','disabled');
+								$('input[name=fromName]').val(value.fromCode+' : '+value.fromName);
+								$('input[name=toName]').val(value.toCode+' : '+value.toName);
+							});
+							break;
+						default : 
+							$('#tbl_search_person_main tbody').empty();
+							$.each($.parseJSON(data.data), function(key,value){
+							$('#tbl_search_person_main tbody').append(
+								'<tr>' +
+									'<td>' +
+									'	<div class="btn-group">' +
+									'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
+									'	class="btn" title="เลือก"> ' +
+									'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
+									'	</div>' +
+									'</td>' +
+									'<td>'+ value.rcNo +'</td>' +
+									'<td>'+ value.receiveDate +'</td>' +
+									'<td>'+ value.fromCode+' : '+value.fromName+'</td>' +
+									'<td>'+ value.toCode+' : '+value.toName+'</td>' +
+								'</tr>'
+								);			
+							});
+							$('#modal_search_person').modal('show');	
+					}	
+			})
+			.error(function (response) {
+				  alert(response.responseText);
+			});	
+		}/* e.keycode=13 */	
+	});
 
 	
 	$('#form1 a[name=btn_create]').click (function(e) {
 		if ($('#form1').smkValidate()){
 			$.smkConfirm({text:'Are you sure to Create ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
+				$('#refNo').prop('disabled','');
 				$.post({
-					url: '<?=$rootPage;?>_add_hdr_insert_ajax.php',
+					url: '<?=$rootPage;?>_ajax.php',
 					data: $("#form1").serialize(),
 					dataType: 'json'
 				}).done(function(data) {
@@ -479,6 +540,75 @@ $(document).ready(function() {
 	});
 	//btn_click
 	
+	$('#btn_verify').click (function(e) {				 
+		var params = {			
+		action: 'confirm',
+		rtNo: $('#rtNo').val()			
+		};
+		//alert(params.hdrID);
+		$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function(data) {
+				if (data.success){  
+					$.smkAlert({
+						text: data.message,
+						type: 'success',
+						position:'top-center'
+					});		
+					location.reload();
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
+				}
+				window.location.href = "<?=$rootPage;?>_view.php?rtNo=<?=$rtNo;?>";
+				//e.preventDefault();		
+			}).error(function (response) {
+				alert(response.responseText);
+			});
+			//.post		
+		}});
+		//smkConfirm
+	});
+	//.btn_click
+	
+	$('#btn_delete').click (function(e) {				 
+		var params = {			
+		action: 'delete',
+		rtNo: $('#rtNo').val()				
+		};
+		//alert(params.hdrID);
+		$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function(data) {
+				if (data.success){  
+					alert(data.message);
+					window.location.href = '<?=$rootPage;?>.php';
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
+				}
+				//e.preventDefault();		
+			}).error(function (response) {
+				alert(response.responseText);
+			});
+			//.post
+		}});
+		//smkConfirm
+	});
+	//.btn_click
+	
 	$('a[name=btn_search_prod]').click(function(e){
 		var rtNo = $('#rtNo').val();
 		var refNo = $('#refNo').val();
@@ -500,21 +630,23 @@ $(document).ready(function() {
     <script src="bootstrap-datepicker-custom-thai/dist/js/bootstrap-datepicker-custom.js"></script>
     <script src="bootstrap-datepicker-custom-thai/dist/locales/bootstrap-datepicker.th.min.js" charset="UTF-8"></script>
   
-<script>
+<script>	
 	$(document).ready(function () {
 		$('.datepicker').datepicker({
 			daysOfWeekHighlighted: "0,6",
 			autoclose: true,
 			format: 'dd/mm/yyyy',
 			todayBtn: true,
-			language: 'th',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
-			thaiyear: true              //Set เป็นปี พ.ศ.
+			language: 'en',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
+			thaiyear: false              //Set เป็นปี พ.ศ.
 		});  //กำหนดเป็นวันปัจุบัน
 		//กำหนดเป็น วันที่จากฐานข้อมูล
+		<?php if(isset($hdr['returnDate'])){ ?>
 		var queryDate = '<?=$hdr['returnDate'];?>',
 		dateParts = queryDate.match(/(\d+)/g)
 		realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
 		$('#returnDate').datepicker('setDate', realDate);
+		<?php }else{ ?> $('#returnDate').datepicker('setDate', '0'); <?php } ?>
 		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
 	});
 </script>

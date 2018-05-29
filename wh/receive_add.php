@@ -80,17 +80,18 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <div class="box-body">			
             <div class="row">
 				<form id="form1" action="" method="post" class="form" novalidate>				
+				<input type="hidden" name="action" value="add" />
                 <div class="col-md-12">   
 					<div class="row">
 						<div class="col-md-3">
 							<label for="sdNo" >Sending No.</label>
 							<div class="form-group row">
 								<div class="col-md-9">
-									<input type="text" name="sdNo" id="sdNo" class="form-control" 
+									<input type="text" name="sdNo" id="sdNo" class="form-control" data-smk-msg="Require Sending No." required 
 									<?php if($sdNo==''){ 
 											if(isset($_GET['sdNo'])) { ?>
 												value="<?=$_GET['sdNo'];?>" 
-									<?php  }										
+									<?php  }//isset 										
 										}else { ?>
 											value="<?=$sdNo;?>" disabled <?php
 										} ?>										
@@ -365,13 +366,7 @@ $(document).ready(function() {
   
 	//SEARCH Begin	
 	$('a[name="btnSdNo"]').click(function(){
-		
-		//$btn = $(this).closest("div").prev().find('input').attr('name');
-		
-		//curName = $(this).closest("div").prev().find('input').attr('name');
 		curId = $(this).closest("div").prev().find('input').attr('name');
-		alert(curId);
-		
 		if(!$('#'+curId).prop('disabled')){
 			$('#modal_search_person').modal('show');
 		}
@@ -504,7 +499,7 @@ $(document).ready(function() {
 			$.smkConfirm({text:'Are you sure to Create ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){				
 				$('#sdNo').prop('disabled','');
 				$.post({
-					url: 'receive_add_insert_ajax.php',
+					url: '<?=$rootPage;?>_ajax.php',
 					data: $("#form1").serialize(),
 					dataType: 'json'
 				}).done(function(data) {
@@ -514,7 +509,7 @@ $(document).ready(function() {
 							type: 'success',
 							position:'top-center'
 						});
-						window.location.href = "receive_add.php?rcNo=" + data.rcNo;
+						window.location.href = "<?=$rootPage;?>_add.php?rcNo=" + data.rcNo;
 					}else{
 						$.smkAlert({
 							text: data.message,
@@ -535,13 +530,14 @@ $(document).ready(function() {
 	//.btn_click
 	
 	$('#btn_verify').click (function(e) {				 
-		var params = {					
+		var params = {		
+		action: 'confirm',
 		rcNo: $('#rcNo').val()			
 		};
 		//alert(params.hdrID);
 		$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 			$.post({
-				url: '<?=$rootPage;?>_confirm_ajax.php',
+				url: '<?=$rootPage;?>_ajax.php',
 				data: params,
 				dataType: 'json'
 			}).done(function(data) {

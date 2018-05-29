@@ -26,17 +26,17 @@
             <!-- Menu Toggle Button -->
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
               <!-- The user image in the navbar-->
-              <img src="dist/img/<?php echo (empty($s_userPicture)? 'default-50x50.gif' : $s_userPicture) ?> " class="user-image" alt="<?= $s_userFullname ?>">
+              <img src="dist/img/<?php echo (empty($s_userPicture)? 'default-50x50.gif' : $s_userPicture) ?> " class="user-image" alt="<?= $s_userFullname; ?>">
               <!-- hidden-xs hides the username on small devices so only the image appears. -->
-              <span class="hidden-xs"><?= $s_userFullname ?></span>
+              <span class="hidden-xs"><?= $s_userFullname; ?></span>
             </a>
             <ul class="dropdown-menu">
               <!-- The user image in the menu -->
               <li class="user-header">
-                <img src="dist/img/<?php echo (empty($s_userPicture)? 'default-50x50.gif' : $s_userPicture) ?> " class="img-circle" alt="<?= $s_userFullname ?>">
+                <img src="dist/img/<?php echo (empty($s_userPicture)? 'default-50x50.gif' : $s_userPicture) ?> " class="img-circle" alt="<?= $s_userFullname; ?>">
 
                 <p>
-                  <?= $s_userFullname ?>
+                  <?= $s_userFullname; ?>
 <!--                  <small>June 2017</small> 
                 </p>
               </li>

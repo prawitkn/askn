@@ -57,8 +57,8 @@ desired effect
         <small>Sales Order management</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a <?php switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' : case 'sales' : ?> href="<?=$rootPage;?>.php" <?php break; default : } //end switch roll. ?> ><i class="fa fa-list"></i>Sales List</a></li>
-		<li><a <?php switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' : case 'sales' : ?> href="<?=$rootPage;?>_item.php?soNo=<?=$soNo;?>" <?php break; default : } //end switch roll. ?> ><i class="fa fa-edit"></i>SO No.<?=$soNo;?></a></li>
+        <li><a href="sale.php"><i class="fa fa-list"></i>Sales List</a></li>
+		<li><a href="sale_item.php?soNo=<?=$soNo;?>"><i class="fa fa-edit"></i>SO No.<?=$soNo;?></a></li>
       </ol>
     </section>
 
@@ -156,7 +156,7 @@ desired effect
 				  <?php
 					$sql = "
 					SELECT COUNT(*) as countTotal 
-					FROM `sale_detail` a
+					FROM `sale_rev_dtl` a
 					LEFT JOIN product b on a.prodId=b.id
 					WHERE 1
 					AND a.`soNo`=:soNo 
@@ -199,6 +199,7 @@ desired effect
 							<th>Product Code</th>
 							<th>Specification</th>
 							<th>Qty</th>
+							<th>Remark</th>
 							<th>Delivery /Load Date</th>
 							<th style="color: blue;">Sent Qty</th>
 						</tr>
@@ -207,8 +208,9 @@ desired effect
 							<td style="text-align: center;"><?= $row_no; ?></td>											
 							<td><?= $row['prodName']; ?></td>					
 							<td><?= $row['prodCode']; ?></td>					
-							<td><?= $row['remark'].' '.($row['rollLengthId']<>'0'?'[RL:'.$row['rollLengthName'].']':''); ?></td>		
-							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',',').' '.$row['prodUomCode']; ?></td>						
+							<td><?= $row['description']; ?></td>		
+							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',',').' '.$row['prodUomCode']; ?></td>
+							<td style="text-align: right;"><?= $row['remark']; ?>/RL:<?= $row['rollLengthName']; ?></td>							
 							<td><?= date('d M Y',strtotime( $row['deliveryDate'] )); ?></td>	
 							<td style="text-align: right; color: blue;"><?= number_format($row['sentQty'],0,'.',',').'&nbsp;'.$row['prodUomCode']; ?></td>
 						</tr>
@@ -342,24 +344,34 @@ desired effect
     
     </div><!-- /.box-body -->
   <div class="box-footer">
-    <div class="col-md-12">	
-		<?php switch($s_userGroupCode) { case 'admin' : case 'salesAdmin' : case 'sales' : ?>		
+    <div class="col-md-12">
+	
+		<?php if($hdr['statusCode']=='P'){ ?>
+          <a href="<?=$rootPage;?>_view_pdf.php?soNo=<?=$soNo;?>" target="_blank" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
+		  <a href="<?=$rootPage;?>_view_pdf_new.php?soNo=<?=$soNo;?>" target="_blank" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print (New)</a>
 		
-		  <?php switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' : ?>
-				<button type="button" id="btn_revise" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['isClose']=='N'?'':'disabled'); ?> >
+			<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'salesAdmin' : ?>
+			  <button type="button" id="btn_revise" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['isClose']=='N'?'':'disabled'); ?> >
 				<i class="glyphicon glyphicon-wrench"></i> Edit for Revise
 			  </button>
-			  
-				<?php if($hdr['statusCode']=='P'){ ?>
-					<a href="<?=$rootPage;?>_view_pdf.php?soNo=<?=$soNo;?>" target="_blank" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
-					
+		  <?php break; 
+			default : ?>
 				
-				  <button type="button" id="btn_close_so" class="btn btn-danger pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='Y')?'disabled':''); ?>>
-				 <i class="glyphicon glyphicon-ok-sign">
-					</i> Close Sales Order
-				  </button>
-				  <?php } //statusCode==P ?>
+			<?php } ?>
+		<?php } ?>
+		
+		
+		
+		  <?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'salesAdmin' : ?>
+		<?php if($hdr['statusCode']=='P'){ ?>
+          <button type="button" id="btn_close_so" class="btn btn-danger pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='Y')?'disabled':''); ?>>
+		 <i class="glyphicon glyphicon-ok-sign">
+			</i> Close Sales Order
+          </button>
+		  <?php } ?>
+		  <?php break; default : } ?>
 		  
+		  <?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'salesAdmin' : ?>
           <button type="button" id="btn_approve" class="btn btn-success pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='C'?'':'disabled'); ?> >
 		 <i class="glyphicon glyphicon-check">
 			</i> Approve
@@ -380,10 +392,6 @@ desired effect
             <i class="glyphicon glyphicon-trash"></i> Delete
           </button>
 		  
-		  
-		  <?php break; 
-			default : ?>				
-			<?php } //switch sales Roll ?> 
 	</div><!-- /.col-md-12 -->
   </div><!-- box-footer -->
 </div><!-- /.box -->
@@ -488,7 +496,7 @@ $("#spin").hide();
 		if (confirm('Are you sure to Edit Approved Sales Order ?')) {
 			// Save it!
 			$.post({
-				url: '<?=$rootPage;?>_revise_ajax.php',
+				url: 'sale_revise_ajax.php',
 				data: params,
 				dataType: 'json'
 			}).done(function(data) {
@@ -498,7 +506,7 @@ $("#spin").hide();
 						type: 'success',
 						position:'top-center'
 					});
-					window.location.href = "<?=$rootPage;?>_view.php?soNo=" + data.soNo;
+					window.location.href = "sale_view.php?soNo=" + data.soNo;
 				}else{
 					$.smkAlert({
 						text: data.message,
@@ -534,7 +542,7 @@ $('#btn_verify').click (function(e) {
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_confirm_ajax.php',
+			url: 'sale_confirm_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -569,7 +577,7 @@ $('#btn_reject').click (function(e) {
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Reject ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_reject_ajax.php',
+			url: 'sale_reject_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -604,7 +612,7 @@ $('#btn_approve').click (function(e) {
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Approve ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_approve_ajax.php',
+			url: 'sale_approve_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -614,7 +622,7 @@ $('#btn_approve').click (function(e) {
 					type: 'success',
 					position:'top-center'
 				});
-				window.location.href = "<?=$rootPage;?>_view.php?soNo=" + data.soNo;
+				window.location.href = "sale_view.php?soNo=" + data.soNo;
 			}else{
 				$.smkAlert({
 					text: data.message,
@@ -640,7 +648,7 @@ $('#btn_close_so').click (function(e) {
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Close ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_close_ajax.php',
+			url: 'sale_close_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -650,7 +658,7 @@ $('#btn_close_so').click (function(e) {
 					type: 'success',
 					position:'top-center'
 				});
-				window.location.href = "<?=$rootPage;?>_view.php?soNo=" + data.soNo;
+				window.location.href = "sale_view.php?soNo=" + data.soNo;
 			}else{
 				$.smkAlert({
 					text: data.message,
@@ -675,13 +683,13 @@ $('#btn_delete').click (function(e) {
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_delete_ajax.php',
+			url: 'sale_delete_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
 			if (data.success){  
 				alert(data.message);
-				window.location.href = '<?=$rootPage;?>.php';
+				window.location.href = 'sale.php';
 			}else{
 				$.smkAlert({
 					text: data.message,

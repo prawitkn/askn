@@ -118,12 +118,20 @@ scratch. This page gets rid of all links and provides the needed markup only.
                   </thead>
                   <tbody>
 				  <?php $row_no = 1; while ($row = $stmt->fetch()) { 
+				  $gradeName = '<b style="color: red;">N/A</b>'; 
+					switch($row['grade']){
+						case 0 : $gradeName = 'A'; break;
+						case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
+						case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+						default : 
+							$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
+					}
 				?>
                   <tr>
 					<td><?= $row_no; ?></td>
 					<td><?= $row['prodCode']; ?></td>					
 					<td><?= $row['issueDate']; ?></td>
-					<td><?= $row['grade']; ?></td>
+					<td><?= $gradeName; ?></td>
 					<td><?= $row['qty']; ?></td>
 					<td style="color: blue;"><?= $row['packQty']; ?></td>
 					<td style="color: blue;"><?= $row['total']; ?></td>		

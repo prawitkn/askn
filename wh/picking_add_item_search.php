@@ -101,7 +101,7 @@ desired effect
 				
 				$sql .= "GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`
 								
-				ORDER BY itm.`issueDate` DESC 
+				ORDER BY itm.`issueDate` ASC  
 				";
 				//$result = mysqli_query($link, $sql);
 				$stmt = $pdo->prepare($sql);

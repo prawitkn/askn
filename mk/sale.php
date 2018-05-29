@@ -155,7 +155,7 @@ $rootPage="sale";
 						case 'Y' : $isCloseName = '<label class="label label-success">Yes</label>'; break;
 						default : 						
 					}
-					$revisedName = ($row['revCount']<>0?'<small style="color: red;"> rev.'.$row['revCount'].'</small>':'');
+					$revisedName = ($row['revCount']<>0?'<a href="saleRevised.php?soNo='.$row['soNo'].'" /><small style="color: red;"> rev.'.$row['revCount'].'</small></a>':'');
 					?>
 					
                 <tr>

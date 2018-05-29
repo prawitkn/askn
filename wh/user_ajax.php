@@ -66,6 +66,7 @@
 				$userGroupCode = $_POST['userGroupCode'];
 				$userDeptCode = $_POST['userDeptCode'];
 				$statusCode = $_POST['statusCode'];
+				$loginStatus = $_POST['loginStatus'];
 				
 				$curPhoto = $_POST['curPhoto'];
 				$new_picture_name=$curPhoto;
@@ -121,6 +122,7 @@
 				, `userGroupCode`=:userGroupCode
 				, `userDeptCode`=:userDeptCode
 				, `statusCode`=:statusCode 
+				, `loginStatus`=:loginStatus 
 				WHERE userId=:userId 
 				";	
 				$stmt = $pdo->prepare($sql);	
@@ -133,6 +135,7 @@
 				$stmt->bindParam(':userGroupCode', $userGroupCode);
 				$stmt->bindParam(':userDeptCode', $userDeptCode);
 				$stmt->bindParam(':statusCode', $statusCode);
+				$stmt->bindParam(':loginStatus', $loginStatus);
 				$stmt->bindParam(':userId', $userId);
 				;	
 			 

@@ -66,14 +66,15 @@ $soNo = $hdr['soNo'];
         </div><!-- /.box-header -->
         <div class="box-body">			
             <div class="row">
-				<form id="form1" action="#" method="post" class="form" novalidate>				
+				<form id="form1" action="#" method="post" class="form" novalidate>		
+				<input type="hidden" name="action" value="add" />		
                 <div class="col-md-12">   
 					<div class="row">
 						<div class="col-md-3">
 							<label for="soNo" >Sales Order No.</label>
 							<div class="form-group row">
 								<div class="col-md-9">
-									<input type="text" name="soNo" id="soNo" class="form-control" <?php echo ($pickNo==''?'':' value="'.$soNo.'" disabled '); ?>  />
+									<input type="text" name="soNo" id="soNo" class="form-control" <?php echo ($pickNo==''?'':' value="'.$soNo.'" disabled '); ?> data-smk-msg="Require Pick Date." required  />
 								</div>
 								<div class="col-md-3">
 									<a href="#" name="btnSdNo" class="btn btn-primary" <?php echo ($pickNo==''?'':' disabled '); ?> ><i class="glyphicon glyphicon-search" ></i></a>								
@@ -138,7 +139,7 @@ $soNo = $hdr['soNo'];
 			
 		<div class="row col-md-12"  <?php echo ($pickNo!=''?'':' style="display: none;" '); ?> >
 			<form id="form2" action="<?=$rootPage;?>_add_item_submit_ajax.php" method="post" class="form" novalidate>
-				<input type="hidden" name="pickNo" value="<?=$pickNo;?>" />
+				<input type="hidden" name="pickNo" id="pickNo" value="<?=$pickNo;?>" />
 				<?php
 					$sql = "SELECT od.`id`, od.`prodId`, od.`qty`
 					,prd.code as prodCode, prd.name as prodName 
@@ -187,7 +188,7 @@ $soNo = $hdr['soNo'];
 						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
 						<td style="text-align: right;"><?= number_format($row['pickQty'],0,'.',','); ?></td>
 					<td>					
-					<a href="<?=$rootPage;?>_add_item_search.php?pickNo=<?=$hdr['pickNo'];?>&doDtlId=<?=$row['id'];?>&id=<?=$row['prodId'];?>" class="btn btn-primary"><i class="glyphicon glyphicon-edit"></i> Edit</a>					
+					<a href="<?=$rootPage;?>_add_item_search.php?pickNo=<?=$hdr['pickNo'];?>&doDtlId=<?=$row['id'];?>&id=<?=$row['prodId'];?>" class="btn btn-primary"><i class="glyphicon glyphicon-edit"></i> Add</a>					
 					</td>
 					</tr>
 					<?php $row_no+=1; } ?>
@@ -232,14 +233,22 @@ $soNo = $hdr['soNo'];
 				<!--row-->
 				
 				
-				<a name="btn_view" href="<?=$rootPage;?>_view.php?pickNo=<?=$pickNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> View</a>
+				
 				</form>
 			</div>
 			<!--/.row dtl-->
 		
     </div><!-- /.box-body -->
-  <div class="box-footer">
-      
+  <div class="box-footer"  <?php echo ($pickNo!=''?'':' style="display: none;" '); ?>  >
+  <a name="btn_view" href="<?=$rootPage;?>_view.php?pickNo=<?=$pickNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> View</a>
+				
+				
+      <button type="button" id="btn_verify" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
+		<i class="glyphicon glyphicon-ok"></i> Confirm
+	  </button>   
+		<button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']<>'P'?'':'disabled'); ?> >
+		<i class="glyphicon glyphicon-trash"></i> Delete
+	  </button>
       
     <!--The footer of the box -->
   </div><!-- box-footer -->
@@ -469,12 +478,12 @@ $("#spin").hide();
 		}/* e.keycode=13 */	
 	});
 	
-	$('#form1 a[name=btn_create]').click (function(e) {
+	$('#form1 a[name=btn_create]').click (function(e) {		
 		if ($('#form1').smkValidate()){
 			$.smkConfirm({text:'Are you sure to Create ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
 				$('#soNo').prop('disabled','');
 				$.post({
-					url: '<?=$rootPage;?>_add_hdr_insert_ajax.php',
+					url: '<?=$rootPage;?>_ajax.php',
 					data: $("#form1").serialize(),
 					dataType: 'json'
 				}).done(function(data) {
@@ -535,7 +544,74 @@ $("#spin").hide();
 	});
 	//btn_click
 		
-	
+		
+	$('#btn_delete').click (function(e) {				 
+		var params = {		
+		action: 'delete',
+		pickNo: $('#pickNo').val()				
+		};
+		//alert(params.pickNo);
+		$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function(data) {
+				if (data.success){  
+					alert(data.message);
+					window.location.href = '<?=$rootPage;?>.php';
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
+				}
+				//e.preventDefault();		
+			}).error(function (response) {
+				alert(response.responseText);
+			});
+			//.post
+		}});
+		//smkConfirm
+	});
+	//.btn_click
+			   
+	$('#btn_verify').click (function(e) {				 
+		var params = {		
+		action: 'confirm',			
+		pickNo: $('#pickNo').val()				
+		};
+		//alert(params.hdrID);
+		$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function(data) {
+				if (data.success){  
+					$.smkAlert({
+						text: data.message,
+						type: 'success',
+						position:'top-center'
+					});		
+					window.location.href = "<?=$rootPage;?>_view.php?pickNo=" + data.pickNo;
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
+				}
+				//e.preventDefault();		
+			}).error(function (response) {
+				alert(response.responseText);
+			});
+			//.post		
+		}});
+		//smkConfirm
+	});
+	//.btn_click
 	
 	$("html,body").scrollTop(0);
 	$("#statusName").fadeOut('slow').fadeIn('slow').fadeOut('slow').fadeIn('slow');
@@ -559,8 +635,8 @@ $("#spin").hide();
 			autoclose: true,
 			format: 'dd/mm/yyyy',
 			todayBtn: true,
-			language: 'th',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
-			thaiyear: true              //Set เป็นปี พ.ศ.
+			language: 'en',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
+			thaiyear: false              //Set เป็นปี พ.ศ.
 		});  //กำหนดเป็นวันปัจุบัน
 		//กำหนดเป็น วันที่จากฐานข้อมูล
 		<?php if($pickNo<>''){ ?>

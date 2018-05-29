@@ -30,9 +30,6 @@ AND hdr.pickNo=:pickNo
 $stmt = $pdo->prepare($sql);			
 $stmt->bindParam(':pickNo', $pickNo);	
 $stmt->execute();
-if($stmt->rowCount()==0){
-	header("Location: access_denied.php"); exit();
-}
 $hdr = $stmt->fetch();			
 ?>
 
@@ -153,27 +150,12 @@ $hdr = $stmt->fetch();
 									$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
 							}
 							
-			/*$sql = "
-			SELECT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, ws.code as shelfCode, ws.name as shelfName
-			, prd.code as prodCode 
-			FROM `picking_detail` dtl 		
-			INNER JOIN product_item itm ON itm.prodCodeId=dtl.prodId AND itm.issueDate=dtl.issueDate AND itm.grade=dtl.grade 						
-			INNER JOIN receive_detail rDtl on  itm.prodItemId=rDtl.prodItemId  AND rDtl.statusCode='A'  
-			INNER JOIN wh_shelf_map_item wmi on wmi.recvProdId=rDtl.id 
-			INNER JOIN wh_shelf ws ON wmi.shelfId=ws.id 
-			LEFT JOIN product prd ON prd.id=itm.prodCodeId 
-			WHERE 1 
-			AND dtl.`pickNo`=:pickNo 
-
-			ORDER BY dtl.id 
-			LIMIT 10 
-			";*/
 			$sql = "
 			SELECT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, ws.code as shelfCode, ws.name as shelfName
 			, prd.code as prodCode 
 			FROM `picking_detail` dtl 		
 			INNER JOIN product_item itm ON itm.prodCodeId=dtl.prodId AND itm.issueDate=dtl.issueDate AND itm.grade=dtl.grade 						
-			INNER JOIN receive_detail rDtl on  itm.prodItemId=rDtl.prodItemId  
+			INNER JOIN receive_detail rDtl on  itm.prodItemId=rDtl.prodItemId  AND rDtl.statusCode='A'  
 			INNER JOIN wh_shelf_map_item wmi on wmi.recvProdId=rDtl.id 
 			INNER JOIN wh_shelf ws ON wmi.shelfId=ws.id 
 			LEFT JOIN product prd ON prd.id=itm.prodCodeId 
@@ -196,7 +178,7 @@ $hdr = $stmt->fetch();
 								<td colspan="3"><small>
 								<?php $shelfCount=0; while ($row2 = $stmt2->fetch()) { 
 									if($row['prodId']==$row2['prodId']){
-										echo $row2['shelfCode'].', ';
+										echo $row2['shelfName'].', ';
 										$shelfCount+=1;
 									} 
 									if($shelfCount >= 10 ) exit;?>
@@ -315,9 +297,10 @@ $(document).ready(function() {
 var spinner = new Spinner().spin();
 $("#spin").append(spinner.el);
 $("#spin").hide();
-//
+// 
+
 $('#btn_delete').click (function(e) {				 
-	var params = {		
+	var params = {					
 	action: 'delete',
 	pickNo: $('#pickNo').val()				
 	};
@@ -330,7 +313,7 @@ $('#btn_delete').click (function(e) {
 		}).done(function(data) {
 			if (data.success){  
 				alert(data.message);
-				window.location.href = '<?=$rootPage;?>.php';
+				window.location.href = 'picking.php';
 			}else{
 				$.smkAlert({
 					text: data.message,
@@ -347,10 +330,10 @@ $('#btn_delete').click (function(e) {
 	//smkConfirm
 });
 //.btn_click
-           
+          
 $('#btn_verify').click (function(e) {				 
-	var params = {		
-	action: 'confirm',			
+	var params = {						
+	action: 'confirm',		
 	pickNo: $('#pickNo').val()				
 	};
 	//alert(params.hdrID);
@@ -385,14 +368,13 @@ $('#btn_verify').click (function(e) {
 //.btn_click
 
 $('#btn_reject').click (function(e) {				 
-	var params = {		
-	action: 'reject',			
+	var params = {					
 	pickNo: $('#pickNo').val()					
 	};
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Reject ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_ajax.php',
+			url: '<?=$rootPage;?>_reject_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -421,13 +403,12 @@ $('#btn_reject').click (function(e) {
 //.btn_click
 
 $('#btn_approve').click (function(e) {				 
-	var params = {		
-	action: 'approve', 
+	var params = {					
 	pickNo: $('#pickNo').val()
 	};
 	$.smkConfirm({text:'Are you sure to Approve ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_ajax.php',
+			url: '<?=$rootPage;?>_approve_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -456,7 +437,6 @@ $('#btn_approve').click (function(e) {
 	//smkConfirm
 });
 //.btn_click
-
 
 
 	$("html,body").scrollTop(0);

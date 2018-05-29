@@ -70,6 +70,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 										";
 							switch($s_userGroupCode){
 								case 'wh' :
+									$sql .= " AND toCode IN ('0','7','8','E') ";
+									break;
 								case 'pd' : 
 									$sql .= " AND toCode=:toCode ";
 									break;
@@ -77,7 +79,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							}
 							$stmt = $pdo->prepare($sql);
 							switch($s_userGroupCode){
-								case 'wh' :
 								case 'pd' : 
 									$stmt->bindParam(':toCode', $s_userDeptCode);
 									break;
@@ -105,6 +106,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 										";
 							switch($s_userGroupCode){
 								case 'wh' :
+									$sql .= " AND fromCode IN ('0','7','8','E') ";
+									break;
 								case 'pd' : 
 									$sql .= " AND fromCode=:fromCode ";
 									break;
@@ -112,7 +115,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							}
 							$stmt = $pdo->prepare($sql);
 							switch($s_userGroupCode){
-								case 'wh' :
 								case 'pd' : 
 									$stmt->bindParam(':fromCode', $s_userDeptCode);
 									break;
@@ -141,6 +143,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 										";
 							switch($s_userGroupCode){
 								case 'wh' :
+									$sql .= " AND fromCode IN ('0','7','8','E') ";
+									break;
 								case 'pd' : 
 									$sql .= " AND fromCode=:fromCode ";
 									break;
@@ -148,7 +152,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							}
 							$stmt = $pdo->prepare($sql);
 							switch($s_userGroupCode){
-								case 'wh' :
 								case 'pd' : 
 									$stmt->bindParam(':fromCode', $s_userDeptCode);
 									break;
@@ -175,6 +178,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 										";
 							switch($s_userGroupCode){
 								case 'wh' :
+									$sql .= " AND toCode IN ('0','7','8','E') ";
+									break;
 								case 'pd' : 
 									$sql .= " AND toCode=:toCode ";
 									break;
@@ -182,7 +187,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							}
 							$stmt = $pdo->prepare($sql);
 							switch($s_userGroupCode){
-								case 'wh' :
 								case 'pd' : 
 									$stmt->bindParam(':toCode', $s_userDeptCode);
 									break;
@@ -211,12 +215,27 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				SELECT COUNT(*) as countTotal 
 				FROM `sale_header` hdr 
 				INNER JOIN sale_detail dtl on dtl.soNo=hdr.soNo AND dtl.deliveryDate='$tomorrow'
+				INNER JOIN product prd ON prd.id=dtl.prodId ";
+				switch($s_userGroupCode){
+					case 'pdOff' : case 'pdSup' :
+						$sql .= " AND prd.catCode= CASE :toCode WHEN '4' THEN '70' WHEN '5' THEN '71' WHEN '6' THEN '72' END ";
+						break;
+					default : // it, admin
+				}
+				$sql.="
 				WHERE 1=1
 				AND hdr.statusCode='P' 
 				AND hdr.isClose='N' 
 				";
-				$result = mysqli_query($link, $sql);
-				$row = mysqli_fetch_assoc($result);
+				$stmt = $pdo->prepare($sql);
+				switch($s_userGroupCode){
+					case 'pdOff' : case 'pdSup' :
+						$stmt->bindParam(':toCode', $s_userDeptCode);
+						break;
+					default : // it, admin
+				}						
+				$stmt->execute();
+				$row=$stmt->fetch();
 			?>
 			
 		  <div class="box box-danger">
@@ -239,13 +258,28 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					SELECT hdr.`soNo`, hdr.`saleDate`
 					FROM `sale_header` hdr 
 					INNER JOIN sale_detail dtl on dtl.soNo=hdr.soNo AND dtl.deliveryDate='$tomorrow'
+					INNER JOIN product prd ON prd.id=dtl.prodId ";
+					switch($s_userGroupCode){
+						case 'pdOff' : case 'pdSup' :
+							$sql .= " AND prd.catCode= CASE :toCode WHEN '4' THEN '70' WHEN '5' THEN '71' WHEN '6' THEN '72' END ";
+							break;
+						default : // it, admin
+					}
+					$sql.="
 					WHERE 1=1
 					AND hdr.statusCode='P' 
 					AND hdr.isClose='N' 
-					";
-					$sql.="LIMIT 10 ";
-					$result = mysqli_query($link, $sql);
-					
+					";		
+					$sql.="GROUP BY hdr.soNo, hdr.saleDate ";
+					$sql.="LIMIT 10 ";	
+					$stmt = $pdo->prepare($sql);
+					switch($s_userGroupCode){
+						case 'pdOff' : case 'pdSup' :
+							$stmt->bindParam(':toCode', $s_userDeptCode);
+							break;
+						default : // it, admin
+					}						
+					$stmt->execute();					
 				?>
 			 <div class="table-responsive">
                 <table class="table no-margin">
@@ -257,10 +291,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                   </tr>
                   </thead>
                   <tbody>
-				   <?php while ($row = mysqli_fetch_assoc($result)) { 
+				   <?php while ($row = $stmt->fetch()) { 
 					?>
                   <tr>
-                    <td><a href="sale_view_pdf.php?soNo=<?=$row['soNo'];?>" ><?= $row['soNo']; ?></a></td>
+                    <td><a href="sale_view.php?soNo=<?=$row['soNo'];?>"  target="_blank" ><?= $row['soNo']; ?></a></td>
 					<td><?= $row['saleDate']; ?></td>
 					<td><a href="deliver_add.php?doNo=&soNo=<?=$row['soNo'];?>" >...</a></td>
                 </tr>
@@ -303,9 +337,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							LEFT JOIN `sloc` tsl on tsl.code=a.toCode
 							WHERE 1=1
 							AND a.statusCode='P' 
+							AND a.rcNo IS NULL 
 							";
 					switch($s_userGroupCode){
 						case 'whOff' : case 'whSup' :
+							$sql .="AND a.toCode IN ('0','7','8','E') ";
+							break;
 						case 'pdOff' : case 'pdSup' :
 							$sql .="AND a.toCode=:toCode ";
 							break;
@@ -315,9 +352,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							LIMIT 10";
 					$stmt = $pdo->prepare($sql);
 					switch($s_userGroupCode){
-						case 'whOff' : case 'whSup' :
-							$stmt->bindParam(':toCode', $s_userDeptCode);
-							break;
 						case 'pdOff' : case 'pdSup' :
 							$stmt->bindParam(':toCode', $s_userDeptCode);
 							break;
@@ -334,26 +368,24 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<th>Send Date</th>
                     <th>From</th>
 					<th>To</th>
-                    <th>Status</th>
                     <th>Create Time</th>
+					<th>#</th>
                   </tr>
                   </thead>
                   <tbody>
 				   <?php while ($row = $stmt->fetch()) { 
-					$statusName = '<label class="label label-info">Being</label>';
-					switch($row['statusCode']){
-						case 'C' : $statusName = '<label class="label label-primary">Confirmed</label>'; break;
-						case 'P' : $statusName = '<label class="label label-success">Approved</label>'; break;
-						default : 						
-					}
 					?>
                   <tr>
-                    <td><a href="send_view.php?sdNo=<?=$row['sdNo'];?>" ><?= $row['sdNo']; ?></a></td>
+                    <td><a href="send2_view.php?sdNo=<?=$row['sdNo'];?>" target="_blank" ><?= $row['sdNo']; ?></a></td>
 					<td><?= $row['sendDate']; ?></td>
 					<td><?= $row['fromSlocName']; ?></td>
 					<td><?= $row['toSlocName']; ?></td>
-					<td><?=$statusName;?></td>
 					<td><?= $row['createTime']; ?></td>
+					<td>
+						<a href="receive_add.php?sdNo=<?=$row['sdNo'];?>" class="btn btn-primary">
+							<i class="glyphicon glyphicon-download-alt"></i>
+						</a>						
+					</td>
                 </tr>
                 <?php  } ?>
                   </tbody>
@@ -369,6 +401,97 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <!-- /.box-footer -->
           </div>
           <!-- /.box -->
+		  
+		  
+		  
+		  <!-- TABLE: LATEST ORDERS -->		  
+          <div class="box box-info">
+            <div class="box-header with-border">
+              <h3 class="box-title">Last Waiting For Return Receiving</h3>
+
+              <div class="box-tools pull-right">
+                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                </button>
+                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+              </div>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+			<?php
+					$sql = "SELECT a.`rtNo`, a.`returnDate`, a.`fromCode`, a.`toCode`, a.`statusCode`, a.`createTime`
+							,fsl.name as fromSlocName
+							,tsl.name as toSlocName
+							FROM `rt` a 
+							LEFT JOIN `sloc` fsl on fsl.code=a.fromCode
+							LEFT JOIN `sloc` tsl on tsl.code=a.toCode
+							WHERE 1=1
+							AND a.statusCode='P' 
+							";
+					switch($s_userGroupCode){
+						case 'whOff' : case 'whSup' :
+							$sql .="AND a.toCode IN ('0','7','8','E') ";
+							break;
+						case 'pdOff' : case 'pdSup' :
+							$sql .="AND a.toCode=:toCode ";
+							break;
+						default : // it, admin
+					}	
+					$sql .="ORDER BY a.`createTime` DESC
+							LIMIT 10";
+					$stmt = $pdo->prepare($sql);
+					switch($s_userGroupCode){
+						case 'pdOff' : case 'pdSup' :
+							$stmt->bindParam(':toCode', $s_userDeptCode);
+							break;
+						default : // it, admin
+					}							
+					$stmt->execute();
+					$row = $stmt->fetch();	
+				?>
+              <div class="table-responsive">
+                <table class="table no-margin">
+                  <thead>
+                  <tr>
+                    <th>Return No.</th>
+					<th>Return Date</th>
+                    <th>From</th>
+					<th>To</th>
+                    <th>Create Time</th>
+					<th>#</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+				   <?php while ($row = $stmt->fetch()) { 
+					?>
+                  <tr>
+                    <td><a href="rt_view.php?rtNo=<?=$row['rtNo'];?>" target="_blank" ><?= $row['rtNo']; ?></a></td>
+					<td><?= $row['returnDate']; ?></td>
+					<td><?= $row['fromSlocName']; ?></td>
+					<td><?= $row['toSlocName']; ?></td>
+					<td><?= $row['createTime']; ?></td>
+					<td>
+						<a href="rtrc_add.php?refNo=<?=$row['rtNo'];?>" class="btn btn-primary">
+							<i class="glyphicon glyphicon-download-alt"></i>
+						</a>						
+					</td>
+                </tr>
+                <?php  } ?>
+                  </tbody>
+                </table>
+              </div>
+              <!-- /.table-responsive -->
+            </div>
+            <!-- /.box-body -->
+            <div class="box-footer clearfix">
+              <a href="rtrc_add.php" class="btn btn-sm btn-info btn-flat pull-left">Place New Return Receiving</a>
+              <a href="rtrc.php" class="btn btn-sm btn-default btn-flat pull-right">View All Return Receiving</a>
+            </div>
+            <!-- /.box-footer -->
+          </div>
+          <!-- /.box -->
+		  
+		  
+		  
 		  
 		  
           <!-- TABLE: LATEST ORDERS -->
@@ -396,6 +519,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							";
 					switch($s_userGroupCode){
 						case 'whOff' : case 'whSup' :
+							$sql .="AND a.fromCode IN ('0','7','8','E') ";
+							break;
 						case 'pdOff' : case 'pdSup' :
 							$sql .="AND a.fromCode=:fromCode ";
 							break;
@@ -405,7 +530,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							LIMIT 10";
 					$stmt = $pdo->prepare($sql);
 					switch($s_userGroupCode){
-						case 'whOff' : case 'whSup' :
 						case 'pdOff' : case 'pdSup' :
 							$stmt->bindParam(':fromCode', $s_userDeptCode);
 							break;
@@ -483,6 +607,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							";
 					switch($s_userGroupCode){
 						case 'whOff' : case 'whSup' :
+							$sql .="AND a.fromCode IN ('0','7','8','E') ";
+							break;
 						case 'pdOff' : case 'pdSup' :
 							$sql .="AND a.toCode=:toCode ";
 							break;
@@ -640,7 +766,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						 <?= $row_code; ?>
 					</td>
 					<td>
-						 <a target="_blank" href="sale_view_pdf.php?soNo=<?= $row['soNo'];?>" ><?= $row['soNo']; ?></a>
+						 <a target="_blank" href="sale_view.php?soNo=<?= $row['soNo'];?>" ><?= $row['soNo']; ?></a>
 					</td>
 					<td>
 						 <?= substr($row['deliveryDate'],0,10); ?>

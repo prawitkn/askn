@@ -34,6 +34,9 @@ LIMIT 1
 $stmt = $pdo->prepare($sql);			
 $stmt->bindParam(':sdNo', $sdNo);	
 $stmt->execute();
+if($stmt->rowCount()==0){
+	header("Location: access_denied.php"); exit();
+}
 $hdr = $stmt->fetch();			
 $sdNo = $hdr['sdNo'];
 ?>
@@ -122,11 +125,13 @@ $sdNo = $hdr['sdNo'];
 				<div class="box-body">
 				   <?php
 						$sql = "SELECT dtl.refNo, dtl.id, dtl.prodItemId 
-						, itm.barcode, itm.grade, itm.qty, itm.issueDate 
+						, itm.barcode, itm.grade, itm.qty, itm.issueDate , itm.`gradeTypeId`, itm.`remarkWh`
 						, prd.code as prodCode 
+						, igt.name as gradeTypeName 
 						FROM send_detail dtl 
 						LEFT JOIN product_item itm on itm.prodItemId=dtl.prodItemId 
 						LEFT JOIN product prd ON prd.id=itm.prodCodeId 
+						LEFT JOIN product_item_grade_type igt ON igt.id=itm.gradeTypeId 
 						WHERE sdNo=:sdNo  
 						ORDER BY dtl.refNo, itm.barcode
 						";			
@@ -142,16 +147,17 @@ $sdNo = $hdr['sdNo'];
 							<th>Grade</th>
 							<th>Qty</th>
 							<th>Issue Date</th>
-							<th>Ref.No.</th>
+							<th>Grade Type</th>
+							<th>Send Remark</th>
 						</tr>
 						<?php $row_no=1; $sumQty=0; $sumGradeNotOk=0; while ($row = $stmt->fetch()) { $sumQty+=$row['qty']; 
 							$gradeName = '<b style="color: red;">N/A</b>'; 
 							switch($row['grade']){
 								case 0 : $gradeName = 'A'; break;
-								case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
+								case 1 : $gradeName = '<b style="color: red;">B</b>'; break;
 								case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
 								default : 
-									$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
+									$sumGradeNotOk+=1;
 							} $sumGradeNotOk=0;
 						?>
 						<tr>
@@ -161,8 +167,8 @@ $sdNo = $hdr['sdNo'];
 							<td><?= $gradeName; ?></td>
 							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
 							<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>	
-							<td><?= $row['refNo']; ?></td>
-							
+							<td><?= $row['gradeTypeName']; ?></td>
+							<td><?= $row['remarkWh']; ?></td>							
 						</tr>
 						<?php $row_no+=1; } ?>
 						<tr style="font-weight: bold;">
@@ -180,8 +186,11 @@ $sdNo = $hdr['sdNo'];
     </div><!-- /.box-body -->
   <div class="box-footer">
     <div class="col-md-12">
-		<?php if($hdr['statusCode']=='P'){ ?>
+		<?php if($hdr['statusCode']=='P' OR $hdr['statusCode']=='C'){ ?>
           <a href="<?=$rootPage;?>_view_pdf.php?sdNo=<?=$sdNo;?>" class="btn btn-primary"><i class="glyphicon glyphicon-print"></i> Print</a>
+		  <button type="button" id="btn_remove" class="btn btn-default" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='P'?'':'disabled'); ?> >		
+		<?php } ?>
+		<?php if($hdr['statusCode']=='P' AND $hdr['rcNo']==""){ ?>         
 		  <button type="button" id="btn_remove" class="btn btn-default" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='P'?'':'disabled'); ?> >
 		 <i class="glyphicon glyphicon-trash">
 			</i> Remove Approved
@@ -210,9 +219,11 @@ $sdNo = $hdr['sdNo'];
             <i class="glyphicon glyphicon-trash"></i> Delete
           </button>
 		  
-		  <button type="button" id="btn_mapping" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
+		  <!--Unused for auto mapping on sync. -->
+		  <!--<button type="button" id="btn_mapping" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
             <i class="glyphicon glyphicon-link"></i> Prod.Mapping
-          </button>
+          </button>-->
+		  
 	</div><!-- /.col-md-12 -->
   </div><!-- box-footer -->
 </div><!-- /.box -->

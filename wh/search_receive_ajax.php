@@ -6,7 +6,9 @@
 		$s_userDeptCode = $row_user['userDeptCode'];
 		$s_userID=$_SESSION['userID'];*/
 
-	$search_fullname = $_POST['search_fullname'];
+	$search_word = $_POST['search_word'];
+
+try{	
 	$sql = "SELECT hdr.`rcNo`, hdr.`refNo`, hdr.`receiveDate`, hdr.`fromCode`, hdr.`toCode`, hdr.`remark`, hdr.`statusCode`
 	, hdr.`createTime`, hdr.`createByID`, hdr.`updateTime`, hdr.`updateById`, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById`
 	, fsl.name as fromName, tsl.name as toName 
@@ -23,6 +25,8 @@
 	switch($s_userGroupCode){ 
 		case 'whOff' :
 		case 'whSup' :
+			$sql .= "AND hdr.toCode IN ('0','7','8','E') ";
+			break;
 		case 'pdOff' :
 		case 'pdSup' :
 			$sql .= "AND hdr.toCode=:s_userDeptCode ";
@@ -33,14 +37,9 @@
 	";
 	//$result = mysqli_query($link, $sql);
 	$stmt = $pdo->prepare($sql);
-	$search_fullname = '%'.$search_fullname.'%';
-	$stmt->bindParam(':search_word', $search_fullname);
+	$search_word = '%'.$search_word.'%';
+	$stmt->bindParam(':search_word', $search_word);
 	switch($s_userGroupCode){ 
-		case 'whOff' :
-		case 'whSup' :
-		$a='8';
-			$stmt->bindParam(':s_userDeptCode',$a);
-			break;
 		case 'pdOff' :
 		case 'pdSup' :
 			$stmt->bindParam(':s_userDeptCode', $s_userDeptCode);
@@ -49,13 +48,24 @@
 	}	
 	$stmt->execute();
 
+	$rowCount=$stmt->rowCount();
+	
 	$jsonData = array();
 	while ($array = $stmt->fetch()) {
 		$jsonData[] = $array;
 	}
  					   
-	echo json_encode($jsonData);
-	
+	echo json_encode(array('rowCount' => $rowCount, 'data' => json_encode($jsonData)));
+} 
+//Our catch block will handle any exceptions that are thrown.
+catch(Exception $e){
+	//Rollback the transaction.
+    $pdo->rollBack();
+	//return JSON
+	header('Content-Type: application/json');
+	$errors = "Error on data approval. Please try again. " . $e->getMessage();
+	echo json_encode(array('success' => false, 'message' => $errors));
+}	
 ?>
 
 

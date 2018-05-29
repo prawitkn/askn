@@ -22,7 +22,7 @@ switch($s_userGroupCode){
 $id=$_GET['id'];
 
 $sql = "SELECT hdr.`userID` as id, hdr.`userName`, hdr.`userPassword`, hdr.`userFullname`, hdr.`userGroupCode`
-, hdr.`userDeptCode`, hdr.`userEmail`, hdr.`userTel`, hdr.`userPicture`, hdr.`statusCode` 
+, hdr.`userDeptCode`, hdr.`userEmail`, hdr.`userTel`, hdr.`userPicture`, hdr.`statusCode` , hdr.`loginStatus` 
 , ug.`name` as userGroupName 
 FROM `".$tb."` hdr 
 LEFT JOIN wh_user_group ug on ug.code=hdr.userGroupCode  
@@ -76,13 +76,8 @@ $row = $stmt->fetch();
                     <form id="form1" method="post" class="form" enctype="multipart/form-data" validate>
 					<input type="hidden" name="action" value="edit" />
 					<div class="col-md-6">	
-						<input id="userId" type="hidden" name="userId" value="<?=$row['id'];?>" />				
-                        <div class="form-group">
-                            <label for="userFullname">User Fullname</label>
-                            <input id="userFullname" type="text" class="form-control" name="userFullname" value="<?=$row['userFullname'];?>" data-smk-msg="Require userFullname."required>
-                        </div>
-                        
-                        <div class="form-group">
+						<input id="userId" type="hidden" name="userId" value="<?=$row['id'];?>" />		
+						<div class="form-group">
                             <label for="userName">Username</label>
                             <input id="userName" type="text" class="form-control" name="userName" value="<?=$row['userName'];?>" data-smk-msg="Require userName" required>
                         </div>
@@ -90,6 +85,12 @@ $row = $stmt->fetch();
                             <label for="userPassword">User Password<small style="color: red;"> *** Leave blank for not change user password.</small></label>
                             <input id="userPassword" type="text" class="form-control" name="userPassword" >							
                         </div>
+						
+                        <div class="form-group">
+                            <label for="userFullname">User Fullname</label>
+                            <input id="userFullname" type="text" class="form-control" name="userFullname" value="<?=$row['userFullname'];?>" data-smk-msg="Require userFullname."required>
+                        </div>                     
+                        
                         <div class="form-group">
                             <label for="userEmail">User Email</label>
                             <input id="userEmail" type="email" class="form-control" name="userEmail" value="<?=$row['userEmail'];?>" data-smk-msg="Require userEmail" required>
@@ -145,6 +146,11 @@ $row = $stmt->fetch();
                             <label for="statusCode">Status</label>
 							<input type="radio" name="statusCode" value="A" <?php echo ($row['statusCode']=='A'?' checked ':'');?> >Active
 							<input type="radio" name="statusCode" value="I" <?php echo ($row['statusCode']=='I'?' checked ':'');?> >Non-Active
+						</div>
+						<div class="form-group">
+                            <label for="loginStatus">Is Loged In</label>
+							<input type="radio" name="loginStatus" value="1" <?php echo ($row['loginStatus']=='1'?' checked ':'');?> >Yes
+							<input type="radio" name="loginStatus" value="0" <?php echo ($row['loginStatus']=='0'?' checked ':'');?> >No
 						</div>
 						<div class="form-group">
 							<input type="hidden" name="curPhoto" id="curPhoto" value="<?=$row['userPicture'];?>" />

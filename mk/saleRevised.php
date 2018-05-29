@@ -1,6 +1,5 @@
 <?php
-    include '../db/database.php';
-	include 'inc_helper.php';
+	//include 'inc_helper.php';
 ?>
 <!DOCTYPE html>
 <!--
@@ -8,29 +7,10 @@ This is a starter template page. Use this page to start your new project from
 scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
-<?php include 'head.php'; ?>
-    
-<!--
-BODY TAG OPTIONS:
-=================
-Apply one or more of the following classes to get the
-desired effect
-|---------------------------------------------------------|
-| SKINS         | skin-blue                               |
-|               | skin-black                              |
-|               | skin-purple                             |
-|               | skin-yellow                             |
-|               | skin-red                                |
-|               | skin-green                              |
-|---------------------------------------------------------|
-|LAYOUT OPTIONS | fixed                                   |
-|               | layout-boxed                            |
-|               | layout-top-nav                          |
-|               | sidebar-collapse                        |
-|               | sidebar-mini                            |
-|---------------------------------------------------------|
--->
-<body class="hold-transition skin-blue sidebar-mini">
+<?php include 'head.php'; 
+
+$rootPage="saleRevised";
+?>
 <div class="wrapper">
 
   <!-- Main Header -->
@@ -42,14 +22,13 @@ desired effect
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
-    <section class="content-header">
-      <h1>
-      Sales Order
-        <small>Sales Order management</small>
+	<section class="content-header">	  
+	  <h1><i class="glyphicon glyphicon-shopping-cart"></i>
+       Sales Order Revised
+        <small>Sales Order Revised management</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="index.php"><i class="fa fa-dashboard"></i> Main Menu</a></li>
-        <li class="active">Sales Order Information</li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Sales Order Revised List</a></li>
       </ol>
     </section>
 
@@ -57,36 +36,44 @@ desired effect
     <section class="content">
 
       <!-- Your Page Content Here -->
-      <a href="sale_add.php" class="btn btn-google">Add Sales Orders</a>
     <div class="box box-primary">
         <div class="box-header with-border">
-        <h3 class="box-title">Sales Order List</h3>
+			<div class="form-inline">
+				<label class="box-title">Sales Order Revised List</label>
+			</div>
+		
+		
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
           <?php
+				if(!isset($_GET['soNo'])){
+					header("Location: access_denied.php"); exit();
+				}
+				$soNo=$_GET['soNo'];
+				
 				$sqlRole = "";
 				switch($s_userGroupCode){
-					case 'sales' : $sqlRole = " and b.smCode='$s_smCode' "; break;
-					case 'salesAdmin' : $sqlRole = " and b.smAdmCode='$s_smCode' "; break;
+					case 'sales' : //$sqlRole = " and b.smId=$s_smId "; break;
+					case 'salesAdmin' : //$sqlRole = " and b.smAdmId=$s_smId "; break;
 					default : 
 				}
 				$search_word="";
 				$sqlSearch = "";
-				$url="sale.php";
 				if(isset($_GET['search_word']) and isset($_GET['search_word'])){
 					$search_word=$_GET['search_word'];
-					$sqlSearch = "and (b.custName like '%".$_GET['search_word']."%' OR  c.name like '%".$_GET['search_word']."%') ";
+					$sqlSearch = "and (a.soNo like '%".$_GET['search_word']."%' OR  b.name like '%".$_GET['search_word']."%' OR  c.name like '%".$_GET['search_word']."%') ";
 				}
 				$sqlCond = "";
 				
                 $sql_so = "
 							SELECT COUNT(*) AS countTotal 
-							FROM `sale_header` a
-							left join customer b on a.custCode=b.code
-							left join salesman c on a.smCode=c.code
-							left join user d on a.createByID=d.userID
+							FROM `sale_rev_hdr` a
+							left join customer b on a.custId=b.id
+							left join salesman c on a.smId=c.id
+							left join user d on a.logById=d.userId
 							WHERE 1 
+							AND a.soNo='$soNo' 
 							".$sqlSearch." 
 							".$sqlCond." 
 							".$sqlRole." 
@@ -103,6 +90,7 @@ desired effect
 				$total_page=ceil($total_data/$rows);
 				if($page>=$total_page) $page=$total_page;
 				$start=($page-1)*$rows;
+				if($start<0) $start=0;
           ?>
           <span class="label label-primary">Total <?php echo $countTotal['countTotal']; ?> items</span>
         </div><!-- /.box-tools -->
@@ -110,7 +98,7 @@ desired effect
         <div class="box-body">
 			<div class="row">
 				<div class="col-md-6">					
-						<form id="form1" action="<?=$url;?>" method="get" class="form" novalidate>
+						<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
 							<div class="form-group">
 								<label for="search_word">Customer Name Or Salesman Name search key word.</label>
 								<div class="input-group">
@@ -126,22 +114,24 @@ desired effect
 				</div>
            <?php
                 $sql = "
-						SELECT a.`soNo`, a.`saleDate`, a.`custCode`, a.`smCode`, a.`createTime`, a.`createByID`, a.isClose, a.statusCode ,
-						b.custName, b.custAddr, b.custTel, b.custFax,
-						c.name as smName,
-						d.userFullname as createByName,
-						(SELECT IFNULL(count(*),0) FROM sale_detail b WHERE b.soNo=a.soNo) as countItem
-						FROM `sale_header` a
-						left join customer b on a.custCode=b.code
-						left join salesman c on a.smCode=c.code
-						left join user d on a.createByID=d.userID
+						SELECT a.`soNo`, a.`saleDate`, a.`custId`, a.`smId`, a.`createTime`, a.`createById`, a.isClose, a.statusCode , a.revCount
+						,a.logId ,a.logRemark
+						,b.code as custCode, b.name as custName, b.tel as custTel, b.fax as custFax
+						,c.name as smName
+						,d.userFullname as logByName
+						,(SELECT IFNULL(count(*),0) FROM sale_detail b WHERE b.soNo=a.soNo) as countItem
+						FROM `sale_rev_hdr` a
+						left join customer b on a.custId=b.id
+						left join salesman c on a.smId=c.id
+						left join user d on a.logById=d.userId
 						WHERE 1 
+						AND a.soNo='$soNo' 
 							".$sqlSearch." 
 							".$sqlCond." 
 							".$sqlRole." 
 						AND a.statusCode<>'X' 
 						
-						ORDER BY a.createTime DESC
+						ORDER BY a.revCount DESC 
 						LIMIT $start, $rows 
 				";
 				//echo $sql;
@@ -149,37 +139,27 @@ desired effect
            ?> 
             
             <table class="table table-striped">
-                <tr>
+                <tr>					
+					<th>Revised No.</th>
                     <th>SO No.</th>
 					<th>SO DATE</th>
                     <th>Customer Name</th>
 					<th>Salesman Name</th>
-					<th>Closed</th>
-					<th>Status</th>
+					<th style="color: red;">Revised Remark</th>
 					<th>#</th>
                 </tr>
                 <?php while ($row = mysqli_fetch_assoc($result)) { 
-					$statusName = '<label class="label label-danger">Unknown</label>';
-					switch($row['statusCode']){
-						case 'A' : $statusName = '<label class="label label-danger">Incomplete</label>'; break;
-						case 'B' : $statusName = '<label class="label label-info">Begin</label>'; break;
-						case 'C' : $statusName = '<label class="label label-primary">Confirmed</label>'; break;
-						case 'P' : $statusName = '<label class="label label-success">Approved</label>'; break;
-						default : 						
-					}
-					$isCloseName = '<label class="label label-danger">No</label>';
-					switch($row['isClose']){
-						case 'Y' : $isCloseName = '<label class="label label-success">Yes</label>'; break;
-						default : 						
-					}
 					?>
 					
                 <tr>
+					<td>
+                         <?= $row['revCount']; ?>
+                    </td>
                     <td>
                          <?= $row['soNo']; ?>
                     </td>
                     <td>
-                         <?= to_thai_date_fdt($row['saleDate']); ?>
+                         <?= date('d M Y',strtotime($row['saleDate'])); ?>
                     </td>
                     <td>
                          <?= $row['custName']; ?>
@@ -187,25 +167,14 @@ desired effect
 					<td>
                          <?= $row['smName']; ?>
                     </td>
+					
 					<td>
-                         <?= $isCloseName; ?>
+                         <?= $row['logRemark']; ?>
                     </td>
-					<td>
-                         <?= $statusName; ?>
-                    </td>		
 					<td>					
 						<a class="btn btn-default" name="btn_row_search" 
-							href="sale_view.php?soNo=<?=$row['soNo'];?>" target="_blank" 
-							data-toggle="tooltip" title="Search"><i class="glyphicon glyphicon-search"></i></a>						
-						<a class="btn btn-default" name="btn_row_edit" 
-							<?php echo ($row['statusCode']=='B'?'href="sale_edit.php?soNo='.$row['soNo'].'"':' disabled '); ?> 
-							data-toggle="tooltip" title="Edit Header"><i class="glyphicon glyphicon-edit"></i></a>						
-						<a class="btn btn-default" name="btn_row_item" 
-							<?php echo (($row['statusCode']=='A' OR $row['statusCode']=='B')?'href="sale_item.php?soNo='.$row['soNo'].'"':' disabled '); ?> 
-							data-toggle="tooltip" title="Add Product"><i class="glyphicon glyphicon-plus"></i></a>
-						<!--<a class="btn btn-default" name="btn_row_remove" 
-							<?php echo ($row['statusCode']=='P'?' disabled ':' data-id="'.$row['soNo'].'" '); ?> 
-							data-toggle="tooltip" title="Delete"><i class="glyphicon glyphicon-trash"></i></a>	-->
+							href="<?=$rootPage;?>_view_pdf.php?logId=<?=$row['logId'];?>" 
+							data-toggle="tooltip" title="View"><i class="glyphicon glyphicon-search"></i> View</a>	
                     </td>
                 </tr>
                 <?php } ?>
@@ -214,19 +183,20 @@ desired effect
 			<nav>
 			<ul class="pagination">
 				<li <?php if($page==1) echo 'class="disabled"'; ?> >
-					<a href="<?=$url.php;?>?search_word=<?= $search_word;?>&=page=<?= $page-1; ?>" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
+					<a href="<?=$rootPage;?>.php?search_word=<?= $search_word;?>&=page=<?= $page-1; ?>" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
 				</li>
 				<?php for($i=1; $i<=$total_page;$i++){ ?>
 				<li <?php if($page==$i) echo 'class="active"'; ?> >
-					<a href="<?=$url.php;?>?search_word=<?= $search_word;?>&page=<?= $i?>" > <?= $i;?></a>			
+					<a href="<?=$rootPage;?>.php?search_word=<?= $search_word;?>&page=<?= $i?>" > <?= $i;?></a>			
 				</li>
 				<?php } ?>
 				<li <?php if($page==$total_page) echo 'class="disabled"'; ?> >
-					<a href="<?=$url.php;?>?search_word=<?= $search_word;?>&page=<?=$page+1?>" aria-labels="Next"><span aria-hidden="true">&raquo;</span></a>
+					<a href="<?=$rootPage;?>.php?search_word=<?= $search_word;?>&page=<?=$page+1?>" aria-labels="Next"><span aria-hidden="true">&raquo;</span></a>
 				</li>
 			</ul>
 			</nav>
-    
+			
+			
     </div><!-- /.box-body -->
   <div class="box-footer">
       
@@ -242,6 +212,16 @@ desired effect
 
   <!-- Main Footer -->
   <?php include'footer.php'; ?>
+
+
+
+
+
+
+
+
+
+
   
   
 </div>
@@ -261,6 +241,8 @@ desired effect
 <script>
 $(document).ready(function() {  
 
+
+	
 });
 </script>
 <!-- Optionally, you can add Slimscroll and FastClick plugins.

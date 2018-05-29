@@ -14,6 +14,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		$s_userDeptCode = $row_user['userDeptCode'];
 		$s_userID=$_SESSION['userID'];*/
 		
+		switch($s_userGroupCode){ 
+			case 'whOff' :
+			case 'whSup' :
+				header("Location: access_denied.php"); exit();
+				break;
+			default :	// it, admin 
+		}	
+		
 $rootPage="rtrc";		
 ?>
 
@@ -193,9 +201,7 @@ $rootPage="rtrc";
 					<td>
                          <?= $row['rcNo']; ?>
                     </td>
-                    <td>
-                         <?= to_thai_date_fdt($row['receiveDate']); ?>
-                    </td>
+					<td><?= date('d M Y',strtotime( $row['receiveDate'] )); ?></td>
 					
 					<td>
                          <?= $row['refNo']; ?>

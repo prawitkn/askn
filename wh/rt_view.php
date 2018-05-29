@@ -107,7 +107,7 @@ if($stmt->rowCount() >= 1){
 					</div><!-- /.col-md-3-->	
 					<div class="col-md-3">
 						Return Date : <br/>
-						<b><?= $hdr['returnDate']; ?></b><br/>
+						<b><?= date("d M Y",strtotime($hdr['returnDate'])); ?></b><br/>
 						Ref. RC No. : <br/>
 						<b><?= $hdr['refNo']; ?></b><br/>
 					</div>	<!-- /.col-md-3-->	
@@ -161,7 +161,6 @@ if($stmt->rowCount() >= 1){
 							<th>Barcode</th>
 							<th>Qty</th>
 							<th>Return Remark</th>
-							<th>#</th>
 						</tr>
 						<?php $row_no=1; $sumQty=0;    while ($row = $stmt->fetch()) { ?>
 						<tr>
@@ -191,7 +190,7 @@ if($stmt->rowCount() >= 1){
   <div class="box-footer">
     <div class="col-md-12">
 		<?php if($hdr['statusCode']=='P'){ ?>
-          <a href="<?=$rootPage;?>_view_pdf.php?rtNo=<?=$rtNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
+          <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?rtNo=<?=$rtNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
 		<?php } ?>
 	
 		
@@ -265,16 +264,17 @@ $("#spin").append(spinner.el);
 $("#spin").hide();
 //           
 $('#btn_verify').click (function(e) {				 
-	var params = {					
+	var params = {			
+	action: 'confirm',
 	rtNo: $('#rtNo').val()			
 	};
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_confirm_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
 			data: params,
 			dataType: 'json'
-		}).done(function(data) {			
+		}).done(function(data) {
 			if (data.success){  
 				$.smkAlert({
 					text: data.message,
@@ -289,6 +289,7 @@ $('#btn_verify').click (function(e) {
 					position:'top-center'
 				});
 			}
+			window.location.href = "<?=$rootPage;?>_view.php?rtNo=<?=$rtNo;?>";
 			//e.preventDefault();		
 		}).error(function (response) {
 			alert(response.responseText);
@@ -300,13 +301,14 @@ $('#btn_verify').click (function(e) {
 //.btn_click
 
 $('#btn_reject').click (function(e) {				 
-	var params = {					
+	var params = {
+	action: 'reject',
 	rtNo: $('#rtNo').val()					
 	};
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Reject ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_reject_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -335,13 +337,14 @@ $('#btn_reject').click (function(e) {
 //.btn_click
 
 $('#btn_approve').click (function(e) {				 
-	var params = {					
+	var params = {				
+	action: 'approve',
 	rtNo: $('#rtNo').val()				
 	};
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Approve ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_approve_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -373,35 +376,36 @@ $('#btn_approve').click (function(e) {
 
 
 $('#btn_delete').click (function(e) {				 
-	var params = {					
-	rtNo: $('#rtNo').val()				
-	};
-	//alert(params.hdrID);
-	$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
-		$.post({
-			url: '<?=$rootPage;?>_delete_ajax.php',
-			data: params,
-			dataType: 'json'
-		}).done(function(data) {
-			if (data.success){  
-				alert(data.message);
-				window.location.href = '<?=$rootPage;?>.php';
-			}else{
-				$.smkAlert({
-					text: data.message,
-					type: 'danger',
-					position:'top-center'
-				});
-			}
-			//e.preventDefault();		
-		}).error(function (response) {
-			alert(response.responseText);
-		});
-		//.post
-	}});
-	//smkConfirm
-});
-//.btn_click
+		var params = {			
+		action: 'delete',
+		rtNo: $('#rtNo').val()				
+		};
+		//alert(params.hdrID);
+		$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function(data) {
+				if (data.success){  
+					alert(data.message);
+					window.location.href = '<?=$rootPage;?>.php';
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
+				}
+				//e.preventDefault();		
+			}).error(function (response) {
+				alert(response.responseText);
+			});
+			//.post
+		}});
+		//smkConfirm
+	});
+	//.btn_click
 
 	$("html,body").scrollTop(0);
 	$("#statusName").fadeOut('slow').fadeIn('slow').fadeOut('slow').fadeIn('slow');

@@ -5,8 +5,19 @@
 		$s_userGroupCode = $row_user['userGroupCode'];
 		$s_userDeptCode = $row_user['userDeptCode'];
 		$s_userID=$_SESSION['userID'];*/
+	switch($s_userGroupCode){ 
+		case 'whOff' :
+		case 'whSup' :
+			header('Content-Type: application/json');
+			echo json_encode(array('success' => false, 'message' => 'Access Denied.'));
+			exit();
+			break;
+		default :	// it, admin 
+	}	
 
-	$search_fullname = $_POST['search_fullname'];
+	$search_word = $_POST['search_word'];
+
+try{	
 	$sql = "SELECT hdr.`rtNo`, hdr.`returnDate`, hdr.`fromCode`, hdr.`toCode`, hdr.`remark`, hdr.`statusCode`	
 	, fsl.name as fromName, tsl.name as toName 
 	FROM `rt` hdr
@@ -14,11 +25,13 @@
 	LEFT JOIN sloc tsl on hdr.toCode=tsl.code
 	WHERE 1 
 	AND hdr.statusCode='P' 
-	AND (hdr.rcNo IS NULL OR hdr.rcNo='') 
+	AND hdr.rcNo='' 
 	AND hdr.rtNo like :search_word ";
 	switch($s_userGroupCode){ 
 		case 'whOff' :
 		case 'whSup' :
+			$sql .= "AND hdr.toCode IN ('8','E') ";
+			break;
 		case 'pdOff' :
 		case 'pdSup' :
 			$sql .= "AND hdr.toCode=:s_userDeptCode ";
@@ -28,14 +41,9 @@
 	$sql .= "ORDER BY hdr.createTime DESC";
 	//$result = mysqli_query($link, $sql);
 	$stmt = $pdo->prepare($sql);
-	$search_fullname = '%'.$search_fullname.'%';
-	$stmt->bindParam(':search_word', $search_fullname);
+	$search_word = '%'.$search_word.'%';
+	$stmt->bindParam(':search_word', $search_word);
 	switch($s_userGroupCode){ 
-		case 'whOff' :
-		case 'whSup' :
-		$a='8';
-			$stmt->bindParam(':s_userDeptCode', $a);
-			break;
 		case 'pdOff' :
 		case 'pdSup' :
 			$stmt->bindParam(':s_userDeptCode', $s_userDeptCode);
@@ -44,13 +52,25 @@
 	}	
 	$stmt->execute();
 
+	$rowCount=$stmt->rowCount();
+	
 	$jsonData = array();
 	while ($array = $stmt->fetch()) {
 		$jsonData[] = $array;
 	}
  					   
-	echo json_encode($jsonData);
-	
+	echo json_encode(array('rowCount' => $rowCount, 'data' => json_encode($jsonData)));
+} 
+//Our catch block will handle any exceptions that are thrown.
+catch(Exception $e){
+	//Rollback the transaction.
+    $pdo->rollBack();
+	//return JSON
+	header('Content-Type: application/json');
+	$errors = "Error on data approval. Please try again. " . $e->getMessage();
+	echo json_encode(array('success' => false, 'message' => $errors));
+}	
 ?>
+
 
 

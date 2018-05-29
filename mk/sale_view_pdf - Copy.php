@@ -213,7 +213,7 @@ class MYPDF extends TCPDF {
 			<td colspan="3" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['plac2deliCode']=='SEND'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;ส่งสินค้าจากโรงงาน AK ที่ 
 				<span style="text-decoration: underline; ">'.$hdr['plac2deliCodeSendRem'].'</span>
 			</td>
-			<td colspan="4" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;วันที่ (Date) : <span style="text-decoration: underline;">'.date('d M Y H:m',strtotime( $hdr['createTime'] )).'</span></td>
+			<td colspan="4" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;วันที่ (Date) : <span style="text-decoration: underline;">'.date('d M Y H:i',strtotime( $hdr['createTime'] )).'</span></td>
 		</tr>
 		<tr>
 			<td colspan="3" style="border-left: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['payTypeCode']=='CHEQ'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;เก็บเช็คล่วงหน้า</td>

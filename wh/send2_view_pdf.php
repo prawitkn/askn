@@ -3,37 +3,6 @@
 include('session.php');
 //include('prints_function.php');
 //include('inc_helper.php');
-function to_thai_date($eng_date){
-	if(strlen($eng_date) != 10){
-		return null;
-	}else{
-		$new_date = explode('-', $eng_date);
-
-		$new_y = (int) $new_date[0] + 543;
-		$new_m = $new_date[1];
-		$new_d = $new_date[2];
-
-		$thai_date = $new_d . '/' . $new_m . '/' . $new_y;
-
-		return $thai_date;
-	}
-}
-function to_thai_datetime_fdt($eng_date){
-	//if(strlen($eng_date) != 10){
-	//    return null;
-	//}else{
-		$new_datetime = explode(' ', $eng_date);
-		$new_date = explode('-', $new_datetime[0]);
-
-		$new_y = (int) $new_date[0] + 543;
-		$new_m = $new_date[1];
-		$new_d = $new_date[2];
-
-		$thai_date = $new_d . '/' . $new_m . '/' . $new_y . ' ' . substr($new_datetime[1],0,5);
-
-		return $thai_date;
-	//}
-}
 
 // Include the main TCPDF library (search for installation path).
 require_once('../tcpdf/tcpdf.php');
@@ -163,6 +132,12 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			$stmt->execute();
 			$hdr = $stmt->fetch();			
 			$sdNo = $hdr['sdNo'];
+			$statusName = '';
+			switch($hdr['statusCode']){
+				case 'C' : $statusName='<span style="color: red;">Confirmed</span>'; break;
+				case 'P' : $statusName='<span style="color: green;">Approced</span>'; break;
+				default : $statusName='<span style="color: red;">N/A</span>';
+			}
 	   		
 
 
@@ -182,7 +157,7 @@ $sql = "SELECT dtl.id, dtl.prodItemId
 								  <thead>									
 								  <tr>
 									<th style="font-weight: bold;">Sending No. :</th>
-									<th style="font-weight: bold; text-align: left;">'.$hdr['sdNo'].'</th>
+									<th style="font-weight: bold; text-align: left;">'.$hdr['sdNo'].' / '.$statusName.'</th>
 									<th style="font-weight: bold; text-align: right;">From :</th>
 									<th>'.$hdr['fromCode'].'-'.$hdr['fromName'].'</th>									
 									<th style="font-weight: bold; text-align: right;">Sending Date :</th>
@@ -244,13 +219,19 @@ $sql = "SELECT dtl.id, dtl.prodItemId
 					
 					$html .='<tr>
 						<td colspan="2"><br/><br/>
-							ผู้จัดทำ .....'.$hdr['createByName'].'.....<br/>
-							วันที่จัดทำ .....'.date('d M Y H:m',strtotime( $hdr['createTime'] )).'<br/>
-							ผู้ส่ง .....'.$hdr['confirmByName'].'.....<br/>
+							ผู้จัดทำ : <span style="text-decoration: underline;">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+							<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('.$hdr['createByName'].')<br/>
+							วันที่จัดทำ : '.date('d M Y H:i',strtotime( $hdr['createTime'] )).'<br/>
+							ผู้ส่ง  : <span style="text-decoration: underline;">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+							<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('.$hdr['confirmByName'].')<br/>
 						</td>
 						
 						<td colspan="6" style="text-align: left;"><br/><br/>							
-							ผู้อนุมัติ .....'.$hdr['approveByName'].'.....<br/>
+							ผู้อนุมัติ : <span style="text-decoration: underline;">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+							<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('.$hdr['approveByName'].')<br/>
 						</td>
 						
 					</tr>';
