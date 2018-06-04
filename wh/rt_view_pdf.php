@@ -148,29 +148,61 @@ if( isset($_GET['rtNo']) ){
 		$rowCount = $stmt->rowCount();
 
 					
-						$html ='
+						
+					$html='';			
+					$row_no = 1; $rowPerPage=0;  $sumQty=$sumNW=$sumGW=0; while ($row = $stmt->fetch()) { 
+						if($rowPerPage==15){
+							//Footer for write 
+							$html .='</tbody></table>';					
+							
+							$pdf->AddPage('P');
+							// EAN 13
+							$style = array(
+								'position' => '',
+								'align' => 'C',
+								'stretch' => false,
+								'fitwidth' => true,
+								'cellfitalign' => '',
+								'border' => false,
+								'hpadding' => 'auto',
+								'vpadding' => 'auto',
+								'fgcolor' => array(0,0,0),
+								'bgcolor' => false, //array(255,255,255),
+								'text' => false,
+								'font' => 'helvetica',
+								'fontsize' => 8,
+								'stretchtext' => 4
+							);
+							$pdf->write1DBarcode($hdr['rtNo'], 'C39E', '', '', '', 12, 0.4, $style, 'N');
+							
+							$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
+							$html='';
+							$rowPerPage=0;
+						}
+						if($html==''){
+							$html ='
 							<table class="table table-striped no-margin" >
-								  <thead>
-								<tr>
+								 <thead>									
+								  <tr>
 									<th style="font-weight: bold;">Return No. :</th>
-									<th style="font-weight: bold; text-align: left;">'.$hdr['rtNo'].'</th>
+									<th colspan="2" style="font-weight: bold; text-align: left;">'.$hdr['rtNo'].'</th>
 									<th style="font-weight: bold; text-align: right;">From :</th>
-									<th>'.$hdr['fromCode'].'-'.$hdr['fromName'].'</th>									
+									<th> '.$hdr['fromCode'].'-'.$hdr['fromName'].'</th>									
 									<th style="font-weight: bold; text-align: right;">Return Date :</th>
-									<th>'.date("d M Y",strtotime($hdr['returnDate'])).'</th>
+									<th> '.date('d M Y',strtotime( $hdr['returnDate'] )).'</th>
 								</tr>
 								<tr>
-									<th style="font-weight: bold;">Ref. RC No. :</th>
-									<th style="text-align: left;">'.$hdr['refNo'].'</th>
-									<th style="font-weight: bold; text-align: right;">To :</th>
-									<th>'.$hdr['toCode'].'-'.$hdr['toName'].'</th>
-									<th colspan="2">
+									<th colspan="3"  style="font-weight: bold; text-align: left;">
 										Remark : '.($hdr['remark']==''?'-':$hdr['remark']).'
-									</th>	
-									</tr>
+									</th>
+									<th style="font-weight: bold; text-align: right;">To :</th>
+									<th> '.$hdr['toCode'].'-'.$hdr['toName'].'</th>
+									<th style="font-weight: bold;  text-align: right;">Ref. RC No. :</th>
+									<th style="text-align: left;"> '.$hdr['refNo'].'</th>
+								</tr>
 								  <tr>
 										<th style="font-weight: bold; text-align: center; width: 30px;" border="1">No.</th>
-										<th style="font-weight: bold; text-align: center; width: 300px;" border="1">Barcode</th>
+										<th style="font-weight: bold; text-align: center; width: 320px;" border="1">Barcode</th>
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Grade</th>
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Net<br/>Weight<br/>(kg.)</th>
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Gross<br/>Weight<br/>(kg.)</th>										
@@ -180,14 +212,19 @@ if( isset($_GET['rtNo']) ){
 								  </thead>
 								  <tbody>
 							'; 
-							
-					$row_no = 1; $sumQty=$sumNW=$sumGW=0; while ($row = $stmt->fetch()) { 
-						
+						}
+						$gradeName = '<b style="color: red;">N/A</b>'; 
+						switch($row['grade']){
+							case 0 : $gradeName = 'A'; break;
+							case 1 : $gradeName = '<b style="color: red;">B</b>'; break;
+							case 2 : $gradeName = '<b style="color: red;">N</b>'; break;
+							default : 
+						}				
 						
 					$html .='<tr>
 						<td style="border: 0.1em solid black; text-align: center; width: 30px;">'.$row_no.'</td>
-						<td style="border: 0.1em solid black; padding: 10px; width: 300px;"> '.$row['barcode'].'<br/><label style="color: red;"> '.$row['returnReasonCode'].':'.$row['returnReasonRemark'].'</label></td>
-						<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$row['grade'].'</td>
+						<td style="border: 0.1em solid black; padding: 10px; width: 320px;"> '.$row['barcode'].'<br/><label style="color: red;"> '.$row['returnReasonCode'].':'.$row['returnReasonRemark'].'</label></td>
+						<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$gradeName.'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['NW'].'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['GW'].'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['qty'],0,'.',',').'</td>
@@ -195,18 +232,19 @@ if( isset($_GET['rtNo']) ){
 					</tr>';			
 												
 					$sumQty+=$row['qty'] ; $sumNW+=$row['NW']; $sumGW+=$row['GW'] ;								
-					$row_no +=1; }
+					$row_no +=1; $rowPerPage+=1;  }
 					//<!--end while div-->	
 					
 					$html .='<tr>
 						<td style="border: 0.1em solid black; text-align: center; width: 30px;"></td>
-						<td style="border: 0.1em solid black; text-align: center; padding: 10px; width: 300px;">Total</td>
+						<td style="border: 0.1em solid black; text-align: center; padding: 10px; width: 320px;">Total</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 50px;"></td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumNW,2,'.',',').'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumGW,2,'.',',').'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumQty,0,'.',',').'</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 80px;"></td>
 					</tr>';
+					
 					$html .='<tr>
 						<td colspan="2"><br/><br/>
 							ผู้จัดทำ : <span style="text-decoration: underline;">
@@ -216,12 +254,21 @@ if( isset($_GET['rtNo']) ){
 							ผู้ส่งคืน  : <span style="text-decoration: underline;">
 							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
 							<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('.$hdr['confirmByName'].')<br/>
+							วันที่ยืนยันส่ง : '.date('d M Y H:i',strtotime( $hdr['confirmTime'] )).'<br/>
 						</td>
 						
 						<td colspan="6" style="text-align: left;"><br/><br/>							
 							ผู้อนุมัติ : <span style="text-decoration: underline;">
 							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
 							<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('.$hdr['approveByName'].')<br/>
+							วันที่อนุมัติ : '.date('d M Y H:i',strtotime( $hdr['approveTime'] )).'<br/>
+							ผู้รับ &nbsp;&nbsp; : <span style="text-decoration: underline;">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+							<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+							('.'<span style="text-decoration: underline;">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>'.')<br/>
+							วันที่รับ : '.'<span style="text-decoration: underline;">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>'.'<br/>
 						</td>
 						
 					</tr>';

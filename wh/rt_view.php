@@ -159,24 +159,34 @@ if($stmt->rowCount() >= 1){
 							<th>No.</th>
 							<th>Product code</th>
 							<th>Barcode</th>
+							<th>Grade</th>
 							<th>Qty</th>
-							<th>Return Remark</th>
+							<th>Produce Date</th>
 						</tr>
-						<?php $row_no=1; $sumQty=0;    while ($row = $stmt->fetch()) { ?>
+						<?php $row_no=1; $sumQty=0;    while ($row = $stmt->fetch()) { 
+							$gradeName = '<b style="color: red;">N/A</b>'; 
+							switch($row['grade']){
+								case 0 : $gradeName = 'A'; break;
+								case 1 : $gradeName = '<b style="color: red;">B</b>'; break;
+								case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+								default : 
+									$sumGradeNotOk+=1;
+							}
+						?>
 						<tr>
 							<td style="text-align: center;"><?= $row_no; ?></td>
 							<td><?= $row['prodCode']; ?></td>	
-							<td><?= $row['barcode']; ?></td>	
+							<td><?= $row['barcode'].'</br>'.$row['returnReasonRemark']; ?></td>	
+							<td><?= $gradeName; ?></td>								
 							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
-							<td><?= $row['returnReasonRemark']; ?></td>	
+							<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>	
 						</tr>
 						<?php $row_no+=1; $sumQty+=$row['qty']; } ?>
-						<tr>
-							<td></td>
-							<td>Total</td>	
-							<td></td>
+						<tr style="font-weight: bold;">
+							<td style="text-align: center;"></td>
+							<td colspan="3">Total</td>
 							<td style="text-align: right;"><?= number_format($sumQty,0,'.',','); ?></td>
-							<td></td>
+							<td></td>							
 						</tr>
 					</table>
 				</div><!-- /.box-body -->
@@ -190,7 +200,7 @@ if($stmt->rowCount() >= 1){
   <div class="box-footer">
     <div class="col-md-12">
 		<?php if($hdr['statusCode']=='P'){ ?>
-          <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?rtNo=<?=$rtNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
+          <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?rtNo=<?=$rtNo;?>" class="btn btn-primary"><i class="glyphicon glyphicon-print"></i> Print</a>
 		<?php } ?>
 	
 		

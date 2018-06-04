@@ -101,6 +101,8 @@ $rcNo = $hdr['rcNo'];
 					<div class="col-md-3">
 						Receive Date : <br/>
 						<b><?= date('d M Y',strtotime( $hdr['receiveDate'] )); ?></b><br/>
+						Sending No. : <br/>
+						<b><?= $hdr['refNo']; ?></b><br/>
 					</div>	<!-- /.col-md-3-->	
 					<div class="col-md-3">
 						Remark : 
@@ -129,15 +131,18 @@ $rcNo = $hdr['rcNo'];
 				<div class="box-body">
 				   <?php
 						$sql = "
-						SELECT dtl.`id`, dtl.`prodItemId`, itm.`prodId`, itm.`barcode`, itm.`issueDate`, itm.`machineId`, itm.`seqNo` 
-						, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId` 
+						SELECT dtl.`id`, dtl.`prodItemId`, itm.`prodId`, itm.`barcode`, itm.`issueDate`
+						, itm.`NW`, itm.`GW`, itm.`qty`, itm.`grade`, itm.`refItemId`, itm.`itemStatus`
+						, itm.`gradeTypeId`, itm.`remarkWh`
 						,prd.code as prodCode 
+						, igt.name as gradeTypeName 
 						, dtl.`isReturn`, dtl.`shelfCode`, dtl.`rcNo` 
 						, ws.name as shelfName 
 						FROM `receive_detail` dtl
 						LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 						LEFT JOIN product prd ON prd.id=itm.prodCodeId
 						LEFT JOIN wh_sloc ws on ws.code=dtl.shelfCode 
+						LEFT JOIN product_item_grade_type igt ON igt.id=itm.gradeTypeId 
 						WHERE 1=1 
 						AND dtl.`rcNo`=:rcNo 
 						ORDER BY  itm.`barcode`
@@ -155,7 +160,9 @@ $rcNo = $hdr['rcNo'];
 							<th>Net<br/>Weight(kg.)</th>
 							<th>Gross<br/>Weight(kg.)</th>
 							<th>Qty</th>
-							<th>Issue Date</th>
+							<th>Issue Date</th>							
+							<th>Grade Type</th>
+							<th>Send Remark</th>
 							<th>Is Return</th>
 						</tr>
 						<?php $row_no=1;  $sumQty=$sumNW=$sumGW=$sumGradeNotOk=0;  while ($row = $stmt->fetch()) { 
@@ -179,6 +186,8 @@ $rcNo = $hdr['rcNo'];
 							<td style="text-align: right;"><?= number_format($row['GW'],2,'.',','); ?></td>	
 							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
 							<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>	
+							<td><?= $row['gradeTypeName']; ?></td>
+							<td><?= $row['remarkWh']; ?></td>		
 							<td><?= $isReturn; ?></td>
 						</tr>
 						<?php $row_no+=1;  $sumQty+=$row['qty'] ; $sumNW+=$row['NW']; $sumGW+=$row['GW'] ;  } ?>
@@ -188,6 +197,8 @@ $rcNo = $hdr['rcNo'];
 							<td style="text-align: right;"><?= number_format($sumNW,2,'.',','); ?></td>
 							<td style="text-align: right;"><?= number_format($sumGW,2,'.',','); ?></td>
 							<td style="text-align: right;"><?= number_format($sumQty,0,'.',','); ?></td>
+							<td></td>	
+							<td></td>	
 							<td></td>	
 							<td>
 								
@@ -205,8 +216,10 @@ $rcNo = $hdr['rcNo'];
   <div class="box-footer">
     <div class="col-md-12">
 		<?php if($hdr['statusCode']=='P'){ ?>
-          <a href="<?=$rootPage;?>_view_pdf.php?rcNo=<?=$hdr['rcNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
-		  <a href="<?=$rootPage;?>_set_shelf.php?rcNo=<?=$hdr['rcNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-grid"></i> Shelf</a>
+          <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?rcNo=<?=$hdr['rcNo'];?>" class="btn btn-primary"><i class="glyphicon glyphicon-print"></i> Print</a>
+		  <?php switch($s_userGroupCode){ case 'admin' : case 'whSup' : ?>
+				<a href="<?=$rootPage;?>_set_shelf.php?rcNo=<?=$hdr['rcNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-grid"></i> Shelf</a>
+			<?php break; default : } ?>
 		<?php } ?>
 	
 		
@@ -330,7 +343,7 @@ $('#btn_verify').click (function(e) {
 					type: 'success',
 					position:'top-center'
 				});						
-				window.location.href = '<?=$rootPage;?>_view.php?rcNo=' + data.rcNo;
+				location.reload();
 			}else{
 				$.smkAlert({
 					text: data.message,

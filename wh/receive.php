@@ -60,9 +60,11 @@ $rootPage="receive";
 				WHERE 1=1
 				AND hdr.type='S' 
 				AND hdr.statusCode<>'X' ";					
-				switch($s_userGroupCode){ 
+				switch($s_userGroupCode){ 									
 					case 'whOff' :
 					case 'whSup' :
+						$sql .= "AND hdr.toCode IN ('0','7','8','E') ";
+						break;
 					case 'pdOff' :
 					case 'pdSup' :
 						$sql .= "AND hdr.toCode=:s_userDeptCode ";
@@ -73,12 +75,7 @@ $rootPage="receive";
 					$sql .= "AND hdr.rcNo like :search_word ";			
 				}
 				$stmt = $pdo->prepare($sql);			
-				switch($s_userGroupCode){ 					
-					case 'whOff' : 
-					case 'whSup' : 
-						$userDeptCode='8';
-						$stmt->bindParam(':s_userDeptCode', $userDeptCode);
-						break;
+				switch($s_userGroupCode){ 
 					case 'pdOff' :
 					case 'pdSup' :
 						$stmt->bindParam(':s_userDeptCode', $s_userDeptCode);
@@ -135,10 +132,10 @@ $rootPage="receive";
 				WHERE 1 
 				AND hdr.type='S' 
 				AND hdr.statusCode<>'X' ";
-				switch($s_userGroupCode){ 
+				switch($s_userGroupCode){ 													
 					case 'whOff' :
 					case 'whSup' :
-						$sql .= "AND hdr.toCode='8' ";
+						$sql .= "AND hdr.toCode IN ('0','7','8','E') ";
 						break;
 					case 'pdOff' :
 					case 'pdSup' :
@@ -154,9 +151,7 @@ $rootPage="receive";
 				
 				$stmt = $pdo->prepare($sql);
 				//$search_word = '%'.$search_word.'%';				
-				switch($s_userGroupCode){ 					
-					case 'whOff' :
-					case 'whSup' :
+				switch($s_userGroupCode){ 			
 					case 'pdOff' :
 					case 'pdSup' :
 						$stmt->bindParam(':s_userDeptCode', $s_userDeptCode);

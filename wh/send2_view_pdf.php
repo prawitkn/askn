@@ -135,45 +135,76 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			$statusName = '';
 			switch($hdr['statusCode']){
 				case 'C' : $statusName='<span style="color: red;">Confirmed</span>'; break;
-				case 'P' : $statusName='<span style="color: green;">Approced</span>'; break;
+				case 'P' : $statusName='<span style="color: green;">Approved</span>'; break;
 				default : $statusName='<span style="color: red;">N/A</span>';
 			}
 	   		
+	
+			$sql = "SELECT dtl.id, dtl.prodItemId 
+			, itm.prodCodeId, itm.barcode, itm.NW, itm.GW, itm.grade, itm.qty, itm.issueDate 
+			FROM send_detail dtl 
+			LEFT JOIN product_item itm on itm.prodItemId=dtl.prodItemId 						
+			WHERE sdNo=:sdNo  
+			ORDER BY dtl.refNo, itm.barcode
+			";			
+			$stmt = $pdo->prepare($sql);	
+			$stmt->bindParam(':sdNo', $hdr['sdNo']);
+			$stmt->execute();	
 
-
-$sql = "SELECT dtl.id, dtl.prodItemId 
-						, itm.prodCodeId, itm.barcode, itm.NW, itm.GW, itm.grade, itm.qty, itm.issueDate 
-						FROM send_detail dtl 
-						LEFT JOIN product_item itm on itm.prodItemId=dtl.prodItemId 						
-						WHERE sdNo=:sdNo  
-						ORDER BY dtl.refNo, itm.barcode
-						";			
-						$stmt = $pdo->prepare($sql);	
-						$stmt->bindParam(':sdNo', $hdr['sdNo']);
-						$stmt->execute();	
-
-						$html ='
+						
+					$html='';		
+					$row_no = 1; $rowPerPage=0; $sumQty=$sumNW=$sumGW=0; while ($row = $stmt->fetch()) {
+						if($rowPerPage==30){
+							//Footer for write 
+							$html .='</tbody></table>';					
+							
+							$pdf->AddPage('P');
+							// EAN 13
+							$style = array(
+								'position' => '',
+								'align' => 'C',
+								'stretch' => false,
+								'fitwidth' => true,
+								'cellfitalign' => '',
+								'border' => false,
+								'hpadding' => 'auto',
+								'vpadding' => 'auto',
+								'fgcolor' => array(0,0,0),
+								'bgcolor' => false, //array(255,255,255),
+								'text' => false,
+								'font' => 'helvetica',
+								'fontsize' => 8,
+								'stretchtext' => 4
+							);
+							$pdf->write1DBarcode($hdr['sdNo'], 'C39E', '', '', '', 12, 0.4, $style, 'N');
+							
+							$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
+							$html='';
+							$rowPerPage=0;
+						}
+						if($html==''){
+							$html ='
 							<table class="table table-striped no-margin" >
-								  <thead>									
+								 <thead>									
 								  <tr>
 									<th style="font-weight: bold;">Sending No. :</th>
-									<th style="font-weight: bold; text-align: left;">'.$hdr['sdNo'].' / '.$statusName.'</th>
+									<th colspan="2" style="font-weight: bold; text-align: left;">'.$hdr['sdNo'].' / '.$statusName.'</th>
 									<th style="font-weight: bold; text-align: right;">From :</th>
-									<th>'.$hdr['fromCode'].'-'.$hdr['fromName'].'</th>									
+									<th> '.$hdr['fromCode'].'-'.$hdr['fromName'].'</th>									
 									<th style="font-weight: bold; text-align: right;">Sending Date :</th>
-									<th>'.date('d M Y',strtotime( $hdr['sendDate'] )).'</th>
+									<th> '.date('d M Y',strtotime( $hdr['sendDate'] )).'</th>
 								</tr>
 								<tr>
-									<th colspan="2">
+									<th colspan="3">
 										Remark : '.($hdr['remark']==''?'-':$hdr['remark']).'
 									</th>
 									<th style="font-weight: bold; text-align: right;">To :</th>
-									<th>'.$hdr['toCode'].'-'.$hdr['toName'].'</th>
-										
-									</tr>
+									<th> '.$hdr['toCode'].'-'.$hdr['toName'].'</th>
+									<th colspan="2"></th>
+								</tr>
 								  <tr>
 										<th style="font-weight: bold; text-align: center; width: 30px;" border="1">No.</th>
-										<th style="font-weight: bold; text-align: center; width: 250px;" border="1">Barcode</th>
+										<th style="font-weight: bold; text-align: center; width: 320px;" border="1">Barcode</th>
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Grade</th>
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Net<br/>Weight<br/>(kg.)</th>
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Gross<br/>Weight<br/>(kg.)</th>										
@@ -183,8 +214,7 @@ $sql = "SELECT dtl.id, dtl.prodItemId
 								  </thead>
 								  <tbody>
 							'; 
-							
-					$row_no = 1; $sumQty=$sumNW=$sumGW=0; while ($row = $stmt->fetch()) { 
+						}
 						$gradeName = '<b style="color: red;">N/A</b>'; 
 							switch($row['grade']){
 								case 0 : $gradeName = 'A'; break;
@@ -195,7 +225,7 @@ $sql = "SELECT dtl.id, dtl.prodItemId
 						
 					$html .='<tr>
 						<td style="border: 0.1em solid black; text-align: center; width: 30px;">'.$row_no.'</td>
-						<td style="border: 0.1em solid black; padding: 10px; width: 250px;"> '.$row['barcode'].'</td>
+						<td style="border: 0.1em solid black; padding: 10px; width: 320px;"> '.$row['barcode'].'</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$gradeName.'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['NW'].'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['GW'].' </td>
@@ -204,12 +234,12 @@ $sql = "SELECT dtl.id, dtl.prodItemId
 					</tr>';			
 												
 					$sumQty+=$row['qty'] ; $sumNW+=$row['NW']; $sumGW+=$row['GW'] ;								
-					$row_no +=1; }
+					$row_no +=1; $rowPerPage+=1; }
 					//<!--end while div-->	
 					
 					$html .='<tr>
 						<td style="border: 0.1em solid black; text-align: center; width: 30px;"></td>
-						<td style="border: 0.1em solid black; text-align: center; padding: 10px; width: 250px;">Total</td>
+						<td style="border: 0.1em solid black; text-align: center; padding: 10px; width: 320px;">Total</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 50px;"></td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumNW,2,'.',',').'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumGW,2,'.',',').'</td>
@@ -223,50 +253,52 @@ $sql = "SELECT dtl.id, dtl.prodItemId
 							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
 							<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('.$hdr['createByName'].')<br/>
 							วันที่จัดทำ : '.date('d M Y H:i',strtotime( $hdr['createTime'] )).'<br/>
-							ผู้ส่ง  : <span style="text-decoration: underline;">
+							ผู้ส่ง &nbsp;&nbsp;  : <span style="text-decoration: underline;">
 							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
 							<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('.$hdr['confirmByName'].')<br/>
+							วันที่ยืนยันส่ง : '.date('d M Y H:i',strtotime( $hdr['confirmTime'] )).'<br/>
 						</td>
 						
 						<td colspan="6" style="text-align: left;"><br/><br/>							
 							ผู้อนุมัติ : <span style="text-decoration: underline;">
 							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
 							<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('.$hdr['approveByName'].')<br/>
+							วันที่อนุมัติ : '.date('d M Y H:i',strtotime( $hdr['approveTime'] )).'<br/>
+							ผู้รับ &nbsp;&nbsp; : <span style="text-decoration: underline;">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+							<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+							('.'<span style="text-decoration: underline;">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>'.')<br/>
+							วันที่รับ : '.'<span style="text-decoration: underline;">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>'.'<br/>
 						</td>
 						
 					</tr>';
-					
-					$html .='</tbody></table>';
-					
-					
-					
-					
-					
-					
-					
-					
 						
-					$pdf->AddPage('P');
-					// EAN 13
-					$style = array(
-						'position' => '',
-						'align' => 'C',
-						'stretch' => false,
-						'fitwidth' => true,
-						'cellfitalign' => '',
-						'border' => false,
-						'hpadding' => 'auto',
-						'vpadding' => 'auto',
-						'fgcolor' => array(0,0,0),
-						'bgcolor' => false, //array(255,255,255),
-						'text' => false,
-						'font' => 'helvetica',
-						'fontsize' => 8,
-						'stretchtext' => 4
-					);
-					$pdf->write1DBarcode($hdr['sdNo'], 'C39E', '', '', '', 12, 0.4, $style, 'N');
-					
-					$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
+						//Footer for write 
+						$html .='</tbody></table>';					
+						
+						$pdf->AddPage('P');
+						// EAN 13
+						$style = array(
+							'position' => '',
+							'align' => 'C',
+							'stretch' => false,
+							'fitwidth' => true,
+							'cellfitalign' => '',
+							'border' => false,
+							'hpadding' => 'auto',
+							'vpadding' => 'auto',
+							'fgcolor' => array(0,0,0),
+							'bgcolor' => false, //array(255,255,255),
+							'text' => false,
+							'font' => 'helvetica',
+							'fontsize' => 8,
+							'stretchtext' => 4
+						);
+						$pdf->write1DBarcode($hdr['sdNo'], 'C39E', '', '', '', 12, 0.4, $style, 'N');
+						
+						$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
 					}
 					//<!--if isset $_GET['from_date']-->
 		

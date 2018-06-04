@@ -146,7 +146,7 @@ $sdNo = $hdr['sdNo'];
 							<th>Barcode</th>
 							<th>Grade</th>
 							<th>Qty</th>
-							<th>Issue Date</th>
+							<th>Produce Date</th>
 							<th>Grade Type</th>
 							<th>Send Remark</th>
 						</tr>
@@ -158,7 +158,7 @@ $sdNo = $hdr['sdNo'];
 								case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
 								default : 
 									$sumGradeNotOk+=1;
-							} $sumGradeNotOk=0;
+							} //$sumGradeNotOk=0;
 						?>
 						<tr>
 							<td style="text-align: center;"><?= $row_no; ?></td>
@@ -187,8 +187,10 @@ $sdNo = $hdr['sdNo'];
   <div class="box-footer">
     <div class="col-md-12">
 		<?php if($hdr['statusCode']=='P' OR $hdr['statusCode']=='C'){ ?>
-          <a href="<?=$rootPage;?>_view_pdf.php?sdNo=<?=$sdNo;?>" class="btn btn-primary"><i class="glyphicon glyphicon-print"></i> Print</a>
-		  <button type="button" id="btn_remove" class="btn btn-default" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='P'?'':'disabled'); ?> >		
+          <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?sdNo=<?=$sdNo;?>" class="btn btn-primary"><i class="glyphicon glyphicon-print"></i> Print</a>		  
+		  <button type="button" id="btn_approve_special" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['rcNo']==''?'':'disabled'); ?> >
+			<i class="glyphicon glyphicon-star"></i> Approve (Special)
+		  </button>
 		<?php } ?>
 		<?php if($hdr['statusCode']=='P' AND $hdr['rcNo']==""){ ?>         
 		  <button type="button" id="btn_remove" class="btn btn-default" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='P'?'':'disabled'); ?> >
@@ -238,6 +240,40 @@ $sdNo = $hdr['sdNo'];
   <!-- Main Footer -->
   <?php include'footer.php'; ?>
   
+  
+  
+  <!-- Modal -->
+<div id="modal_pin" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-md">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">PIN to Approve</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-horizontal">
+			<div class="form-group">	
+				<label for="txt_reason" class="control-label col-md-4">PIN : </label>
+				<div class="col-md-6">					
+					<input type="text" class="form-control" id="txt_pin" />
+				</div>
+			</div>
+		
+		</form>
+      </div>
+      <div class="modal-footer">
+		<button type="button" class="btn btn-danger" id="btn_pin_ok" >OK</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+<!-- End Modal -->
+
+
   <!--AUDIO-->
   <audio id="audioSuccess" src="..\asset\sound\game-sound-effects-success-cute.wav" type="audio/wav"></audio>      
   
@@ -273,6 +309,55 @@ var spinner = new Spinner().spin();
 $("#spin").append(spinner.el);
 $("#spin").hide();
 //           
+
+//Super Approve Begin
+$('#btn_approve_special').click(function(){
+	$('#modal_pin').modal('show');
+});			
+$('#btn_pin_ok').click(function(){
+	var params = {			
+		action: 'approve_special',
+		sdNo: $('#sdNo').val(),
+		pin: $('#txt_pin').val()
+	};	
+	if(params.pin.trim()==""){
+		alert('PIN is required.');
+		$('#txt_pin').select();
+		return false;
+	}
+	if (confirm('Are you sure to Special Approve ?')) {
+		// Save it!
+		$.post({
+			url: '<?=$rootPage;?>_ajax.php',
+			data: params,
+			dataType: 'json'
+		}).done(function(data) {
+			if (data.success){  
+				$.smkAlert({
+					text: data.message,
+					type: 'success',
+					position:'top-center'
+				});
+				window.location.href = "<?=$rootPage;?>_view.php?sdNo=" + data.sdNo;
+			}else{
+				$.smkAlert({
+					text: data.message,
+					type: 'danger',
+					position:'top-center'
+				});
+			}
+			//e.preventDefault();		
+		}).error(function (response) {
+			alert(response.responseText);
+		});
+		//.post
+	} else {
+		// Do nothing!
+	}
+});	
+//Super Approve End
+
+
 $('#btn_verify').click (function(e) {			
 	<?php if($sumGradeNotOk>0){
 			echo "alert('Please check GRADE before sending.'); return false; ";

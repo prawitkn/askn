@@ -105,6 +105,7 @@ $rootPage="rt";
 				<div class="box-body">
 					<form id="form2" action="" method="post" class="form" novalidate>
 						<input type="hidden" name="rtNo" value="<?=$rtNo;?>" />
+						<input type="hidden" name="action" value="item_add" />		
 					<?php
 						$sql = "SELECT dtl.`id`, dtl.`prodItemId`, itm.`barcode`, itm.`issueDate`
 						, itm.`machineId`, itm.`seqNo`, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`
@@ -134,12 +135,12 @@ $rootPage="rt";
 						<?php $row_no=1; while ($row = $stmt->fetch()) { mysqli_data_seek($reason, 0);
 						?>
 						<tr>
-							<td><input type="checkbox" name="prodItemId[]" value="<?=$row['id'];?>"  /></td>
+							<td><input type="checkbox" name="itmId[]" value="<?=$row['id'];?>"  /></td>
 							<td><?= $row_no; ?></td>
 							<td><?= $row['barcode']; ?></td>
 							<td><?= $row['qty']; ?></td>
 							<td>
-								<select name="returnReasonCode[]" class="form-control" name="division_code">
+								<select name="returnReasonCode[]" class="form-control" name="division_code" disabled >
 									<option value="">- - ระบุ --</option>
 									<?php 
 									   $rank_code = "";							   
@@ -154,7 +155,7 @@ $rootPage="rt";
 									?>
 									</select> 
 							</td>
-							<td><input type="text"  class="form-control" name="returnReasonRemark[]" /></td>
+							<td><input type="text"  class="form-control" name="returnReasonRemark[]" disabled /></td>
 						</tr>
 						<?php $row_no+=1; } ?>
 					</table>
@@ -231,13 +232,28 @@ $(document).ready(function() {
 			.val($(this).find(':selected').attr('data-name'))
 			.select()
 	});
+	
+	$(document).on("change",'input[name="itmId[]"]',function() {
+		if($(this).is( ":checked" )){			
+			//alert('true aaa');
+			$(this).closest('tr').find('select[name="returnReasonCode[]"]')
+				.prop('disabled',false);
+			$(this).closest('tr').find('input[name="returnReasonRemark[]"]')
+				.prop('disabled',false);
+		}else{			
+			$(this).closest('tr').find('select[name="returnReasonCode[]"]')
+				.val('').prop('disabled',true);;
+			$(this).closest('tr').find('input[name="returnReasonRemark[]"]')
+				.val('').prop('disabled',true);
+		}
+	});
 			
 			
 	$('#form2 a[name=btn_submit]').click (function(e) {
 		if ($('#form2').smkValidate()){
 			$.smkConfirm({text:'Are you sure to Submit ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 				$.post({
-					url: 'rt_add_search_prod_submit_ajax.php',
+					url: '<?=$rootPage;?>_ajax.php',
 					data: $("#form2").serialize(),
 					dataType: 'json'
 				}).done(function(data) {
@@ -267,8 +283,11 @@ $(document).ready(function() {
 	});
 	//.btn_click
 	
+	
 	$("#checkAll").click(function(){
 		$('input:checkbox').not(this).prop('checked', this.checked);
+		$('select').prop('disabled', !this.checked);
+		$('input:text').prop('disabled', !this.checked);
 	});
 
 	

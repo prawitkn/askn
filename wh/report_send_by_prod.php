@@ -60,22 +60,39 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				
 $sql = "
 SELECT COUNT(hdr.sdNo) AS countTotal
-FROM `send` hdr 
+FROM `send` hdr
+INNER JOIN send_detail dtl ON dtl.sdNo=hdr.sdNo  
+INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 WHERE 1 ";
-if($dateFrom<>""){ $sql .= " AND hdr.sendDate>='$dateFromYmd' ";	}
-if($dateTo<>""){ $sql .= " AND hdr.sendDate<='$dateToYmd' ";	}
+if($dateFrom<>""){ $sql .= " AND hdr.sendDate>=:dateFromYmd ";	}
+if($dateTo<>""){ $sql .= " AND hdr.sendDate<=:dateToYmd ";	}
+if($prodId<>""){ $sql .= " AND itm.prodCodeId=:prodId ";	}
 switch($s_userGroupCode){ 
 	case 'whOff' :  case 'whSup' : 
 	case 'pdOff' :  case 'pdSup' :
-			$sql .= "AND hdr.fromCode='".$s_userDeptCode."' ";
+			$sql .= "AND hdr.fromCode=:s_userDeptCode ";
 		break;
 	default : //case 'it' : case 'admin' : 
   }
 $sql .= "AND hdr.statusCode='P' 
 ";				
-                $result = mysqli_query($link, $sql);
-                $countTotal = mysqli_fetch_assoc($result);
+                //$result = mysqli_query($link, $sql);
+                //$countTotal = mysqli_fetch_assoc($result);
 				
+				$stmt = $pdo->prepare($sql);			
+				if($prodId<>"") $stmt->bindParam(':prodId', $prodId);	
+				if($dateFromYmd<>"") $stmt->bindParam(':dateFromYmd', $dateFromYmd);	
+				if($dateToYmd<>"") $stmt->bindParam(':dateToYmd', $dateToYmd);	
+				switch($s_userGroupCode){ 
+					case 'whOff' :  case 'whSup' : 
+					case 'pdOff' :  case 'pdSup' :
+							if($s_userDeptCode<>"") $stmt->bindParam(':s_userDeptCode', $s_userDeptCode);
+						break;
+					default : //case 'it' : case 'admin' : 
+				  }
+				$stmt->execute();
+				$countTotal = $stmt->fetch();	
+
 				$rows=20;
 				$page=0;
 				if( !empty($_GET["page"]) and isset($_GET["page"]) ) $page=$_GET["page"];
@@ -127,28 +144,42 @@ $sql .= "AND hdr.statusCode='P'
 , fsl.name as fromName, tsl.name as toName 
 , cu.userFullname as createByName, fu.userFullname as confirmByName, pu.userFullname as approveByName 
 FROM `send` hdr
+INNER JOIN send_detail dtl ON dtl.sdNo=hdr.sdNo  
+INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 LEFT JOIN sloc fsl on hdr.fromCode=fsl.code
 LEFT JOIN sloc tsl on hdr.toCode=tsl.code
 LEFT JOIN user cu on hdr.createByID=cu.userId 
 LEFT JOIN user fu on hdr.confirmById=fu.userId
 LEFT JOIN user pu on hdr.approveById=pu.userId  
 WHERE 1 ";
+if($dateFrom<>""){ $sql .= " AND hdr.sendDate>=:dateFromYmd ";	}
+if($dateTo<>""){ $sql .= " AND hdr.sendDate<=:dateToYmd ";	}
+if($prodId<>""){ $sql .= " AND itm.prodCodeId=:prodId ";	}
 switch($s_userGroupCode){ 
 	case 'whOff' :  case 'whSup' : 
 	case 'pdOff' :  case 'pdSup' :
-			$sql .= "AND hdr.fromCode='".$s_userDeptCode."' ";
+			$sql .= "AND hdr.fromCode=:s_userDeptCode ";
 		break;
 	default : //case 'it' : case 'admin' : 
-  }
-if($dateFrom<>""){ $sql .= " AND hdr.sendDate>='$dateFromYmd' ";	}
-if($dateTo<>""){ $sql .= " AND hdr.sendDate<='$dateToYmd' ";	}				  
+}	  
 $sql .= "AND hdr.statusCode='P' 
 
 ORDER BY hdr.createTime DESC
 LIMIT $start, $rows 
 ";
 //echo $sql;
-$result = mysqli_query($link, $sql);	   
+$stmt = $pdo->prepare($sql);			
+if($prodId<>"") $stmt->bindParam(':prodId', $prodId);	
+if($dateFromYmd<>"") $stmt->bindParam(':dateFromYmd', $dateFromYmd);	
+if($dateToYmd<>"") $stmt->bindParam(':dateToYmd', $dateToYmd);	
+switch($s_userGroupCode){ 
+	case 'whOff' :  case 'whSup' : 
+	case 'pdOff' :  case 'pdSup' :
+			if($s_userDeptCode<>"") $stmt->bindParam(':s_userDeptCode', $s_userDeptCode);
+		break;
+	default : //case 'it' : case 'admin' : 
+  }
+$stmt->execute();
                          
            ?>             
 			
@@ -165,7 +196,7 @@ $result = mysqli_query($link, $sql);
 				</tr>
 				</thead>
 				<tbody>
-                <?php $c_row=($start+1); while ($row = mysqli_fetch_assoc($result)) { 
+                <?php $c_row=($start+1); while ($row = $stmt->fetch() ) { 
 					/*$isCloseName = '<label class="label label-danger">Unknown</label>';
 					switch($row['isClose']){
 						case 'N' : $isCloseName = '<label class="label label-warning">No</label>'; break;

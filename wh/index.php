@@ -559,7 +559,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					}
 					?>
                   <tr>
-                    <td><a href="send_view.php?sdNo=<?=$row['sdNo'];?>" ><?= $row['sdNo']; ?></a></td>
+                    <td><a href="send2_view.php?sdNo=<?=$row['sdNo'];?>" ><?= $row['sdNo']; ?></a></td>
 					<td><?= $row['sendDate']; ?></td>
 					<td><?= $row['fromSlocName']; ?></td>
 					<td><?= $row['toSlocName']; ?></td>
@@ -574,8 +574,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
             </div>
             <!-- /.box-body -->
             <div class="box-footer clearfix">
-              <a href="send_add.php" class="btn btn-sm btn-info btn-flat pull-left">Place New Sending</a>
-              <a href="send.php" class="btn btn-sm btn-default btn-flat pull-right">View All Sending</a>
+              <a href="send2_add.php" class="btn btn-sm btn-info btn-flat pull-left">Place New Sending</a>
+              <a href="send2.php" class="btn btn-sm btn-default btn-flat pull-right">View All Sending</a>
             </div>
             <!-- /.box-footer -->
           </div>

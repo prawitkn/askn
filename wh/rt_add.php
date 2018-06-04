@@ -169,7 +169,7 @@ $rootPage="rt";
 			
 			
 			<?php
-			$sql = "SELECT dtl.`id`, dtl.`prodItemId`,itm.`barcode`, itm.`issueDate`, itm.`machineId`, dtl.`seqNo`, dtl.`NW`, dtl.`GW`
+			$sql = "SELECT dtl.`id`, dtl.`prodItemId`,itm.`barcode`, itm.`issueDate`, itm.`machineId`, itm.`NW`, itm.`GW`
 			, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId`
 			,prd.id as prodId, prd.code as prodCode 
 			, dtl.`returnReasonCode`, dtl.`returnReasonRemark`, dtl.`rtNo` 
@@ -442,8 +442,8 @@ $(document).ready(function() {
 						case 1 :
 							$.each($.parseJSON(data.data), function(key,value){
 								$('#refNo').val(value.rcNo).prop('disabled','disabled');
-								$('input[name=fromName]').val(value.fromCode+' : '+value.fromName);
-								$('input[name=toName]').val(value.toCode+' : '+value.toName);
+								$('input[name=fromName]').val(value.toCode+' : '+value.toName);
+								$('input[name=toName]').val(value.fromCode+' : '+value.fromName);
 							});
 							break;
 						default : 
@@ -511,13 +511,14 @@ $(document).ready(function() {
 	//.btn_click
 	
 	$('a[name=btn_row_delete]').click(function(){
-		var params = {
+		var params = {	
+			action: 'item_delete',
 			id: $(this).attr('data-id')
 		};
 		//alert(params.id);
 		$.smkConfirm({text:'Are you sure to Delete ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 			$.post({
-				url: '<?=$rootPage;?>_add_item_delete_ajax.php',
+				url: '<?=$rootPage;?>_ajax.php',
 				data: params,
 				dataType: 'json'
 			}).done(function (data) {					

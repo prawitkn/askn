@@ -106,7 +106,9 @@ $rcNo = $hdr['rcNo'];
 					</div><!-- /.col-md-3-->	
 					<div class="col-md-3">
 						Receive Date : <br/>
-						<b><?= $hdr['receiveDate']; ?></b><br/>
+						<b><?= date('d M Y',strtotime( $hdr['receiveDate'] )); ?></b><br/>
+						Ref. RT No. : <br/>
+						<b><?= $hdr['refNo']; ?></b><br/>
 					</div>	<!-- /.col-md-3-->	
 					<div class="col-md-3">
 						Remark : 
@@ -154,7 +156,8 @@ $rcNo = $hdr['rcNo'];
 				   ?>	
 					<table class="table table-striped">
 						<tr>
-							<th>No.</th>			
+							<th>No.</th>	
+							<th>Product Code</th>
 							<th>barcode</th>
 							<th>Grade</th>
 							<th>Net<br/>Weight(kg.)</th>
@@ -163,27 +166,33 @@ $rcNo = $hdr['rcNo'];
 							<th>Produce Date</th>
 						</tr>
 						<?php $row_no=1;  $sumQty=$sumNW=$sumGW=0;  while ($row = $stmt->fetch()) { 
-							$isReturn = "";
-							if($row['isReturn']=='Y') { $isReturn = '<label class="label label-danger">Yes</label>'; }
+							$gradeName = '<b style="color: red;">N/A</b>'; 
+							switch($row['grade']){
+								case 0 : $gradeName = 'A'; break;
+								case 1 : $gradeName = '<b style="color: red;">B</b>'; break;
+								case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+								default : 
+									$sumGradeNotOk+=1;
+							}
 						?>
 						<tr>
 							<td style="text-align: center;"><?= $row_no; ?></td>	
+							<td style=""><?= $row['prodCode']; ?></td>	
 							<td><?= $row['barcode']; ?><br/><small style="color: red;"><?=$row['returnReasonRemark'];?></td>
-							<td style="text-align: center;"><?= $row['grade']; ?></td>	
+							<td><?= $gradeName; ?></td>	
 							<td style="text-align: right;"><?= $row['NW']; ?></td>	
-							<td style="text-align: right;"><?= $row['GW']; ?></td>	
+							<td style="text-align: right;"><?= $row['GW']; ?></td>								
 							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
-							<td><?= $row['issueDate']; ?></td>	
+							<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>	
 						</tr>
 						<?php $row_no+=1; $sumGW+=$row['GW']; $sumNW+=$row['NW']; $sumQty+=$row['qty']; } ?>
-						<tr>
-							<td></td>
-							<td colspan="2">Total</td>	
-							<td style="text-align: right;"><?= number_format($sumNW,2,'.',','); ?></td>	
-							<td style="text-align: right;"><?= number_format($sumGW,2,'.',','); ?></td>	
+						<tr style="font-weight: bold;">
+							<td style="text-align: center;"></td>
+							<td colspan="3">Total</td>	
+							<td style="text-align: right;"><?= number_format($sumNW,2,'.',','); ?></td>
+							<td style="text-align: right;"><?= number_format($sumGW,2,'.',','); ?></td>
 							<td style="text-align: right;"><?= number_format($sumQty,0,'.',','); ?></td>
-							<td><?= $row['issueDate']; ?></td>							
-							<td></td>
+							<td></td>							
 						</tr>
 					</table>
 				</div><!-- /.box-body -->
@@ -197,7 +206,7 @@ $rcNo = $hdr['rcNo'];
   <div class="box-footer">
     <div class="col-md-12">
 		<?php if($hdr['statusCode']=='P'){ ?>
-          <a href="rtrc_view_pdf.php?rcNo=<?=$hdr['rcNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>		  
+          <a target="_blank" href="rtrc_view_pdf.php?rcNo=<?=$hdr['rcNo'];?>" class="btn btn-primary"><i class="glyphicon glyphicon-print"></i> Print</a>		  
 		<?php } ?>
 	
 		
@@ -271,13 +280,14 @@ $("#spin").append(spinner.el);
 $("#spin").hide();
 //           
 $('#btn_verify').click (function(e) {				 
-	var params = {					
+	var params = {	
+	action: 'confirm',				
 	rcNo: $('#rcNo').val()			
 	};
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_confirm_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -306,13 +316,14 @@ $('#btn_verify').click (function(e) {
 //.btn_click
 
 $('#btn_reject').click (function(e) {				 
-	var params = {					
+	var params = {		
+	action: 'reject',			
 	rcNo: $('#rcNo').val()					
 	};
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Reject ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_reject_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -341,13 +352,14 @@ $('#btn_reject').click (function(e) {
 //.btn_click
 
 $('#btn_approve').click (function(e) {				 
-	var params = {					
+	var params = {	
+	action: 'approve',				
 	rcNo: $('#rcNo').val()				
 	};
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Approve ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_approve_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -379,13 +391,14 @@ $('#btn_approve').click (function(e) {
 
 
 $('#btn_delete').click (function(e) {				 
-	var params = {					
+	var params = {	
+	action: 'delete',
 	rcNo: $('#rcNo').val()				
 	};
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_delete_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {

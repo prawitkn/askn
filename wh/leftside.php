@@ -64,8 +64,9 @@
 			<li><a href="rt.php"><i class="glyphicon glyphicon-arrow-left"></i> <span>Return</span></a></li>
 			
 			<?php switch($s_userGroupCode){ case 'whOff' : case 'whSup' : break; //Not Show ?>
-			<li><a href="rtrc.php"><i class="glyphicon glyphicon-retweet"></i> <span>Return Receive</span></a></li>
-			<?php break; default : } ?>		
+			<?php default : ?>				
+				<li><a href="rtrc.php"><i class="glyphicon glyphicon-retweet"></i> <span>Return Receive</span></a></li>
+			<?php } ?>		
 			
 			<!--<li><a href="wip.php"><i class="glyphicon glyphicon-hourglass"></i> <span>Work In Process</span></a></li-->
 			<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whOff' : case 'whSup' ?>

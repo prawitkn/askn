@@ -175,12 +175,18 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			
 			
 			<?php
-			$sql = "SELECT dtl.`id`, itm.`prodItemId`, itm.`prodId`, itm.`prodCodeId`, itm.`barcode`, itm.`issueDate`, itm.`machineId`, itm.`seqNo`, itm.`NW`, itm.`GW`
-			, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId`, dtl.`rcNo` 
-			, prd.code as prodCode 
-			FROM `receive_detail` dtl		
+			$sql = "SELECT dtl.`id`, dtl.`prodItemId`, itm.`prodId`, itm.`barcode`, itm.`issueDate`
+			, itm.`NW`, itm.`GW`, itm.`qty`, itm.`grade`, itm.`refItemId`, itm.`itemStatus`
+			, itm.`gradeTypeId`, itm.`remarkWh`
+			,prd.code as prodCode 
+			, igt.name as gradeTypeName 
+			, dtl.`isReturn`, dtl.`shelfCode`, dtl.`rcNo` 
+			, ws.name as shelfName 
+			FROM `receive_detail` dtl
 			LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-			LEFT JOIN product prd ON prd.id=itm.prodCodeId 
+			LEFT JOIN product prd ON prd.id=itm.prodCodeId
+			LEFT JOIN wh_sloc ws on ws.code=dtl.shelfCode 
+			LEFT JOIN product_item_grade_type igt ON igt.id=itm.gradeTypeId 
 			WHERE 1
 			AND dtl.rcNo=:rcNo  			
 			ORDER BY  itm.`barcode`
@@ -201,6 +207,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			</div><!-- /.box-header -->
 				
 			<form id="form2" action="#" method="post" class="form" novalidate>
+				<input type="hidden" name="action" value="item_update" />
 				<input type="hidden" name="rcNo" id="rcNo" value="<?=$hdr['rcNo'];?>" />
 				
 				<div class="table-responsive">
@@ -213,7 +220,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						<th>Net<br/>Weight(kg.)</th>
 						<th>Gross<br/>Weight(kg.)</th>
 						<th>Qty</th>
-						<th>Issue Date</th>
+						<th>Produce Date</th>					
+						<th>Grade Type</th>
+						<th>Send Remark</th>
 					</tr>
 					<?php $row_no=1; $sumQty=$sumNW=$sumGW=0;  while ($row = $stmt->fetch()) { 
 							$gradeName = '<b style="color: red;">N/A</b>'; 
@@ -225,7 +234,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							} 
 					?>
 					<tr>
-						<td><?= $row_no; ?></td>
+						<td>
+							<?= $row_no; ?>							
+							<input type="hidden" name="prodItemId[]" value="<?=$row['prodItemId'];?>" />
+						</td>
 						<td><?= $row['prodCode']; ?></td>	
 						<td><?= $row['barcode']; ?></td>	
 						<td style="text-align: center;"><?= $gradeName; ?></td>	
@@ -234,7 +246,22 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
 						<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>	
 						<td>
-							
+							<select name="gradeTypeId[]" class="form-control"  data-smk-msg="Require Grade Type" >
+								<?php
+								$sql = "SELECT `id`, `name` FROM `product_item_grade_type` WHERE statusCode='A' ";							
+								$stmtOpt = $pdo->prepare($sql);		
+								$stmtOpt->execute();
+								while($rOption = $stmtOpt->fetch()){
+									$selected = ($rOption['id']==$row['gradeTypeId']?' selected ':'');									
+									echo '<option value="'.$rOption['id'].'" '
+										.$selected
+										 .'>'.$rOption['name'].'</option>';
+								}
+								?>
+							</select>
+						</td>
+						<td>
+							<input type="text" name="remarkWh[]" value="<?= $row['remarkWh']; ?>" />
 						</td>
 					</tr>
 					<?php $row_no+=1; $sumQty+=$row['qty'] ; $sumNW+=$row['NW']; $sumGW+=$row['GW'] ; } ?>
@@ -253,11 +280,18 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				</div>
 				<!--/.table-responsive-->
 				
-				<!--<a name="btn_view" href="receive_view.php?rcNo=<?=$rcNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> View</a>-->
-				</form>
 				<button type="button" id="btn_verify" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
-					<i class="glyphicon glyphicon-ok"></i> Confirm
-				  </button>    
+				<i class="glyphicon glyphicon-ok"></i> Confirm
+			  </button>   
+			  
+			  <button type="button" id="btn_item_update" class="btn btn-warning pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
+				<i class="glyphicon glyphicon-ok"></i> Update Item
+			  </button>   
+
+			<button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']<>'P'?'':'disabled'); ?> >
+				<i class="glyphicon glyphicon-trash"></i> Delete
+			</button>
+				</form>
 			</div>
 			<!--/.row dtl-->
 		
@@ -526,6 +560,70 @@ $(document).ready(function() {
 			//smkConfirm
 		e.preventDefault();
 		}//.if end
+	});
+	//.btn_click
+	
+	$('#btn_item_update').click (function(e) {	
+		//alert(params.hdrID);
+		$.smkConfirm({text:'Are you sure to Update All Items ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: $("#form2").serialize(),
+				dataType: 'json'
+			}).done(function(data) {
+				if (data.success){  
+					$.smkAlert({
+						text: data.message,
+						type: 'warning',
+						position:'top-center'
+					});		
+					setTimeout(function(){ location.reload(); }, 2000);
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
+				}
+				//e.preventDefault();		
+			}).error(function (response) {
+				alert(response.responseText);
+			});
+			//.post		
+		}});
+		//smkConfirm
+	});
+	//.btn_click
+	
+	$('#btn_delete').click (function(e) {				 
+		var params = {		
+		action: 'delete',
+		rcNo: $('#rcNo').val()				
+		};
+		//alert(params.rcNo);
+		$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function(data) {
+				if (data.success){  
+					alert(data.message);
+					window.location.href = '<?=$rootPage;?>.php';
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
+				}
+				//e.preventDefault();		
+			}).error(function (response) {
+				alert(response.responseText);
+			});
+			//.post
+		}});
+		//smkConfirm
 	});
 	//.btn_click
 	

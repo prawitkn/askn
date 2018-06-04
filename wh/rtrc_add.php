@@ -94,6 +94,8 @@ $rootPage="rtrc";
         <div class="box-body">			
             <div class="row">
 				<form id="form1" action="#" method="post" class="form" novalidate>	
+				<input type="hidden" name="action" value="add" />
+				<input type="hidden" name="rcNo" id="rcNo" value="<?=$rcNo;?>" />
                 <div class="col-md-12">   
 					<div class="row">
 						<div class="col-md-3">
@@ -231,15 +233,22 @@ $rootPage="rtrc";
 						<th>Produce Date</th>
 					</tr>
 					<?php $row_no=1;  $sumQty=$sumNW=$sumGW=0;  while ($row = $stmt->fetch()) { 
+					$gradeName = '<b style="color: red;">N/A</b>'; 
+					switch($row['grade']){
+						case 0 : $gradeName = 'A'; break;
+						case 1 : $statusName = '<b style="color: red;">B</b>';  break;
+						case 2 : $statusName = '<b style="color: red;">N</b>'; break;
+						default : 
+					} 
 					?>
 					<tr>
 						<td><?= $row_no; ?></td>
 						<td><?= $row['barcode']; ?><br/><small style="color: red;"><?=$row['returnReasonRemark'];?></td>	
-						<td style="text-align: center;"><?= $row['grade']; ?></td>	
+						<td style="text-align: center;"><?= $gradeName; ?></td>	
 						<td style="text-align: right;"><?= $row['NW']; ?></td>	
 						<td style="text-align: right;"><?= $row['GW']; ?></td>	
 						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
-						<td><?= $row['issueDate']; ?></td>							
+						<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>							
 						<td>
 							
 						</td>
@@ -262,7 +271,11 @@ $rootPage="rtrc";
 				</form>
 				<button type="button" id="btn_verify" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
 					<i class="glyphicon glyphicon-ok"></i> Confirm
-				  </button>    
+				  </button>   
+				</button>   
+				<button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']<>'P'?'':'disabled'); ?> >
+				<i class="glyphicon glyphicon-trash"></i> Delete
+			  </button>
 			</div>
 			<!--/.row dtl-->
 		
@@ -502,7 +515,7 @@ $(document).ready(function() {
 			$.smkConfirm({text:'Are you sure to Create ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
 				$('#refNo').prop('disabled','');
 				$.post({
-					url: '<?=$rootPage;?>_add_insert_ajax.php',
+					url: '<?=$rootPage;?>_ajax.php',
 					data: $("#form1").serialize(),
 					dataType: 'json'
 				}).done(function(data) {
@@ -533,13 +546,14 @@ $(document).ready(function() {
 	//.btn_click
 	
 	$('#btn_verify').click (function(e) {				 
-		var params = {					
+		var params = {			
+		action: 'confirm',
 		rcNo: $('#rcNo').val()			
 		};
-		//alert(params.hdrID);
+		alert(params.rcNo);
 		$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 			$.post({
-				url: '<?=$rootPage;?>_confirm_ajax.php',
+				url: '<?=$rootPage;?>_ajax.php',
 				data: params,
 				dataType: 'json'
 			}).done(function(data) {
@@ -563,6 +577,38 @@ $(document).ready(function() {
 				alert(response.responseText);
 			});
 			//.post		
+		}});
+		//smkConfirm
+	});
+	//.btn_click
+	
+	$('#btn_delete').click (function(e) {				 
+		var params = {			
+		action: 'delete',
+		rcNo: $('#rcNo').val()				
+		};
+		//alert(params.hdrID);
+		$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function(data) {
+				if (data.success){  
+					alert(data.message);
+					window.location.href = '<?=$rootPage;?>.php';
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
+				}
+				//e.preventDefault();		
+			}).error(function (response) {
+				alert(response.responseText);
+			});
+			//.post
 		}});
 		//smkConfirm
 	});
