@@ -85,7 +85,7 @@ class MYPDF extends TCPDF {
 		$html='<table width="100%"  >	
 		<tr>
 			<td colspan="3" style="border: o.1em solid black; text-align: center; font-size: large;">SALES ORDER FORM (ใบสั่งขาย)</td>
-			<td colspan="3" ></td>
+			<td colspan="3" style="text-align: center; font-size: large; color: red" ></td>
 			<td colspan="2" >&nbsp;รหัสลูกค้า (Customer Code) : </td>
 			<td colspan="2"  style="border-bottom: 0.1em solid black;">'.$hdr['custCode'].'</td>
 		</tr>
@@ -115,11 +115,23 @@ class MYPDF extends TCPDF {
 			<td colspan="6"  style="border-bottom: 0.1em solid black;">'.$hdr['shipToAddr3'].$hdr['shipToZipcode'].'</td>
 			<td colspan="2" ></td>
 			<td colspan="2" ></td>
+		</tr>		
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
 		</tr>
 		</table>
 		';
 		$this->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
-		$this->setCellHeightRatio(1.50);
+		$this->setCellHeightRatio(1.40);
 	}
 	
 	public function foot($hdr, $html){
@@ -213,13 +225,13 @@ class MYPDF extends TCPDF {
 			<td colspan="3" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['plac2deliCode']=='SEND'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;ส่งสินค้าจากโรงงาน AK ที่ 
 				<span style="text-decoration: underline; ">'.$hdr['plac2deliCodeSendRem'].'</span>
 			</td>
-			<td colspan="4" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;วันที่ (Date) : <span style="text-decoration: underline;">'.date('d M Y H:i',strtotime( $hdr['createTime'] )).'</span></td>
+			<td colspan="4" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;วันที่ (Date) : <span style="text-decoration: underline;">'.date('d M Y',strtotime( $hdr['createTime'] )).'</span></td>
 		</tr>
 		<tr>
 			<td colspan="3" style="border-left: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['payTypeCode']=='CHEQ'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;เก็บเช็คล่วงหน้า</td>
 			<td colspan="3" style="border-left: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['plac2deliCode']=='MAPS'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;ตามแผนที่ </td>
 			<td colspan="4" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;ตรวจสอบโดย (ผู้ขาย) : <span style="text-decoration: underline;">
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td>
 		</tr>
 		<tr>
 			<td colspan="3" style="border-left: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['payTypeCode']=='TRAN'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;ลูกค้าโอนเงินเข้าบัญชี</td>

@@ -85,7 +85,7 @@ class MYPDF extends TCPDF {
 		$html='<table width="100%"  >	
 		<tr>
 			<td colspan="3" style="border: o.1em solid black; text-align: center; font-size: large;">SALES ORDER FORM (ใบสั่งขาย)</td>
-			<td colspan="3" ></td>
+			<td colspan="3" style="text-align: center; font-size: large; font-weight: bold; color: red" >** CANCELED **</td>
 			<td colspan="2" >&nbsp;รหัสลูกค้า (Customer Code) : </td>
 			<td colspan="2"  style="border-bottom: 0.1em solid black;">'.$hdr['custCode'].'</td>
 		</tr>
@@ -116,10 +116,22 @@ class MYPDF extends TCPDF {
 			<td colspan="2" ></td>
 			<td colspan="2" ></td>
 		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
 		</table>
 		';
 		$this->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
-		$this->setCellHeightRatio(1.50);
+		$this->setCellHeightRatio(1.40);
 	}
 	
 	public function foot($hdr, $html){
@@ -179,7 +191,7 @@ class MYPDF extends TCPDF {
 		</tr>
 		<tr>
 			<td colspan="2" >หมายเหตุ : </td>
-			<td colspan="8" style="border-bottom: 0.1em solid black;" >'.$hdr['remark'].'</td>
+			<td colspan="8" style="border-bottom: 0.1em solid black;" >'.$hdr['remark'].' <span style="color: red; font-weight: bold;">Revised Remark : '.$hdr['logRemark'].'</span></td>
 		</tr>		
 		</table>
 		';
@@ -213,13 +225,13 @@ class MYPDF extends TCPDF {
 			<td colspan="3" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['plac2deliCode']=='SEND'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;ส่งสินค้าจากโรงงาน AK ที่ 
 				<span style="text-decoration: underline; ">'.$hdr['plac2deliCodeSendRem'].'</span>
 			</td>
-			<td colspan="4" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;วันที่ (Date) : <span style="text-decoration: underline;">'.date('d M Y H:i',strtotime( $hdr['createTime'] )).'</span></td>
+			<td colspan="4" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;วันที่ (Date) : <span style="text-decoration: underline;">'.date('d M Y',strtotime( $hdr['createTime'] )).'</span></td>
 		</tr>
 		<tr>
 			<td colspan="3" style="border-left: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['payTypeCode']=='CHEQ'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;เก็บเช็คล่วงหน้า</td>
 			<td colspan="3" style="border-left: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['plac2deliCode']=='MAPS'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;ตามแผนที่ </td>
 			<td colspan="4" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;ตรวจสอบโดย (ผู้ขาย) : <span style="text-decoration: underline;">
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td>
 		</tr>
 		<tr>
 			<td colspan="3" style="border-left: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['payTypeCode']=='TRAN'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;ลูกค้าโอนเงินเข้าบัญชี</td>
@@ -289,7 +301,7 @@ if( isset($_GET['logId']) ){
 						
 			$logId = $_GET['logId'];
 			$sql = "
-			SELECT  a.`logId`, a.`soNo`, a.`saleDate`,a.`poNo`,a.`piNo`, a.`custId`,  a.`shipToId`, a.`smId`, a.`revCount`
+			SELECT  a.`logId`, a.`logRemark`, a.`soNo`, a.`saleDate`,a.`poNo`,a.`piNo`, a.`custId`,  a.`shipToId`, a.`smId`, a.`revCount`
 			, a.`deliveryDate`, a.`shipByLcl`, a.`shipByFcl`, a.`shipByRem`, a.`shippingMarksId`, a.`suppTypeFact`
 			, a.`suppTypeImp`, a.`prodTypeOld`, a.`prodTypeNew`, a.`custTypeOld`, a.`custTypeNew`
 			, a.`prodStkInStk`, a.`prodStkOrder`, a.`prodStkOther`, a.`prodStkRem`, a.`packTypeAk`
@@ -322,13 +334,14 @@ if( isset($_GET['logId']) ){
 			$stmt->bindParam(':logId', $logId);	
 			$stmt->execute();
 			$hdr = $stmt->fetch();	
+			$soNo=$hdr['soNo'];
 	   		
 			$sql = "
 			SELECT COUNT(*) as countTotal 
-			FROM `sale_detail` a
+			FROM `sale_rev_dtl` a
 			LEFT JOIN product b on b.id=a.prodId 
 			WHERE 1
-			AND a.`logId`=:logId 
+			AND a.`logHdrId`=:logId 
 			ORDER BY a.createTime
 			";
 			$stmt = $pdo->prepare($sql);	
@@ -349,7 +362,7 @@ if( isset($_GET['logId']) ){
 			LEFT JOIN product b on a.prodId=b.id
 			LEFT JOIN product_roll_length rl ON rl.id=a.rollLengthId 
 			WHERE 1
-			AND a.`logId`=:logId 
+			AND a.`logHdrId`=:logId 
 			ORDER BY a.createTime
 			";
 			$stmt = $pdo->prepare($sql);	
@@ -439,7 +452,7 @@ if( isset($_GET['logId']) ){
 
 // Close and output PDF document
 // This method has several options, check the source code documentation for more information.
-$pdf->Output($soNo.'.pdf', 'I');
+$pdf->Output($soNo.'-'.$logId.'.pdf', 'I');
 
 //============================================================+
 // END OF FILE

@@ -311,7 +311,7 @@ $tb="send";
 			  </button>   
 			  
 			  <button type="button" id="btn_item_update" class="btn btn-warning pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
-				<i class="glyphicon glyphicon-ok"></i> Update Item
+				<i class="glyphicon glyphicon-ok"></i> Update Item and Confirm
 			  </button>   
 
 			<button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']<>'P'?'':'disabled'); ?> >
@@ -406,7 +406,7 @@ $(document).ready(function() {
 							type: 'success',
 							position:'top-center'
 						});
-						window.location.href = "send2_hdr.php?sdNo=" + data.sdNo;
+						window.location.href = '<?=$rootPage;?>_hdr.php?sdNo='+data.sdNo;
 					}else{
 						$.smkAlert({
 							text: data.message,
@@ -429,7 +429,7 @@ $(document).ready(function() {
 	
 	$('#btn_item_update').click (function(e) {	
 		//alert(params.hdrID);
-		$.smkConfirm({text:'Are you sure to Update All Items ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+		$.smkConfirm({text:'Are you sure to Update All Items and Confirm ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 			$.post({
 				url: '<?=$rootPage;?>_ajax.php',
 				data: $("#form2").serialize(),
@@ -441,7 +441,7 @@ $(document).ready(function() {
 						type: 'warning',
 						position:'top-center'
 					});		
-					setTimeout(function(){ location.reload(); }, 2000);
+					setTimeout(function(){ window.location.href = '<?=$rootPage;?>_view.php?sdNo=<?=$sdNo;?>'; }, 1000);
 				}else{
 					$.smkAlert({
 						text: data.message,
@@ -547,7 +547,7 @@ $(document).ready(function() {
 						type: 'success',
 						position:'top-center'
 					});		
-					setTimeout(function(){ window.location.href = '<?=$rootPage;?>.php'; }, 2000);
+					setTimeout(function(){ window.location.href = '<?=$rootPage;?>_view.php?sdNo=<?=$sdNo;?>'; }, 1000);
 					//location.reload();
 				}else{
 					$.smkAlert({

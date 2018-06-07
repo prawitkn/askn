@@ -276,7 +276,7 @@ $(document).ready(function() {
 	$("#spin").hide();
   //   
   
-	function getList(isSync){
+	function getList(){
 		var sendDate = $('#sendDate').val(); 	
 		var issueDate = $('#issueDate').val(); 	
 		//queryDate = queryDate.replace(/\//g, '%2F');
@@ -285,18 +285,17 @@ $(document).ready(function() {
 						
 		var params = {
 			action: 'searchItem',
-			isSync: isSync,
 			sdNo: '<?=$sdNo;?>',
 			sendDate: sendDate,
 			issueDate: issueDate,
 			prodId: prodId,
 			fromCode: '<?=$fromCode;?>',
 			toCode: '<?=$toCode;?>'
-		}; //alert(params.sendDate);
+		}; //alert(params.action);
 		/* Send the data using post and put the results in a div */
 		  $.ajax({
-			  url: "send2_hdr_item_ajax.php",
-			  type: "post",
+			  url: '<?=$rootPage;?>_ajax.php',
+			  type: 'post',
 			  data: params,
 			datatype: 'json',
 			  success: function(data){	//alert(data);
@@ -428,7 +427,7 @@ $(document).ready(function() {
 		$('input[name='+curName+']').val($(this).closest("tr").find('td:eq(2)').text());
 						
 		$('#modal_search_person').modal('hide');
-		getList(0);
+		getList();
 	});
 	//Search End
 
@@ -461,7 +460,7 @@ $(document).ready(function() {
 									$('input[name='+curName+']').val(value.prodCode);
 									$('input[name='+curId+']').val(value.prodId);
 								});
-								getList(0);
+								getList();
 								break;
 							default : 
 								$('#tbl_search_person_main tbody').empty();
@@ -530,7 +529,7 @@ $(document).ready(function() {
 					url: '<?=$rootPage;?>_ajax.php',
 					data: $("#form2").serialize(),
 					dataType: 'json'
-				}).done(function(data) {
+				}).done(function(data) { //alert(data.sdNo);
 					if (data.success){  
 						$.smkAlert({
 							text: data.message,
@@ -572,14 +571,14 @@ $(document).ready(function() {
 	
 	
 	$("#btnSubmit").click(function(){ 
-		getList(0);
+		getList();
 	});
 	
 	$("#btnSyncSubmit").click(function(){ 
-		getList(1);
+		getList();
 	});
 
-	//getList(0);
+	//getList();
 	
 	$("html,body").scrollTop(0);
 		

@@ -549,7 +549,7 @@ $("#spin").hide();
 	$(document).on("click",'a[data-name="btn_search_checked"]',function() {		
 		$('input[name='+curId+']').val($(this).closest("tr").find('td:eq(1)').text());
 		$('label[name='+curName+']').text($(this).closest("tr").find('td:eq(2)').text()+' : '+$(this).closest("tr").find('td:eq(3)').text());
-		
+		$('input[name=payTypeCreditDays]').val($(this).closest("tr").find('td:eq(10)').text());
 		$('#smId').val($(this).closest("tr").find('td:eq(4)').text());
 		/*$('#custAddr').val($(this).closest("tr").find('td:eq(6)').text()+
 			$(this).closest("tr").find('td:eq(7)').text()+
@@ -570,7 +570,7 @@ $("#spin").hide();
 						$.each($.parseJSON(data), function(key,value){
 							$('#shipToId').append('<option value="'+value.id+'" data-creditDay="'+value.creditDay+'" >'+value.code+' : '+value.name+'</option>' );
 							$('#custAddr').text(value.addr1+value.addr2+value.addr3+value.zipcode);		
-							$('#payTypeCreditDays').val(value.creditDay);	
+							//$('#payTypeCreditDays').val(value.creditDay);	
 						});
 					
 		  }, //success
