@@ -131,7 +131,42 @@ if(!isset($_POST['action'])){
 				$errors = "Error on data inserting. Please try again. " . $e->getMessage();
 				echo json_encode(array('success' => false, 'message' => $errors));
 			}			
-			break;			
+			break;	
+		case 'item_delete' :
+			try{				
+				$pdo->beginTransaction();
+				
+				$id = $_POST['id'];
+				
+				//SQL 
+				$sql = "DELETE FROM send_detail
+						WHERE id=:id";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':id', $id);
+				$stmt->execute();
+				
+				//Delete scanned
+				$sql = "DELETE FROM send_scan WHERE refId=:id 
+						";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':id', $id);
+				$stmt->execute();
+				
+				$pdo->commit();
+				
+				//Return JSON
+				header('Content-Type: application/json');
+				echo json_encode(array('success' => true, 'message' => 'Data deleted'));
+			}catch(Exception $e){
+				$pdo->rollBack();
+				
+				//Return JSON
+				header('Content-Type: application/json');
+				$errors = "Error on Data Delete. Please try again. " . $e->getMessage();
+				echo json_encode(array('success' => false, 'message' => $errors));
+			}	
+			break;
+			
 		default : 
 			header('Content-Type: application/json');
 			echo json_encode(array('success' => false, 'message' => 'Unknow action.'));				

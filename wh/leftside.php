@@ -62,6 +62,7 @@
 			<li><a href="send2.php"><i class="glyphicon glyphicon-arrow-up"></i> <span>Send</span></a></li>
 			<li><a href="receive.php"><i class="glyphicon glyphicon-arrow-down"></i> <span>Sending Receive</span></a></li>
 			<li><a href="rt.php"><i class="glyphicon glyphicon-arrow-left"></i> <span>Return</span></a></li>
+			<li><a href="send.php"><i class="glyphicon glyphicon-eject"></i> <span>Send (Ad hoc)</span></a></li>
 			
 			<?php switch($s_userGroupCode){ case 'whOff' : case 'whSup' : break; //Not Show ?>
 			<?php default : ?>				

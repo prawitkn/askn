@@ -285,7 +285,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			  </button>   
 			  
 			  <button type="button" id="btn_item_update" class="btn btn-warning pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
-				<i class="glyphicon glyphicon-ok"></i> Update Item
+				<i class="glyphicon glyphicon-ok"></i> Update and Confirm
 			  </button>   
 
 			<button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']<>'P'?'':'disabled'); ?> >
@@ -577,7 +577,7 @@ $(document).ready(function() {
 						type: 'warning',
 						position:'top-center'
 					});		
-					setTimeout(function(){ location.reload(); }, 2000);
+					setTimeout(function(){ window.location.href = '<?=$rootPage;?>_view.php?rcNo=<?=$rcNo;?>'; }, 2000);
 				}else{
 					$.smkAlert({
 						text: data.message,

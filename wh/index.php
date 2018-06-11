@@ -678,8 +678,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		
 		
 		
-        <div class="col-md-4">
-			  
+        <div class="col-md-4">		
+		
           <!-- TOP 10 PRODUCT LIST -->
           <div class="box box-danger">
             <div class="box-header with-border">
@@ -694,7 +694,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <!-- /.box-header -->
             <div class="box-body">
 				<?php	
-					
+					$sql="";
 					switch($s_userGroupCode){
 						case 'it' :
 						case 'admin' :
@@ -786,6 +786,83 @@ scratch. This page gets rid of all links and provides the needed markup only.
           </div>
           <!-- /.box -->
 		  
+		  
+		  <!-- Prepare List -->
+          <div class="box box-success">
+            <div class="box-header with-border">
+              <h3 class="box-title">Prepare Pending</h3>
+
+              <div class="box-tools pull-right">
+                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                </button>
+                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+              </div>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+				<?php	
+					$sql="";
+					switch($s_userGroupCode){
+						case 'it' :
+						case 'admin' :
+						case 'whOff' :
+						case 'whSup' :
+							$sql = "SELECT hdr.ppNo, pick.soNo FROM prepare hdr 
+							INNER JOIN prepare_detail dtl on dtl.ppNo=hdr.ppNo
+							INNER JOIN picking pick ON pick.pickNo=hdr.pickNo
+							WHERE 1=1 
+							AND hdr.statusCode='P' 
+							ORDER BY hdr.`createTime` DESC
+							LIMIT 10
+							";
+							break;
+						default : // it, admin
+					}	
+					$stmt = $pdo->prepare($sql);
+					$stmt->execute();						
+				?>
+		
+				<div class="table-responsive">
+				<table class="table no-margin">
+				  <thead>
+				  <tr>
+					<th>No.</th>
+					<th>PP No.</th>
+					<th>SO No.</th>
+					<th>#</th>
+				  </tr>
+				  </thead>
+				  <tbody>
+				  <?php $row_code = 1; while ($row = $stmt->fetch()) { ?>
+				  <tr>
+					<td>
+						 <?= $row_code; ?>
+					</td>					
+					<td>
+						 <a target="_blank" href="prepare_view.php?ppNo=<?= $row['ppNo'];?>" ><?= $row['ppNo']; ?></a>
+					</td>
+					<td>
+						 <a target="_blank" href="sale_view.php?soNo=<?= $row['soNo'];?>" ><?= $row['soNo']; ?></a>
+					</td>
+					<td>
+						<a href="prepare_add.php?pickNo=<?=$row['pickNo'];?>" class="btn btn-primary">
+							<i class="glyphicon glyphicon-download-alt"></i>
+						</a>						
+					</td>
+				</tr>
+				<?php $row_code+=1; } ?>
+				  </tbody>
+				</table>
+				</div>
+				<!--/.table-responsive-->
+			</div>
+            <!-- /.box-body -->
+            <div class="box-footer text-center">
+              <a href="#" class="uppercase">View All Prepare</a>
+            </div>
+            <!-- /.box-footer -->
+          </div>
+          <!-- /.box -->
 		  
         </div>
         <!-- /.col -->

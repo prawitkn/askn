@@ -16,6 +16,18 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 	$tb="send";	
 
+	$sdNo=$fromCode=$toCode=$refCode='';
+	switch($s_userGroupCode){ 					
+		case 'whOff' :
+		case 'whSup' :
+			break;
+		case 'pdOff' :
+		case 'pdSup' :
+			$fromCode=$s_userDeptCode;			
+			break;
+		default :	// it, admin 
+	}
+	
 	$sql = "SELECT hdr.`sdNo`, hdr.`refNo`, hdr.`sendDate`, hdr.`fromCode`, hdr.`toCode`, hdr.`remark`, hdr.`statusCode`, hdr.`createTime`, hdr.`createById`
 	, fsl.name as fromName, tsl.name as toName
 	, d.userFullname as createByName
@@ -30,19 +42,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	$stmt = $pdo->prepare($sql);
 	$stmt->bindParam(':s_userId', $s_userId);	
 	$stmt->execute();
-	$hdr = $stmt->fetch();
-	$sdNo = $hdr['sdNo'];
-	$refNo = $hdr['refNo'];
+	$hdr = $stmt->fetch();	
 	if($stmt->rowCount() >= 1){
-		switch($s_userGroupCode){ 					
-			case 'whOff' :
-			case 'whSup' :
-			case 'pdOff' :
-			case 'pdSup' :
-				//if($hdr['fromCode']!=$s_userDeptCode) { header("Location: access_denied.php"); exit();}			
-				break;
-			default :	// it, admin 
-		}
+		$sdNo = $hdr['sdNo'];
+		$refNo = $hdr['refNo'];
+		$fromCode = $hdr['fromCode'];
+		$toCode = $hdr['toCode'];
 	}
 
 ?>
@@ -58,16 +63,17 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->	
-    <section class="content-header">
-      <h1><i class="glyphicon glyphicon-th-large"></i>
-       Prepare
-        <small>Prepare management</small>
+	<section class="content-header"  style="color: red;">	  
+	  <h1><i class="glyphicon glyphicon-eject"></i>
+       Send
+        <small>Send management</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Prepare List</a></li>
-        <li><a href="#"><i class="glyphicon glyphicon-list"></i>Prepare List</a></li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Send List</a></li>
+		<li><a href="<?=$rootPage;?>_add.php?sdNo=<?=$sdNo;?>"><i class="glyphicon glyphicon-edit"></i><?=$sdNo;?></a></li>
       </ol>
     </section>
+	
 
     <!-- Main content -->
     <section class="content">
@@ -75,7 +81,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <!-- Your Page Content Here -->
     <div class="box box-primary">
         <div class="box-header with-border">
-        <h3 class="box-title">Add Prepare No. : <?=$ppNo;?></h3>
+        <h3 class="box-title">Add Sending No. : <?=$sdNo;?></h3>
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
@@ -84,12 +90,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
         </div><!-- /.box-header -->
         <div class="box-body">			
             <div class="row">
-				<form id="form1" action="#" method="post" class="form" novalidate>				
+				<form id="form1" action="#" method="post" class="form" novalidate>	
+					<input type="hidden" name="action" value="add" />
                 <div class="col-md-12">   
 					<div class="row">
 						<div class="col-md-3">	
 							<label>From : </label>
-							<select name="fromCode" class="form-control">
+							<select name="fromCode" id="fromCode" class="form-control" <?php echo ($fromCode==""?'':' disabled '); ?>  >
 								<option value="" <?php echo ($fromCode==""?'selected':''); ?> >--All--</option>
 								<?php
 								$sql = "SELECT `code`, `name` FROM sloc WHERE statusCode='A' ORDER BY code ASC ";
@@ -106,14 +113,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						
 						<div class="col-md-3">	
 							<label>To : </label>
-							<select name="toCode" class="form-control">
+							<select name="toCode" class="form-control"  <?php echo ($sdNo==''?'':' disabled '); ?>  >
 								<option value="" <?php echo ($toCode==""?'selected':''); ?> >--All--</option>
 								<?php
 								$sql = "SELECT `code`, `name` FROM sloc WHERE statusCode='A' ORDER BY code ASC ";
 								$stmt = $pdo->prepare($sql);
 								$stmt->execute();					
 								while ($row = $stmt->fetch()){
-									$selected=($toCode==$row['toCode']?'selected':'');						
+									$selected=($toCode==$row['code']?'selected':'');						
 									echo '<option value="'.$row['code'].'" '.$selected.'>'.$row['code'].' : '.$row['name'].'</option>';
 								}
 								?>
@@ -223,7 +230,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					</div>
 					
 					<form id="form2" action="picking_add_item_submit_ajax.php" method="post" class="form" novalidate  <?php echo ($rowCount==0?' style="display: none;" ':''); ?>  >
-						<input type="hidden" name="sdNo" value="<?=$sdNo;?>" />
+						<input type="hidden" name="sdNo" id="sdNo" value="<?=$sdNo;?>" />
 										
 					
 					<div class="table-responsive">
@@ -281,7 +288,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					</div>
 					<!--/.table-responsive-->
 					<!--<a name="btn_submit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-save"></i> Submit</a>-->
-					<a name="btn_view" href="prepare_view.php?sdNo=<?=$sdNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> View</a>
+					
 					</form>
 					<button type="button" id="btn_verify" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
 						<i class="glyphicon glyphicon-ok"></i> Confirm
@@ -477,9 +484,10 @@ $(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
 
 	$('#form1 a[name=btn_create]').click (function(e) {
 		if ($('#form1').smkValidate()){
+			$('#fromCode').prop('disabled','');
 			$.smkConfirm({text:'Are you sure to Create? ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
 				$.post({
-					url: '<?=$rootPage;?>_add_hdr_insert_ajax.php',
+					url: '<?=$rootPage;?>_ajax.php',
 					data: $("#form1").serialize(),
 					dataType: 'json'
 				}).done(function(data) {
@@ -489,7 +497,7 @@ $(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
 							type: 'success',
 							position:'top-center'
 						});
-						window.location.href = "<?=$rootPage;?>_add.php?ppNo=" + data.ppNo;
+						window.location.href = "<?=$rootPage;?>_add.php?sdNo=" + data.sdNo;
 					}else{
 						$.smkAlert({
 							text: data.message,
@@ -514,12 +522,14 @@ $(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
 	
 	$('a[name=btn_row_delete]').click(function(){
 		var params = {
+			action: 'item_delete',
+			sdNo: '<?=$sdNo;?>',
 			id: $(this).attr('data-id')
 		};
 		//alert(params.id);
 		$.smkConfirm({text:'Are you sure to Delete ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 			$.post({
-				url: '<?=$rootPage;?>_add_item_delete_ajax.php',
+				url: '<?=$rootPage;?>_ajax.php',
 				data: params,
 				dataType: 'json'
 			}).done(function (data) {					
@@ -546,7 +556,7 @@ $(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
 		if(e.keyCode == 13)
 		{
 			var params = {
-				adction: 'add_item_add',
+				action: 'add_item_add',
 				sdNo: '<?=$sdNo;?>',
 				barcode: $(this).val()
 			};			
@@ -584,7 +594,7 @@ $(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
 		action: 'delete',
 		sdNo: $('#sdNo').val()				
 		};
-		//alert(params.hdrID);
+		alert(params.sdNo);
 		$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 			$.post({
 				url: 'send2_ajax.php',
@@ -629,7 +639,7 @@ $(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
 						type: 'success',
 						position:'top-center'
 					});		
-					setTimeout(function(){ window.location.href = '<?=$rootPage;?>.php'; }, 3000);
+					setTimeout(function(){ window.location.href = '<?=$rootPage;?>.php'; }, 2000);
 					//location.reload();
 				}else{
 					$.smkAlert({
@@ -648,37 +658,6 @@ $(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
 	});
 	//.btn_click
 	
-	$('#btn_delete').click (function(e) {				 
-		var params = {			
-		action: 'delete',
-		sdNo: $('#sdNo').val()				
-		};
-		//alert(params.hdrID);
-		$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
-			$.post({
-				url: '<?=$rootPage;?>_ajax.php',
-				data: params,
-				dataType: 'json'
-			}).done(function(data) {
-				if (data.success){  
-					alert(data.message);
-					window.location.href = '<?=$rootPage;?>.php';
-				}else{
-					$.smkAlert({
-						text: data.message,
-						type: 'danger',
-						position:'top-center'
-					});
-				}
-				//e.preventDefault();		
-			}).error(function (response) {
-				alert(response.responseText);
-			});
-			//.post
-		}});
-		//smkConfirm
-	});
-	//.btn_click
 	
 	$("html,body").scrollTop(0);
 	$("#statusName").fadeOut('slow').fadeIn('slow').fadeOut('slow').fadeIn('slow');
@@ -702,12 +681,12 @@ $(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
 			autoclose: true,
 			format: 'dd/mm/yyyy',
 			todayBtn: true,
-			language: 'th',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
-			thaiyear: true              //Set เป็นปี พ.ศ.
+			language: 'en',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
+			thaiyear: false              //Set เป็นปี พ.ศ.
 		});  //กำหนดเป็นวันปัจุบัน
 		//กำหนดเป็น วันที่จากฐานข้อมูล
-		<?php if($pickNo<>''){ ?>
-		var queryDate = '<?=$hdr['prepareDate'];?>',
+		<?php if($sdNo<>''){ ?>
+		var queryDate = '<?=$hdr['sendDate'];?>',
 		dateParts = queryDate.match(/(\d+)/g)
 		realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
 		$('.datepicker').datepicker('setDate', realDate);

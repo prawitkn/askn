@@ -54,8 +54,8 @@ $sdNo = $hdr['sdNo'];
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
 	<!-- Content Header (Page header) -->
-    <section class="content-header">	  
-	  <h1><i class="glyphicon glyphicon-arrow-up"></i>
+    <section class="content-header"  style="color: red;">	  
+	  <h1><i class="glyphicon glyphicon-eject"></i>
        Send
         <small>Send management</small>
       </h1>

@@ -28,8 +28,8 @@ $tb="send";
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
-    <section class="content-header">	  
-	  <h1><i class="glyphicon glyphicon-arrow-up"></i>
+    <section class="content-header"  style="color: red;">	  
+	  <h1><i class="glyphicon glyphicon-eject"></i>
        Send
         <small>Send management</small>
       </h1>
@@ -46,7 +46,7 @@ $tb="send";
         <div class="box-header with-border">
 		<div class="form-inline">
 			<label class="box-title">Send List</label>
-			<a href="<?=$rootPage;?>_hdr.php?sdNo=" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add Send</a>
+			<a href="<?=$rootPage;?>_add.php?sdNo=" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add Send</a>
 		</div>
 		
 		
@@ -149,9 +149,7 @@ $tb="send";
 				LIMIT $start, $rows 
 				";				
 				$stmt = $pdo->prepare($sql);
-				switch($s_userGroupCode){ 					
-					case 'whOff' : 
-					case 'whSup' : 
+				switch($s_userGroupCode){ 	
 					case 'pdOff' :
 					case 'pdSup' :
 						$stmt->bindParam(':s_userDeptCode', $s_userDeptCode);

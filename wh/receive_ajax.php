@@ -88,6 +88,8 @@ if(!isset($_POST['action'])){
 			try{									
 				$pdo->beginTransaction();
 				
+				$rcNo=$_POST['rcNo'];
+				
 				if(!empty($_POST['prodItemId']) and isset($_POST['prodItemId']) and !empty($_POST['gradeTypeId']) and isset($_POST['gradeTypeId']) and !empty($_POST['remarkWh']) and isset($_POST['remarkWh']))
 				{
 					//$arrProdItems=explode(',', $prodItems);
@@ -104,7 +106,32 @@ if(!isset($_POST['action'])){
 						$stmt->execute();			
 					}
 				}
-					
+				
+				//Query 1: Check Status for not gen running No.
+				$sql = "SELECT * FROM receive WHERE rcNo=:rcNo AND statusCode='B' LIMIT 1";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':rcNo', $rcNo);
+				$stmt->execute();
+				$row_count = $stmt->rowCount();	
+				if($row_count != 1){
+					//return JSON
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => false, 'message' => 'Status incorrect.'));
+					exit();
+				}
+				
+				//Query 2: UPDATE DATA
+				$sql = "UPDATE receive SET statusCode='C'   
+					, confirmTime=now()
+					, confirmById=?
+					WHERE rcNo=? ";
+				$stmt = $pdo->prepare($sql);
+				$stmt->execute(array(	
+						$s_userId,
+						$rcNo	
+					)
+				);
+				
 				$pdo->commit();
 				
 				header('Content-Type: application/json');
