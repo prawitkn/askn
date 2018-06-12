@@ -86,17 +86,22 @@ desired effect
 			<?php
 				
 				$sql = "
-				SELECT itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, itm.`qty`
-				, COUNT(*) as packQty, IFNULL(SUM(itm.`qty`),0) as total				
+				SELECT itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, itm.`qty` as meters
+				, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total			
+				, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
+						ON pickh.pickNo=pickd.pickNo
+						WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade
+						AND pickh.isFinish='N' ) as bookedQty
 				,prd.id as prodId, prd.code as prodCode
 				FROM `receive` hdr 
 				INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  
 				INNER JOIN wh_shelf_map_item smi ON smi.recvProdId=dtl.id 
 				INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 				LEFT JOIN product prd ON prd.id=itm.prodCodeId 
+				
 				WHERE 1=1
-				AND hdr.statusCode='P' 				
-				AND dtl.isReturn is NULL ";
+				AND hdr.statusCode='P' 	
+				AND dtl.statusCode='A' ";
 				$sql .= "AND itm.prodCodeId=:id ";
 				
 				$sql .= "GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`
@@ -119,10 +124,12 @@ desired effect
                     <th>Product Code</th>
 					<th>issue Date</th>
 					<th>Grade</th>
-					<th>Per Pack</th>
-                    <th style="color: blue;">Pack</th>
-					<th style="color: blue;">Qty Total</th>				
-                    <th>Pick Qty</th>
+					<th>Meters</th>
+                    <th>Qty</th>
+					<th>Total</th>
+					<th style="color: red;">Booked</th>
+					<th style="color: blue;">Balance</th>					
+                    <th>Pick</th>
 					<th>#</th>
                   </tr>
                   </thead>
@@ -141,15 +148,17 @@ desired effect
 					<td><?= $row['prodCode']; ?></td>					
 					<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>
 					<td><?= $gradeName; ?></td>
+					<td><?= $row['meters']; ?></td>
 					<td><?= $row['qty']; ?></td>
-					<td style="color: blue;"><?= $row['packQty']; ?></td>
-					<td style="color: blue;"><?= $row['total']; ?></td>		
+					<td><?= $row['total']; ?></td>
+					<td style="color: red;"><?= $row['bookedQty']; ?></td>
+					<td style="color: blue;"><?= $row['total']-$row['bookedQty']; ?></td>
 					
 					<td><input type="textbox" name="pickQty" class="form-control" value=""  
-					data-prodId="<?=$row['prodId'];?>" data-issueDate="<?=$row['issueDate'];?>" 
-					data-grade="<?=$row['grade'];?>" 
-					onkeypress="return numbersOnly(this, event);" 
-					onpaste="return false;"
+						data-prodId="<?=$row['prodId'];?>" data-issueDate="<?=$row['issueDate'];?>" 
+						data-grade="<?=$row['grade'];?>" 
+						onkeypress="return numbersOnly(this, event);" 
+						onpaste="return false;"
 					/></td>
 					
 					<td><a href="#" name="btn_row_submit" class="btn btn-default" 

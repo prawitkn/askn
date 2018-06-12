@@ -141,33 +141,37 @@ $soNo = $hdr['soNo'];
 			<form id="form2" action="<?=$rootPage;?>_add_item_submit_ajax.php" method="post" class="form" novalidate>
 				<input type="hidden" name="pickNo" id="pickNo" value="<?=$pickNo;?>" />
 				<?php
-					$sql = "SELECT od.`id`, od.`prodId`, od.`qty`
+					$sql = "SELECT od.`id`, od.`prodId`, od.deliveryDate, od.`qty`
 					,prd.code as prodCode, prd.name as prodName 
 					, (SELECT IFNULL(SUM(dtl.qty),0) FROM picking_detail dtl WHERE dtl.pickNo=:pickNo AND dtl.prodId=od.prodId) as pickQty
+					, (SELECT IFNULL(SUM(dtl.qty),0) FROM picking_detail dtl WHERE dtl.pickNo<>:pickNo2 AND dtl.prodId=od.prodId) as pickedQty
 					FROM `sale_detail` od
 					LEFT JOIN product prd ON prd.id=od.prodId 
 					WHERE 1
 					AND od.soNo=:soNo 
 					
+					GROUP BY od.id, od.prodId, od.deliveryDate 
+					
 					ORDER BY prd.name 
 					";
 					$stmt = $pdo->prepare($sql);
-					$stmt->bindParam(':pickNo', $pickNo);		
+					$stmt->bindParam(':pickNo', $pickNo);	
+					$stmt->bindParam(':pickNo2', $pickNo);				
 					$stmt->bindParam(':soNo', $soNo);	
 					$stmt->execute();
 					
-					$sql = "SELECT dtl.`id`, dtl.prodId, dtl.`issueDate`, dtl.`grade`, dtl.`qty`, dtl.`pickNo` 
-					,prd.code as prodCode, prd.name as prodName  
-					FROM `picking_detail` dtl
-					LEFT JOIN product prd ON prd.id=dtl.prodId 
-					WHERE 1
-					AND pickNo=:pickNo 
-					
-					ORDER BY prd.name  
-					";
-					$stmt2 = $pdo->prepare($sql);
-					$stmt2->bindParam(':pickNo', $pickNo);
-					$stmt2->execute();
+						$sql = "SELECT dtl.`id`, dtl.prodId, dtl.`issueDate`, dtl.`grade`, dtl.`qty`, dtl.`pickNo` 
+						,prd.code as prodCode, prd.name as prodName  
+						FROM `picking_detail` dtl
+						LEFT JOIN product prd ON prd.id=dtl.prodId 
+						WHERE 1
+						AND pickNo=:pickNo 
+						
+						ORDER BY prd.name  
+						";
+						$stmt2 = $pdo->prepare($sql);
+						$stmt2->bindParam(':pickNo', $pickNo);
+						$stmt2->execute();
 				?>
 				<div class="row">
 				<div class="col-md-6">
@@ -176,16 +180,19 @@ $soNo = $hdr['soNo'];
 					<tr>
 						<th>No.</th>
 						<th>Product Code</th>
-						<th>Order Qty</th>
+						<th>Delivery Date</th>
+						<th>Ord/Rem Qty</th>
 						<th>Pick Qty</th>
 						<th>#</th>
 					</tr>
 					<?php $row_no=1; while ($row = $stmt->fetch()) { 
+					$qtyRem=$row['qty']-$row['pickedQty'];
 					?>
 					<tr>
 						<td><?= $row_no; ?></td>
 						<td><?= $row['prodCode']; ?></td>	
-						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
+						<td><?= date('d M Y',strtotime( $row['deliveryDate'] )); ?></td>	
+						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',',').'/'.number_format($qtyRem,0,'.',','); ?></td>
 						<td style="text-align: right;"><?= number_format($row['pickQty'],0,'.',','); ?></td>
 					<td>					
 					<a href="<?=$rootPage;?>_add_item_search.php?pickNo=<?=$hdr['pickNo'];?>&doDtlId=<?=$row['id'];?>&id=<?=$row['prodId'];?>" class="btn btn-primary"><i class="glyphicon glyphicon-edit"></i> Add</a>					
@@ -211,12 +218,19 @@ $soNo = $hdr['soNo'];
 						<th>#</th>
 					</tr>
 					<?php $row_no=1; while ($row = $stmt2->fetch()) { 
+					$gradeName = ''; 
+					switch($row['grade']){
+						case 0 : $gradeName = 'A'; break;
+						case 1 : $gradeName = '<b style="color: red;">B</b>'; break;
+						case 2 : $gradeName = '<b style="color: red;">N</b>'; break;
+						default : $gradeName='<b style="color: red;">N/A</b>';
+					} 
 					?>
 					<tr>
 						<td><?= $row_no; ?></td>
 						<td><?= $row['prodCode']; ?></td>	
-						<td><?= $row['issueDate']; ?></td>	
-						<td><?= $row['grade']; ?></td>	
+						<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>	
+						<td><?= $gradeName; ?></td>	
 						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
 					<td>										
 					<a class="btn btn-danger fa fa-trash" name="btn_row_delete" <?php echo ($hdr['statusCode']=='B'?' data-id="'.$row['id'].'" ':' disabled '); ?> > Delete</a>
@@ -240,7 +254,6 @@ $soNo = $hdr['soNo'];
 		
     </div><!-- /.box-body -->
   <div class="box-footer"  <?php echo ($pickNo!=''?'':' style="display: none;" '); ?>  >
-  <a name="btn_view" href="<?=$rootPage;?>_view.php?pickNo=<?=$pickNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> View</a>
 				
 				
       <button type="button" id="btn_verify" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
@@ -516,12 +529,13 @@ $("#spin").hide();
 	
 	$('a[name=btn_row_delete]').click(function(){
 		var params = {
+			action: 'add_item_delete',
 			id: $(this).attr('data-id')
 		};
 		//alert(params.id);
 		$.smkConfirm({text:'Are you sure to Delete ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 			$.post({
-				url: '<?=$rootPage;?>_add_item_delete_ajax.php',
+				url: '<?=$rootPage;?>_ajax.php',
 				data: params,
 				dataType: 'json'
 			}).done(function (data) {					
@@ -624,9 +638,9 @@ $("#spin").hide();
    
   </script>
   
-  <link href="bootstrap-datepicker-custom-thai/dist/css/bootstrap-datepicker.css" rel="stylesheet" />
-    <script src="bootstrap-datepicker-custom-thai/dist/js/bootstrap-datepicker-custom.js"></script>
-    <script src="bootstrap-datepicker-custom-thai/dist/locales/bootstrap-datepicker.th.min.js" charset="UTF-8"></script>
+<link href="bootstrap-datepicker-custom-thai/dist/css/bootstrap-datepicker.css" rel="stylesheet" />
+<script src="bootstrap-datepicker-custom-thai/dist/js/bootstrap-datepicker-custom.js"></script>
+<script src="bootstrap-datepicker-custom-thai/dist/locales/bootstrap-datepicker.th.min.js" charset="UTF-8"></script>
   
 <script>
 	$(document).ready(function () {

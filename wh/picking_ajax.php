@@ -47,7 +47,7 @@ if(!isset($_POST['action'])){
 			}
 			exit();
 			break;
-		case 'item_add' :
+		case 'add_item_add' :
 			try{	
 				$sdNo = $_POST['sdNo'];
 				
@@ -88,26 +88,27 @@ if(!isset($_POST['action'])){
 				echo json_encode(array('success' => false, 'message' => $errors.$t));
 			}
 			break;
-		case 'item_delete' :
+		case 'add_item_delete' :
 			try{
+		
 				$id = $_POST['id'];
-
-				//SQL 
-				$sql = "DELETE FROM send_detail
-						WHERE id=:id";
+				
+				$sql = "DELETE FROM picking_detail WHERE id=:id 
+						";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':id', $id);
 				$stmt->execute();
-
-				//Return JSON
+				
 				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data deleted'));
-			}catch(Exception $e){
-				//Return JSON
+				echo json_encode(array('success' => true, 'message' => 'Data Delete Complete.'));
+			} 
+			//Our catch block will handle any exceptions that are thrown.
+			catch(Exception $e){
+				//return JSON
 				header('Content-Type: application/json');
 				$errors = "Error on Data Delete. Please try again. " . $e->getMessage();
 				echo json_encode(array('success' => false, 'message' => $errors));
-			}	
+			}
 			break;
 		case 'edit' :
 			$id = $_POST['id'];

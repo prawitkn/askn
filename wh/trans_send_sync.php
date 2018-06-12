@@ -100,9 +100,46 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						}
 						
 						echo "Get Production data ";
+						$sql = "SELECT DISTINCT  hdr.[SendID]
+						  FROM [send] hdr, [send_detail] dtl, [product_item] itm
+						  WHERE hdr.SendID=dtl.SendID 
+						  AND dtl.[ProductItemID]=itm.[ProductItemID]
+						  AND hdr.[isCustomer]='N' 
+						  AND hdr.[IssueDate] = '$sendDate'
+						  ";
+						  switch($s_userGroupCode){ 
+							case 'whOff' :  case 'whSup' : 
+									$sql .= "AND left(itm.[ItemCode],1) IN ('0','7','8','9','E') ";
+								break;
+							case 'pdOff' :  case 'pdSup' :
+									$sql .= "AND left(itm.[ItemCode],1) = '".$s_userDeptCode."' ";
+								break;
+							default : //case 'it' : case 'admin' : 
+						  }
+						//echo $sql;
+						$msResult = sqlsrv_query($ssConn, $sql);
+						$sendIdArr = '';
+						set_time_limit(0);
+						if($msResult){
+							while ($msRow = sqlsrv_fetch_array($msResult, SQLSRV_FETCH_ASSOC))  {	
+								if($sendIdArr==''){
+									$sendIdArr=$msRow['SendID'];
+								}else{
+									$sendIdArr.=','.$$msRow['SendID'];
+								}
+							}
+							//end while mssql
+							$sendIdArr='('.$sendIdArr.')';
+						}else{
+							echo sqlsrv_error();
+						}
+						//if
+						
+						
+						
 						$sql = "SELECT DISTINCT  hdr.[SendID], hdr.[SendNo], CONVERT(VARCHAR, hdr.[IssueDate], 121) as IssueDate
 						  , left(itm.[ItemCode],1) as fromCode 
-						  , [CustomerID]
+						  , hdr.[CustomerID]
 						  FROM [send] hdr, [askn].[dbo].[send_detail] dtl, [product_item] itm
 						  WHERE hdr.SendID=dtl.SendID 
 						  AND dtl.[ProductItemID]=itm.[ProductItemID]

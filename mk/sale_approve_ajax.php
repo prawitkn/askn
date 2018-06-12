@@ -80,9 +80,9 @@ try{
 		$next_no = '00000'.(string)$cur_no;
 		$soNoNext = '';
 		switch($locationCode){
-			case 'L' : $soNoNext = $prefix . substr($next_no, -6);
+			case 'L' : $soNoNext = $prefix . substr($next_no, -4);
 				break;
-			case 'E' : $soNoNext = $prefix . substr($next_no, -5);
+			case 'E' : $soNoNext = $prefix . substr($next_no, -3);
 				break;
 			default :
 		}

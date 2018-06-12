@@ -139,21 +139,7 @@ $hdr = $stmt->fetch();
 			$stmt->bindParam(':pickNo', $hdr['pickNo']);
 			$stmt->execute();	
 			
-			$sql = "
-			SELECT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, ws.code as shelfCode, ws.name as shelfName   
-			FROM `picking_detail` dtl 		
-			INNER JOIN product_item itm ON itm.prodCodeId=dtl.prodId AND itm.issueDate=dtl.issueDate AND itm.grade=dtl.grade 
-			INNER JOIN receive_detail rDtl on  itm.prodItemId=rDtl.prodItemId AND rDtl.statusCode='A'  
-			INNER JOIN wh_shelf_map_item wmi on wmi.recvProdId=rDtl.id 
-			INNER JOIN wh_shelf ws ON wmi.shelfId=ws.id 
-			WHERE 1 
-			AND dtl.`pickNo`=:pickNo 
 			
-			ORDER BY  dtl.id 
-			";
-			$stmt2 = $pdo->prepare($sql);	
-			$stmt2->bindParam(':pickNo', $hdr['pickNo']);
-			$stmt2->execute();	
 
 				
 				$html ='<table class="table table-striped no-margin" >
@@ -184,22 +170,43 @@ $hdr = $stmt->fetch();
 					
 					$row_no = 1; while ($row = $stmt->fetch()) { 
 					$gradeName = '<b style="color: red;">N/A</b>'; 
-						switch($row['grade']){
-							case 0 : $gradeName = 'A'; break;
-							case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
-							case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
-							default : 
-								$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
-						}
+					switch($row['grade']){
+						case 0 : $gradeName = 'A'; break;
+						case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
+						case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+						default : 
+							$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
+					}
+					$sql = "
+					SELECT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, ws.code as shelfCode, ws.name as shelfName
+					, prd.code as prodCode 
+					FROM `picking_detail` dtl 		
+					INNER JOIN product_item itm ON itm.prodCodeId=dtl.prodId AND itm.issueDate=dtl.issueDate AND itm.grade=dtl.grade 				
+					INNER JOIN receive_detail rDtl on  itm.prodItemId=rDtl.prodItemId 
+					INNER JOIN wh_shelf_map_item wmi on wmi.recvProdId=rDtl.id 
+					INNER JOIN wh_shelf ws ON wmi.shelfId=ws.id 
+					LEFT JOIN product prd ON prd.id=itm.prodCodeId 
+					WHERE 1 
+					AND rDtl.statusCode='A'  
+					AND dtl.`pickNo`=:pickNo 
+
+					ORDER BY dtl.id 
+					LIMIT 10 
+					";
+					$stmt2 = $pdo->prepare($sql);	
+					$stmt2->bindParam(':pickNo', $hdr['pickNo']);
+					$stmt2->execute();	
+					
+					
 					$html .='<tr>
 						<td style="border: 0.1em solid black; text-align: center; width: 30px;">'.$row_no.'</td>
 						<td style="border: 0.1em solid black; padding: 10px; width: 150px;"> '.$row['prodCode'].'</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$gradeName.'</td>
-						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.$row['issueDate'].'</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['qty'],0,'.',',').'</td>';
+						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.date('d M Y',strtotime( $row['issueDate'] )).'</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['qty'],0,'.',',').'&nbsp;&nbsp;</td>';
 						$html .='<td  style="border: 0.1em solid black; text-align: left; width: 250px;"> ';
 						$shelfCount=0; while ($row2 = $stmt2->fetch()) { 
-							if($row['prodId']==$row2['prodId']){
+							if($row['prodId']==$row2['prodId'] AND $row['issueDate']==$row2['issueDate'] AND $row['grade']==$row2['grade']){
 								$html.= $row2['shelfCode'].', ';
 								$shelfCount+=1;
 							}

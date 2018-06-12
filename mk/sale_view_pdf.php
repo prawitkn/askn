@@ -235,7 +235,9 @@ class MYPDF extends TCPDF {
 		</tr>
 		<tr>
 			<td colspan="3" style="border-left: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['payTypeCode']=='TRAN'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;ลูกค้าโอนเงินเข้าบัญชี</td>
-			<td colspan="3" style="border-left: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['plac2deliCode']=='LOGI'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;ขนส่ง </td>
+			<td colspan="3" style="border-left: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['plac2deliCode']=='LOGI'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;ขนส่ง 
+			<span style="text-decoration: underline; ">'.$hdr['plac2deliCodeLogiRem'].'</span>
+			</td>
 			<td colspan="4" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;ผู้อนุมัติ (Approved by) : <span style="text-decoration: underline;">
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td>
 		</tr>

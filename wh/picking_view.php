@@ -153,22 +153,23 @@ $hdr = $stmt->fetch();
 									$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
 							}
 							
-			/*$sql = "
+			$sql = "
 			SELECT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, ws.code as shelfCode, ws.name as shelfName
 			, prd.code as prodCode 
 			FROM `picking_detail` dtl 		
-			INNER JOIN product_item itm ON itm.prodCodeId=dtl.prodId AND itm.issueDate=dtl.issueDate AND itm.grade=dtl.grade 						
-			INNER JOIN receive_detail rDtl on  itm.prodItemId=rDtl.prodItemId  AND rDtl.statusCode='A'  
+			INNER JOIN product_item itm ON itm.prodCodeId=dtl.prodId AND itm.issueDate=dtl.issueDate AND itm.grade=dtl.grade 				
+			INNER JOIN receive_detail rDtl on  itm.prodItemId=rDtl.prodItemId 
 			INNER JOIN wh_shelf_map_item wmi on wmi.recvProdId=rDtl.id 
 			INNER JOIN wh_shelf ws ON wmi.shelfId=ws.id 
 			LEFT JOIN product prd ON prd.id=itm.prodCodeId 
 			WHERE 1 
+            AND rDtl.statusCode='A'  
 			AND dtl.`pickNo`=:pickNo 
 
 			ORDER BY dtl.id 
 			LIMIT 10 
-			";*/
-			$sql = "
+			";
+			/*$sql = "
 			SELECT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, ws.code as shelfCode, ws.name as shelfName
 			, prd.code as prodCode 
 			FROM `picking_detail` dtl 		
@@ -182,7 +183,7 @@ $hdr = $stmt->fetch();
 
 			ORDER BY dtl.id 
 			LIMIT 10 
-			";
+			";*/
 			$stmt2 = $pdo->prepare($sql);	
 			$stmt2->bindParam(':pickNo', $hdr['pickNo']);
 			$stmt2->execute();
@@ -190,12 +191,12 @@ $hdr = $stmt->fetch();
 							<tr>
 								<td style="text-align: center;"><?= $row_no; ?></td>
 								<td><?= $row['prodCode']; ?></td>
-								<td><?= $row['issueDate']; ?></td>
+								<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>
 								<td><?= $gradeName; ?></td>
 								<td><?= $row['qty']; ?></td>
 								<td colspan="3"><small>
 								<?php $shelfCount=0; while ($row2 = $stmt2->fetch()) { 
-									if($row['prodId']==$row2['prodId']){
+									if($row['prodId']==$row2['prodId'] AND $row['issueDate']==$row2['issueDate'] AND $row['grade']==$row2['grade']){
 										echo $row2['shelfCode'].', ';
 										$shelfCount+=1;
 									} 
