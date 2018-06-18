@@ -80,14 +80,24 @@ $soNo = $hdr['soNo'];
         </div><!-- /.box-header -->
         <div class="box-body">			
             <div class="row">
-				<form id="form1" action="<?=$rootPage;?>_add_insert.php" method="post" class="form" novalidate>				
+				<form id="form1" action="<?=$rootPage;?>_add_insert.php" method="post" class="form" novalidate>		<input type="hidden" name="action" value="add" />
+					<input type="hidden" name="doNo" value="<?=$doNo;?>" />
+
                 <div class="col-md-12">   
 					<div class="row">
 						<div class="col-md-3">
 							<label for="ppNo" >Prepack No.</label>
 							<div class="form-group row">
 								<div class="col-md-9">
-									<input type="text" name="ppNo" class="form-control" <?php echo ($doNo==''?'':' value="'.$ppNo.'" disabled '); ?>  />
+									<input type="text" name="ppNo" class="form-control" 
+									<?php if($ppNo==''){ 
+											if(isset($_GET['ppNo'])) { ?>
+												value="<?=$_GET['ppNo'];?>" 
+									<?php  }//isset 										
+										}else { ?>
+											value="<?=$ppNo;?>" disabled <?php
+										} ?>
+									  />
 								</div>
 								<div class="col-md-3">
 									<a href="#" name="btnSdNo" class="btn btn-primary" <?php echo ($doNo==''?'':' disabled '); ?> ><i class="glyphicon glyphicon-search" ></i></a>								
@@ -129,18 +139,14 @@ $soNo = $hdr['soNo'];
 			<!--col-md-->
 			<div class="col-md-3">	
 				<div class="from-group">
-				<label for="driver">Driver</label>
-				<input type="text" id="driver" name="driver" value="<?=$hdr['driver'];?>" class="form-control" <?php echo ($doNo==''?'':' disabled '); ?> >
+					<label for="remark">Remark</label>
+					<input type="text" id="remark" name="remark" value="<?=$hdr['remark'];?>" class="form-control" <?php echo ($doNo==''?'':' disabled '); ?> >
 				</div>
 				<!--from group-->
 			</div>
 			<!--col-md-->
 			<div class="col-md-6">	
-				<div class="from-group">
-					<label for="remark">Remark</label>
-					<input type="text" id="remark" name="remark" value="<?=$hdr['remark'];?>" class="form-control" <?php echo ($doNo==''?'':' disabled '); ?> >
-				</div>
-				<!--from group-->
+				
 			</div>
 			<!--col-md-->
 		</div>
@@ -165,8 +171,9 @@ $soNo = $hdr['soNo'];
 			<!--/.row hdr-->
 			
 		<div class="row col-md-12"   <?php echo ($doNo!=''?'':' style="display: none;" '); ?> >
-			<form id="form2" action="<?=$rootPage;?>_add_item_submit_ajax.php" method="post" class="form" novalidate>
-				<input type="hidden" name="doNo" value="<?=$doNo;?>" />
+			<form id="form2" action="#" method="post" class="form" novalidate>
+				<input type="hidden" name="action" value="add_item_submit" />
+				<input type="hidden" name="doNo" id="doNo" value="<?=$doNo;?>" />
 				<?php					
 					/*$sql = "
 					SELECT dd.`id`, itm.`qty`
@@ -257,9 +264,13 @@ $soNo = $hdr['soNo'];
 				</div>
 				<!--/.table-responsive-->
 				<?php if($hdr['statusCode']=='B'){ ?>
-				<a name="btn_submit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-save"></i> Submit</a>
+				<a id="btn_verify" href="#" class="btn btn-primary pull-right"><i class="glyphicon glyphicon-ok"></i> Submit</a>
+				<a id="btn_update_n_verify" href="#" class="btn btn-warning pull-right" style="margin-right: 5px;"><i class="glyphicon glyphicon-ok"></i> Update Item and Confirm</a>
 				<?php } ?>
-				<a name="btn_view" href="<?=$rootPage;?>_view.php?doNo=<?=$doNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> View</a>
+
+				<button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']<>'P'?'':'disabled'); ?> >
+            <i class="glyphicon glyphicon-trash"></i> Delete
+          </button>
 				
 				</form>
 			</div>
@@ -456,7 +467,7 @@ $(document).ready(function() {
 		if ($('#form1').smkValidate()){
 			$.smkConfirm({text:'Are you sure to Create ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
 				$.post({
-					url: '<?=$rootPage;?>_add_hdr_insert_ajax.php',
+					url: '<?=$rootPage;?>_ajax.php',
 					data: $("#form1").serialize(),
 					dataType: 'json'
 				}).done(function(data) {
@@ -486,12 +497,79 @@ $(document).ready(function() {
 	});
 	//.btn_click
 
-	
-	$('#form2 a[name=btn_submit]').click (function(e) {
+	$('#btn_delete').click (function(e) {				 
+		var params = {
+		action: 'delete',
+		doNo: $('#doNo').val()				
+		};
+		//alert(params.hdrID);
+		$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function(data) {
+				if (data.success){  
+					alert(data.message);
+					window.location.href = '<?=$rootPage;?>.php';
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
+				}
+				//e.preventDefault();		
+			}).error(function (response) {
+				alert(response.responseText);
+			});
+			//.post
+		}});
+		//smkConfirm
+	});
+	//.btn_click
+
+	$('#btn_verify').click (function(e) {				 
+		var params = {	
+		action: 'confirm',				
+		doNo: $('#doNo').val()			
+		};
+		//alert(params.hdrID);
+		$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function(data) {
+				if (data.success){  
+					$.smkAlert({
+						text: data.message,
+						type: 'success',
+						position:'top-center'
+					});						
+					window.location.href = "<?=$rootPage;?>_view.php?doNo=" + data.doNo;
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
+				}
+				//e.preventDefault();		
+			}).error(function (response) {
+				alert(response.responseText);
+			});
+			//.post		
+		}});
+		//smkConfirm
+	});
+	//.btn_click
+
+	$('#btn_update_n_verify').click (function(e) {
 		if ($('#form2').smkValidate()){
-			$.smkConfirm({text:'Are you sure to Submit ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.smkConfirm({text:'Are you sure to Update and Confirm ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 				$.post({
-					url: '<?=$rootPage;?>_add_item_submit_ajax.php',
+					url: '<?=$rootPage;?>_ajax.php',
 					data: $("#form2").serialize(),
 					dataType: 'json'
 				}).done(function(data) {
@@ -521,10 +599,10 @@ $(document).ready(function() {
 	});
 	//.btn_click
 	
-	
+
 	$("html,body").scrollTop(0);
 	$("#statusName").fadeOut('slow').fadeIn('slow').fadeOut('slow').fadeIn('slow');
-	
+
 	$('#txt_row_first').select();
 	
 });
@@ -544,8 +622,8 @@ $(document).ready(function() {
 			autoclose: true,
 			format: 'dd/mm/yyyy',
 			todayBtn: true,
-			language: 'th',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
-			thaiyear: true              //Set เป็นปี พ.ศ.
+			language: 'en',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
+			thaiyear: false              //Set เป็นปี พ.ศ.
 		});  //กำหนดเป็นวันปัจุบัน
 		//กำหนดเป็น วันที่จากฐานข้อมูล
 		<?php if($doNo<>''){ ?>

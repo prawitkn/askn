@@ -126,7 +126,7 @@ $hdr = $stmt->fetch();
 
 
 			$sql = "
-			SELECT dtl.`id`, dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, dtl.`qty`, dtl.`pickNo` 
+			SELECT dtl.`id`, dtl.`prodId`, dtl.`issueDate`, dtl.`grade`,  dtl.`meter`, dtl.`qty`, dtl.`pickNo` 
 			, prd.code as prodCode  
 			FROM `picking_detail` dtl 	
 			LEFT JOIN product prd ON prd.id=dtl.prodId 
@@ -161,8 +161,10 @@ $hdr = $stmt->fetch();
 										<th style="font-weight: bold; text-align: center; width: 150px;" border="1">Product Code</th>
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Grade</th>
 										<th style="font-weight: bold; text-align: center; width: 80px;" border="1">Issue Date</th>
+										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Meter</th>
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Qty</th>
-										<th style="font-weight: bold; text-align: center; width: 250px;" border="1">Shelf</th>
+										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Total</th>
+										<th style="font-weight: bold; text-align: center; width: 150px;" border="1">Shelf</th>
 									</tr>
 								  </thead>
 								  <tbody>
@@ -203,8 +205,10 @@ $hdr = $stmt->fetch();
 						<td style="border: 0.1em solid black; padding: 10px; width: 150px;"> '.$row['prodCode'].'</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$gradeName.'</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.date('d M Y',strtotime( $row['issueDate'] )).'</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['meter'],0,'.',',').'&nbsp;&nbsp;</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format(($row['qty']/$row['meter']),0,'.',',').'&nbsp;&nbsp;</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['qty'],0,'.',',').'&nbsp;&nbsp;</td>';
-						$html .='<td  style="border: 0.1em solid black; text-align: left; width: 250px;"> ';
+						$html .='<td  style="border: 0.1em solid black; text-align: left; width: 150px;"> ';
 						$shelfCount=0; while ($row2 = $stmt2->fetch()) { 
 							if($row['prodId']==$row2['prodId'] AND $row['issueDate']==$row2['issueDate'] AND $row['grade']==$row2['grade']){
 								$html.= $row2['shelfCode'].', ';

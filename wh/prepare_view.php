@@ -341,9 +341,43 @@ $(document).ready(function() {
 var spinner = new Spinner().spin();
 $("#spin").append(spinner.el);
 $("#spin").hide();
-//           
+//  
+
+$('#btn_delete').click (function(e) {				 
+	var params = {	
+	action: 'delete',				
+	ppNo: $('#ppNo').val()				
+	};
+	//alert(params.hdrID);
+	$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+		$.post({
+			url: '<?=$rootPage;?>_ajax.php',
+			data: params,
+			dataType: 'json'
+		}).done(function(data) {
+			if (data.success){  
+				alert(data.message);
+				window.location.href = '<?=$rootPage;?>.php';
+			}else{
+				$.smkAlert({
+					text: data.message,
+					type: 'danger',
+					position:'top-center'
+				});
+			}
+			//e.preventDefault();		
+		}).error(function (response) {
+			alert(response.responseText);
+		});
+		//.post
+	}});
+	//smkConfirm
+});
+//.btn_click
+
 $('#btn_verify').click (function(e) {				 
-	var params = {					
+	var params = {	
+	action: 'confirm',				
 	ppNo: $('#ppNo').val()				
 	};
 	//alert(params.hdrID);
@@ -359,7 +393,7 @@ $('#btn_verify').click (function(e) {
 			//return false;
 		}
 		$.post({
-			url: '<?=$rootPage;?>_verify_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -388,13 +422,14 @@ $('#btn_verify').click (function(e) {
 //.btn_click
 
 $('#btn_reject').click (function(e) {				 
-	var params = {					
+	var params = {
+	action: 'reject',					
 	ppNo: $('#ppNo').val()					
 	};
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Reject ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_reject_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -423,12 +458,13 @@ $('#btn_reject').click (function(e) {
 //.btn_click
 
 $('#btn_approve').click (function(e) {				 
-	var params = {					
+	var params = {	
+	action: 'approve',				
 	ppNo: $('#ppNo').val()
 	};
 	$.smkConfirm({text:'Are you sure to Approve ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_approve_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -458,36 +494,7 @@ $('#btn_approve').click (function(e) {
 });
 //.btn_click
 
-$('#btn_delete').click (function(e) {				 
-	var params = {					
-	ppNo: $('#ppNo').val()				
-	};
-	//alert(params.hdrID);
-	$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
-		$.post({
-			url: '<?=$rootPage;?>_delete_ajax.php',
-			data: params,
-			dataType: 'json'
-		}).done(function(data) {
-			if (data.success){  
-				alert(data.message);
-				window.location.href = '<?=$rootPage;?>.php';
-			}else{
-				$.smkAlert({
-					text: data.message,
-					type: 'danger',
-					position:'top-center'
-				});
-			}
-			//e.preventDefault();		
-		}).error(function (response) {
-			alert(response.responseText);
-		});
-		//.post
-	}});
-	//smkConfirm
-});
-//.btn_click
+
 
 	$("html,body").scrollTop(0);
 	$("#statusName").fadeOut('slow').fadeIn('slow').fadeOut('slow').fadeIn('slow');

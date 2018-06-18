@@ -12,6 +12,38 @@ if(!isset($_POST['action'])){
 	echo json_encode(array('success' => false, 'message' => 'No action.'));
 }else{
 	switch($_POST['action']){
+		case 'search_saleOrder' :
+			$search_word = $_POST['search_word'];
+			
+			$sql = "SELECT hdr.`soNo`, hdr.`saleDate`, hdr.`custId`, hdr.`smId`, hdr.`createTime`, hdr.`createById`, hdr.statusCode 
+			, ct.name as custName, ct.addr1, ct.tel, ct.fax
+			, c.name as smName 
+			, d.userFullname as createByName 
+			FROM `sale_header` hdr 
+			left join customer ct on hdr.custId=ct.id 
+			left join salesman c on hdr.smId=c.id 
+			left join user d on hdr.createById=d.userId
+			WHERE 1 
+			AND hdr.statusCode='P' 
+			AND hdr.isClose='N' 
+			AND hdr.soNo like :search_word ";
+			$sql .= "ORDER BY hdr.createTime DESC
+			";
+			//$result = mysqli_query($link, $sql);
+			$stmt = $pdo->prepare($sql);
+			$search_word = '%'.$search_word.'%';
+			$stmt->bindParam(':search_word', $search_word);
+			$stmt->execute();
+
+			$rowCount=$stmt->rowCount();
+
+			$jsonData = array();
+			while ($array = $stmt->fetch()) {
+				$jsonData[] = $array;
+			}
+							   
+			echo json_encode(array('rowCount' => $rowCount, 'data' => json_encode($jsonData)));
+			break;
 		case 'add' :				
 			try{	   
 				$soNo = $_POST['soNo'];	
@@ -23,8 +55,8 @@ if(!isset($_POST['action'])){
 				$pickDate = date("Y-m-d",strtotime($pickDate));
 					
 				$sql = "INSERT INTO `picking`
-				(`pickNo`, `soNo`, `pickDate`, `remark`, `statusCode`, `createTime`, `createById`) 
-				VALUES (:pickNo,:soNo,:pickDate,:remark,'B',now(),:s_userId)
+				(`pickNo`, `soNo`, `pickDate`, `isFinish`, `remark`, `statusCode`, `createTime`, `createById`) 
+				VALUES (:pickNo,:soNo,:pickDate,'N', :remark,'B',now(),:s_userId)
 				";
 						
 				$stmt = $pdo->prepare($sql);
@@ -47,36 +79,52 @@ if(!isset($_POST['action'])){
 			}
 			exit();
 			break;
-		case 'add_item_add' :
+		case 'item_add' :
 			try{	
-				$sdNo = $_POST['sdNo'];
+				$pickNo = $_POST['pickNo'];
+				$prodId = $_POST['prodId'];
+				$saleItemId = $_POST['saleItemId'];
 				
 				$pdo->beginTransaction();	
-				
-				if(!empty($_POST['itmId']) and isset($_POST['itmId']))
+								
+				if(!empty($_POST['pickQty']) and isset($_POST['pickQty']))
 				{
+					$sql = "DELETE FROM `picking_detail` WHERE pickNo=:pickNo AND saleItemId=:saleItemId ";
+					$stmt = $pdo->prepare($sql);
+					$stmt->bindParam(':pickNo', $pickNo);	
+					$stmt->bindParam(':saleItemId', $saleItemId);	
+					$stmt->execute();
+					
 					//$arrProdItems=explode(',', $prodItems);
-					foreach($_POST['itmId'] as $index => $item )
+					foreach($_POST['pickQty'] as $index => $item )
 					{	
-						$sql = "INSERT INTO `send_detail`
-						(`refNo`, `prodItemId`, `sdNo`)
-						SELECT dtl.sendId, dtl.productItemId, :sdNo 
-						FROM send_detail_mssql dtl 
-						WHERE dtl.sendId=:sendId 
-						AND dtl.productItemId=:productItemId 
-						";			
-						$arrItm=explode(',', $item);
-						$stmt = $pdo->prepare($sql);			
-						$stmt->bindParam(':sendId', $arrItm[0]);	
-						$stmt->bindParam(':productItemId', $arrItm[1]);		
-						$stmt->bindParam(':sdNo', $sdNo);		
-						$stmt->execute();			
+						if($item<>0){
+							if($_POST['pickQty'][$index]>$_POST['balanceQty'][$index]){
+								header('Content-Type: application/json');
+								$errors = "Some Product is over stock.";
+								echo json_encode(array('success' => false, 'message' => $errors));
+								exit();
+							}
+							$sql = "INSERT INTO `picking_detail` 
+							(`pickNo`,`saleItemId`, `prodId`, `issueDate`, `grade`, `meter`, `qty`) 
+							VALUES
+							(:pickNo,:saleItemId, :prodId,:issueDate,:grade,:meter,:pickQty)";
+							$stmt = $pdo->prepare($sql);
+							$stmt->bindParam(':pickNo', $pickNo);	
+							$stmt->bindParam(':saleItemId', $saleItemId);	
+							$stmt->bindParam(':prodId', $prodId);	
+							$stmt->bindParam(':issueDate', $_POST['issueDate'][$index]);	
+							$stmt->bindParam(':grade', $_POST['grade'][$index]);	
+							$stmt->bindParam(':meter', $_POST['meter'][$index]);	
+							$stmt->bindParam(':pickQty', $_POST['pickQty'][$index]);	
+							$stmt->execute();
+						}											
 					}
 				}
 				$pdo->commit();
 				
 				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data Inserted Complete.', 'sdNo' => $sdNo));
+				echo json_encode(array('success' => true, 'message' => 'Data Inserted Complete.', 'pickNo' => $pickNo));
 			} 
 			//Our catch block will handle any exceptions that are thrown.
 			catch(Exception $e){
@@ -85,7 +133,7 @@ if(!isset($_POST['action'])){
 				//return JSON
 				header('Content-Type: application/json');
 				$errors = "Error on Data Update. Please try again. " . $e->getMessage();
-				echo json_encode(array('success' => false, 'message' => $errors.$t));
+				echo json_encode(array('success' => false, 'message' => $errors));
 			}
 			break;
 		case 'add_item_delete' :

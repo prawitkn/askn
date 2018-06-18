@@ -119,7 +119,7 @@ $hdr = $stmt->fetch();
 				<div class="box-body">
 				   <?php
 						$sql = "
-						SELECT dtl.`id`, dtl.prodId, dtl.`issueDate`, dtl.`grade`, dtl.`qty`, dtl.`pickNo` 
+						SELECT dtl.`id`, dtl.prodId, dtl.`issueDate`, dtl.`grade`, dtl.`meter`, dtl.`qty`, dtl.`pickNo` 
 						, prd.code as prodCode 
 						FROM `picking_detail` dtl 
 						LEFT JOIN product prd ON prd.id=dtl.prodId 
@@ -140,7 +140,9 @@ $hdr = $stmt->fetch();
 							<th>Product Name</th>
 							<th>Issue Date</th>
 							<th>Grade</th>
+							<th>Meter</th>							
 							<th>Qty</th>
+							<th>Total</th>
 							<th>Shelf</th>
 						</tr>
 						<?php $row_no=1; while ($row = $stmt->fetch()) { 
@@ -170,7 +172,7 @@ $hdr = $stmt->fetch();
 			LIMIT 10 
 			";
 			/*$sql = "
-			SELECT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, ws.code as shelfCode, ws.name as shelfName
+			SELECT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, dtl.`meter`, ws.code as shelfCode, ws.name as shelfName
 			, prd.code as prodCode 
 			FROM `picking_detail` dtl 		
 			INNER JOIN product_item itm ON itm.prodCodeId=dtl.prodId AND itm.issueDate=dtl.issueDate AND itm.grade=dtl.grade 						
@@ -193,6 +195,8 @@ $hdr = $stmt->fetch();
 								<td><?= $row['prodCode']; ?></td>
 								<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>
 								<td><?= $gradeName; ?></td>
+								<td><?= $row['meter']; ?></td>								
+								<td><?= ':'.($row['qty']/$row['meter']); ?></td>
 								<td><?= $row['qty']; ?></td>
 								<td colspan="3"><small>
 								<?php $shelfCount=0; while ($row2 = $stmt2->fetch()) { 
@@ -246,7 +250,7 @@ $hdr = $stmt->fetch();
   <div class="box-footer">
     <div class="col-md-12">
 			<?php if($hdr['statusCode']=='P'){ ?>
-			  <a href="<?=$rootPage;?>_view_pdf.php?pickNo=<?=$hdr['pickNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
+			  <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?pickNo=<?=$hdr['pickNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
 			<?php } ?>
 			
 			

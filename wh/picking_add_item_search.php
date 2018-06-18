@@ -9,8 +9,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 $rootPage = "picking";
 
+$locationCode=$_GET['locCode'];
 $pickNo=$_GET['pickNo'];
 $id=$_GET['id'];
+$saleItemId=$_GET['saleItemId'];
 				
 ?>      
    
@@ -72,7 +74,7 @@ desired effect
 			<!-- TABLE: LATEST ORDERS -->
           <div class="box box-primary">
             <div class="box-header with-border">
-              <h3 class="box-title">Available Item Stock</h3>
+              <h3 class="box-title">Available Item Stock [<?=$locationCode;?>]</h3>
 
               <div class="box-tools pull-right">
                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
@@ -81,41 +83,113 @@ desired effect
               </div>
             </div>
             <!-- /.box-header -->
+			<form id="form2" action="#" method="post" class="form" novalidate>
+					<input type="hidden" name="pickNo" value="<?=$pickNo;?>" />
+					<input type="hidden" name="action" value="item_add" />			
+					<input type="hidden" name="prodId" value="<?=$id;?>" />	
+					<input type="hidden" name="saleItemId" value="<?=$saleItemId;?>" />	
             <div class="box-body">
-				<form id="form1" action="" method="post" class="form" novalidate>
+					
+					
 			<?php
+			$sql='';
+			$sql="SELECT catCode FROM product WHERE id=:id ";
+			$stmt = $pdo->prepare($sql);
+			$stmt->bindParam(':id', $id);
+			$stmt->execute();	
+			$row=$stmt->fetch();
+			$catCode=$row['catCode'];
+			
+			switch($locationCode){
+				case 'L' :
+					$sql = "
+					SELECT itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, itm.`qty` as meters
+					, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total			
+					, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
+							ON pickh.pickNo=pickd.pickNo
+							WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade
+							AND pickh.isFinish='N' ) as bookedQty
+					, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
+							ON pickh.pickNo=pickd.pickNo
+							WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade
+							AND pickh.pickNo=:pickNo ) as pickQty
+					,prd.id as prodId, prd.code as prodCode
+					, (SELECT IFNULL(x.shelfId,0) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
+					FROM `receive` hdr 
+					INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  		
+					INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+					LEFT JOIN wh_shelf_map_item smi ON smi.recvProdId=dtl.id 
+					LEFT JOIN product prd ON prd.id=itm.prodCodeId 				
+					WHERE 1=1
+					AND hdr.statusCode='P' 	
+					AND dtl.statusCode='A' 
+					AND itm.prodCodeId=:id ";
+					switch($catCode){
+						case '70' : //Weaving
+							$sql.="AND DATEDIFF(NOW(), itm.issueDate) > 365 ";
+							break;
+						case '72' : //Cutting
+							$sql.="AND DATEDIFF(NOW(), itm.issueDate) > 90 ";
+							break;
+						default : //80					
+					}
+					
+					$sql.="
+					GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty` 			
+									
+					ORDER BY itm.`issueDate` ASC  
+					";
+					break;
+				default : //Export 
+					$sql = "
+					SELECT itm.`prodCodeId`, s.sendDate as issueDate, itm.`grade`, itm.`qty` as meters
+					, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total			
+					, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
+							ON pickh.pickNo=pickd.pickNo
+							WHERE pickd.prodId=itm.prodCodeId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade
+							AND pickh.isFinish='N' ) as bookedQty
+					, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
+							ON pickh.pickNo=pickd.pickNo
+							WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade
+							AND pickh.pickNo=:pickNo ) as pickQty
+					,itm.prodCodeId as prodId, prd.code as prodCode
+					, (SELECT IFNULL(x.shelfId,0) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
+					FROM `receive` hdr 
+					INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  		
+					INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+					INNER JOIN send s ON s.sdNo=hdr.refNo 
+					LEFT JOIN wh_shelf_map_item smi ON smi.recvProdId=dtl.id 
+					LEFT JOIN product prd ON prd.id=itm.prodCodeId 				
+					WHERE 1=1
+					AND hdr.statusCode='P' 	
+					AND dtl.statusCode='A' 
+					AND itm.prodCodeId=:id ";
+					switch($catCode){
+						case '70' : //Weaving
+							$sql.="AND DATEDIFF(NOW(), s.sendDate) <= 365 ";
+							break;
+						case '72' : //Cutting
+							$sql.="AND DATEDIFF(NOW(), s.sendDate) <= 90 ";
+							break;
+						default : //80					
+					}
+					$sql.="
+					GROUP BY itm.`prodCodeId`, s.sendDate, itm.`grade`, prd.code , itm.`qty` 			
+									
+					ORDER BY s.sendDate ASC  
+					";
+			}
 				
-				$sql = "
-				SELECT itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, itm.`qty` as meters
-				, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total			
-				, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
-						ON pickh.pickNo=pickd.pickNo
-						WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade
-						AND pickh.isFinish='N' ) as bookedQty
-				,prd.id as prodId, prd.code as prodCode
-				FROM `receive` hdr 
-				INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  
-				INNER JOIN wh_shelf_map_item smi ON smi.recvProdId=dtl.id 
-				INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-				LEFT JOIN product prd ON prd.id=itm.prodCodeId 
 				
-				WHERE 1=1
-				AND hdr.statusCode='P' 	
-				AND dtl.statusCode='A' ";
-				$sql .= "AND itm.prodCodeId=:id ";
 				
-				$sql .= "GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`
-								
-				ORDER BY itm.`issueDate` ASC  
-				";
 				//$result = mysqli_query($link, $sql);
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':id', $id);
+				$stmt->bindParam(':saleItemId', $saleItemId);
+				$stmt->bindParam(':pickNo', $pickNo);
 				$stmt->execute();	
 					
 				?>
-				<input type="hidden" name="pickNo" value="<?=$pickNo;?>" />				
-				<input type="hidden" name="prodId" value="<?=$id;?>" />		
               <div class="table-responsive">
                 <table class="table no-margin">
                   <thead>
@@ -130,7 +204,6 @@ desired effect
 					<th style="color: red;">Booked</th>
 					<th style="color: blue;">Balance</th>					
                     <th>Pick</th>
-					<th>#</th>
                   </tr>
                   </thead>
                   <tbody>
@@ -148,22 +221,30 @@ desired effect
 					<td><?= $row['prodCode']; ?></td>					
 					<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>
 					<td><?= $gradeName; ?></td>
-					<td><?= $row['meters']; ?></td>
-					<td><?= $row['qty']; ?></td>
-					<td><?= $row['total']; ?></td>
-					<td style="color: red;"><?= $row['bookedQty']; ?></td>
-					<td style="color: blue;"><?= $row['total']-$row['bookedQty']; ?></td>
+					<td style="text-align: right;"><?= $row['meters']; ?></td>
+					<td style="text-align: right;"><?= $row['qty']; ?></td>
+					<td style="text-align: right;"><?= $row['total']; ?></td>
+					<td style="text-align: right; color: red;"><?= $row['bookedQty']; ?></td>
+					<td style="text-align: right; color: blue;"><?= $row['total']-$row['bookedQty']; ?></td>
 					
-					<td><input type="textbox" name="pickQty" class="form-control" value=""  
+					<td >
+						<input type="hidden" name="issueDate[]" value="<?=$row['issueDate'];?>" />
+						<input type="hidden" name="grade[]" value="<?=$row['grade'];?>" />
+						<input type="hidden" name="meter[]" value="<?=$row['meters'];?>" />
+						<input type="hidden" name="balanceQty[]" value="<?=$row['total']-$row['bookedQty'];?>" />
+						
+						<?php if($row['isShelfed']==0){ ?>
+						<span style="colore: ref;">Shelf not found.</span>
+						<?php }else{ ?>
+						<input type="textbox" name="pickQty[]" class="form-control" value="<?=$row['pickQty'];?>"  
 						data-prodId="<?=$row['prodId'];?>" data-issueDate="<?=$row['issueDate'];?>" 
 						data-grade="<?=$row['grade'];?>" 
 						onkeypress="return numbersOnly(this, event);" 
 						onpaste="return false;"
-					/></td>
-					
-					<td><a href="#" name="btn_row_submit" class="btn btn-default" 
-					data-prodId="<?=$row['prodId'];?>" data-issueDate="<?=$row['issueDate'];?>" 
-					data-grade="<?=$row['grade'];?>" > Add</a></td>
+						style="text-align: right;"
+						/>
+						<?php } ?>
+					</td>					
                 </tr>
                 <?php $row_no+=1; } ?>
                   </tbody>
@@ -174,8 +255,10 @@ desired effect
             <!-- /.box-body -->
             <div class="box-footer clearfix">
 				
+				<a name="btn_submit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-save"></i> Submit</a>
             </div>
             <!-- /.box-footer -->
+			
 			</form>
 			<!--form-->
           </div>
@@ -225,48 +308,13 @@ $(document).ready(function() {
 	$("#spin").append(spinner.el);
 	$("#spin").hide();
 				
-	
-	$('input[name="pickQty"]').keyup(function(e){
-		if(e.keyCode == 13)
-		{ 
-			var params = {
-				pickNo: $('input[name=pickNo]').val(),
-				prodId: $('input[name=prodId]').val(),
-				issueDate: $(this).attr('data-issueDate'),
-				grade: $(this).attr('data-grade')//,
-			//	pickQty: $(this).val()
-			};
-			//post_data(params);
-		}/* e.keycode=13 */	
-	});
-	
-	
-	$('a[name=btn_row_submit]').click (function(e) {
-		var params = {
-			pickNo: $('input[name=pickNo]').val(),
-			prodId: $('input[name=prodId]').val(),
-			issueDate: $(this).attr('data-issueDate'),
-			grade: $(this).attr('data-grade'),
-			pickQty: $(this).closest("tr").find('input[name="pickQty"]').val()
-		};
-		if(params.pickQty==0){
-			$.smkAlert({
-				text: 'Quantity can not be zero.',
-				type: 'danger',
-				position:'top-center'
-			});
-			return false;
-		}
-		post_data(params);
-	});
-	//.btn_click
-	
-	function post_data(params){
-		if ($('#form1').smkValidate()){
+		
+	$('#form2 a[name=btn_submit]').click (function(e) { 
+		if ($('#form2').smkValidate()){
 			//$.smkConfirm({text:'Are you sure to Submit ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 				$.post({
-					url: 'picking_add_item_search_row_submit_ajax.php',
-					data: params,
+					url: '<?=$rootPage;?>_ajax.php',
+					data: $("#form2").serialize(),
 					dataType: 'json'
 				}).done(function(data) {
 					if (data.success){  
@@ -275,8 +323,7 @@ $(document).ready(function() {
 							type: 'success',
 							position:'top-center'
 						});
-						
-						window.location.href = "picking_add.php?pickNo=" + params.pickNo;
+						window.location.href = "<?=$rootPage;?>_add.php?pickNo=<?=$pickNo;?>";
 					}else{
 						$.smkAlert({
 							text: data.message,
@@ -293,8 +340,8 @@ $(document).ready(function() {
 			//smkConfirm
 		e.preventDefault();
 		}//.if end
-	}
-		
+	});
+	//.btn_click
 });
 </script>
 

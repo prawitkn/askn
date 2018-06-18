@@ -21,7 +21,9 @@
 	left join wh_user d on pp.createById=d.userId
 	WHERE 1 
 	AND pp.statusCode='P' 
+	AND pp.ppNo NOT IN (SELECT ppNo FROM delivery_header WHERE statusCode<>'X' )
 	AND (pp.ppNo like :search_word or pp.pickNo like :search_word2)  ";
+
 	$sql .= "ORDER BY pp.createTime DESC
 	";
 	//$result = mysqli_query($link, $sql);

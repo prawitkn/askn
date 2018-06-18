@@ -5,36 +5,7 @@
 		$s_userGroupCode = $row_user['userGroupCode'];
 		$s_userDept = $row_user['userDept'];*/
 
-	$search_word = $_POST['search_word'];
 	
-	$sql = "SELECT hdr.`soNo`, hdr.`saleDate`, hdr.`custId`, hdr.`smId`, hdr.`createTime`, hdr.`createById`, hdr.statusCode 
-	, ct.name as custName, ct.addr1, ct.tel, ct.fax
-	, c.name as smName 
-	, d.userFullname as createByName 
-	FROM `sale_header` hdr 
-	left join customer ct on hdr.custId=ct.id 
-	left join salesman c on hdr.smId=c.id 
-	left join user d on hdr.createById=d.userId
-	WHERE 1 
-	AND hdr.statusCode='P' 
-	AND hdr.isClose='N' 
-	AND hdr.soNo like :search_word ";
-	$sql .= "ORDER BY hdr.createTime DESC
-	";
-	//$result = mysqli_query($link, $sql);
-	$stmt = $pdo->prepare($sql);
-	$search_word = '%'.$search_word.'%';
-	$stmt->bindParam(':search_word', $search_word);
-	$stmt->execute();
-
-	$rowCount=$stmt->rowCount();
-
-	$jsonData = array();
-	while ($array = $stmt->fetch()) {
-		$jsonData[] = $array;
-	}
- 					   
-	echo json_encode(array('rowCount' => $rowCount, 'data' => json_encode($jsonData)));
 		
 ?>
 

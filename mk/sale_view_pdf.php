@@ -50,7 +50,7 @@ class MYPDF extends TCPDF {
 		//head 
 		$this->AddPage('P');
 		
-		$this->SetFont('THSarabun', '', 12, '', true);
+		$this->SetFont('THSarabun', 'B', 12, '', true);
 		
 		$this->setCellHeightRatio(1.25);
 		
@@ -74,7 +74,7 @@ class MYPDF extends TCPDF {
 		<tr>
 			<td style="text-align: center;"><span style="font-size: 60%;" >www.askn.com</span></td>
 			<td colspan="5"><span style="font-size: 60%;" >69/1 Moo 6, Thakam, Bangpakong, Chachoengsao 24130 Thailand Tel: 66 – 3857 – 3635 Fax: 66 – 3857 – 3634</span></td>
-			<td colspan="2">&nbsp;<img src="dist/img/icon/radio-'.($hdr['custTypeOld']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> <span style="font-size: 85%;" >ลูกค้าเก่า (Current Customer)</span></td>
+			<td colspan="2">&nbsp;<img src="dist/img/icon/radio-'.($hdr['custTypeOld']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> <span style="font-size: 83%;" >ลูกค้าเก่า (Current Customer)</span></td>
 			<td colspan="2">&nbsp;<img src="dist/img/icon/radio-'.($hdr['custTypeNew']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> <span style="font-size: 85%;" >ลูกค้าใหม่ (New Customer)</span></td>
 		</tr>
 		</table>
@@ -86,7 +86,7 @@ class MYPDF extends TCPDF {
 		<tr>
 			<td colspan="3" style="border: o.1em solid black; text-align: center; font-size: large;">SALES ORDER FORM (ใบสั่งขาย)</td>
 			<td colspan="3" style="text-align: center; font-size: large; color: red" ></td>
-			<td colspan="2" >&nbsp;รหัสลูกค้า (Customer Code) : </td>
+			<td colspan="2" style="font-size: 95%;" >รหัสลูกค้า (Customer Code) : </td>
 			<td colspan="2"  style="border-bottom: 0.1em solid black;">'.$hdr['custCode'].'</td>
 		</tr>
 		<tr>
@@ -96,7 +96,7 @@ class MYPDF extends TCPDF {
 			<td colspan="2" style="border-bottom: 0.1em solid black;">'.date('d M Y',strtotime( $hdr['saleDate'] )).'</td>			
 		</tr>
 		<tr>
-			<td colspan="2" ><span style="font-size: 90%;" >ที่อยู่เปิด Invoice (Destination) : </span></td>
+			<td colspan="2" ><span style="font-size: 88%;" >ที่อยู่เปิด Invoice (Destination) : </span></td>
 			<td colspan="4"  style="border-bottom: 0.1em solid black;">'.$hdr['shipToName'].'</td>	
 			<td colspan="2" >&nbsp;SO No. : </td>
 			<td colspan="2"  style="border-bottom: 0.1em solid black;">'.$hdr['soNo'].($hdr['revCount']<>0?' rev.'.$hdr['revCount']:'').'</td>
@@ -143,24 +143,22 @@ class MYPDF extends TCPDF {
 		<tr>
 			<td colspan="3" >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['prodStkInStk']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> สินค้ามีในสต๊อกทั้งหมด / บางส่วน</td>
 			<td colspan="2"  >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['prodStkOrder']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> สินค้าสั่งผลิต</td>
-			<td colspan="1"  >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['prodStkOther']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> 
-				<span style="font-size: 80%;">อื่นๆ  (Other)</span></td>		
-			<td colspan="4" style="border-bottom: 0.1em solid black;" >'.$hdr['prodStkRem'].'</td>
+			<td colspan="1"  >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['prodStkOther']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /><span style="font-size: 85%;">อื่นๆ(Other)</span></td>		
+			<td colspan="4" style="border-bottom: 0.1em solid black;" >  '.$hdr['prodStkRem'].'</td>
 		</tr>
 		<tr>
 			<td colspan="2" ><span style="text-decoration: underline;">การบรรจุ (Packing)</span> : </td>
-			<td colspan="2"  >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['packTypeAk']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" />  มี LOGO AK</td>
-			<td colspan="1" >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['packTypeNone']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" />  ไม่มี LOGO</td>
-			<td colspan="1" >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['packTypeOther']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> 
-				<span style="font-size: 80%;">อื่นๆ  (Other)</span></td>	
-			<td colspan="4" style="border-bottom: 0.1em solid black;" >'.$hdr['packTypeRem'].'</td>
+			<td colspan="2"  >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['packTypeAk']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> มี LOGO AK</td>
+			<td colspan="1" >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['packTypeNone']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> <span style="font-size:95%">ไม่มี LOGO</span></td>
+			<td colspan="1" >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['packTypeOther']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /><span style="font-size: 85%;">อื่นๆ(Other)</span></td>	
+			<td colspan="4" style="border-bottom: 0.1em solid black;" >  '.$hdr['packTypeRem'].'</td>
 		</tr>
 		<tr>
 			<td colspan="2" ><span style="text-decoration: underline; font-size: 90%;">กรณีส่งต่างประเทศ (Export) by</span> : </td>
 			<td >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['shipByLcl']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> LCL</td>
 			<td >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['shipByFcl']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> FCL</td>
-			<td colspan="1" >Load Remark : </td>
-			<td colspan="5" style="border-bottom: 0.1em solid black;" >'.$hdr['shipByRem'].'</td>
+			<td colspan="1" ><span style="font-size:90%">Load Remark : </span></td>
+			<td colspan="5" style="border-bottom: 0.1em solid black;" >  '.$hdr['shipByRem'].'</td>
 		</tr>
 		<tr>
 			<td colspan="2" ><span style="text-decoration: underline;">Shipping Options</span></td>
@@ -181,9 +179,8 @@ class MYPDF extends TCPDF {
 		<tr>
 			<td colspan="2" >ราคา (Price) : </td>
 			<td colspan="2" >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['priceOnOrder']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" />  ตามใบสั่งซื้อ</td>
-			<td colspan="1" >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['priceOnOther']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /> 
-				<span style="font-size: 80%;">อื่นๆ  (Other)</span></td>	
-			<td colspan="5" style="border-bottom: 0.1em solid black;" >'.$hdr['priceOnRem'].'</td>
+			<td colspan="1" >&nbsp;<img src="dist/img/icon/checkbox-'.($hdr['priceOnOther']==1?'checked':'uncheck').'.jpg" width="75%" height="75%" /><span style="font-size: 85%;">อื่นๆ(Other)</span></td>	
+			<td colspan="5" style="border-bottom: 0.1em solid black;" >  '.$hdr['priceOnRem'].'</td>
 		</tr>
 		<tr>
 			<td colspan="2" >ผู้เสนอขาย (Sales) : </td>
@@ -216,7 +213,7 @@ class MYPDF extends TCPDF {
 			<td colspan="4"  style="border-top: 0.1em solid black; border-left: 0.1em solid black; border-right: 0.1em solid black;" ></td>
 		</tr>
 		<tr>
-			<td colspan="3" style="border-left: 0.1em solid black;">&nbsp;เครดิต (Credit) '.'<span style="text-decoration: underline; font-size: 120%; font-weight: bold;">'.$hdr['payTypeCreditDays'].'</span> วัน (Days)</td>
+			<td colspan="3" style="border-left: 0.1em solid black;">&nbsp;เครดิต (Credit) '.'<span style="text-decoration: underline; font-size: 120%; font-weight: bold;"> '.$hdr['payTypeCreditDays'].' </span> วัน (Days)</td>
 			<td colspan="3" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;<img src="dist/img/icon/radio-'.($hdr['plac2deliCode']=='FACT'?'checked':'uncheck').'.jpg" width="75%" height="75%" />&nbsp;ลูกค้ามารับที่โรงงาน AK</td>
 			<td colspan="4" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">&nbsp;จัดทำโดย (Issue By) : <span style="text-decoration: underline;">'.$hdr['createByName'].'</span></td>
 		</tr>

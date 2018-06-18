@@ -65,7 +65,9 @@ $pickNo = $hdr['pickNo'];
         </div><!-- /.box-header -->
         <div class="box-body">			
             <div class="row">
-				<form id="form1" action="#" method="post" class="form" novalidate>				
+				<form id="form1" action="#" method="post" class="form" novalidate>	
+					<input type="hidden" name="action" value="add" />
+
                 <div class="col-md-12">   
 					<div class="row">
 						<div class="col-md-3">
@@ -205,11 +207,18 @@ $pickNo = $hdr['pickNo'];
 							<th>#</th>
 						</tr>
 						<?php $row_no=1; while ($row = $stmt->fetch()) { 
+							$gradeName = ''; 
+							switch($row['grade']){
+								case 0 : $gradeName = 'A'; break;
+								case 1 : $gradeName = '<b style="color: red;">B</b>'; break;
+								case 2 : $gradeName = '<b style="color: red;">N</b>'; break;
+								default : $gradeName = '<b style="color: red;">N/A</b>';
+							}
 						?>
 						<tr>
 							<td><?= $row_no; ?></td>
 							<td><?= $row['barcode']; ?></td>	
-							<td><?= $row['grade']; ?></td>	
+							<td><?= $gradeName; ?></td>	
 							<td><?= $row['issueDate']; ?></td>								
 							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
 						<td>
@@ -219,9 +228,6 @@ $pickNo = $hdr['pickNo'];
 						<?php $row_no+=1; } ?>
 					</table>
 					</div>
-					<!--/.table-responsive-->
-					<!--<a name="btn_submit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-save"></i> Submit</a>-->
-					<a name="btn_view" href="prepare_view.php?ppNo=<?=$ppNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> View</a>
 					</form>
 				</div>
 				<!--/box-body-->
@@ -231,8 +237,13 @@ $pickNo = $hdr['pickNo'];
 				
     </div><!-- /.box-body -->
   <div class="box-footer">
-      
-      
+  		<a name="btn_view" href="<?=$rootPage;?>_view.php?ppNo=<?=$ppNo;?>" class="btn btn-primary pull-right"><i class="glyphicon glyphicon-search"></i> View</a>
+
+			<button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']<>'P'?'':'disabled'); ?> >
+            <i class="glyphicon glyphicon-trash"></i> Delete
+          </button>
+      		
+      	
     <!--The footer of the box -->
   </div><!-- box-footer -->
 </div><!-- /.box -->
@@ -413,7 +424,7 @@ $(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
 		if ($('#form1').smkValidate()){
 			$.smkConfirm({text:'Are you sure to Create? ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
 				$.post({
-					url: '<?=$rootPage;?>_add_hdr_insert_ajax.php',
+					url: '<?=$rootPage;?>_ajax.php',
 					data: $("#form1").serialize(),
 					dataType: 'json'
 				}).done(function(data) {
@@ -448,12 +459,13 @@ $(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
 	
 	$('a[name=btn_row_delete]').click(function(){
 		var params = {
+			action: 'add_item_delete',
 			id: $(this).attr('data-id')
 		};
 		//alert(params.id);
 		$.smkConfirm({text:'Are you sure to Delete ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 			$.post({
-				url: '<?=$rootPage;?>_add_item_delete_ajax.php',
+				url: '<?=$rootPage;?>_ajax.php',
 				data: params,
 				dataType: 'json'
 			}).done(function (data) {					
@@ -480,12 +492,13 @@ $(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
 		if(e.keyCode == 13)
 		{
 			var params = {
+				action: 'add_item_add',
 				ppNo: '<?=$ppNo;?>',
 				barcode: $(this).val()
 			};			
 			/* Send the data using post and put the results in a div */
 			  $.post({
-				url: '<?=$rootPage;?>_add_item_add_ajax.php',
+				url: '<?=$rootPage;?>_ajax.php',
 				data: params,
 				dataType: 'json'
 			}).done(function (data) {					
@@ -512,6 +525,38 @@ $(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
 		}/* e.keycode=13 */	
 	});
 	
+	$('#btn_delete').click (function(e) {				 
+		var params = {	
+		action: 'delete',				
+		ppNo: '<?=$ppNo;?>'				
+		};
+		//alert(params.hdrID);
+		$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function(data) {
+				if (data.success){  
+					alert(data.message);
+					window.location.href = '<?=$rootPage;?>.php';
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
+				}
+				//e.preventDefault();		
+			}).error(function (response) {
+				alert(response.responseText);
+			});
+			//.post
+		}});
+		//smkConfirm
+	});
+	//.btn_click
+
 	$("html,body").scrollTop(0);
 	$("#statusName").fadeOut('slow').fadeIn('slow').fadeOut('slow').fadeIn('slow');
 	
@@ -523,9 +568,9 @@ $(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
    
   </script>
   
-  <link href="bootstrap-datepicker-custom-thai/dist/css/bootstrap-datepicker.css" rel="stylesheet" />
-    <script src="bootstrap-datepicker-custom-thai/dist/js/bootstrap-datepicker-custom.js"></script>
-    <script src="bootstrap-datepicker-custom-thai/dist/locales/bootstrap-datepicker.th.min.js" charset="UTF-8"></script>
+<link href="bootstrap-datepicker-custom-thai/dist/css/bootstrap-datepicker.css" rel="stylesheet" />
+<script src="bootstrap-datepicker-custom-thai/dist/js/bootstrap-datepicker-custom.js"></script>
+<script src="bootstrap-datepicker-custom-thai/dist/locales/bootstrap-datepicker.th.min.js" charset="UTF-8"></script>
   
 <script>
 	$(document).ready(function () {
@@ -534,8 +579,8 @@ $(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
 			autoclose: true,
 			format: 'dd/mm/yyyy',
 			todayBtn: true,
-			language: 'th',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
-			thaiyear: true              //Set เป็นปี พ.ศ.
+			language: 'en',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
+			thaiyear: false              //Set เป็นปี พ.ศ.
 		});  //กำหนดเป็นวันปัจุบัน
 		//กำหนดเป็น วันที่จากฐานข้อมูล
 		<?php if($pickNo<>''){ ?>
@@ -559,21 +604,3 @@ $(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
 </html>
 
 
-
-<!--Integers (non-negative)-->
-<script>
-  function numbersOnly(oToCheckField, oKeyEvent) {
-    return oKeyEvent.charCode === 0 ||
-        /\d/.test(String.fromCharCode(oKeyEvent.charCode));
-  }
-</script>
-
-<!--Decimal points (non-negative)-->
-<script>
-  function decimalOnly(oToCheckField, oKeyEvent) {        
-    var s = String.fromCharCode(oKeyEvent.charCode);
-    var containsDecimalPoint = /\./.test(oToCheckField.value);
-    return oKeyEvent.charCode === 0 || /\d/.test(s) || 
-        /\./.test(s) && !containsDecimalPoint;
-  }
-</script>

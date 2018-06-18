@@ -50,13 +50,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				$dateTo = (isset($_GET['dateTo'])?$_GET['dateTo']: date('d-m-Y') );
 				$prodId = (isset($_GET['prodId'])?$_GET['prodId']: '' );
 				$prodCode = (isset($_GET['prodCode'])?$_GET['prodCode']: '' );
-				
+			
 				$dateFrom = str_replace('/', '-', $dateFrom);
 				$dateTo = str_replace('/', '-', $dateTo);
 				$dateFromYmd=$dateToYmd="";
 				if($dateFrom<>""){ $dateFromYmd = date('Y-m-d', strtotime($dateFrom));	}
 				if($dateTo<>""){ $dateToYmd =  date('Y-m-d', strtotime($dateTo));	}
-				
 				
 $sql = "
 SELECT COUNT(hdr.sdNo) AS countTotal
@@ -69,6 +68,7 @@ if($dateTo<>""){ $sql .= " AND hdr.sendDate<=:dateToYmd ";	}
 if($prodId<>""){ $sql .= " AND itm.prodCodeId=:prodId ";	}
 switch($s_userGroupCode){ 
 	case 'whOff' :  case 'whSup' : 
+		$sql .= "AND hdr.fromCode IN ('8','E') "; break;
 	case 'pdOff' :  case 'pdSup' :
 			$sql .= "AND hdr.fromCode=:s_userDeptCode ";
 		break;
@@ -84,7 +84,6 @@ $sql .= "AND hdr.statusCode='P'
 				if($dateFromYmd<>"") $stmt->bindParam(':dateFromYmd', $dateFromYmd);	
 				if($dateToYmd<>"") $stmt->bindParam(':dateToYmd', $dateToYmd);	
 				switch($s_userGroupCode){ 
-					case 'whOff' :  case 'whSup' : 
 					case 'pdOff' :  case 'pdSup' :
 							if($s_userDeptCode<>"") $stmt->bindParam(':s_userDeptCode', $s_userDeptCode);
 						break;
@@ -157,6 +156,7 @@ if($dateTo<>""){ $sql .= " AND hdr.sendDate<=:dateToYmd ";	}
 if($prodId<>""){ $sql .= " AND itm.prodCodeId=:prodId ";	}
 switch($s_userGroupCode){ 
 	case 'whOff' :  case 'whSup' : 
+			$sql .= "AND hdr.fromCode IN ('8','E') "; break;
 	case 'pdOff' :  case 'pdSup' :
 			$sql .= "AND hdr.fromCode=:s_userDeptCode ";
 		break;
@@ -173,7 +173,6 @@ if($prodId<>"") $stmt->bindParam(':prodId', $prodId);
 if($dateFromYmd<>"") $stmt->bindParam(':dateFromYmd', $dateFromYmd);	
 if($dateToYmd<>"") $stmt->bindParam(':dateToYmd', $dateToYmd);	
 switch($s_userGroupCode){ 
-	case 'whOff' :  case 'whSup' : 
 	case 'pdOff' :  case 'pdSup' :
 			if($s_userDeptCode<>"") $stmt->bindParam(':s_userDeptCode', $s_userDeptCode);
 		break;
@@ -219,7 +218,7 @@ $stmt->execute();
 				<!--table-resposive-->
 		
 		<div class="col-md-12">
-			<?php $pagingString = "?dateFrom=".$dateFrom."&dateTo=".$dateTo."&prodId=".$prodId;
+			<?php $pagingString = "?dateFrom=".$_GET['dateFrom']."&dateTo=".$_GET['dateTo']."&prodId=".$prodId;
 			?>
 			<a href="<?=$rootPage."_pdf.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
 				<i class="glyphicon glyphicon-save-file"></i> PDF </span></a>			

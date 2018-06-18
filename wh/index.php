@@ -845,7 +845,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						 <a target="_blank" href="sale_view.php?soNo=<?= $row['soNo'];?>" ><?= $row['soNo']; ?></a>
 					</td>
 					<td>
-						<a href="prepare_add.php?pickNo=<?=$row['pickNo'];?>" class="btn btn-primary">
+						<a href="delivery_add.php?ppNo=<?=$row['ppNo'];?>" class="btn btn-primary">
 							<i class="glyphicon glyphicon-download-alt"></i>
 						</a>						
 					</td>

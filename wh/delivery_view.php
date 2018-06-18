@@ -131,8 +131,8 @@ $rowCount=$stmt->rowCount();
 						<?= $hdr['shipToAddr3'].' '.$hdr['shipToZipcode']; ?></b>
 					</div><!-- /.col-md-3-->	
 					<div class="col-md-3">
-						Delivery Date : <b><?= $hdr['deliveryDate']; ?></b><br/>
-						Packing No : <b><?= $hdr['ppNo']; ?></b><br/><input type="hidden" id="ppNo" value="<?=$hdr['ppNo'];?>" />		
+						Delivery Date : <b><?= date('d M Y',strtotime( $hdr['deliveryDate'] )); ?></b><br/>
+						Prepare No : <b><?= $hdr['ppNo']; ?></b><br/><input type="hidden" id="ppNo" value="<?=$hdr['ppNo'];?>" />		
 						SO No : <b><?= $hdr['soNo']; ?></b><br/><input type="hidden" id="soNo" value="<?=$hdr['soNo'];?>" />		
 						PO No : <b><?= $hdr['poNo']; ?></b><br/>
 					</div>	<!-- /.col-md-3-->	
@@ -189,14 +189,14 @@ $rowCount=$stmt->rowCount();
 		
 	<div class="row">
 		<div class="col-md-6">
-			Create By : <b><?php echo $hdr['createByName']; ?></b></br>
-			Create Time : <?php echo to_thai_datetime_fdt($hdr['createTime']); ?></br>
-			Confirm By : <b><?php echo $hdr['confirmByName']; ?></b></br>
-			Confirm Time : <?php echo to_thai_datetime_fdt($hdr['confirmTime']); ?>	
+			Create By : <b><?= $hdr['createByName']; ?></b></br>
+			Create Time : <?= date('d M Y h:i',strtotime( $hdr['createTime'] )); ?></br>
+			Confirm By : <b><?= $hdr['confirmByName']; ?></b></br>
+			Confirm Time : <?= date('d M Y h:i',strtotime( $hdr['confirmTime'] )); ?>	
 		</div>
 		<div class="col-md-6">
-			Approve By : <b><?php echo $hdr['approveByName']; ?></b></br>
-			Approve Time : <?php echo to_thai_datetime_fdt($hdr['approveTime']); ?>	
+			Approve By : <b><?= $hdr['approveByName']; ?></b></br>
+			Approve Time : <?= date('d M Y h:i',strtotime( $hdr['approveTime'] )); ?>	
 		</div>	
 	</div>
 	<!-- /.row -->
@@ -206,7 +206,7 @@ $rowCount=$stmt->rowCount();
   <div class="box-footer">
     <div class="col-md-12">
     		<?php if($hdr['statusCode']=='P'){ ?>
-			  <a href="<?=$rootPage;?>_view_pdf.php?doNo=<?=$hdr['doNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
+			  <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?doNo=<?=$hdr['doNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
 			<?php } ?>
 
 
@@ -280,14 +280,48 @@ var spinner = new Spinner().spin();
 $("#spin").append(spinner.el);
 $("#spin").hide();
 //           
-$('#btn_verify').click (function(e) {				 
-	var params = {					
+
+$('#btn_delete').click (function(e) {				 
+	var params = {
+	action: 'delete',
 	doNo: $('#doNo').val()				
 	};
 	//alert(params.hdrID);
-	$.smkConfirm({text:'Are you sure to Verify ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
+	$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_verify_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
+			data: params,
+			dataType: 'json'
+		}).done(function(data) {
+			if (data.success){  
+				alert(data.message);
+				window.location.href = '<?=$rootPage;?>.php';
+			}else{
+				$.smkAlert({
+					text: data.message,
+					type: 'danger',
+					position:'top-center'
+				});
+			}
+			//e.preventDefault();		
+		}).error(function (response) {
+			alert(response.responseText);
+		});
+		//.post
+	}});
+	//smkConfirm
+});
+//.btn_click
+
+$('#btn_verify').click (function(e) {				 
+	var params = {	
+	action: 'confirm',				
+	doNo: $('#doNo').val()			
+	};
+	//alert(params.hdrID);
+	$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+		$.post({
+			url: '<?=$rootPage;?>_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -296,7 +330,7 @@ $('#btn_verify').click (function(e) {
 					text: data.message,
 					type: 'success',
 					position:'top-center'
-				});		
+				});						
 				location.reload();
 			}else{
 				$.smkAlert({
@@ -310,21 +344,20 @@ $('#btn_verify').click (function(e) {
 			alert(response.responseText);
 		});
 		//.post		
-	}else{ 
-		$.smkAlert({ text: 'Cancelled', type: 'info', position:'top-center'});	
 	}});
 	//smkConfirm
 });
 //.btn_click
 
 $('#btn_reject').click (function(e) {				 
-	var params = {					
+	var params = {	
+	action: 'reject',				
 	doNo: $('#doNo').val()					
 	};
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Reject ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_reject_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -333,7 +366,7 @@ $('#btn_reject').click (function(e) {
 					text: data.message,
 					type: 'success',
 					position:'top-center'
-				});		
+				});					
 				location.reload();
 			}else{
 				$.smkAlert({
@@ -347,15 +380,14 @@ $('#btn_reject').click (function(e) {
 			alert(response.responseText);
 		});
 		//.post		
-	}else{ 
-		$.smkAlert({ text: 'Cancelled', type: 'info', position:'top-center'});	
 	}});
 	//smkConfirm
 });
 //.btn_click
 
-$('#btn_approve').click (function(e) {				 
-	var params = {					
+$('#btn_approve').click (function(e) {	
+	var params = {			
+	action: 'approve',				
 	doNo: $('#doNo').val(),
 	soNo: $('#soNo').val(),
 	isClose: $('#isClose').val()
@@ -366,7 +398,7 @@ $('#btn_approve').click (function(e) {
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Approve ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
-			url: '<?=$rootPage;?>_approve_ajax.php',
+			url: '<?=$rootPage;?>_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {
@@ -391,39 +423,6 @@ $('#btn_approve').click (function(e) {
 			alert(response.responseText);
 		});
 		//.post
-	}});
-	//smkConfirm
-});
-//.btn_click
-
-$('#btn_delete').click (function(e) {				 
-	var params = {					
-	doNo: $('#doNo').val()				
-	};
-	//alert(params.hdrID);
-	$.smkConfirm({text:'Are you sure to Delete ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
-		$.post({
-			url: '<?=$rootPage;?>_delete_ajax.php',
-			data: params,
-			dataType: 'json'
-		}).done(function(data) {
-			if (data.success){  
-				alert(data.message);
-				window.location.href = '<?=$rootPage;?>.php';
-			}else{
-				$.smkAlert({
-					text: data.message,
-					type: 'danger',
-					position:'top-center'
-				});
-			}
-			//e.preventDefault();		
-		}).error(function (response) {
-			alert(response.responseText);
-		});
-		//.post
-	}else{ 
-		$.smkAlert({ text: 'Cancelled', type: 'info', position:'top-center'});	
 	}});
 	//smkConfirm
 });

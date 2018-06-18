@@ -18,7 +18,10 @@ $rootPage="picking";
 
 $sql = "SELECT hdr.`pickNo`, hdr.`soNo`, hdr.`pickDate`, hdr.`remark`, hdr.`statusCode`, hdr.`createTime`, hdr.`createById`
 , hdr.`updateTime`, hdr.`updateById`, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById` 
+, cust.locationCode 
 FROM `picking` hdr 
+INNER JOIN sale_header sh ON sh.soNo=hdr.soNo
+LEFT JOIN customer cust ON cust.id=sh.custId 
 WHERE hdr.statusCode='B' AND hdr.createById=:s_userId 
 ";
 $stmt = $pdo->prepare($sql);
@@ -143,8 +146,8 @@ $soNo = $hdr['soNo'];
 				<?php
 					$sql = "SELECT od.`id`, od.`prodId`, od.deliveryDate, od.`qty`
 					,prd.code as prodCode, prd.name as prodName 
-					, (SELECT IFNULL(SUM(dtl.qty),0) FROM picking_detail dtl WHERE dtl.pickNo=:pickNo AND dtl.prodId=od.prodId) as pickQty
-					, (SELECT IFNULL(SUM(dtl.qty),0) FROM picking_detail dtl WHERE dtl.pickNo<>:pickNo2 AND dtl.prodId=od.prodId) as pickedQty
+					, (SELECT IFNULL(SUM(dtl.qty),0) FROM picking_detail dtl WHERE dtl.pickNo=:pickNo AND dtl.saleItemId=od.id) as pickQty
+					, (SELECT IFNULL(SUM(dtl.qty),0) FROM picking_detail dtl WHERE dtl.pickNo<>:pickNo2 AND dtl.saleItemId=od.id) as pickedQty
 					FROM `sale_detail` od
 					LEFT JOIN product prd ON prd.id=od.prodId 
 					WHERE 1
@@ -195,7 +198,9 @@ $soNo = $hdr['soNo'];
 						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',',').'/'.number_format($qtyRem,0,'.',','); ?></td>
 						<td style="text-align: right;"><?= number_format($row['pickQty'],0,'.',','); ?></td>
 					<td>					
-					<a href="<?=$rootPage;?>_add_item_search.php?pickNo=<?=$hdr['pickNo'];?>&doDtlId=<?=$row['id'];?>&id=<?=$row['prodId'];?>" class="btn btn-primary"><i class="glyphicon glyphicon-edit"></i> Add</a>					
+					<a href="<?=$rootPage;?>_add_item_search.php?locCode=<?=$hdr['locationCode'];?>&pickNo=<?=$hdr['pickNo'];?>&doDtlId=<?=$row['id'];?>&saleItemId=<?=$row['id'];?>&id=<?=$row['prodId'];?>" class="btn btn-primary">
+						<i class="glyphicon glyphicon-edit"></i> Add
+					</a>					
 					</td>
 					</tr>
 					<?php $row_no+=1; } ?>
@@ -381,7 +386,8 @@ $("#spin").hide();
 	$('#txt_search_fullname').keyup(function(e){
 		if(e.keyCode == 13)
 		{
-			var params = {
+			var params = {				
+				action: 'search_saleOrder',
 				search_word: $('#txt_search_fullname').val()
 			};
 			if(params.search_word.length < 3){
@@ -390,7 +396,7 @@ $("#spin").hide();
 			}
 			/* Send the data using post and put the results in a div */
 			  $.ajax({
-				  url: "search_saleOrder_ajax.php",
+				  url: "<?=$rootPage;?>_ajax.php",
 				  type: "post",
 				  data: params,
 				datatype: 'json',
@@ -440,6 +446,7 @@ $("#spin").hide();
 		if(e.keyCode == 13)
 		{	curId = $(this).attr('name');
 			var params = {
+				action: 'search_saleOrder',
 				search_word: $(this).val()
 			};
 			if(params.search_word.length < 3){
@@ -448,7 +455,7 @@ $("#spin").hide();
 			} //alert(params.search_word);
 			/* Send the data using post and put the results in a div */
 			  $.ajax({
-				  url: "search_saleOrder_ajax.php",
+				  url: "<?=$rootPage;?>_ajax.php",
 				  type: "post",
 				  data: params,
 				datatype: 'json'})
