@@ -113,11 +113,11 @@ if( isset($_GET['dateFrom']) AND isset($_GET['dateTo']) AND isset($_GET['prodId'
 
 	$dateFrom = str_replace('/', '-', $dateFrom);
 	$dateTo = str_replace('/', '-', $dateTo);
-	$dateFromYmd=$dateToYmd="";
-	if($dateFrom<>""){ $dateFromYmd = date('Y-m-d', strtotime($dateFrom));	}
-	if($dateTo<>""){ $dateToYmd =  date('Y-m-d', strtotime($dateTo));	}						
+	
+	if($dateFrom<>""){ $dateFrom = date('Y-m-d', strtotime($dateFrom));	}
+	if($dateTo<>""){ $dateTo =  date('Y-m-d', strtotime($dateTo));	}						
 
-			$sql = "SELECT code as prodCode FROM product prd WHERE prd.id=:prodId 
+			/*$sql = "SELECT code as prodCode FROM product prd WHERE prd.id=:prodId 
 			";			
 	
 			$stmt = $pdo->prepare($sql);			
@@ -125,7 +125,7 @@ if( isset($_GET['dateFrom']) AND isset($_GET['dateTo']) AND isset($_GET['prodId'
 			$stmt->execute();
 			$hdr = $stmt->fetch();	
 			$prodCode=$hdr['prodCode'];
-			
+			*/
 			$sql = "SELECT hdr.`sdNo`, hdr.`sendDate`, hdr.`fromCode`, hdr.toCode
 			, fsl.name as fromName, tsl.name as toName
 			FROM send hdr 
@@ -135,6 +135,14 @@ if( isset($_GET['dateFrom']) AND isset($_GET['dateTo']) AND isset($_GET['prodId'
 			LEFT JOIN sloc tsl on hdr.toCode=tsl.code					
 			WHERE hdr.`statusCode`='P' 
 			";			
+			switch($s_userGroupCode){ 
+				case 'whOff' :  case 'whSup' : 
+					$sql .= "AND hdr.fromCode IN ('8','E') "; break;
+				case 'pdOff' :  case 'pdSup' :
+						$sql .= "AND hdr.fromCode=:s_userDeptCode ";
+					break;
+				default : //case 'it' : case 'admin' : 
+			  }
 			if($dateFrom<>""){ $sql .= " AND hdr.sendDate>=:dateFrom ";	}
 			if($dateTo<>""){ $sql .= " AND hdr.sendDate<=:dateTo ";	}	
 			if($prodId<>""){ $sql .= " AND itm.prodId=:prodId ";	}
@@ -144,6 +152,12 @@ if( isset($_GET['dateFrom']) AND isset($_GET['dateTo']) AND isset($_GET['prodId'
 			if($dateFrom<>"") $stmt->bindParam(':dateFrom', $dateFrom);	
 			if($dateTo<>"") $stmt->bindParam(':dateTo', $dateTo);	
 			if($prodId<>"") $stmt->bindParam(':prodId', $prodId);	
+			switch($s_userGroupCode){ 
+				case 'pdOff' :  case 'pdSup' :
+						if($s_userDeptCode<>"") $stmt->bindParam(':s_userDeptCode', $s_userDeptCode);
+					break;
+				default : //case 'it' : case 'admin' : 
+			  }
 			$stmt->execute();
 			$hdr = $stmt->fetch();	
 	   		
@@ -160,31 +174,9 @@ if( isset($_GET['dateFrom']) AND isset($_GET['dateTo']) AND isset($_GET['prodId'
 						$stmt->bindParam(':sdNo', $hdr['sdNo']);
 						$stmt->execute();	*/
 
-						$html ='
-							<table class="table table-striped no-margin" >
-								<thead>									
-								  <tr>									
-									<th style="font-weight: bold; text-align: right;">Sending Date :</th>
-									<th>'.date('d M Y',strtotime( $dateFrom )).'</th>
-									<th style="font-weight: bold; text-align: right;">To :</th>
-									<th>'.date('d M Y',strtotime( $dateTo )).'</th>	
-									<th style="font-weight: bold; text-align: right;">Product :</th>
-									<th>'.$prodCode.'</th>	
-								</tr>
-								  <tr>
-										<th style="font-weight: bold; text-align: center; width: 30px;" border="1">No.</th>
-										<th style="font-weight: bold; text-align: center; width: 250px;" border="1">Barcode</th>
-										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Grade</th>
-										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Net<br/>Weight<br/>(kg.)</th>
-										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Gross<br/>Weight<br/>(kg.)</th>										
-										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Qty</th>
-										<th style="font-weight: bold; text-align: center; width: 80px;" border="1">Issue Date</th>
-									</tr>
-								  </thead>
-								  <tbody>
-							'; 
+						
 							
-							
+					//Detail 		
 					$sql = "SELECT hdr.`sdNo`, hdr.`sendDate`, hdr.`fromCode`, hdr.toCode
 					, dtl.id, dtl.prodItemId 
 					, itm.prodCodeId, itm.barcode, itm.NW, itm.GW, itm.grade, itm.qty, itm.issueDate 
@@ -196,25 +188,64 @@ if( isset($_GET['dateFrom']) AND isset($_GET['dateTo']) AND isset($_GET['prodId'
 					LEFT JOIN sloc tsl on hdr.toCode=tsl.code					
 					WHERE hdr.`statusCode`='P' 
 					";			
-					if($dateFrom<>""){ $sql .= " AND hdr.sendDate>=:dateFrom ";	}
-					if($dateTo<>""){ $sql .= " AND hdr.sendDate<=:dateTo ";	}	
-					if($prodId<>""){ $sql .= " AND itm.prodCodeId=:prodId ";	}
+					switch($s_userGroupCode){ 
+						case 'whOff' :  case 'whSup' : 
+							$sql .= "AND hdr.fromCode IN ('8','E') "; 
+							break;
+						case 'pdOff' :  case 'pdSup' :
+							$sql .= "AND hdr.fromCode=:s_userDeptCode ";
+							break;
+						default : //case 'it' : case 'admin' : 
+					  }
+					if($dateFrom<>""){ $sql .= " AND hdr.sendDate >= :dateFrom ";	}
+					if($dateTo<>""){ $sql .= " AND hdr.sendDate <= :dateTo ";	}	
+					if($prodId<>""){ $sql .= " AND itm.prodCodeId = :prodId ";	}
 					$sql.="ORDER BY hdr.`sendDate`, hdr.`sdNo`, itm.barcode ";
 
 					$stmt = $pdo->prepare($sql);			
 					if($dateFrom<>"") $stmt->bindParam(':dateFrom', $dateFrom);	
 					if($dateTo<>"") $stmt->bindParam(':dateTo', $dateTo);	
 					if($prodId<>"") $stmt->bindParam(':prodId', $prodId);	
+					switch($s_userGroupCode){ 
+						case 'pdOff' :  case 'pdSup' :
+							if($s_userDeptCode<>"") $stmt->bindParam(':s_userDeptCode', $s_userDeptCode);
+							break;
+						default : //case 'it' : case 'admin' : 
+					  }
 					$stmt->execute();
-					$hdr = $stmt->fetch();			
+					
+					$html ='
+					<table class="table table-striped no-margin" >
+						<thead>									
+						  <tr>									
+							<th style="font-weight: bold; text-align: right;">Sending Date :</th>
+							<th>'.date('d M Y',strtotime( $dateFrom )).'</th>
+							<th style="font-weight: bold; text-align: right;">To :</th>
+							<th>'.date('d M Y',strtotime( $dateTo )).'</th>	
+							<th style="font-weight: bold; text-align: right;">Product :</th>
+							<th></th>	
+						</tr>
+						  <tr>
+								<th style="font-weight: bold; text-align: center; width: 30px;" border="1">No.</th>
+								<th style="font-weight: bold; text-align: center; width: 250px;" border="1">Barcode</th>
+								<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Grade</th>
+								<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Net<br/>Weight<br/>(kg.)</th>
+								<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Gross<br/>Weight<br/>(kg.)</th>										
+								<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Qty</th>
+								<th style="font-weight: bold; text-align: center; width: 80px;" border="1">Issue Date</th>
+							</tr>
+						  </thead>
+						  <tbody>
+					'; 
+						
 					$row_no = 1; $sumQty=$sumNW=$sumGW=0; while ($row = $stmt->fetch()) { 
-						$gradeName = '<b style="color: red;">N/A</b>'; 
-							switch($row['grade']){
-								case 0 : $gradeName = 'A'; break;
-								case 1 : $statusName = '<b style="color: red;">B</b>';  break;
-								case 2 : $statusName = '<b style="color: red;">N</b>'; break;
-								default : 
-							} 
+					$gradeName = ''; 
+					switch($row['grade']){
+						case 0 : $gradeName = 'A'; break;
+						case 1 : $statusName = '<b style="color: red;">B</b>';  break;
+						case 2 : $statusName = '<b style="color: red;">N</b>'; break;
+						default : $statusName = '<b style="color: red;">N/A</b>';
+					} 
 						
 					$html .='<tr>
 						<td style="border: 0.1em solid black; text-align: center; width: 30px;">'.$row_no.'</td>
@@ -241,15 +272,7 @@ if( isset($_GET['dateFrom']) AND isset($_GET['dateTo']) AND isset($_GET['prodId'
 					</tr>';					
 					
 					$html .='</tbody></table>';
-					
-					
-					
-					
-					
-					
-					
-					
-						
+											
 					$pdf->AddPage('P');
 										
 					$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
