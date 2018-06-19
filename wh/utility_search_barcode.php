@@ -13,7 +13,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   
   <!-- Left side column. contains the logo and sidebar -->
    <?php include 'leftside.php'; 
-   $rootPage="picking_prod_search_shelf";
+   $rootPage="utility_search_barcode";
    ?>
    
   <!-- Content Wrapper. Contains page content -->
@@ -21,12 +21,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- Content Header (Page header) -->
     <section class="content-header">
       
-	  <h1><i class="glyphicon glyphicon-shopping-cart"></i>
-       Product Stock Info
-        <small>Picking management</small>
+	  <h1><i class="glyphicon glyphicon-search"></i>
+       Item Info by Barcode
+        <small>Utiltity</small>
       </h1>
+
       <ol class="breadcrumb">
-		<li><a href="#"><i class="glyphicon glyphicon-list"></i>Product Stock Info</a></li>
+		<li><a href="#"><i class="glyphicon glyphicon-list"></i>Item Info by Barcode</a></li>
       </ol>
     </section>
 
@@ -34,7 +35,30 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <section class="content">
 	
       <!-- Your Page Content Here -->
-	  
+	<?php
+		$barcode=(isset($_GET['barcode'])?$_GET['barcode']:'');
+		$sql = "SELECT tmp.`prodItemId`,  `prodCodeId` as prodId, `barcode`, `issueDate`, `machineId`, `NW`, `GW`, `qty`, `packQty`, `grade`, `gradeDate`, `refItemId`, `itemStatus`, `remark`, `problemId`, `gradeTypeId`, `remarkWh`
+		,prd.code as prodCode, pigt.name as gradeTypeName
+		,IFNULL(s.code,'-') as shelfName 
+				FROM (SELECT *, REPLACE(`barcode`, '-', '') as barcodeId 
+						FROM product_item  
+						 
+						 ) as tmp
+				LEFT JOIN product prd ON prd.id=tmp.prodCodeId 
+				LEFT JOIN product_item_grade_type pigt ON pigt.id=tmp.gradeTypeId 	
+				LEFT JOIN receive_detail recv ON recv.prodItemId=tmp.prodItemId
+				LEFT JOIN wh_shelf_map_item smi ON smi.recvProdId=recv.id AND smi.statusCode='A' 	
+				LEFT JOIN wh_shelf s ON s.id=smi.shelfId 	
+				WHERE barcodeId=:barcode
+				LIMIT 1 ";
+		$stmt = $pdo->prepare($sql);
+		$stmt->bindParam(':barcode', $barcode);
+		$stmt->execute();
+		$row_count = $stmt->rowCount();	
+		$rpi=$stmt->fetch();
+		$prodItemId = $rpi['prodItemId'];
+		$prodId=$rpi['prodId'];	
+		?>			  
 	
 	
 	<!-- Main row -->
@@ -44,7 +68,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			<!-- TABLE: LATEST ORDERS -->
           <div class="box box-primary">
             <div class="box-header with-border">
-              <h3 class="box-title">Available Item Stock</h3>
+              <h3 class="box-title">Item Info</h3>
 
               <div class="box-tools pull-right">
                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
@@ -57,16 +81,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
 					<div class="row">
 						<div class="col-md-6">					
-							<label for="prodId" >Product Code</label>
-							<div class="form-group row">
-								<div class="col-md-9">
-									<input type="hidden" name="prodId" value="" />
-									<input type="text" name="prodCode" class="form-control" value=""  />
-								</div>
-								<div class="col-md-3">
-									<a href="#" name="btnSdNo" class="btn btn-primary"  ><i class="glyphicon glyphicon-search" ></i></a>								
-								</div>
-							</div>   
+							<label for="prodId" >Barcode</label>
+							<input type="text" name="barcode" class="form-control" value=""  />
+
 							<button id="btn1" type="submit" class="btn btn-default">Submit</button>
 						</div>
 						<!--/.col-md-->
@@ -74,71 +91,119 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						</div>
 					</div><!--row-->
 			<?php
-				$id=(isset($_GET['prodId'])?$_GET['prodId']:0);
-				$sql = "
-				SELECT itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, itm.`qty`
-				, count(*) as packQty, IFNULL(SUM(itm.`qty`),0) as total				
-				,prd.id as prodId, prd.code as prodCode
-				FROM `receive` hdr 
-				INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  
-				INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-				INNER JOIN product prd ON prd.id=itm.prodCodeId 
-				WHERE 1=1
-				AND hdr.statusCode='P' 	
-				AND dtl.statusCode='A' ";
-				if(isset($_GET['prodId'])){
-					$sql .= "AND itm.prodCodeId=:id ";
-				}
+			if($row_count!=1){ ?>
+				<h3>Barcode Not Found.</h3>	
+			<?php }else{ ?>
+
+			<div style="background-color: #ccffcc; padding: 5px;">
+			<div class="row">
+				<div class="col-md-12">
+					<h3>Product Code : <b><?=$rpi['prodCode'];?></b>
+						/ Shelf : <b><?=$rpi['shelfName'];?></b> 
+					</h3>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-md-3">
+					Produce Date : <b><?= date('d M Y',strtotime( $rpi['issueDate'] ));?></b>
+				</div>
+				<div class="col-md-3">
+					Meter : <b><?=$rpi['qty'];?></b>
+				</div>
+				<div class="col-md-3">
+					Net Weigth : <b><?=$rpi['NW'];?></b>
+				</div>
+				<div class="col-md-3">
+					Gross Weigth : <b><?=$rpi['GW'];?></b>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-3">
+					Grade : <b><?=$rpi['grade'];?></b>
+				</div>
+				<div class="col-md-3">
+					Grade Date : <b><?= date('d M Y',strtotime( $rpi['gradeDate'] ));?></b>
+				</div>
+				<div class="col-md-3">
+					Grade Type : <b><?=$rpi['gradeTypeName'];?></b>
+				</div>
+				<div class="col-md-3">
+					WH Remark : <b><?=$rpi['remarkWh'];?></b>
+				</div>
+			</div>
+
+			
+
+			<div class="row">
+				<?php
+					$sql = "SELECT * FROM (
+					SELECT hdr.sendDate as transDate, hdr.sdNo as docNo, hdr.fromCode, hdr.toCode
+					, fs.name as fromName, ts.name as toName 
+					FROM `send` hdr
+					INNER JOIN send_detail dtl ON hdr.sdNo=dtl.sdNo AND dtl.prodItemId=:prodItemId 
+					LEFT JOIN sloc fs ON fs.code=hdr.fromCode
+					LEFT JOIN sloc ts ON ts.code=hdr.toCode 
+					UNION 
+					SELECT hdr.receiveDate as transDate, hdr.rcNo as docNo, hdr.fromCode, hdr.toCode
+					, fs.name as fromName, ts.name as toName 
+					FROM `receive` hdr
+					INNER JOIN receive_detail dtl ON hdr.rcNo=dtl.rcNo AND dtl.prodItemId=:prodItemId2 
+					LEFT JOIN sloc fs ON fs.code=hdr.fromCode
+					LEFT JOIN sloc ts ON ts.code=hdr.toCode 
+					UNION 
+					SELECT hdr.returnDate as transDate, hdr.rtNo as docNo, hdr.fromCode, hdr.toCode
+					, fs.name as fromName, ts.name as toName 
+					FROM `rt` hdr
+					INNER JOIN rt_detail dtl ON hdr.rtNo=dtl.rtNo AND dtl.prodItemId=:prodItemId3 
+					LEFT JOIN sloc fs ON fs.code=hdr.fromCode
+					LEFT JOIN sloc ts ON ts.code=hdr.toCode 
+					UNION 
+					SELECT hdr.prepareDate as transDate, hdr.ppNo as docNo
+					, '' as fromCode, '' as toCode, '' as fromName, '' as toName 
+					FROM `prepare` hdr
+					INNER JOIN prepare_detail dtl ON hdr.ppNo=dtl.ppNo AND dtl.prodItemId=:prodItemId4
+					UNION 
+					SELECT hdr.deliveryDate as transDate, hdr.doNo as docNo
+					, '' as fromCode, st.code as toCode, '' as fromName, st.name as toName 
+					FROM `delivery_header` hdr
+					INNER JOIN delivery_detail dtl ON hdr.doNo=dtl.doNo AND dtl.prodItemId=:prodItemId5 
+					INNER JOIN sale_header sh ON sh.soNo=hdr.soNo 
+					LEFT JOIN shipto st ON st.id=sh.shiptoId 	
+					) as tmp ORDER BY transDate DESC 				
+					";
+					$stmt = $pdo->prepare($sql);
+					$stmt->bindParam(':prodItemId', $prodItemId);
+					$stmt->bindParam(':prodItemId2', $prodItemId);
+					$stmt->bindParam(':prodItemId3', $prodItemId);
+					$stmt->bindParam(':prodItemId4', $prodItemId);
+					$stmt->bindParam(':prodItemId5', $prodItemId);
+					$stmt->execute();	
+				?>	
 				
-				$sql .= "GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`
-								
-				ORDER BY itm.`issueDate` ASC  
-				"; //echo $sql;
-				//$result = mysqli_query($link, $sql);
-				$stmt = $pdo->prepare($sql);
-				if(isset($_GET['prodId'])){
-					$stmt->bindParam(':id', $id);
-				}
-				$stmt->execute();	
-					
-				?>			
-              <div class="table-responsive">
+			</div>
+		</div>
+			<h3>Item Movement</h3>
+			<div class="table-responsive">
                 <table class="table no-margin">
                   <thead>
                   <tr>
 					<th>No.</th>
-                    <th>Product Code</th>
-					<th>issue Date</th>
-					<th>Grade</th>
-					<th>Per Pack</th>
-                    <th style="color: blue;">Pack</th>
-					<th style="color: blue;">Qty Total</th>	
-					<th>#</th>
+					<th>Date</th>
+                    <th>Transaction</th>
+                    <th>From</th>
+                    <th>To</th>
                   </tr>
                   </thead>
                   <tbody>
 				  <?php $row_no = 1; while ($row = $stmt->fetch()) { 
-				  $gradeName = '<b style="color: red;">N/A</b>'; 
-					switch($row['grade']){
-						case 0 : $gradeName = 'A'; break;
-						case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
-						case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
-						default : 
-							$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
-					}
 				?>
                   <tr>
 					<td><?= $row_no; ?></td>
-					<td><?= $row['prodCode']; ?></td>					
-					<td><?= $row['issueDate']; ?></td>
-					<td><?= $gradeName; ?></td>
-					<td><?= $row['qty']; ?></td>
-					<td style="color: blue;"><?= $row['packQty']; ?></td>
-					<td style="color: blue;"><?= $row['total']; ?></td>		
-					
-					<td><a href="<?=$rootPage;?>_dtl.php?prodId=<?=$row['prodId'];?>&issueDate=<?=$row['issueDate'];?>&grade<?=$row['grade'];?>" 
-						class="btn btn-default" ><i class="glyphicon glyphicon-search"></i> Shelf View</a></td>
-					
+					<td><?= date('d M Y',strtotime( $row['transDate'] )); ?></td>					
+					<td><?= $row['docNo']; ?></td>
+					<td><?= $row['fromCode'].' - '.$row['fromName']; ?></td>
+					<td><?= $row['toCode'].' - '.$row['toName']; ?></td>
                 </tr>
                 <?php $row_no+=1; } ?>
                   </tbody>
@@ -146,6 +211,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
               </div>
               <!-- /.table-responsive -->
             </div>
+
+			<?php } //endif rowCount ?>
+
+
+              
             <!-- /.box-body -->
             <div class="box-footer clearfix">
 				

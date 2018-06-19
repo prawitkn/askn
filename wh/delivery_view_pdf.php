@@ -3,37 +3,7 @@
 include('session.php');
 //include('prints_function.php');
 //include('inc_helper.php');
-function to_thai_date($eng_date){
-	if(strlen($eng_date) != 10){
-		return null;
-	}else{
-		$new_date = explode('-', $eng_date);
 
-		$new_y = (int) $new_date[0] + 543;
-		$new_m = $new_date[1];
-		$new_d = $new_date[2];
-
-		$thai_date = $new_d . '/' . $new_m . '/' . $new_y;
-
-		return $thai_date;
-	}
-}
-function to_thai_datetime_fdt($eng_date){
-	//if(strlen($eng_date) != 10){
-	//    return null;
-	//}else{
-		$new_datetime = explode(' ', $eng_date);
-		$new_date = explode('-', $new_datetime[0]);
-
-		$new_y = (int) $new_date[0] + 543;
-		$new_m = $new_date[1];
-		$new_d = $new_date[2];
-
-		$thai_date = $new_d . '/' . $new_m . '/' . $new_y . ' ' . substr($new_datetime[1],0,5);
-
-		return $thai_date;
-	//}
-}
 // Include the main TCPDF library (search for installation path).
 require_once('../tcpdf/tcpdf.php');
 
@@ -53,10 +23,6 @@ class MYPDF extends TCPDF {
 		 // Logo
         //$image_file = '../asset/img/logo-asia-kangnam.jpg';
         //$this->Image($image_file, 10, 10, 15, '', 'JPG', '', 'T', false, 300, '', false, false, 0, false, false, false);
-		$this->SetY(11);	
-		$this->Cell(0, 5, 'Asia Kungnum CO.,LTD', 0, false, 'C', 0, '', 0, false, 'M', 'M');
-		$this->Ln(5);
-        $this->Cell(0, 5, 'Delivery Order', 0, false, 'C', 0, '', 0, false, 'M', 'M');
     }
     // Page footer
     public function Footer() {
@@ -69,6 +35,110 @@ class MYPDF extends TCPDF {
 		//$tmp = to_thai_short_date_fdt($tmp);
 		$this->Cell(0, 10,'Print : '. $tmp, 0, false, 'R', 0, '', 0, false, 'T', 'M');
     }
+
+
+    public function head($hdr){
+		//head 
+		//$this->AddPage('P');
+		
+		$this->SetFont('THSarabun', 'B', 12, '', true);
+		
+		$this->setCellHeightRatio(1.25);
+		
+		$html='<table width="100%"  >		
+		<tr>
+			<td rowspan="3" ><img src="../asset/img/logo-ak_60x60.jpg" /></td>
+			<td colspan="5"><span style="font-size: 120%;" >บริษัท เอเชีย กังนัม จำกัด</span></td>
+			<td></td>
+			<td colspan="3" ></td>
+		</tr>
+		<tr>
+			<td colspan="5"><span style="font-size: 120%;" >ASIA KANGNAM  COMPANY LIMITED</span></td>
+			<td></td>
+			<td colspan="3" </td>
+		</tr>
+		<tr>
+			<td colspan="5"><span style="font-size: 60%;" >69/1 ม.6 ต.ท่าข้าม อ.บางปะกง จ.ฉะเชิงเทรา 24130  โทร 0 – 3857 – 3635 แฟ็กซ์ 0 – 3857 – 3634</span></td>
+			<td colspan="2"></td>
+			<td colspan="2"></td>
+		</tr>
+		<tr>
+			<td style="text-align: center;"><span style="font-size: 60%;" >www.askn.com</span></td>
+			<td colspan="5"><span style="font-size: 60%;" >69/1 Moo 6, Thakam, Bangpakong, Chachoengsao 24130 Thailand Tel: 66 – 3857 – 3635 Fax: 66 – 3857 – 3634</span></td>
+			<td colspan="2"></td>
+			<td colspan="2"></td>
+		</tr>
+		</table>
+		';
+
+		$html.='<table width="100%"  >	
+		<tr>
+			<td colspan="3" style="border: o.1em solid black; text-align: center; font-size: large;">ใบส่งสินค้า (DELIVERY ORDER)</td>
+			<td colspan="3" style="text-align: center; font-size: large; color: red" ></td>
+			<td colspan="2" style="font-size: 95%;" >&nbsp;วันที่ (Date) : </td>
+			<td colspan="2"  style="border-bottom: 0.1em solid black;">'.date('d M Y',strtotime( $hdr['deliveryDate'] )).'</td>
+		</tr>
+		<tr>
+			<td colspan="2" >ชื่อล : </td>
+			<td colspan="4"  style="border-bottom: 0.1em solid black;">'.$hdr['custName'].'</td>			
+			<td colspan="2" > รหัสลูกค้า : </td>
+			<td colspan="2" style="border-bottom: 0.1em solid black;">'.$hdr['custCode'].'</td>			
+		</tr>
+		<tr>
+			<td colspan="2" ><span>สถานที่ส่ง : </span></td>
+			<td colspan="4"  style="border-bottom: 0.1em solid black;">'.$hdr['shipToName'].'</td>	
+			<td colspan="2" >&nbsp;SO No. : </td>
+			<td colspan="2"  style="border-bottom: 0.1em solid black;">'.$hdr['soNo'].'</td>
+		</tr>
+		<tr>
+			<td colspan="10"  style="border-bottom: 0.1em solid black;">'.$hdr['shipToAddr1'].'</td>
+		</tr>
+		<tr>
+			<td colspan="10" style="border-bottom: 0.1em solid black;">'.$hdr['shipToAddr2'].'</td>
+		</tr>
+		<tr>
+			<td colspan="10"  style="border-bottom: 0.1em solid black;">'.$hdr['shipToAddr3'].$hdr['shipToZipcode'].'</td>
+		</tr>		
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		</table>
+		';
+		$this->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
+		$this->setCellHeightRatio(1.40);
+	}
+	
+	public function foot($hdr, $html){
+		$html .='</tbody></table>';
+		$this->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
+		//$pdf->Ln(2);
+						
+		$html='<table width="100%"  >
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>		
+		</table>
+		';
+		$this->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
+				
+	}
 }
 
 // create new PDF document
@@ -89,7 +159,7 @@ $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
 // set margins (left, top, right)
 //$pdf->SetMargins(24, 26, 30);	//หน้า ๓ บนถึงตูดเลขหน้า ๒ ตูดเลขหน้าถึงตูดบรรทัดแรก ๑.๕
-$pdf->SetMargins(20, 20, 10);	//หน้า ๓ บนถึงตูดเลขหน้า ๒ ตูดเลขหน้าถึงตูดบรรทัดแรก ๑.๕
+$pdf->SetMargins(10, 10, 5);	//หน้า ๓ บนถึงตูดเลขหน้า ๒ ตูดเลขหน้าถึงตูดบรรทัดแรก ๑.๕
 $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
 $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
 
@@ -111,27 +181,13 @@ if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
 $pdf->setFontSubsetting(true);
 
 // Set font
-$pdf->SetFont('THSarabun', '', 14, '', true);
-
-
-
-
-
-
-
-
-
-
-
-
+//$pdf->SetFont('THSarabun', '', 14, '', true);
 
 // Set some content to print
 if( isset($_GET['doNo']) ){
 	$doNo = $_GET['doNo'];
 	
 	$pdf->SetTitle($doNo);
-	
-	$doNo = $_GET['doNo'];
 
 	$sql = "
 	SELECT dh.`doNo`, dh.`soNo`, dh.`ppNo`, oh.`poNo`
@@ -184,84 +240,72 @@ if( isset($_GET['doNo']) ){
 	$stmt->bindParam(':doNo', $hdr['doNo']);
 	$stmt->execute();
 	
+
 	//Loop all item
-	$iRow=0;		
-	$row_no = 1; $sumQty=$sumNW=$sumGW=0; while ($row = $stmt->fetch()) { 
+	$iRow=0;
+	$row_no = 1;  while ($row = $stmt->fetch()) { 
 		if($iRow==0){
 			$pdf->AddPage('L','A5');
-		
-			$pdf->Ln(6);
-			$pdf->Cell(150, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Cell(50, 0, to_thai_date($hdr['deliveryDate']), 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Ln(12);
+
+			$pdf->head($hdr);
 			
-			$pdf->Cell(10, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Cell(75, 0, $hdr['custName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Cell(5, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Cell(50, 0, $hdr['custCode'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$custOrder = trim($hdr['soNo']);
-			$custOrder=($hdr['poNo']<>""?'/'.$hdr['poNo']:'');
-			$pdf->Cell(50, 0, $custOrder, 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Ln(6);
-					
-			$pdf->Cell(10, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Cell(120, 0, $hdr['shipToAddr1'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');				
-			$pdf->Cell(30, 0, $hdr['smName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Cell(50, 0, $hdr['smCode'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Ln(3);
-			
-			$pdf->Cell(10, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Cell(100, 0, $hdr['shipToAddr2'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			
-			$pdf->Ln(15);
-		}//end if iRow=0					
-		
-		$pdf->Cell(5, 0, $row_no, 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-		$pdf->Cell(60, 0, $row['prodName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-		$pdf->Cell(25, 0, $row['prodCode'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-		$pdf->Cell(25, 0, $row['sumSalesQty'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-		$pdf->Cell(25, 0, $row['sumDeliveryQty'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-		$pdf->Cell(30, 0, $row['remark'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-		$pdf->Ln(6);
-		
-		$row_no+=1;
-		$iRow+=1;
-		
-		if($iRow==9){
-			//foot document.
-			$pdf->Cell(50, 0, $hdr['confirmByName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Cell(50, 0, $hdr['approveByName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Ln(6);
-			
-			$pdf->Cell(50, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Cell(50, 0, $hdr['driver'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-			$pdf->Ln(6);					
-			
-			$iRow=0;
-		}	
-	
-		if($iRow<>10){
-			for($iRowRemain=$iRow; $iRowRemain<=10; $iRowRemain++){
-				$pdf->Cell(50, 0, '-', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-				$pdf->Ln(6);
-			}
+			$html="";					
+			$html ='
+					<table class="table table-striped no-margin" style="width:100%; table-layout: fixed;"  >
+						<thead>	
+							<tr>
+								<th style="font-weight: bold; text-align: center; width: 60px; border: 0.1em solid black;">ลำดับที่</th>										
+								<th style="font-weight: bold; text-align: center; width: 250px; border: 0.1em solid black;">รายการสินค้า</th>							
+								<th style="font-weight: bold; text-align: center; width: 40px; border: 0.1em solid black;">จำนวน</th>								
+								<th style="font-weight: bold; text-align: center; width: 60px; border: 0.1em solid black;">หมายเหตุ</th>
+							</tr>
+						</thead>
+						  <tbody>
+					'; 
 		}
+		//endif iRow==0 
+		$html .='<tr>	
+					<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 60px;
+								border: 0.1em solid black; text-align: right; width: 60px;">'.$row_no.'</td>						
+					<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px;
+								border: 0.1em solid black; padding: 10px; width: 250px;"> 
+								 '.$row['prodCode'].'</td>remark
+					<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 40px;
+								border: 0.1em solid black; text-align: right; width: 40px;">'.number_format($row['qty'],0,'.',',').'</td>
 
-		//foot document.
-		$pdf->Cell(50, 0, $hdr['confirmByName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-		$pdf->Cell(50, 0, $hdr['approveByName'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-		$pdf->Ln(6);
+					<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 40px;
+								border: 0.1em solid black; text-align: right; width: 40px;">'.$row['remark'].'</td>		
+									
+					
+				</tr>';	
 		
-		$pdf->Cell(50, 0, '', 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-		$pdf->Cell(50, 0, $hdr['driver'], 0, 0, 'L', 0, '', 0, false, 'T', 'B');
-		$pdf->Ln(6);
+		//Loop item per page
+		$iRow+=1;
+		if($iRow==9){
+			$pdf->foot($hdr, $html);
+			//Re			
+			$iRow=0;
+		}
+	}//end loop all item
 	
+	if($iRow<>10){
+		for($iRowRemain=$iRow; $iRowRemain<=9; $iRowRemain++){
+			$html .='<tr>
+					<td style="font-weight: bold; text-align: center; width: 60px;border: 0.1em solid black;"></td>
+					<td style="font-weight: bold; text-align: center; width: 250px;border: 0.1em solid black;"></td>
+					<td style="font-weight: bold; text-align: center; width: 60px;border: 0.1em solid black;"></td>								
+					<td style="font-weight: bold; text-align: center; width: 40px;border: 0.1em solid black;"></td>			
+				</tr>';	
+		}
+	}	
 	
-	}
-	//end while
-
+	$pdf->foot($hdr, $html);
 }//end if id No.		 
 		   
+
+
+
+
 
 // ---------------------------------------------------------
 
