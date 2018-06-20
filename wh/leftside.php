@@ -81,6 +81,7 @@
 		<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whSup' : case 'pdSup' : ?> 
 			<li class="header">Tool Menu</li>
 			<li><a href="picking_prod_search_shelf.php"><i class="glyphicon glyphicon-search"></i> <span>Picking Shelf</span></a></li>
+			<li><a href="picking_prod_search_barcode.php"><i class="glyphicon glyphicon-search"></i> <span>Prepare Barcode</span></a></li>
 			<li><a href="utility_search_barcode.php"><i class="glyphicon glyphicon-search"></i> <span>Barcode Info</span></a></li>
 		<?php break; default : } ?>	
 

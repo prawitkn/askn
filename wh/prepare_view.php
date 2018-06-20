@@ -152,12 +152,19 @@ $ppNo = $_GET['ppNo'];
 							<th>Qty</th>
 						</tr>
 						<?php $wrongProduct=0; $row_no=1; while ($row = $stmt->fetch()) { 
+						$gradeName = '<b style="color: red;">N/A</b>'; 
+						switch($row['grade']){
+							case 0 : $gradeName = 'A'; break;
+							case 1 : $gradeName = '<b style="color: red;">B</b>'; break;
+							case 2 : $gradeName = '<b style="color: red;">N</b>'; break;
+							default : 
+						} 
 						?>
 							<tr <?php if($row['inPick']==0 ) echo ' style="color: red;" '; $wrongProduct+=1; ?> >
 								<td style="text-align: center;"><?= $row_no; ?></td>
 								<td><?= $row['barcode']; ?></td>
 								<td><?= $row['issueDate']; ?></td>
-								<td><?= $row['grade']; ?></td>
+								<td><?= $gradeName; ?></td>
 								<td><?= $row['qty']; ?></td>
 							</tr>							
 						<?php $row_no+=1; } ?>
@@ -216,13 +223,20 @@ $ppNo = $_GET['ppNo'];
 							<th>Packing Qty</th>
 						</tr>
 						<?php $diffQty=0; $row_no=1; while ($row = $stmt->fetch()) { 
+						$gradeName = '<b style="color: red;">N/A</b>'; 
+						switch($row['grade']){
+							case 0 : $gradeName = 'A'; break;
+							case 1 : $gradeName = '<b style="color: red;">B</b>'; break;
+							case 2 : $gradeName = '<b style="color: red;">N</b>'; break;
+							default : 
+						} 
 						?>
 							<?php if($row['sumPickQty']<>$row['sumPackQty']) { ?> 
 							<tr  style="color: red;" >
 								<td style="text-align: center;"><?= $row_no; ?></td>
 								<td><?= $row['prodCode']; ?></td>
 								<td><?= $row['issueDate']; ?></td>
-								<td><?= $row['grade']; ?></td>
+								<td><?= $gradeName; ?></td>
 								<td><?= $row['sumPickQty']; ?></td>
 								<td><?= $row['sumPackQty']; ?></td>
 							</tr>							

@@ -50,6 +50,8 @@ $rootPage = 'prepare';
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
           <?php
+          $search_word=(isset($_GET['search_word'])?$_GET['search_word']:'');		
+          
 				$sql = "
 					SELECT COUNT(hdr.ppNo) AS countTotal
 					FROM `prepare` hdr 

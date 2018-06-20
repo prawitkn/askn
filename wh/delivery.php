@@ -15,6 +15,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		
 $rootPage="delivery";	
 
+$search_word=(isset($_GET['search_word'])?$_GET['search_word']:'');		
+
 $sql = "
 SELECT COUNT(a.doNo) AS countTotal
 FROM `delivery_header` a

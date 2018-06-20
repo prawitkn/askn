@@ -272,7 +272,7 @@ if( isset($_GET['doNo']) ){
 								border: 0.1em solid black; text-align: right; width: 60px;">'.$row_no.'</td>						
 					<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 								border: 0.1em solid black; padding: 10px; width: 400px;"> 
-								 '.$row['prodCode'].'</td>
+								 KNA '.$row['prodCode'].'</td>
 					<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
 								border: 0.1em solid black; text-align: right; width: 60px;">'.number_format($row['qty'],0,'.',',').'</td>
 

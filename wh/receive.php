@@ -51,7 +51,8 @@ $rootPage="receive";
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
-          <?php				
+          <?php	
+          	$search_word=(isset($_GET['search_word'])?$_GET['search_word']:'');		
                 $sql = "SELECT COUNT(hdr.rcNo) AS countTotal
 				FROM `receive` hdr
 				LEFT JOIN sloc fsl on hdr.fromCode=fsl.code 

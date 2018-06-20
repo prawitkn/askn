@@ -69,7 +69,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				INNER JOIN wh_shelf_map_item wmi ON wmi.recvProdId=dtl.id
 				INNER JOIN wh_shelf ws ON ws.id=wmi.shelfId  
 				WHERE 1=1
-				AND hdr.statusCode='P' 				
+				AND hdr.statusCode='P' 	
+				AND hdr.toCode IN ('8','E') 			
 				AND dtl.statusCode='A'  ";
 				if(isset($_GET['prodId'])){
 					$sql .= "AND itm.prodCodeId=:prodId ";

@@ -65,7 +65,8 @@ switch($s_userGroupCode){
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
-          <?php		
+          <?php	
+          $search_word=(isset($_GET['search_word'])?$_GET['search_word']:'');			
                 $sql = "
 				SELECT COUNT(hdr.pickNo) AS countTotal
 				FROM `picking` hdr 

@@ -193,7 +193,7 @@ if( isset($_GET['ppNo']) ){
 							<th style="">Pick No. :</th>
 							<th style="font-weight: bold; text-align: left;">'.$hdr['pickNo'].'</th>	
 							<th style="text-align: right;">Prepare Date :</th>
-							<th style="font-weight: bold; text-align: left;">'.$hdr['prepareDate'].'</th>	
+							<th style="font-weight: bold; text-align: left;">'.date('d M Y',strtotime( $hdr['prepareDate'] )).'</th>	
 						</tr>
 						<tr>							
 							<th colspan="8" style="">Ship To :
@@ -219,16 +219,22 @@ if( isset($_GET['ppNo']) ){
 					'; 
 							
 					$row_no = 1; $sumQty=$sumNW=$sumGW=0; while ($row = $stmt->fetch()) { 
-						
+					$gradeName = '<b style="color: red;">N/A</b>'; 
+					switch($row['grade']){
+						case 0 : $gradeName = 'A'; break;
+						case 1 : $gradeName = '<b style="color: red;">B</b>'; break;
+						case 2 : $gradeName = '<b style="color: red;">N</b>'; break;
+						default : 
+					} 	
 						
 					$html .='<tr>
 						<td style="border: 0.1em solid black; text-align: center; width: 30px;">'.$row_no.'</td>
 						<td style="border: 0.1em solid black; padding: 10px; width: 300px;"> '.$row['barcode'].'</td>
-						<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$row['grade'].'</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['NW'].'</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['GW'].'</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['qty'],0,'.',',').'</td>
-						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.$row['issueDate'].'</td>
+						<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$gradeName.'</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['NW'].'&nbsp;&nbsp;</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['GW'].'&nbsp;&nbsp;</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['qty'],0,'.',',').'&nbsp;&nbsp;</td>
+						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.date('d M Y',strtotime( $row['issueDate'] )).'</td>
 					</tr>';			
 												
 					$sumQty+=$row['qty'] ; $sumNW+=$row['NW']; $sumGW+=$row['GW'] ;								
@@ -239,9 +245,9 @@ if( isset($_GET['ppNo']) ){
 						<td style="border: 0.1em solid black; text-align: center; width: 30px;"></td>
 						<td style="border: 0.1em solid black; text-align: center; padding: 10px; width: 300px;">Total</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 50px;"></td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumNW,2,'.',',').'</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumGW,2,'.',',').'</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumQty,0,'.',',').'</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumNW,2,'.',',').'&nbsp;&nbsp;</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumGW,2,'.',',').'&nbsp;&nbsp;</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumQty,0,'.',',').'&nbsp;&nbsp;</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 80px;"></td>
 					</tr>';
 					$html .='<tr>

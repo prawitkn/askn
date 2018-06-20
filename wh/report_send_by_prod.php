@@ -53,9 +53,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			
 				$dateFrom = str_replace('/', '-', $dateFrom);
 				$dateTo = str_replace('/', '-', $dateTo);
-				$dateFromYmd=$dateToYmd="";
-				if($dateFrom<>""){ $dateFromYmd = date('Y-m-d', strtotime($dateFrom));	}
-				if($dateTo<>""){ $dateToYmd =  date('Y-m-d', strtotime($dateTo));	}
+			
+				if($dateFrom<>""){ $dateFrom = date('Y-m-d', strtotime($dateFrom));	}
+				if($dateTo<>""){ $dateTo =  date('Y-m-d', strtotime($dateTo));	}
 				
 $sql = "
 SELECT COUNT(hdr.sdNo) AS countTotal
@@ -63,8 +63,8 @@ FROM `send` hdr
 INNER JOIN send_detail dtl ON dtl.sdNo=hdr.sdNo  
 INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 WHERE 1 ";
-if($dateFrom<>""){ $sql .= " AND hdr.sendDate>=:dateFromYmd ";	}
-if($dateTo<>""){ $sql .= " AND hdr.sendDate<=:dateToYmd ";	}
+if($dateFrom<>""){ $sql .= " AND hdr.sendDate>=:dateFrom ";	}
+if($dateTo<>""){ $sql .= " AND hdr.sendDate<=:dateTo ";	}
 if($prodId<>""){ $sql .= " AND itm.prodCodeId=:prodId ";	}
 switch($s_userGroupCode){ 
 	case 'whOff' :  case 'whSup' : 
@@ -81,8 +81,8 @@ $sql .= "AND hdr.statusCode='P'
 				
 				$stmt = $pdo->prepare($sql);			
 				if($prodId<>"") $stmt->bindParam(':prodId', $prodId);	
-				if($dateFromYmd<>"") $stmt->bindParam(':dateFromYmd', $dateFromYmd);	
-				if($dateToYmd<>"") $stmt->bindParam(':dateToYmd', $dateToYmd);	
+				if($dateFrom<>"") $stmt->bindParam(':dateFrom', $dateFrom);	
+				if($dateTo<>"") $stmt->bindParam(':dateTo', $dateTo);	
 				switch($s_userGroupCode){ 
 					case 'pdOff' :  case 'pdSup' :
 							if($s_userDeptCode<>"") $stmt->bindParam(':s_userDeptCode', $s_userDeptCode);
@@ -108,22 +108,10 @@ $sql .= "AND hdr.statusCode='P'
         </div><!-- /.box-header -->
         <div class="box-body">
 			<div class="row" style="margin-bottom: 5px;">
-			<!--<div class="col-md-12">
-				<ul class="nav nav-tabs">
-					<li class="active" ><a href="#divSearch" toggle="tab">Search</a></li>
-					<li class="" ><a href="#divResult" toggle="tab">Result</a></li>
-				</ul>
-				
-				<div class="tab-content clearfix">
-				<div class="tab-pane active" id="divSearch">a
-				</div>
-				<div class="tab-pane" id="divResult">b
-				</div>
-				</div>
-				
-			</div>-->
-			<div class="col-md-12">					
-                    <form id="form1" action="<?=$rootPage;?>.php" method="get" class="form-inline" novalidate>
+				<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form-inline" novalidate>
+				<div style="background-color: #ccffcc; padding: 5px;">
+				<div class="col-md-12">					
+	                
 						<label for="dateFrom">Date From : </label>
 						<input type="text" id="dateFrom" name="dateFrom" value="" class="form-control datepicker" data-smk-msg="Require From Date." required >
 						<label for="dateTo">Date To : </label>
@@ -131,11 +119,13 @@ $sql .= "AND hdr.statusCode='P'
 						<label for="prodCode">Product Code</label> 
 						<input type="hidden" name="prodId" id="prodId" class="form-control" value="<?=$prodId;?>"  />
 						<input type="text" name="prodCode" id="prodCode" class="form-control" value="<?=$prodCode;?>"  />
-						<a href="#" name="btnSdNo" class="btn btn-primary" ><i class="glyphicon glyphicon-search" ></i> </a>	
-							
-						<input type="submit" class="btn btn-default" value="ค้นหา">
-                    </form>
-                </div>    
+						<a href="#" name="btnSdNo" class="btn btn-primary" ><i class="glyphicon glyphicon-search" ></i> </a>					
+	                
+	            </div>  
+	            </div><!--BAGROUND COLOR-->  
+	            <input type="submit" class="btn btn-default" value="ค้นหา">
+	            </form>
+
 			</div>
            <?php
  $sql = "SELECT hdr.`sdNo`, hdr.`refNo`, hdr.`sendDate`, hdr.`fromCode`, hdr.`toCode`, hdr.`remark`, hdr.`statusCode`
@@ -151,8 +141,8 @@ LEFT JOIN user cu on hdr.createByID=cu.userId
 LEFT JOIN user fu on hdr.confirmById=fu.userId
 LEFT JOIN user pu on hdr.approveById=pu.userId  
 WHERE 1 ";
-if($dateFrom<>""){ $sql .= " AND hdr.sendDate>=:dateFromYmd ";	}
-if($dateTo<>""){ $sql .= " AND hdr.sendDate<=:dateToYmd ";	}
+if($dateFrom<>""){ $sql .= " AND hdr.sendDate>=:dateFrom ";	}
+if($dateTo<>""){ $sql .= " AND hdr.sendDate<=:dateTo ";	}
 if($prodId<>""){ $sql .= " AND itm.prodCodeId=:prodId ";	}
 switch($s_userGroupCode){ 
 	case 'whOff' :  case 'whSup' : 
@@ -170,8 +160,8 @@ LIMIT $start, $rows
 //echo $sql;
 $stmt = $pdo->prepare($sql);			
 if($prodId<>"") $stmt->bindParam(':prodId', $prodId);	
-if($dateFromYmd<>"") $stmt->bindParam(':dateFromYmd', $dateFromYmd);	
-if($dateToYmd<>"") $stmt->bindParam(':dateToYmd', $dateToYmd);	
+if($dateFrom<>"") $stmt->bindParam(':dateFrom', $dateFrom);	
+if($dateTo<>"") $stmt->bindParam(':dateTo', $dateTo);	
 switch($s_userGroupCode){ 
 	case 'pdOff' :  case 'pdSup' :
 			if($s_userDeptCode<>"") $stmt->bindParam(':s_userDeptCode', $s_userDeptCode);
@@ -218,7 +208,7 @@ $stmt->execute();
 				<!--table-resposive-->
 		
 		<div class="col-md-12">
-			<?php $pagingString = "?dateFrom=".$_GET['dateFrom']."&dateTo=".$_GET['dateTo']."&prodId=".$prodId;
+			<?php $pagingString = "?dateFrom=".$dateFrom."&dateTo=".$dateTo."&prodId=".$prodId;
 			?>
 			<a href="<?=$rootPage."_pdf.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
 				<i class="glyphicon glyphicon-save-file"></i> PDF </span></a>			
@@ -443,7 +433,7 @@ $(document).ready(function() {
 		});  //กำหนดเป็นวันปัจุบัน
 		//กำหนดเป็น วันที่จากฐานข้อมูล		
 		<?php if($dateFromYmd<>"") { ?>
-			var queryDate = '<?=$dateFromYmd;?>',
+			var queryDate = '<?=$dateFrom;?>',
 			dateParts = queryDate.match(/(\d+)/g)
 			realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
 			$('#dateFrom').datepicker('setDate', realDate);
@@ -452,7 +442,7 @@ $(document).ready(function() {
 		
 		//กำหนดเป็น วันที่จากฐานข้อมูล		
 		<?php if($dateToYmd<>"") { ?>
-			var queryDate = '<?=$dateToYmd;?>',
+			var queryDate = '<?=$dateTo;?>',
 			dateParts = queryDate.match(/(\d+)/g)
 			realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
 			$('#dateTo').datepicker('setDate', realDate);

@@ -77,8 +77,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				$id=(isset($_GET['prodId'])?$_GET['prodId']:0);
 				$sql = "
 				SELECT itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, itm.`qty`
-				, count(*) as packQty, IFNULL(SUM(itm.`qty`),0) as total				
+				,itm.barcode  as barcode
+				,REPLACE(`barcode`, '-', '') as barcodeId 
 				,prd.id as prodId, prd.code as prodCode
+
 				FROM `receive` hdr 
 				INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  
 				INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
@@ -91,7 +93,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					$sql .= "AND itm.prodCodeId=:id ";
 				}
 				
-				$sql .= "GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`
+				$sql .= "
 								
 				ORDER BY itm.`issueDate` ASC  
 				"; //echo $sql;
@@ -112,9 +114,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<th>issue Date</th>
 					<th>Grade</th>
 					<th>Per Pack</th>
-                    <th style="color: blue;">Pack</th>
-					<th style="color: blue;">Qty Total</th>	
-					<th>#</th>
+					<th style="color: blue;">Barcode</th>	
                   </tr>
                   </thead>
                   <tbody>
@@ -134,11 +134,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<td><?= $row['issueDate']; ?></td>
 					<td><?= $gradeName; ?></td>
 					<td><?= $row['qty']; ?></td>
-					<td style="color: blue;"><?= $row['packQty']; ?></td>
-					<td style="color: blue;"><?= $row['total']; ?></td>		
+					<td style="color: blue;"><?= $row['barcodeId']; ?></td>		
 					
-					<td><a href="<?=$rootPage;?>_dtl.php?prodId=<?=$row['prodId'];?>&issueDate=<?=$row['issueDate'];?>&grade<?=$row['grade'];?>" 
-						class="btn btn-default" ><i class="glyphicon glyphicon-search"></i> Shelf View</a></td>
 					
                 </tr>
                 <?php $row_no+=1; } ?>

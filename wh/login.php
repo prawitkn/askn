@@ -26,7 +26,7 @@
   <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
   <![endif]-->
 </head>
-<body class="hold-transition login-page">
+<body class="hold-transition login-page" style="background-color: #85e085; ">
 <div class="login-box">
   <div class="login-logo">
     <a href="../../index2.html"><b>AK</b> Warehouse Managment Systems</a>
