@@ -100,46 +100,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						}
 						
 						echo "Get Production data ";
-						$sql = "SELECT DISTINCT  hdr.[SendID]
-						  FROM [send] hdr, [send_detail] dtl, [product_item] itm
-						  WHERE hdr.SendID=dtl.SendID 
-						  AND dtl.[ProductItemID]=itm.[ProductItemID]
-						  AND hdr.[isCustomer]='N' 
-						  AND hdr.[IssueDate] = '$sendDate'
-						  ";
-						  switch($s_userGroupCode){ 
-							case 'whOff' :  case 'whSup' : 
-									$sql .= "AND left(itm.[ItemCode],1) IN ('0','7','8','9','E') ";
-								break;
-							case 'pdOff' :  case 'pdSup' :
-									$sql .= "AND left(itm.[ItemCode],1) = '".$s_userDeptCode."' ";
-								break;
-							default : //case 'it' : case 'admin' : 
-						  }
-						//echo $sql;
-						$msResult = sqlsrv_query($ssConn, $sql);
-						$sendIdArr = '';
-						set_time_limit(0);
-						if($msResult){
-							while ($msRow = sqlsrv_fetch_array($msResult, SQLSRV_FETCH_ASSOC))  {	
-								if($sendIdArr==''){
-									$sendIdArr=$msRow['SendID'];
-								}else{
-									$sendIdArr.=','.$$msRow['SendID'];
-								}
-							}
-							//end while mssql
-							$sendIdArr='('.$sendIdArr.')';
-						}else{
-							echo sqlsrv_error();
-						}
-						//if
-						
-						
-						
 						$sql = "SELECT DISTINCT  hdr.[SendID], hdr.[SendNo], CONVERT(VARCHAR, hdr.[IssueDate], 121) as IssueDate
 						  , left(itm.[ItemCode],1) as fromCode 
-						  , hdr.[CustomerID]
+						  , [CustomerID]
 						  FROM [send] hdr, [askn].[dbo].[send_detail] dtl, [product_item] itm
 						  WHERE hdr.SendID=dtl.SendID 
 						  AND dtl.[ProductItemID]=itm.[ProductItemID]
@@ -187,7 +150,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						sqlsrv_free_stmt($msResult);
 										
 						
-						$sql = "  SELECT itm.[ProductItemID]
+						$sql = "  SELECT DISTINCT  itm.[ProductItemID]
 						  ,itm.[ProductID]
 						  ,itm.[ItemCode]
 						  , CONVERT(VARCHAR, itm.[IssueDate], 121) as IssueDate
@@ -204,7 +167,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						  ,itm.[Remark]
 						  ,itm.[RecordDate]
 						  ,itm.[ProblemID]
-						  ,dtl.[SendID], dtl.[Remark] 
 					  FROM [send_detail] dtl, [product_item] itm 
 					  WHERE dtl.[ProductItemID]=itm.[ProductItemID]
 					  AND dtl.[SendID] IN (  SELECT DISTINCT  hdr.[SendID] 
@@ -254,10 +216,46 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							$stmt->bindParam(':RefItemID', $msRow['RefItemID']);	
 							$stmt->bindParam(':ItemStatus', $msRow['ItemStatus']);	
 							$stmt->bindParam(':Remark', $msRow['Remark']);	
-							$stmt->bindParam(':ProblemID', $msRow['ProblemID']);		
+							$stmt->bindParam(':ProblemID', $msRow['ProblemID']);			
 							
 							$stmt->execute();
-							
+
+							$msRowCount+=1;
+						}
+						//end while mssql
+						}else{
+							echo sqlsrv_error();
+						}
+						//if
+						
+						
+						
+						$sql = "  SELECT DISTINCT itm.[ProductItemID]
+						  ,dtl.[SendID], dtl.[Remark] 
+					  FROM [send_detail] dtl, [product_item] itm 
+					  WHERE dtl.[ProductItemID]=itm.[ProductItemID]
+					  AND dtl.[SendID] IN (  SELECT DISTINCT  hdr.[SendID] 
+										  FROM [send] hdr, [send_detail] dtl, [product_item] itm
+										  WHERE hdr.SendID=dtl.SendID 
+										  AND dtl.[ProductItemID]=itm.[ProductItemID]
+										  AND hdr.[IssueDate] = '$sendDate' )
+						  ";
+					  switch($s_userGroupCode){ 
+						case 'whOff' :  case 'whSup' : 
+								$sql .= "AND left(itm.[ItemCode],1) IN ('0','7','8','9') ";
+							break;
+						case 'pdOff' :  case 'pdSup' :
+								$sql .= "AND left(itm.[ItemCode],1) = '".$s_userDeptCode."' ";
+							break;
+						default : //case 'it' : case 'admin' : 
+					  }
+						//echo $sql;
+						$msResult = sqlsrv_query($ssConn, $sql);
+						$msRowCount = 0;
+						$c = 1;
+						set_time_limit(0);
+						if($msResult){
+						while ($msRow = sqlsrv_fetch_array($msResult, SQLSRV_FETCH_ASSOC))  {								
 							$sql = "INSERT INTO  `send_detail_mssql_tmp` 
 							(`productItemId`, `sendId`, `remark`) 
 							VALUES
