@@ -13,7 +13,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   
   <!-- Left side column. contains the logo and sidebar -->
    <?php include 'leftside.php'; 
-   $rootPage="picking_prod_search_shelf";
+   $rootPage="picking_prod_search_barcode";
    ?>
    
   <!-- Content Wrapper. Contains page content -->
