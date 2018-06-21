@@ -74,6 +74,7 @@
 			<li><a href="picking.php"><i class="glyphicon glyphicon-shopping-cart"></i> <span>Picking</span></a></li>			
 			<li><a href="prepare.php"><i class="glyphicon glyphicon-th-large"></i> <span>Prepare</span></a></li>
 			<li><a href="delivery.php"><i class="glyphicon glyphicon-shopping-cart"></i> <span>Delivery</span></a></li>
+			<li><a href="shelf_mm.php"><i class="glyphicon glyphicon-object-align-bottom"></i> <span>Shelf Movement</span></a></li>
 			<!--<li><a href="crrc.php"><i class="glyphicon glyphicon-repeat"></i> <span>Customer Return Receive</span></a></li>-->
 			<?php break; default : } ?>	
 		<?php break; default : } ?>			
