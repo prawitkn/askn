@@ -805,13 +805,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				<!-- /.box-header -->
 				<div class="box-body">
 					<?php						
-					$sql = "SELECT hdr.ppNo, pick.soNo 
+					$sql = "SELECT DISTINCT hdr.ppNo, pick.soNo 
 					FROM prepare hdr 
 					INNER JOIN prepare_detail dtl on dtl.ppNo=hdr.ppNo
 					INNER JOIN picking pick ON pick.pickNo=hdr.pickNo
 					WHERE 1=1 
 					AND hdr.statusCode='P' 
-					ORDER BY hdr.`createTime` DESC
+					ORDER BY hdr.`createTime` DESC 
 					LIMIT 10
 					";
 					$stmt = $pdo->prepare($sql);

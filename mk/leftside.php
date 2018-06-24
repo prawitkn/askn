@@ -131,6 +131,7 @@
 			<li><a href="report_sale.php"><i class="fa fa-bars"></i> <span>Sales Order </span></a></li>			
 			<li><a href="report_sale_pending_by_prod.php"><i class="fa fa-bars"></i> <span>Sales Order Pending by Product </span></a></li>	
 			<li><a href="report_prod_stk.php"><i class="fa fa-list-alt"></i> <span>Stock Report</span></a></li>
+			<li><a href="report_prod_stk_n_pending.php"><i class="fa fa-list-alt"></i> <span>Stock n Pending Report</span></a></li>
 		<?php break; default : } ?>
 		
 		<?php switch($s_userGroupCode){ case 'admin' : ?>	

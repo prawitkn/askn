@@ -5,7 +5,7 @@ include 'session.php'; /*$s_userFullname = $row_user['userFullname'];
 		$s_username = $row_user['userName'];
 		$s_userGroupCode = $row_user['userGroupCode'];
 		$s_userDept = $row_user['userDept'];*/
-$tb='send';
+$tb='';
 
 if(!isset($_POST['action'])){		
 	header('Content-Type: application/json');
@@ -23,7 +23,7 @@ if(!isset($_POST['action'])){
 					$issueDate = date("Y-m-d",strtotime($issueDate));
 				}
 
-				$sql = "SELECT rd.prodItemId, rd.rcNo 
+				$sql = "SELECT rd.id as recvProdId, rd.prodItemId, rd.rcNo 
 				, itm.prodCodeId as prodId, itm.barcode, itm.NW, itm.GW, itm.grade, itm.qty, itm.issueDate
 				, prd.code as prodCode 
 				FROM wh_shelf_map_item smi 
@@ -62,40 +62,78 @@ if(!isset($_POST['action'])){
 			}
 			exit();
 			break;
-		case 'item_add' :		
+		case 'item_move' :		
 			try{	
-				$sdNo = $_POST['sdNo'];
+				$shelfIdFrom = $_POST['shelfIdFrom'];
+				$shelfIdTo = $_POST['shelfIdTo'];
+				$remark = $_POST['remark'];
 				
 				$pdo->beginTransaction();	
 				
-				if(!empty($_POST['itmId']) and isset($_POST['itmId']))
-				{
-					$sql = "DELETE FROM `send_detail` WHERE sdNo=:sdNo 
-					";			
-					$stmt = $pdo->prepare($sql);			
-					$stmt->bindParam(':sdNo', $sdNo);	
+				$sql = "CREATE TEMPORARY TABLE IF NOT EXISTS wh_shelf_map_item_tmp AS (SELECT `shelfId`, `recvProdId`FROM wh_shelf_map_item)
+					";				
+					$stmt = $pdo->prepare($sql);	
 					$stmt->execute();	
-					
+
+				if(!empty($_POST['itmId']) and isset($_POST['itmId']))
+				{					
 					//$arrProdItems=explode(',', $prodItems);
 					foreach($_POST['itmId'] as $index => $item )
 					{	
-						$sql = "INSERT INTO `send_detail`
-						(`refNo`, `prodItemId`, `sdNo`) 
+						$sql = "INSERT INTO `wh_shelf_map_item_tmp`
+						(`shelfId`, `recvProdId`) 
 						VALUES 
-						(:sendId, :productItemId, :sdNo)
-						";			
+						(:shelfId, :recvProdId)
+						";
 						$arrItm=explode(',', $item);
 						$stmt = $pdo->prepare($sql);			
-						$stmt->bindParam(':sendId', $arrItm[0]);	
-						$stmt->bindParam(':productItemId', $arrItm[1]);		
-						$stmt->bindParam(':sdNo', $sdNo);	
+						//$stmt->bindParam(':sendId', $arrItm[0]);		
+						$stmt->bindParam(':shelfId', $shelfIdTo);	
+						$stmt->bindParam(':recvProdId', $arrItm[1]);	
 						$stmt->execute();			
 					}
+
+					$sql = "INSERT INTO `shelf_movement`
+					(`shelfIdFrom`, `shelfIdTo`, `remark`, `statusCode`, `createById`) 
+					VALUES 
+					(:shelfIdFrom, :shelfIdTo, :remark, 'C', :createById)
+					";
+					$stmt = $pdo->prepare($sql);			
+					//$stmt->bindParam(':sendId', $arrItm[0]);	
+					$stmt->bindParam(':shelfIdFrom', $shelfIdFrom);		
+					$stmt->bindParam(':shelfIdTo', $shelfIdTo);	
+					$stmt->bindParam(':remark', $remark);	
+					$stmt->bindParam(':createById', $s_userId);	
+					$stmt->execute();	
+					$hdrId=$pdo->lastInsertId();
+
+					$sql = "INSERT INTO `shelf_movement_detail`
+					(`hdrId`, `recvProdId`) 
+					SELECT :hdrId, tmp.recvProdId 
+					FROM wh_shelf_map_item_tmp tmp
+					";
+					$stmt = $pdo->prepare($sql);			
+					$stmt->bindParam(':hdrId', $hdrId);	
+					$stmt->execute();	
+
+					$sql = "DELETE prd 
+					FROM `wh_shelf_map_item` prd  
+					INNER JOIN wh_shelf_map_item_tmp tmp ON prd.recvProdId=tmp.recvProdId 
+					";			
+					$stmt = $pdo->prepare($sql);		
+					$stmt->execute();	
+
+					$sql = "INSERT INTO `wh_shelf_map_item` 
+					SELECT `shelfId`, `recvProdId`, 'A' FROM wh_shelf_map_item_tmp
+					";			
+					$stmt = $pdo->prepare($sql);		
+					$stmt->execute();	
+
 				}
 				$pdo->commit();
 				
 				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data Inserted Complete.', 'sdNo' => $sdNo));
+				echo json_encode(array('success' => true, 'message' => 'Data Inserted Complete.'));
 			} 
 			//Our catch block will handle any exceptions that are thrown.
 			catch(Exception $e){
@@ -107,845 +145,6 @@ if(!isset($_POST['action'])){
 				echo json_encode(array('success' => false, 'message' => $errors));
 			}
 			
-			break;
-		case 'item_delete' :
-			try{
-				$id = $_POST['id'];
-
-				//SQL 
-				$sql = "DELETE FROM send_detail
-						WHERE id=:id";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':id', $id);
-				$stmt->execute();
-
-				//Return JSON
-				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data deleted'));
-			}catch(Exception $e){
-				//Return JSON
-				header('Content-Type: application/json');
-				$errors = "Error on Data Delete. Please try again. " . $e->getMessage();
-				echo json_encode(array('success' => false, 'message' => $errors));
-			}	
-			break;
-		case 'item_update' : 
-			try{		
-				$sdNo = $_POST['sdNo'];
-				
-				$pdo->beginTransaction();
-				
-				if(!empty($_POST['prodItemId']) and isset($_POST['prodItemId']) and !empty($_POST['gradeTypeId']) and isset($_POST['gradeTypeId']) and !empty($_POST['remarkWh']) and isset($_POST['remarkWh']))
-				{
-					//$arrProdItems=explode(',', $prodItems);
-					foreach($_POST['prodItemId'] as $index => $item )
-					{	
-						$sql = "UPDATE `product_item` SET gradeTypeId=:gradeTypeId
-						, remarkWh=:remarkWh 
-						WHERE prodItemId=:prodItemId 
-						";						
-						$stmt = $pdo->prepare($sql);	
-						$stmt->bindParam(':gradeTypeId', $_POST['gradeTypeId'][$index]);	
-						$stmt->bindParam(':remarkWh', $_POST['remarkWh'][$index]);	
-						$stmt->bindParam(':prodItemId', $item);		
-						$stmt->execute();			
-					}
-				}
-				
-				//Confirm
-				//Query 1: Check Status for not gen running No.
-				$sql = "SELECT * FROM send WHERE sdNo=:sdNo AND statusCode='B' LIMIT 1";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->execute();
-				$row_count = $stmt->rowCount();	
-				if($row_count != 1){
-					//return JSON
-					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Status incorrect.'));
-					exit();
-				}
-				
-				//Query 1: Check is settle all product Item 	
-				$sql = "SELECT dtl.id FROM send_detail dtl INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId AND (itm.prodCodeId IS NULL OR itm.prodCodeId='') WHERE sdNo=:sdNo ";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->execute();
-				$row_count = $stmt->rowCount();	
-				if($row_count != 0){
-					//return JSON
-					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Some item is not settle product code yet.'));
-					exit();
-				}
-				
-				//Query 2: UPDATE DATA
-				$sql = "UPDATE send SET statusCode='C'   
-					, confirmTime=now()
-					, confirmById=?
-					WHERE sdNo=? ";
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute(array(	
-						$s_userId,
-						$sdNo	
-					)
-				);
-				
-				$pdo->commit();
-				
-				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data Updated & Confirm Completed.'));
-			} 
-			//Our catch block will handle any exceptions that are thrown.
-			catch(Exception $e){
-				//Rollback the transaction.
-				$pdo->rollBack();
-				//return JSON
-				header('Content-Type: application/json');
-				$errors = "Error on Data Verify. Please try again. " . $e->getMessage();
-				echo json_encode(array('success' => false, 'message' => $errors.$t));
-			}
-			break;
-		case 'edit' :
-			$id = $_POST['id'];
-			$custId = $_POST['custId'];
-			$code = $_POST['code'];
-			$name = $_POST['name'];
-			$addr1 = $_POST['addr1'];
-			$addr2 = $_POST['addr2'];
-			$addr3 = $_POST['addr3'];
-			$zipcode = $_POST['zipcode'];
-			$countryName = $_POST['countryName'];
-			$locationCode = $_POST['locationCode'];
-			$marketCode = $_POST['marketCode'];
-			$contact = $_POST['contact'];
-			$contactPosition = $_POST['contactPosition'];
-			$email = $_POST['email'];
-			$tel = $_POST['tel']; 
-			$fax = $_POST['fax']; 
-			$smId = $_POST['smId']; 
-			$smAdmId = (isset($_POST['smAdmId'])? $_POST['smAdmId'] : 0 );//if because column datatype = int
-			$statusCode = (isset($_POST['statusCode'])? $_POST['statusCode'] : 'I' );
-							
-			$sql = "UPDATE `".$tb."` SET `custId`=:custId, `code`=:code, `name`=:name, `addr1`=:addr1, `addr2`=:addr2
-			, `addr3`=:addr3, `zipcode`=:zipcode, `countryName`=:countryName, `locationCode`=:locationCode, `marketCode`=:marketCode
-			, `contact`=:contact, `contactPosition`=:contactPosition, `email`=:email, `tel`=:tel, `fax`=:fax, `smId`=:smId, `smAdmId`=:smAdmId
-			, `statusCode`=:statusCode 				
-			WHERE id=:id 
-			";	
-			$stmt = $pdo->prepare($sql);	
-			$stmt->bindParam(':custId', $custId);
-			$stmt->bindParam(':code', $code);
-			$stmt->bindParam(':name', $name);
-			$stmt->bindParam(':addr1', $addr1);
-			$stmt->bindParam(':addr2', $addr2);
-			$stmt->bindParam(':addr3', $addr3);
-			$stmt->bindParam(':zipcode', $zipcode);
-			$stmt->bindParam(':countryName', $countryName);
-			$stmt->bindParam(':locationCode', $locationCode);
-			$stmt->bindParam(':marketCode', $marketCode);
-			$stmt->bindParam(':contact', $contact);
-			$stmt->bindParam(':contactPosition', $contactPosition);
-			
-			$stmt->bindParam(':email', $email);
-			$stmt->bindParam(':tel', $tel);
-			$stmt->bindParam(':fax', $fax);
-			
-			
-			$stmt->bindParam(':smId', $smId);
-			$stmt->bindParam(':smAdmId', $smAdmId);
-			$stmt->bindParam(':statusCode', $statusCode);
-			$stmt->bindParam(':id', $id);
-			if ($stmt->execute()) {
-				  header('Content-Type: application/json');
-				  echo json_encode(array('success' => true, 'message' => 'Data Updated Complete.'));
-			   } else {
-				  header('Content-Type: application/json');
-				  $errors = "Error on Data Update. Please try new data. " . $pdo->errorInfo();
-				  echo json_encode(array('success' => false, 'message' => $errors));
-			}	
-			break;
-		case 'mapping' :
-			try{	
-				$sdNo = $_POST['sdNo'];
-				//Query 1: Check Status for not gen running No.
-				$sql = "SELECT * FROM send WHERE sdNo=:sdNo AND statusCode<>'P' LIMIT 1";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->execute();
-				$row_count = $stmt->rowCount();	
-				if($row_count != 1 ){
-					//return JSON
-					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Status incorrect.'));
-					exit();
-				}
-				
-				//Query 1: UPDATE DATA
-				$sql = "UPDATE product_item itm
-				INNER JOIN product_mapping pm on itm.prodId=pm.invProdId
-				SET itm.prodCodeId=pm.wmsProdId 
-				WHERE itm.prodItemId IN (SELECT dtl.prodItemId FROM send_detail dtl WHERE dtl.sdNo=:sdNo) 
-					";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->execute();
-				
-				//return JSON
-				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data mapping completed.', 'sdNo' => $sdNo, 'rowCount' => $stmt->rowCount()));
-			} 
-			//Our catch block will handle any exceptions that are thrown.
-			catch(Exception $e){
-				//return JSON
-				header('Content-Type: application/json');
-				$errors = "Error on Data mapping. Please try again. " . $e->getMessage();
-				echo json_encode(array('success' => false, 'message' => $errors));
-			}
-			break;
-		case 'delete' :
-			try{
-				$sdNo = $_POST['sdNo'];	
-				
-				//We start our transaction.
-				$pdo->beginTransaction();
-				
-				//Query 1: Check Status for not gen running No.
-				$sql = "SELECT sdNo FROM send WHERE sdNo=:sdNo AND statusCode<>'P' LIMIT 1";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->execute();
-				$hdr = $stmt->fetch();	
-				$row_count = $stmt->rowCount();	
-				if($row_count != 1 ){		
-					//return JSON
-					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Status incorrect.'));
-					exit();
-				}	
-					
-				//Query 1: DELETE Detail
-				$sql = "DELETE FROM `send_detail` WHERE sdNo=:sdNo";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);	
-				$stmt->execute();
-				
-				//Query 2: DELETE Header
-				$sql = "DELETE FROM `send` WHERE sdNo=:sdNo";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);	
-				$stmt->execute();
-						
-				//We've got this far without an exception, so commit the changes.
-				$pdo->commit();
-					
-				//return JSON
-				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data Deleted'));	
-			} 
-			//Our catch block will handle any exceptions that are thrown.
-			catch(Exception $e){
-				//Rollback
-				$pdo->rollback();
-				//return JSON
-				header('Content-Type: application/json');
-				$errors = "Error on Data Deleting. Please try again. " . $e->getMessage();
-				echo json_encode(array('success' => false, 'message' => $errors));
-			}
-			break;
-		case 'confirm' :
-			try{	
-				//$session_userID=$_SESSION['userID'];
-				
-				$sdNo = $_POST['sdNo'];
-
-				//We start our transaction.
-				$pdo->beginTransaction();	
-				
-				//Query 1: Check Status for not gen running No.
-				$sql = "SELECT * FROM send WHERE sdNo=:sdNo AND statusCode='B' LIMIT 1";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->execute();
-				$row_count = $stmt->rowCount();	
-				if($row_count != 1){
-					//return JSON
-					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Status incorrect.'));
-					exit();
-				}
-				
-				//Query 1: Check is settle all product Item 	
-				$sql = "SELECT dtl.id FROM send_detail dtl INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId AND (itm.prodCodeId IS NULL OR itm.prodCodeId='') WHERE sdNo=:sdNo ";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->execute();
-				$row_count = $stmt->rowCount();	
-				if($row_count != 0){
-					//return JSON
-					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Some item is not settle product code yet.'));
-					exit();
-				}
-				
-				//Query 2: UPDATE DATA
-				$sql = "UPDATE send SET statusCode='C'   
-					, confirmTime=now()
-					, confirmById=?
-					WHERE sdNo=? ";
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute(array(	
-						$s_userId,
-						$sdNo	
-					)
-				);
-					
-				//We've got this far without an exception, so commit the changes.
-				$pdo->commit();
-				
-				//return JSON
-				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data Confirmed'));
-			} 
-			//Our catch block will handle any exceptions that are thrown.
-			catch(Exception $e){
-				//Rollback the transaction.
-				$pdo->rollBack();
-				//return JSON
-				header('Content-Type: application/json');
-				$errors = "Error on Data Confirmation. Please try again. " . $e->getMessage();
-				echo json_encode(array('success' => false, 'message' => $errors));
-			}
-			break;
-		case 'reject' :
-			try{	
-				$sdNo = $_POST['sdNo'];
-				//Query 1: Check Status for not gen running No.
-				$sql = "SELECT * FROM send WHERE sdNo=:sdNo AND statusCode='C' LIMIT 1";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->execute();
-				$row_count = $stmt->rowCount();	
-				if($row_count != 1 ){
-					//return JSON
-					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Status incorrect.'));
-					exit();
-				}
-				
-				//Query 1: UPDATE DATA
-				$sql = "UPDATE send SET statusCode='B'
-						WHERE sdNo=:sdNo
-						AND statusCode='C' 
-					";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->execute();
-				
-				//return JSON
-				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data Rejected'));
-			} 
-			//Our catch block will handle any exceptions that are thrown.
-			catch(Exception $e){
-				//return JSON
-				header('Content-Type: application/json');
-				$errors = "Error on Data Rejection. Please try again. " . $e->getMessage();
-				echo json_encode(array('success' => false, 'message' => $errors));
-			}
-			break;
-		case 'approve' :
-			//Check user roll.
-			switch($s_userGroupCode){
-				case 'it' : case 'admin' : case 'whSup' : case 'pdSup' :
-					break;
-				default : 
-					//return JSON
-					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Access Denied.'));
-					exit();
-			}
-
-			$sdNo = $_POST['sdNo'];
-
-			//We will need to wrap our queries inside a TRY / CATCH block.
-			//That way, we can rollback the transaction if a query fails and a PDO exception occurs.
-			try{
-				//We start our transaction.
-				$pdo->beginTransaction();
-				
-				//Query 1: Check is not grade A
-				$sql = "SELECT COUNT(itm.grade) as countNotGradeATotal 
-				FROM send_detail dtl 
-				INNER JOIN product_item itm on itm.prodItemId=dtl.prodItemId 
-				WHERE sdNo=:sdNo  
-				AND itm.grade<>0 ";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->execute();
-				$hdr = $stmt->fetch();
-				if($hdr['countNotGradeATotal'] > 0 ){
-					//return JSON
-					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Grade incorrect.'));
-					exit();
-				}
-				
-				//Query 1: Check Status for not gen running No.
-				$sql = "SELECT * FROM send WHERE sdNo=:sdNo AND statusCode='C' LIMIT 1";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->execute();
-				$row_count = $stmt->rowCount();	
-				$hdr = $stmt->fetch();
-				if($row_count != 1 ){
-					//return JSON
-					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Status incorrect.'));
-					exit();
-				}
-				$fromCode = $hdr['fromCode'];
-				$toCode = $hdr['toCode'];
-				
-				//Query 1: GET Next Doc No.
-				$year = date('Y'); $name = 'send'; $prefix = 'SD'.date('y').$fromCode; $cur_no=1;
-				$sql = "SELECT prefix, cur_no FROM doc_running WHERE year=? and name=?  and prefix=? LIMIT 1";
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute(array($year, $name, $prefix));
-				$row_count = $stmt->rowCount();	
-				if($row_count == 0){
-					$sql = "INSERT INTO doc_running (year, name, prefix, cur_no) VALUES (?,?,?,?)";
-					$stmt = $pdo->prepare($sql);		
-					$stmt->execute(array($year, $name, $prefix, $cur_no));
-				}else{
-					$row = $stmt->fetch(PDO::FETCH_ASSOC);
-					$prefix = $row['prefix'];
-					$cur_no = (int)$row['cur_no']+1;		
-				}
-				$next_no = '00000'.(string)$cur_no;
-				$noNext = $prefix . substr($next_no, -5);
-				
-				//Query 1: UPDATE DATA
-				$sql = "UPDATE send SET statusCode='P'
-				, sdNo=:noNext  
-				, approveTime=now()
-				, approveById=:approveById
-				WHERE sdNo=:sdNo  
-				AND statusCode='C' 
-				";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':noNext', $noNext);
-				$stmt->bindParam(':approveById', $s_userId);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->execute();
-					
-				//Query 3: UPDATE DATA
-				$sql = "UPDATE send_detail SET sdNo=? WHERE sdNo=? ";
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute(array($noNext,$sdNo));
-				
-				//Query 4:  UPDATE doc running.
-				$sql = "UPDATE doc_running SET cur_no=? WHERE year=? and name=? and prefix=? ";
-				$stmt = $pdo->prepare($sql);		
-				$stmt->execute(array($cur_no, $year, $name, $prefix));	
-				
-				
-				
-				
-				//Query 5: UPDATE STK BAl sloc from 
-				$sql = "		
-				UPDATE stk_bal sb,
-				( SELECT itm.prodCodeId, sum(itm.qty)  as sumQty
-					   FROM send_detail dtl
-					   INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-					   WHERE sdNo=:sdNo GROUP BY itm.prodCodeId) as s
-				SET sb.send=sb.send+s.sumQty
-				, sb.balance=sb.balance-s.sumQty 
-				WHERE sb.prodId=s.prodCodeId
-				AND sb.sloc=:fromCode
-				";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $noNext);
-				$stmt->bindParam(':fromCode', $fromCode);
-				$stmt->execute();
-					
-				//Query 6: INSERT STK BAl sloc from 
-				$sql = "INSERT INTO stk_bal (prodId, sloc, send, balance) 
-				SELECT itm.prodCodeId, :fromCode, SUM(itm.qty), -1*SUM(itm.qty) 
-				FROM send_detail sd
-				INNER JOIN product_item itm ON itm.prodItemId=sd.prodItemId 
-				WHERE sd.sdNo=:sdNo 
-				AND itm.prodCodeId NOT IN (SELECT sb2.prodId FROM stk_bal sb2 WHERE sb2.sloc=:fromCode2)
-				GROUP BY itm.prodCodeId
-				";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $noNext);
-				$stmt->bindParam(':fromCode', $fromCode);
-				$stmt->bindParam(':fromCode2', $fromCode);
-				$stmt->execute();
-				
-				//Query 5: UPDATE STK BAl sloc to 
-				$sql = "		
-				UPDATE stk_bal sb,
-				( SELECT itm.prodCodeId, sum(itm.qty)  as sumQty
-					   FROM send_detail dtl
-					   INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-					   WHERE sdNo=:sdNo GROUP BY itm.prodCodeId) as s
-				SET sb.onway=sb.onway+s.sumQty
-				WHERE sb.prodId=s.prodCodeId
-				AND sb.sloc=:toCode
-				";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $noNext);
-				$stmt->bindParam(':toCode', $toCode);
-				$stmt->execute();
-				
-				//Query 6: INSERT STK BAl sloc to 
-				$sql = "INSERT INTO stk_bal (prodId, sloc, onway) 
-						SELECT itm.prodCodeId, :toCode, SUM(itm.qty) 
-						FROM send_detail sd 
-						INNER JOIN product_item itm ON itm.prodItemId=sd.prodItemId 
-						WHERE sd.sdNo=:sdNo 
-						AND itm.prodCodeId NOT IN (SELECT sb2.prodId FROM stk_bal sb2 WHERE sb2.sloc=:toCode2)
-						GROUP BY itm.prodCodeId
-						";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $noNext);
-				$stmt->bindParam(':toCode', $toCode);
-				$stmt->bindParam(':toCode2', $toCode);
-				$stmt->execute();
-				
-				//We've got this far without an exception, so commit the changes.
-				$pdo->commit();
-				
-				//return JSON
-				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data Approved', 'sdNo' => $noNext));	
-			} 
-			//Our catch block will handle any exceptions that are thrown.
-			catch(Exception $e){
-				//Rollback the transaction.
-				$pdo->rollBack();
-				//return JSON
-				header('Content-Type: application/json');
-				$errors = "Error on Data Approval. Please try again. " . $e->getMessage();
-				echo json_encode(array('success' => false, 'message' => $errors));
-			}
-			break;
-		case 'approve_special' :
-			//Check user roll.
-			switch($s_userGroupCode){
-				case 'it' : case 'admin' : case 'whSup' : case 'pdSup' :
-					break;
-				default : 
-					//return JSON
-					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Access Denied.'));
-					exit();
-			}
-
-
-			//We will need to wrap our queries inside a TRY / CATCH block.
-			//That way, we can rollback the transaction if a query fails and a PDO exception occurs.
-			try{
-				$sdNo = $_POST['sdNo'];
-				$pin = $_POST['pin'];
-				
-				// Encript Password
-				$salt = "asdadasgfd";
-				$hash_login_password = hash_hmac('sha256', $pin, $salt);
-				
-				//We start our transaction.
-				$pdo->beginTransaction();
-				
-				$sql = "SELECT * FROM wh_user WHERE userId=:userId AND userPin=:pin LIMIT 1";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':userId', $s_userId);
-				$stmt->bindParam(':pin', $hash_login_password);
-				$stmt->execute();
-				$row_count = $stmt->rowCount();	
-				$hdr = $stmt->fetch();
-				if($row_count != 1 ){
-					//return JSON
-					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Access Denied.'));
-					exit();
-				}
-				
-				//Query 1: Check Status for not gen running No.
-				$sql = "SELECT * FROM send WHERE sdNo=:sdNo AND statusCode='C' LIMIT 1";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->execute();
-				$row_count = $stmt->rowCount();	
-				$hdr = $stmt->fetch();
-				if($row_count != 1 ){
-					//return JSON
-					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Status incorrect.'));
-					exit();
-				}
-				$fromCode = $hdr['fromCode'];
-				$toCode = $hdr['toCode'];
-				
-				//Query 1: GET Next Doc No.
-				$year = date('Y'); $name = 'send'; $prefix = 'SD'.date('y').$fromCode; $cur_no=1;
-				$sql = "SELECT prefix, cur_no FROM doc_running WHERE year=? and name=?  and prefix=? LIMIT 1";
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute(array($year, $name, $prefix));
-				$row_count = $stmt->rowCount();	
-				if($row_count == 0){
-					$sql = "INSERT INTO doc_running (year, name, prefix, cur_no) VALUES (?,?,?,?)";
-					$stmt = $pdo->prepare($sql);		
-					$stmt->execute(array($year, $name, $prefix, $cur_no));
-				}else{
-					$row = $stmt->fetch(PDO::FETCH_ASSOC);
-					$prefix = $row['prefix'];
-					$cur_no = (int)$row['cur_no']+1;		
-				}
-				$next_no = '00000'.(string)$cur_no;
-				$noNext = $prefix . substr($next_no, -5);
-				
-				//Query 1: UPDATE DATA
-				$sql = "UPDATE send SET statusCode='P'
-				, sdNo=:noNext  
-				, approveTime=now()
-				, approveById=:approveById
-				WHERE sdNo=:sdNo  
-				AND statusCode='C' 
-				";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':noNext', $noNext);
-				$stmt->bindParam(':approveById', $s_userId);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->execute();
-					
-				//Query 3: UPDATE DATA
-				$sql = "UPDATE send_detail SET sdNo=? WHERE sdNo=? ";
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute(array($noNext,$sdNo));
-				
-				//Query 4:  UPDATE doc running.
-				$sql = "UPDATE doc_running SET cur_no=? WHERE year=? and name=? and prefix=? ";
-				$stmt = $pdo->prepare($sql);		
-				$stmt->execute(array($cur_no, $year, $name, $prefix));	
-				
-				
-				
-				
-				//Query 5: UPDATE STK BAl sloc from 
-				$sql = "		
-				UPDATE stk_bal sb,
-				( SELECT itm.prodCodeId, sum(itm.qty)  as sumQty
-					   FROM send_detail dtl
-					   INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-					   WHERE sdNo=:sdNo GROUP BY itm.prodCodeId) as s
-				SET sb.send=sb.send+s.sumQty
-				, sb.balance=sb.balance-s.sumQty 
-				WHERE sb.prodId=s.prodCodeId
-				AND sb.sloc=:fromCode
-				";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $noNext);
-				$stmt->bindParam(':fromCode', $fromCode);
-				$stmt->execute();
-					
-				//Query 6: INSERT STK BAl sloc from 
-				$sql = "INSERT INTO stk_bal (prodId, sloc, send, balance) 
-				SELECT itm.prodCodeId, :fromCode, SUM(itm.qty), -1*SUM(itm.qty) 
-				FROM send_detail sd
-				INNER JOIN product_item itm ON itm.prodItemId=sd.prodItemId 
-				WHERE sd.sdNo=:sdNo 
-				AND itm.prodCodeId NOT IN (SELECT sb2.prodId FROM stk_bal sb2 WHERE sb2.sloc=:fromCode2)
-				GROUP BY itm.prodCodeId
-				";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $noNext);
-				$stmt->bindParam(':fromCode', $fromCode);
-				$stmt->bindParam(':fromCode2', $fromCode);
-				$stmt->execute();
-				
-				//Query 5: UPDATE STK BAl sloc to 
-				$sql = "		
-				UPDATE stk_bal sb,
-				( SELECT itm.prodCodeId, sum(itm.qty)  as sumQty
-					   FROM send_detail dtl
-					   INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-					   WHERE sdNo=:sdNo GROUP BY itm.prodCodeId) as s
-				SET sb.onway=sb.onway+s.sumQty
-				WHERE sb.prodId=s.prodCodeId
-				AND sb.sloc=:toCode
-				";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $noNext);
-				$stmt->bindParam(':toCode', $toCode);
-				$stmt->execute();
-				
-				//Query 6: INSERT STK BAl sloc to 
-				$sql = "INSERT INTO stk_bal (prodId, sloc, onway) 
-						SELECT itm.prodCodeId, :toCode, SUM(itm.qty) 
-						FROM send_detail sd 
-						INNER JOIN product_item itm ON itm.prodItemId=sd.prodItemId 
-						WHERE sd.sdNo=:sdNo 
-						AND itm.prodCodeId NOT IN (SELECT sb2.prodId FROM stk_bal sb2 WHERE sb2.sloc=:toCode2)
-						GROUP BY itm.prodCodeId
-						";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $noNext);
-				$stmt->bindParam(':toCode', $toCode);
-				$stmt->bindParam(':toCode2', $toCode);
-				$stmt->execute();
-				
-				//We've got this far without an exception, so commit the changes.
-				$pdo->commit();
-				
-				//return JSON
-				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data Approved', 'sdNo' => $noNext));	
-			} 
-			//Our catch block will handle any exceptions that are thrown.
-			catch(Exception $e){
-				//Rollback the transaction.
-				$pdo->rollBack();
-				//return JSON
-				header('Content-Type: application/json');
-				$errors = "Error on Data Approval. Please try again. " . $e->getMessage();
-				echo json_encode(array('success' => false, 'message' => $errors));
-			}
-			break;
-		case 'remove' :
-			//Check user roll.
-			switch($s_userGroupCode){
-				case 'admin' : case 'whSup' : case 'pdSup' : 
-					break;
-				default : 
-					//return JSON
-					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Access Denied.'));
-					exit();
-			}
-
-			$sdNo = $_POST['sdNo'];
-
-			//We will need to wrap our queries inside a TRY / CATCH block.
-			//That way, we can rollback the transaction if a query fails and a PDO exception occurs.
-			try{
-				//We start our transaction.
-				$pdo->beginTransaction();
-				//Query 1: Check Status for not gen running No.
-				$sql = "SELECT * FROM send WHERE sdNo=:sdNo AND statusCode='P' LIMIT 1";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->execute();
-				$row_count = $stmt->rowCount();	
-				if($row_count != 1 ){
-					//return JSON
-					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Status incorrect.'));
-					exit();
-				}				
-				$hdr = $stmt->fetch();
-				if(trim($hdr['rcNo'])<>"" ){
-					//return JSON
-					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Sending has been received.'));
-					exit();
-				}			
-				$fromCode = $hdr['fromCode'];
-				$toCode = $hdr['toCode'];
-							
-				
-				//Query 1: UPDATE DATA
-				$sql = "UPDATE send SET statusCode='X'
-				, updateTime=now()
-				, updateById=:updateById
-				WHERE sdNo=:sdNo  
-				AND statusCode='P' 
-				";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':updateById', $s_userId);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->execute();
-								
-				//Query 5: UPDATE STK BAl sloc from 
-				$sql = "		
-				UPDATE stk_bal sb,
-				( SELECT itm.prodCodeId, sum(itm.qty)  as sumQty
-					   FROM send_detail dtl
-					   INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-					   WHERE sdNo=:sdNo GROUP BY itm.prodCodeId) as s
-				SET sb.send=sb.send-s.sumQty
-				, sb.balance=sb.balance+s.sumQty 
-				WHERE sb.prodId=s.prodCodeId
-				AND sb.sloc=:fromCode
-				";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->bindParam(':fromCode', $fromCode);
-				$stmt->execute();
-					
-				//Query 6: INSERT STK BAl sloc from 
-				$sql = "INSERT INTO stk_bal (prodId, sloc, send, balance) 
-				SELECT itm.prodCodeId, :fromCode, -1*SUM(itm.qty), SUM(itm.qty) 
-				FROM send_detail sd
-				INNER JOIN product_item itm ON itm.prodItemId=sd.prodItemId 
-				WHERE sd.sdNo=:sdNo 
-				AND itm.prodCodeId NOT IN (SELECT sb2.prodId FROM stk_bal sb2 WHERE sb2.sloc=:fromCode2)
-				GROUP BY itm.prodCodeId
-				";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->bindParam(':fromCode', $fromCode);
-				$stmt->bindParam(':fromCode2', $fromCode);
-				$stmt->execute();
-				
-				//Query 5: UPDATE STK BAl sloc to 
-				$sql = "		
-				UPDATE stk_bal sb,
-				( SELECT itm.prodCodeId, sum(itm.qty)  as sumQty
-					   FROM send_detail dtl
-					   INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-					   WHERE sdNo=:sdNo GROUP BY itm.prodCodeId) as s
-				SET sb.onway=sb.onway-s.sumQty
-				WHERE sb.prodId=s.prodCodeId
-				AND sb.sloc=:toCode
-				";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->bindParam(':toCode', $toCode);
-				$stmt->execute();
-				
-				//Query 6: INSERT STK BAl sloc to 
-				$sql = "INSERT INTO stk_bal (prodId, sloc, onway) 
-						SELECT itm.prodCodeId, :toCode, -1*SUM(itm.qty) 
-						FROM send_detail sd 
-						INNER JOIN product_item itm ON itm.prodItemId=sd.prodItemId 
-						WHERE sd.sdNo=:sdNo 
-						AND itm.prodCodeId NOT IN (SELECT sb2.prodId FROM stk_bal sb2 WHERE sb2.sloc=:toCode2)
-						GROUP BY itm.prodCodeId
-						";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->bindParam(':toCode', $toCode);
-				$stmt->bindParam(':toCode2', $toCode);
-				$stmt->execute();
-				
-				//We've got this far without an exception, so commit the changes.
-				$pdo->commit();
-				
-				//return JSON
-				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data Approved', 'sdNo' => $sdNo));	
-			} 
-			//Our catch block will handle any exceptions that are thrown.
-			catch(Exception $e){
-				//Rollback the transaction.
-				$pdo->rollBack();
-				//return JSON
-				header('Content-Type: application/json');
-				$errors = "Error on Data Approval. Please try again. " . $e->getMessage();
-				echo json_encode(array('success' => false, 'message' => $errors));
-			}
 			break;
 		default : 
 			header('Content-Type: application/json');

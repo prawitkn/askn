@@ -114,7 +114,7 @@ desired effect
 							WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade
 							AND pickh.pickNo=:pickNo ) as pickQty
 					,prd.id as prodId, prd.code as prodCode
-					, (SELECT COUNT(x.shelfId) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
+					, (SELECT IFNULL(x.shelfId,0) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
 					FROM `receive` hdr 
 					INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  		
 					INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
@@ -135,7 +135,7 @@ desired effect
 					}
 					
 					$sql.="
-					GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`, isShelfed 			
+					GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty` 			
 									
 					ORDER BY itm.`issueDate` ASC  
 					";
@@ -153,7 +153,7 @@ desired effect
 							WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade
 							AND pickh.pickNo=:pickNo ) as pickQty
 					,itm.prodCodeId as prodId, prd.code as prodCode
-					, (SELECT COUNT(x.shelfId) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
+					, (SELECT IFNULL(x.shelfId,0) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
 					FROM `receive` hdr 
 					INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  		
 					INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
@@ -174,7 +174,7 @@ desired effect
 						default : //80					
 					}
 					$sql.="
-					GROUP BY itm.`prodCodeId`, s.sendDate, itm.`grade`, prd.code , itm.`qty`, isShelfed 			
+					GROUP BY itm.`prodCodeId`, s.sendDate, itm.`grade`, prd.code , itm.`qty` 			
 									
 					ORDER BY s.sendDate ASC  
 					";
@@ -228,18 +228,24 @@ desired effect
 					<td style="text-align: right; color: blue;"><?= $row['total']-$row['bookedQty']; ?></td>
 					
 					<td >
-						
-						
-						<?php if($row['isShelfed']==0){ ?>
-							<span style="color: red;">Not Shelfed.</span>
-						<?php }else{ ?>
 						<input type="hidden" name="issueDate[]" value="<?=$row['issueDate'];?>" />
 						<input type="hidden" name="grade[]" value="<?=$row['grade'];?>" />
 						<input type="hidden" name="meter[]" value="<?=$row['meters'];?>" />
 						<input type="hidden" name="balanceQty[]" value="<?=$row['total']-$row['bookedQty'];?>" />
+						
+						<?php if($row['isShelfed']==0){ ?>
+							<input type="textbox" name="pickQty[]" class="form-control" value="<?=$row['pickQty'];?>"  
+							data-prodId="<?=$row['prodId'];?>" data-issueDate="<?=$row['issueDate'];?>" 
+							data-grade="<?=$row['grade'];?>" 
+							onkeypress="return numbersOnly(this, event);" 
+							onpaste="return false;"
+							style="text-align: right;"
+							
+							/>
+						<?php }else{ ?>
 						<input type="textbox" name="pickQty[]" class="form-control" value="<?=$row['pickQty'];?>"  
 						data-prodId="<?=$row['prodId'];?>" data-issueDate="<?=$row['issueDate'];?>" 
-						data-grade="<?=$row['grade'];?>"  data-isShelfed="1" 
+						data-grade="<?=$row['grade'];?>" 
 						onkeypress="return numbersOnly(this, event);" 
 						onpaste="return false;"
 						style="text-align: right;"
@@ -310,8 +316,9 @@ $(document).ready(function() {
 	$("#spin").hide();
 				
 		
-	$('#form2 a[name=btn_submit]').click (function(e) {  
-		$('#form2 input[data-isShelfed=0]').prop('disabled', false).val(0);
+	$('#form2 a[name=btn_submit]').click (function(e) { 
+		alert('big');
+		return;
 		if ($('#form2').smkValidate()){
 			//$.smkConfirm({text:'Are you sure to Submit ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 				$.post({
@@ -332,7 +339,6 @@ $(document).ready(function() {
 							type: 'danger',
 							position:'top-center'
 						});
-						$('#form2 input[data-isShelfed=0]').val("No Shelf.").prop('disabled', true);
 					}
 					//e.preventDefault();		
 				}).error(function (response) {

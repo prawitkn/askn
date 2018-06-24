@@ -12,7 +12,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		$s_userDeptCode = $row_user['userDeptCode'];
 		$s_userID=$_SESSION['userID'];*/
 	
-	$rootPage="report_prod_stk";
+	$rootPage="report_prod_stk_n_pending";
 	
 	$search_word = (isset($_GET['search_word'])?$_GET['search_word']:'');
 	$sloc = (isset($_GET['sloc'])?$_GET['sloc']:'8');
@@ -82,16 +82,22 @@ desired effect
 					
 				
                 $sql = "SELECT count(*) as countTotal
-				FROM stk_bal sb 
-				INNER JOIN product prd on prd.id=sb.prodId  
-				WHERE 1 ";
-				if($search_word<>""){ $sql = "and (prd.code like '%".$search_word."%' OR prd.name like '%".$search_word."%') "; }
+				FROM `sale_header` hdr
+				INNER JOIN sale_detail dtl ON dtl.soNo=hdr.soNo
+				INNER JOIN stk_bal sb ON sb.prodId=dtl.prodId 
+				LEFT JOIN product prd ON prd.id=dtl.prodId 
+
+				WHERE 1=1 
+				AND hdr.statusCode='P' 
+				AND hdr.isClose='N' ";
 				if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
 				if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
-				if($prodId<>""){ $sql .= " AND prodId=$prodId ";	}	
-			
-                $result = mysqli_query($link, $sql);
-                $countTotal = mysqli_fetch_assoc($result);
+				if($prodId<>""){ $sql .= " AND dtl.prodId='$prodId' ";	}	
+				$sql.="GROUP BY dtl.prodId, prd.code, prd.catCode , sb.sloc , sb.`balance`  ";
+				$stmt = $pdo->prepare($sql);		
+				$stmt->execute();
+				$row=$stmt->fetch(); 
+                $countTotal = $row['countTotal']; 
 				
 				$rows=20;
 				$page=0;
@@ -174,41 +180,52 @@ desired effect
                     <th>Product Code</th>
 					<th>SLOC</th>
 					<th>Category</th>
-					<th>Receive</th>
-					<th>Send</th>
-					<th>Delivery</th>
 					<th>Balance</th>
+					<th>Pending</th>
                   </tr>
                   </thead>
                   <tbody>
 					<?php
-						$sql = "SELECT DISTINCT prd.*
-						,sb.sloc, sb.`open`, sb.`produce`, sb.`onway`, sb.`receive`, sb.`send`, sb.`sales`, sb.`delivery`, sb.`balance` 
-						FROM stk_bal sb 
-						INNER JOIN product prd on prd.id=sb.prodId  
-						WHERE 1 ";
-						if($search_word<>""){ $sql = "and (prd.code like '%".$search_word."%' OR prd.name like '%".$search_word."%') "; }
+						$sql = "SELECT  
+						 dtl.prodId as id, prd.code as prodCode, prd.catCode 
+						, sum(dtl.qty) as sumQty
+						, (SELECT IFNULL(sum(doDtl.qty),0) FROM delivery_header doHdr
+							INNER JOIN delivery_detail doDtl ON doDtl.doNo=doHdr.doNo
+							INNER JOIN product_item itm ON itm.prodItemId=doDtl.prodItemId 
+							WHERE 1=1
+							AND doHdr.statusCode='P' 
+							AND doHdr.soNo=hdr.soNo
+							AND itm.prodId=dtl.prodId) as sumSentDtl
+						,sb.sloc , sb.`balance`
+						FROM `sale_header` hdr
+						INNER JOIN sale_detail dtl ON dtl.soNo=hdr.soNo
+						INNER JOIN stk_bal sb ON sb.prodId=dtl.prodId 
+						LEFT JOIN product prd ON prd.id=dtl.prodId 
+						WHERE 1=1 
+						AND hdr.statusCode='P' 
+						AND hdr.isClose='N' ";
 						if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
 						if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
-						if($prodId<>""){ $sql .= " AND prodId='$prodId' ";	}	
+						if($prodId<>""){ $sql .= " AND dtl.prodId='$prodId' ";	}	
+						$sql.="GROUP BY dtl.prodId, prd.code, prd.catCode , sb.sloc , sb.`balance`  ";
 						$sql.="ORDER BY prd.code  ";
 						$sql.="LIMIT $start, $rows ";
-						$result = mysqli_query($link, $sql);                
+						//$result = mysqli_query($link, $sql);  
+						$stmt = $pdo->prepare($sql);		
+						$stmt->execute();                     
 				   ?>             
 					
 					
-						<?php $c_row=($start+1); while ($row = mysqli_fetch_assoc($result)) { 
+						<?php $c_row=($start+1); while ($row = $stmt->fetch() ) { 
 							//$img = 'dist/img/product/'.(empty($row['photo'])? 'default.jpg' : $row['photo']);
 					?>
                   <tr>
 					<td><?= $c_row; ?></td>
-                    <td><a href="product_view_stk.php?id=<?=$row['id'];?>" ><?= $row['code']; ?></a></td>
+                    <td><a href="product_view_stk.php?id=<?=$row['id'];?>" ><?= $row['prodCode']; ?></a></td>
 					<td><?= $row['sloc']; ?></td>
 					<td><?= $row['catCode']; ?></td>
-					<td><?= number_format($row['receive'],0,'.',','); ?></td>
-					<td><?= number_format($row['send'],0,'.',','); ?></td>
-					<td><?= number_format($row['delivery'],0,'.',','); ?></td>
 					<td><?= number_format($row['balance'],0,'.',','); ?></td>
+					<td><?= number_format($row['sumQty']-$row['sumSentDtl'],0,'.',','); ?></td>
                 </tr>
                  <?php $c_row +=1; } ?>
                   </tbody>

@@ -15,17 +15,20 @@ $objPHPExcel->getProperties()->setCreator("Prawit Khamnet")
         ->setKeywords("Sales Order")
         ->setCategory("Sales Order");
 		
-$dateFrom = (isset($_GET['dateFrom'])?$_GET['dateFrom']:'');
-$dateTo = (isset($_GET['dateTo'])?$_GET['dateTo']:'');
-$isClose = (isset($_GET['isClose'])?$_GET['isClose']:'');
+$dateFrom=(isset($_GET['dateFrom'])? $_GET['dateFrom'] : '01/01/1900' );
+$dateFrom=str_replace('/', '-', $dateFrom);
+$dateFrom=date('Y-m-d', strtotime($dateFrom));
 
-$dateFromYmd=$dateToYmd="";
-if($dateFrom<>""){ $dateFromYmd = to_mysql_date($_GET['dateFrom']);	}
-if($dateFrom<>""){ $dateToYmd = to_mysql_date($_GET['dateTo']);	}
+$dateTo=(isset($_GET['dateTo'])? $_GET['dateTo'] : '01/01/1900' );
+$dateTo=str_replace('/', '-', $dateTo);
+$dateTo=date('Y-m-d', strtotime($dateTo));
 
+$prodCode = (isset($_GET['prodCode'])?$_GET['prodCode']:'');
+$prodId = (isset($_GET['prodId']) ?$_GET['prodId']:'');
+if($prodCode=="") $prodId="";
 
 							
-  $sql = "SELECT hdr.soNo, hdr.deliveryDate
+$sql = "SELECT hdr.soNo, hdr.deliveryDate
 , dtl.prodId, prd.code as prodCode
 , sum(dtl.qty) as sumQty
 , (SELECT IFNULL(sum(doDtl.qty),0) FROM delivery_header doHdr
@@ -41,13 +44,17 @@ LEFT JOIN product prd ON prd.id=dtl.prodId ";
 $sql .= "WHERE 1 
 AND hdr.statusCode='P' 
 AND hdr.isClose='N' ";
-if($dateFrom<>""){ $sql .= " AND hdr.saleDate>='$dateFromYmd' ";	}
-if($dateTo<>""){ $sql .= " AND hdr.saleDate<='$dateToYmd' ";	}				
+if($dateFrom<>""){ $sql .= " AND hdr.saleDate>='$dateFrom' ";	}
+if($dateTo<>""){ $sql .= " AND hdr.saleDate<='$dateTo' ";	}	
+if($prodId<>""){ $sql .= " AND dtl.prodId=$prodId ";	}						
 $sql .= "
-group by hdr.soNo, dtl.prodId, hdr.deliveryDate ";
-
-$result = mysqli_query($link, $sql);
-$countTotal = mysqli_num_rows($result);
+group by hdr.soNo, dtl.prodId, prd.code, hdr.deliveryDate ";
+$sql.="
+ORDER BY soNo desc
+";
+$stmt = $pdo->prepare($sql);		
+$stmt->execute();       
+$countTotal = $stmt->rowCount();
 
 if($countTotal>0){
 	// Add Header
@@ -59,7 +66,7 @@ if($countTotal>0){
 		->setCellValue('E1', 'Sent QTy')
 		->setCellValue('F1', 'Pending Qty');
 		
-	$sql = "SELECT hdr.soNo, hdr.deliveryDate
+	/*$sql = "SELECT hdr.soNo, hdr.deliveryDate
 	, dtl.prodId, prd.code as prodCode
 	, sum(dtl.qty) as sumQty
 	, (SELECT IFNULL(sum(doDtl.qty),0) FROM delivery_header doHdr
@@ -82,9 +89,9 @@ if($countTotal>0){
 	$sql.="
 	ORDER BY soNo desc
 	";
-	$result = mysqli_query($link, $sql); 
+	$result = mysqli_query($link, $sql); */
 	
-	$iRow=2; $prodId=0; while($row = mysqli_fetch_assoc($result) ){
+	$iRow=2; $prodId=0; while($row = $stmt->fetch() ){
 	// Add some data
 		$pendingQty=$row['sumQty']-$row['sumSentDtl'];
 		if($prodId<>$row['prodId']){
@@ -121,7 +128,7 @@ $objPHPExcel->setActiveSheetIndex(0);
 
 // Redirect output to a client’s web browser (Excel2007)
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment;filename="salesHdr.xlsx"');
+header('Content-Disposition: attachment;filename="salesPendingByProduct.xlsx"');
 header('Cache-Control: max-age=0');
 // If you're serving to IE 9, then the following may be needed
 header('Cache-Control: max-age=1');
