@@ -99,7 +99,7 @@ $tb="";
 									<select id="selItmId" class="form-control"></select> 
 								</div><!--col-md-3-->
 								<div class="col-md-3">
-									<input type="checkbox" id="chkPending" /> Pending Item Only
+								
 								</div>
 							</div><!--col-md-12-->
 						</div><!--row-->
@@ -490,9 +490,16 @@ $(document).ready(function() {
 		if($('#shelfIdTo').val()==0){
 			alert('Please specify To Shelf.');
 			return false;
-		}
+		}		
 		if ($('#form2').smkValidate()){
 			$.smkConfirm({text:'Are you sure to Submit ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+				/*$('input[type=checkbox]').each(function () {
+					if(!$(this).prop("checked")){
+						$(this).prop("disabled", true)
+					}
+					$(this).button("refresh");
+				}); //return;
+				*/
 				$.post({
 					url: '<?=$rootPage;?>_ajax.php',
 					data: $("#form2").serialize(),

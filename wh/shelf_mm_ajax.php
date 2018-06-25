@@ -70,7 +70,7 @@ if(!isset($_POST['action'])){
 				
 				$pdo->beginTransaction();	
 				
-				$sql = "CREATE TEMPORARY TABLE IF NOT EXISTS wh_shelf_map_item_tmp AS (SELECT `shelfId`, `recvProdId`FROM wh_shelf_map_item)
+				$sql = "CREATE TEMPORARY TABLE IF NOT EXISTS wh_shelf_map_item_tmp AS (SELECT `shelfId`, `recvProdId`FROM wh_shelf_map_item WHERE 1<>1 )
 					";				
 					$stmt = $pdo->prepare($sql);	
 					$stmt->execute();	
