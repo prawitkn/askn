@@ -212,7 +212,7 @@ $rcNo = $hdr['rcNo'];
   <div class="box-footer">
     <div class="col-md-12">
 		<?php if($hdr['statusCode']=='P'){ ?>
-          <a href="receive_view_shelf_pdf.php?rcNo=<?=$rcNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
+          <a target="_blank" href="receive_view_shelf_pdf.php?rcNo=<?=$rcNo;?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
 		<?php } ?>
 	
 		

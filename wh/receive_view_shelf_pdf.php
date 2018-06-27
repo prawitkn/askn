@@ -232,9 +232,9 @@ if( isset($_GET['rcNo']) ){
 						<td style="border: 0.1em solid black; text-align: center; width: 30px;">'.$row_no.'</td>
 						<td style="border: 0.1em solid black; padding: 10px; width: 250px;"> '.$row['barcode'].'</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$gradeName.'</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['NW'].'</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['GW'].'</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['qty'],0,'.',',').'</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['NW'].'&nbsp;&nbsp;</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['GW'].'&nbsp;&nbsp;</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['qty'],0,'.',',').'&nbsp;&nbsp;</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.date('d M Y',strtotime( $row['issueDate'] )).'</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.$row['shelfName'].'</td>
 					</tr>';			
@@ -247,9 +247,9 @@ if( isset($_GET['rcNo']) ){
 						<td style="border: 0.1em solid black; text-align: center; width: 30px;"></td>
 						<td style="border: 0.1em solid black; text-align: center; padding: 10px; width: 250px;">Total</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 50px;"></td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumNW,2,'.',',').'</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumGW,2,'.',',').'</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumQty,0,'.',',').'</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumNW,2,'.',',').'&nbsp;&nbsp;</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumGW,2,'.',',').'&nbsp;&nbsp;</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumQty,0,'.',',').'&nbsp;&nbsp;</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 80px;"></td>
 						<td style="border: 0.1em solid black; text-align: center; width: 80px;"></td>
 					</tr>';

@@ -17,13 +17,13 @@ $rootPage='picking';
 $pickNo = $_GET['pickNo'];
 $sql = "
 SELECT hdr.`pickNo`, hdr.`soNo`, hdr.`pickDate`, hdr.`remark`, hdr.`statusCode`
-, hdr.`createTime`, hdr.`createByID`, hdr.`updateTime`, hdr.`updateById`
+, hdr.`createTime`, hdr.`createById`, hdr.`updateTime`, hdr.`updateById`
 , hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById`
 					, uca.userFullname as createByName, ucf.userFullname as confirmByName, uap.userFullname as approveByName
 FROM picking hdr
-LEFT JOIN user uca on uca.userID=hdr.createByID					
-LEFT JOIN user ucf on ucf.userID=hdr.confirmById
-LEFT JOIN user uap on uap.userID=hdr.approveById
+LEFT JOIN wh_user uca on uca.userId=hdr.createById					
+LEFT JOIN wh_user ucf on ucf.userId=hdr.confirmById
+LEFT JOIN wh_user uap on uap.userId=hdr.approveById
 WHERE 1
 AND hdr.pickNo=:pickNo
 ";
@@ -214,37 +214,24 @@ $hdr = $stmt->fetch();
 					<input type="hidden" name="isClose" id="isClose" value="<?=($remainTotal<=0?'Yes':'No'); ?>" />
 				</div><!-- /.box-body -->
 	</div><!-- /.row add items -->
-		
+	
 	<div class="row">
-		<div class="col-md-4">
-					
+		<div class="col-md-6">
+				Create By : <label class=""><?= $hdr['createByName']; ?></label></br>
+				Create Time : <label class=""><?= date('d M Y H:i',strtotime( $hdr['createTime'] )); ?></label></br>
+				Confirm By : <label class=""><?= $hdr['confirmByName']; ?></label></br>
+				Confirm Time : <label class=""><?= date('d M Y H:i',strtotime( $hdr['confirmTime'] )); ?></label>
 		</div>
 		<div class="col-md-4">
 					
 		</div>
-		<div class="col-md-4">
-			<div class="row">
-				<div class="col-md-4">
-					Create By : </br>
-					Create Time : </br>
-					Confirm By : </br>
-					Confirm Time : </br>
-					Approve By : </br>
-					Approve Time : 		
-				</div>
-				<div class="col-md-8">
-					<label class=""><?php echo $hdr['createByName']; ?></label></br>
-					<label class=""><?php echo date('d M Y H:m',strtotime( $hdr['createTime'] )); ?></label></br>
-					<label class=""><?php echo $hdr['confirmByName']; ?></label></br>
-					<label class=""><?php echo date('d M Y H:m',strtotime( $hdr['confirmTime'] )); ?></label></br>
-					<label class=""><?php echo $hdr['approveByName']; ?></label></br>
-					<label class=""><?php echo date('d M Y H:m',strtotime( $hdr['approveTime'] )); ?></label>	
-				</div>				
-			</div>			
+		<div class="col-md-6">
+			Approve By : <label class=""><?= $hdr['approveByName']; ?></label></br>
+			Approve Time : <label class=""><?= date('d M Y H:i',strtotime( $hdr['approveTime'] )); ?></label>	
 		</div>
 	</div>
 	<!-- /.row -->
-	
+
 	
     </div><!-- /.box-body -->
   <div class="box-footer">

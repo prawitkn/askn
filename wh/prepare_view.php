@@ -20,7 +20,7 @@ $ppNo = $_GET['ppNo'];
 	SELECT hdr.`ppNo`, hdr.`pickNo`, hdr.`prepareDate`, hdr.`remark`, hdr.`statusCode`
 	, pk.soNo 
 	, cust.name as custName 
-	, cust2.name as shipToName 
+	, st.code as shipToCode, st.name as shipToName 
 	, hdr.`createTime`, hdr.`createById`, hdr.`updateTime`, hdr.`updateById`
 	, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById`
 						, uca.userFullname as createByName, ucf.userFullname as confirmByName, uap.userFullname as approveByName
@@ -28,7 +28,7 @@ $ppNo = $_GET['ppNo'];
 	INNER JOIN picking pk on pk.pickNo=hdr.pickNo 
 	LEFT JOIN sale_header sh on sh.soNo=pk.soNo 
 	LEFT JOIN customer cust on cust.id=sh.custId  
-	LEFT JOIN customer cust2 on cust.id=sh.shipToId  
+	LEFT JOIN shipto st on st.id=sh.shipToId  
 	LEFT JOIN wh_user uca on uca.userId=hdr.createById					
 	LEFT JOIN wh_user ucf on ucf.userId=hdr.confirmById
 	LEFT JOIN wh_user uap on uap.userId=hdr.approveById
@@ -250,31 +250,18 @@ $ppNo = $_GET['ppNo'];
 	<!-- /.row add items -->
 		
 	<div class="row">
-		<div class="col-md-4">
-					
+		<div class="col-md-6">
+				Create By : <label class=""><?= $hdr['createByName']; ?></label></br>
+				Create Time : <label class=""><?= date('d M Y H:i',strtotime( $hdr['createTime'] )); ?></label></br>
+				Confirm By : <label class=""><?= $hdr['confirmByName']; ?></label></br>
+				Confirm Time : <label class=""><?= date('d M Y H:i',strtotime( $hdr['confirmTime'] )); ?></label>
 		</div>
 		<div class="col-md-4">
 					
 		</div>
-		<div class="col-md-4">
-			<div class="row">
-				<div class="col-md-4">
-					Create By : </br>
-					Create Time : </br>
-					Confirm By : </br>
-					Confirm Time : </br>
-					Approve By : </br>
-					Approve Time : 		
-				</div>
-				<div class="col-md-8">
-					<label class=""><?php echo $hdr['createByName']; ?></label></br>
-					<label class=""><?php echo to_thai_datetime_fdt($hdr['createTime']); ?></label></br>
-					<label class=""><?php echo $hdr['confirmByName']; ?></label></br>
-					<label class=""><?php echo to_thai_datetime_fdt($hdr['confirmTime']); ?></label></br>
-					<label class=""><?php echo $hdr['approveByName']; ?></label></br>
-					<label class=""><?php echo to_thai_datetime_fdt($hdr['approveTime']); ?></label>	
-				</div>				
-			</div>			
+		<div class="col-md-6">
+			Approve By : <label class=""><?= $hdr['approveByName']; ?></label></br>
+			Approve Time : <label class=""><?= date('d M Y H:i',strtotime( $hdr['approveTime'] )); ?></label>	
 		</div>
 	</div>
 	<!-- /.row -->
@@ -284,7 +271,7 @@ $ppNo = $_GET['ppNo'];
   <div class="box-footer">
     <div class="col-md-12">
 			<?php if($hdr['statusCode']=='P'){ ?>
-			  <a href="<?=$rootPage;?>_view_pdf.php?ppNo=<?=$hdr['ppNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
+			  <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?ppNo=<?=$hdr['ppNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
 			<?php } ?>
 			
 			

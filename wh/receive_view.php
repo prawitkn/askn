@@ -26,9 +26,9 @@ $sql = "SELECT rc.`rcNo`, rc.`refNo`, rc.`receiveDate`, rc.`fromCode`, rc.`remar
 FROM `receive` rc 
 LEFT JOIN sloc fsl on rc.fromCode=fsl.code 
 LEFT JOIN sloc tsl on rc.toCode=tsl.code 
-left join user d on rc.createByID=d.userID
-left join user cu on rc.confirmByID=cu.userID
-left join user au on rc.approveByID=au.userID
+left join wh_user d on rc.createById=d.userId
+left join wh_user cu on rc.confirmById=cu.userId
+left join wh_user au on rc.approveById=au.userId
 WHERE 1
 AND rc.rcNo=:rcNo 					
 ORDER BY rc.createTime DESC
@@ -208,7 +208,22 @@ $rcNo = $hdr['rcNo'];
 				</div><!-- /.box-body -->
 	</div><!-- /.row add items -->
 
-			
+	<div class="row">
+		<div class="col-md-6">
+				Create By : <label class=""><?= $hdr['createByName']; ?></label></br>
+				Create Time : <label class=""><?= date('d M Y H:i',strtotime( $hdr['createTime'] )); ?></label></br>
+				Confirm By : <label class=""><?= $hdr['confirmByName']; ?></label></br>
+				Confirm Time : <label class=""><?= date('d M Y H:i',strtotime( $hdr['confirmTime'] )); ?></label>
+		</div>
+		<div class="col-md-4">
+					
+		</div>
+		<div class="col-md-6">
+			Approve By : <label class=""><?= $hdr['approveByName']; ?></label></br>
+			Approve Time : <label class=""><?= date('d M Y H:i',strtotime( $hdr['approveTime'] )); ?></label>	
+		</div>
+	</div>
+	<!-- /.row -->		
 			
           
     

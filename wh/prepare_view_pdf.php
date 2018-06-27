@@ -142,16 +142,16 @@ if( isset($_GET['ppNo']) ){
 			$sql = "
 			SELECT hdr.`ppNo`, hdr.`pickNo`, hdr.`prepareDate`, hdr.`remark`, hdr.`statusCode`
 			, pk.soNo 
-			, cust.code as custCode , cust.name as custName 
-			, cust2.code as shipToCode , cust2.name as shipToName 
+			, cust.name as custName 
+			, st.code as shipToCode, st.name as shipToName 
 			, hdr.`createTime`, hdr.`createById`, hdr.`updateTime`, hdr.`updateById`
 			, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById`
 								, uca.userFullname as createByName, ucf.userFullname as confirmByName, uap.userFullname as approveByName
 			FROM prepare hdr
 			INNER JOIN picking pk on pk.pickNo=hdr.pickNo 
-            LEFT JOIN sale_header sh on sh.soNo=pk.soNo 
-			LEFT JOIN customer cust on cust.id=sh.custId
-			LEFT JOIN customer cust2 on cust.id=sh.shipToId 
+			LEFT JOIN sale_header sh on sh.soNo=pk.soNo 
+			LEFT JOIN customer cust on cust.id=sh.custId  
+			LEFT JOIN shipto st on st.id=sh.shipToId  
 			LEFT JOIN wh_user uca on uca.userId=hdr.createById					
 			LEFT JOIN wh_user ucf on ucf.userId=hdr.confirmById
 			LEFT JOIN wh_user uap on uap.userId=hdr.approveById
@@ -253,7 +253,7 @@ if( isset($_GET['ppNo']) ){
 					$html .='<tr>
 						<td colspan="2"><br/><br/>
 							ผู้จัดทำ .....'.$hdr['createByName'].'.....<br/>
-							วันที่จัดทำ .....'.to_thai_datetime_fdt($hdr['createTime']).'<br/>
+							วันที่จัดทำ .....'.date('d M Y H:i',strtotime( $hdr['createTime'] )).'<br/>
 							ผู้จัดเตรียม .....'.$hdr['confirmByName'].'.....<br/>
 						</td>
 						

@@ -289,11 +289,11 @@ if(!isset($_POST['action'])){
 				//Query 1: UPDATE DATA
 				$sql = "UPDATE `picking` SET statusCode='C'
 						, confirmTime=now()
-						, confirmById=:s_userID 
+						, confirmById=:s_userId 
 						WHERE pickNo=:pickNo";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':pickNo', $pickNo);		
-				$stmt->bindParam(':s_userID', $s_userID);	
+				$stmt->bindParam(':s_userId', $s_userId);	
 				$stmt->execute();
 					
 				//We've got this far without an exception, so commit the changes.
@@ -406,11 +406,11 @@ if(!isset($_POST['action'])){
 				$sql = "UPDATE `picking` SET statusCode='P'
 						, pickNo=:nextNo
 						, approveTime=now()
-						, approveById=:s_userID 
+						, approveById=:s_userId 
 						WHERE pickNo=:pickNo";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':nextNo', $nextNo);
-				$stmt->bindParam(':s_userID', $s_userID);
+				$stmt->bindParam(':s_userId', $s_userId);
 				$stmt->bindParam(':pickNo', $pickNo);
 				$stmt->execute();
 					

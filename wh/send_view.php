@@ -181,7 +181,23 @@ $sdNo = $hdr['sdNo'];
 				</div><!-- /.box-body -->
 	</div><!-- /.row add items -->			
 			
-          
+    
+    <div class="row">
+		<div class="col-md-6">
+				Create By : <label class=""><?= $hdr['createByName']; ?></label></br>
+				Create Time : <label class=""><?= date('d M Y H:i',strtotime( $hdr['createTime'] )); ?></label></br>
+				Confirm By : <label class=""><?= $hdr['confirmByName']; ?></label></br>
+				Confirm Time : <label class=""><?= date('d M Y H:i',strtotime( $hdr['confirmTime'] )); ?></label>
+		</div>
+		<div class="col-md-4">
+					
+		</div>
+		<div class="col-md-6">
+			Approve By : <label class=""><?= $hdr['approveByName']; ?></label></br>
+			Approve Time : <label class=""><?= date('d M Y H:i',strtotime( $hdr['approveTime'] )); ?></label>	
+		</div>
+	</div>
+	<!-- /.row -->		      
     
     </div><!-- /.box-body -->
   <div class="box-footer">
