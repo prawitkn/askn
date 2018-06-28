@@ -401,7 +401,7 @@ $(document).ready(function() {
 			if(params.search_word.length < 3){
 				alert('search word must more than 3 character.');
 				return false;
-			} alert(params.search_word);
+			} //alert(params.search_word);
 			curName = $(this).attr('name');
 			curId = $(this).prev().attr('name');
 			/* Send the data using post and put the results in a div */

@@ -193,11 +193,19 @@ desired effect
 						if($prodId<>""){ $sql .= " AND prodId='$prodId' ";	}	
 						$sql.="ORDER BY prd.code  ";
 						$sql.="LIMIT $start, $rows ";
-						$result = mysqli_query($link, $sql);                
+						$result = mysqli_query($link, $sql);   
+						$stmt = $pdo->prepare($sql);		
+						$stmt->execute();
+						$rowCount=$stmt->rowCount();
+						if($rowCount==0){ ?>
+							<tr>
+								<td colspan="8" style="text-align: center; color: red; font-weight: bold;" >Data not found.</td>
+			                </tr><?php
+						}
 				   ?>             
 					
 					
-						<?php $c_row=($start+1); while ($row = mysqli_fetch_assoc($result)) { 
+						<?php $c_row=($start+1); while ($row = $stmt->fetch() ) { 
 							//$img = 'dist/img/product/'.(empty($row['photo'])? 'default.jpg' : $row['photo']);
 					?>
                   <tr>
@@ -218,7 +226,7 @@ desired effect
 			  
 			<?php $condQuery="?sloc=".$sloc."&catCode=".$catCode."&prodId=".$prodId."&prodCode=".$prodCode; ?>
 
-                
+             <?php if($rowCount>0){    ?>
                <div class="col-md-12">
 			<a href="<?=$rootPage;?>_xls.php?<?=$condQuery;?>" class="btn btn-default pull-right"><i class="glyphicon glyphicon-print"></i> Export</a>
 			
@@ -239,7 +247,8 @@ desired effect
 			</ul>
 			</nav>
 			</div>
-			
+		<?php } ?>
+
         </div><!-- /.box-body -->
   <div class="box-footer">
  
@@ -430,6 +439,7 @@ $(document).ready(function() {
 			} 
 			curName = $(this).attr('name');
 			curId = $(this).prev().attr('name');
+			//alert(curId);
 			/* Send the data using post and put the results in a div */
 			  $.ajax({
 				  url: "search_product_ajax.php",

@@ -18,7 +18,7 @@ $rootPage="picking";
 
 $sql = "SELECT hdr.`pickNo`, hdr.`soNo`, hdr.`pickDate`, hdr.`remark`, hdr.`statusCode`, hdr.`createTime`, hdr.`createById`
 , hdr.`updateTime`, hdr.`updateById`, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById` 
-, cust.locationCode 
+,sh.custId, cust.locationCode 
 FROM `picking` hdr 
 INNER JOIN sale_header sh ON sh.soNo=hdr.soNo
 LEFT JOIN customer cust ON cust.id=sh.custId 
@@ -30,7 +30,7 @@ $stmt->execute();
 $hdr = $stmt->fetch();
 $pickNo = $hdr['pickNo'];
 $soNo = $hdr['soNo'];
-					
+$custId = $hdr['custId'];					
 ?>
 <div class="wrapper">
 
@@ -198,7 +198,7 @@ $soNo = $hdr['soNo'];
 						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',',').'/'.number_format($qtyRem,0,'.',','); ?></td>
 						<td style="text-align: right;"><?= number_format($row['pickQty'],0,'.',','); ?></td>
 					<td>					
-					<a href="<?=$rootPage;?>_add_item_search.php?locCode=<?=$hdr['locationCode'];?>&pickNo=<?=$hdr['pickNo'];?>&doDtlId=<?=$row['id'];?>&saleItemId=<?=$row['id'];?>&id=<?=$row['prodId'];?>" class="btn btn-primary">
+					<a href="<?=$rootPage;?>_add_item_search.php?locCode=<?=$hdr['locationCode'];?>&pickNo=<?=$hdr['pickNo'];?>&doDtlId=<?=$row['id'];?>&saleItemId=<?=$row['id'];?>&id=<?=$row['prodId'];?>&custId=<?=$custId;?>" class="btn btn-primary">
 						<i class="glyphicon glyphicon-edit"></i> Add
 					</a>					
 					</td>

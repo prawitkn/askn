@@ -12,6 +12,7 @@ $rootPage = "picking";
 $locationCode=$_GET['locCode'];
 $pickNo=$_GET['pickNo'];
 $id=$_GET['id'];
+$custId=$_GET['custId'];
 $saleItemId=$_GET['saleItemId'];
 				
 ?>      
@@ -93,101 +94,149 @@ desired effect
 					
 			<?php
 			$sql='';
-			$sql="SELECT catCode FROM product WHERE id=:id ";
+
+			$sql="SELECT * FROM wh_pick_cond WHERE custId=:custId AND prodId=:id ";
 			$stmt = $pdo->prepare($sql);
+			$stmt->bindParam(':custId', $custId);
 			$stmt->bindParam(':id', $id);
 			$stmt->execute();	
-			$row=$stmt->fetch();
-			$catCode=$row['catCode'];
-			
-			switch($locationCode){
-				case 'L' :
-					$sql = "
-					SELECT itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, itm.`qty` as meters
-					, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total			
-					, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
-							ON pickh.pickNo=pickd.pickNo
-							WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade
-							AND pickh.isFinish='N' ) as bookedQty
-					, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
-							ON pickh.pickNo=pickd.pickNo
-							WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade
-							AND pickh.pickNo=:pickNo ) as pickQty
-					,prd.id as prodId, prd.code as prodCode
-					, (SELECT COUNT(x.shelfId) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
-					FROM `receive` hdr 
-					INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  		
-					INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-					LEFT JOIN wh_shelf_map_item smi ON smi.recvProdId=dtl.id 
-					LEFT JOIN product prd ON prd.id=itm.prodCodeId 				
-					WHERE 1=1
-					AND hdr.statusCode='P' 	
-					AND dtl.statusCode='A' 
-					AND itm.prodCodeId=:id ";
-					switch($catCode){
-						case '70' : //Weaving
-							$sql.="AND DATEDIFF(NOW(), itm.issueDate) <= 365 ";
-							break;
-						case '72' : //Cutting
-							$sql.="AND DATEDIFF(NOW(), itm.issueDate) <= 90 ";
-							break;
-						default : //80					
-					}
-					
-					$sql.="
-					GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`, isShelfed 			
-									
-					ORDER BY itm.`issueDate` ASC  
-					";
-					break;
-				default : //Export 
-					$sql = "
-					SELECT itm.`prodCodeId`, s.sendDate as issueDate, itm.`grade`, itm.`qty` as meters
-					, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total			
-					, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
-							ON pickh.pickNo=pickd.pickNo
-							WHERE pickd.prodId=itm.prodCodeId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade
-							AND pickh.isFinish='N' ) as bookedQty
-					, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
-							ON pickh.pickNo=pickd.pickNo
-							WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade
-							AND pickh.pickNo=:pickNo ) as pickQty
-					,itm.prodCodeId as prodId, prd.code as prodCode
-					, (SELECT COUNT(x.shelfId) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
-					FROM `receive` hdr 
-					INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  		
-					INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-					INNER JOIN send s ON s.sdNo=hdr.refNo 
-					LEFT JOIN wh_shelf_map_item smi ON smi.recvProdId=dtl.id 
-					LEFT JOIN product prd ON prd.id=itm.prodCodeId 				
-					WHERE 1=1
-					AND hdr.statusCode='P' 	
-					AND dtl.statusCode='A' 
-					AND itm.prodCodeId=:id ";
-					switch($catCode){
-						case '70' : //Weaving
-							$sql.="AND DATEDIFF(NOW(), s.sendDate) <= 365 ";
-							break;
-						case '72' : //Cutting
-							$sql.="AND DATEDIFF(NOW(), s.sendDate) <= 90 ";
-							break;
-						default : //80					
-					}
-					$sql.="
-					GROUP BY itm.`prodCodeId`, s.sendDate, itm.`grade`, prd.code , itm.`qty`, isShelfed 			
-									
-					ORDER BY s.sendDate ASC  
-					";
-			}
+
+			if($stmt->rowCount()>0){
+				$sql = "
+				SELECT itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, itm.`qty` as meters
+				, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total			
+				, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
+						ON pickh.pickNo=pickd.pickNo
+						WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade
+						AND pickh.isFinish='N' ) as bookedQty
+				, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
+						ON pickh.pickNo=pickd.pickNo
+						WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade
+						AND pickh.pickNo=:pickNo ) as pickQty
+				,prd.id as prodId, prd.code as prodCode
+				, (SELECT COUNT(x.shelfId) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
+				FROM `receive` hdr 
+				INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  		
+				INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+				LEFT JOIN wh_shelf_map_item smi ON smi.recvProdId=dtl.id 
+				LEFT JOIN product prd ON prd.id=itm.prodCodeId 				
+				WHERE 1=1
+				AND hdr.statusCode='P' 	
+				AND dtl.statusCode='A' 
+				AND itm.prodCodeId=:id ";
+				$sql.="AND DATEDIFF(NOW(), itm.issueDate) <= (SELECT maxDays FROM wh_pick_cond wpc 
+																	WHERE wpc.custId=:custId
+																	AND wpc.prodId=itm.prodCodeId  
+																	LIMIT 1) ";
 				
+				$sql.="
+				GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`, isShelfed 			
+								
+				ORDER BY itm.`issueDate` ASC  
+				";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':id', $id);
+				$stmt->bindParam(':pickNo', $pickNo);
+				$stmt->bindParam(':saleItemId', $saleItemId);
+				$stmt->bindParam(':custId', $custId);
+				$stmt->execute();	
+			}else{
+				//No pick cust n prod condition setting.
+				$sql="SELECT catCode FROM product WHERE id=:id ";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':id', $id);
+				$stmt->execute();	
+				$row=$stmt->fetch();
+				$catCode=$row['catCode'];
 				
-				
+				switch($locationCode){
+					case 'L' :
+						$sql = "
+						SELECT itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, itm.`qty` as meters
+						, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total			
+						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
+								ON pickh.pickNo=pickd.pickNo
+								WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade
+								AND pickh.isFinish='N' ) as bookedQty
+						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
+								ON pickh.pickNo=pickd.pickNo
+								WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade
+								AND pickh.pickNo=:pickNo ) as pickQty
+						,prd.id as prodId, prd.code as prodCode
+						, (SELECT COUNT(x.shelfId) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
+						FROM `receive` hdr 
+						INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  		
+						INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+						LEFT JOIN wh_shelf_map_item smi ON smi.recvProdId=dtl.id 
+						LEFT JOIN product prd ON prd.id=itm.prodCodeId 				
+						WHERE 1=1
+						AND hdr.statusCode='P' 	
+						AND dtl.statusCode='A' 
+						AND itm.prodCodeId=:id ";
+						switch($catCode){
+							case '70' : //Weaving
+								$sql.="AND DATEDIFF(NOW(), itm.issueDate) <= 365 ";
+								break;
+							case '72' : //Cutting
+								$sql.="AND DATEDIFF(NOW(), itm.issueDate) <= 90 ";
+								break;
+							default : //80					
+						}
+						
+						$sql.="
+						GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`, isShelfed 			
+										
+						ORDER BY itm.`issueDate` ASC  
+						";
+						break;
+					default : //Export 
+						$sql = "
+						SELECT itm.`prodCodeId`, s.sendDate as issueDate, itm.`grade`, itm.`qty` as meters
+						, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total			
+						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
+								ON pickh.pickNo=pickd.pickNo
+								WHERE pickd.prodId=itm.prodCodeId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade
+								AND pickh.isFinish='N' ) as bookedQty
+						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
+								ON pickh.pickNo=pickd.pickNo
+								WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade
+								AND pickh.pickNo=:pickNo ) as pickQty
+						,itm.prodCodeId as prodId, prd.code as prodCode
+						, (SELECT COUNT(x.shelfId) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
+						FROM `receive` hdr 
+						INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  		
+						INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+						INNER JOIN send s ON s.sdNo=hdr.refNo 
+						LEFT JOIN wh_shelf_map_item smi ON smi.recvProdId=dtl.id 
+						LEFT JOIN product prd ON prd.id=itm.prodCodeId 				
+						WHERE 1=1
+						AND hdr.statusCode='P' 	
+						AND dtl.statusCode='A' 
+						AND itm.prodCodeId=:id ";
+						switch($catCode){
+							case '70' : //Weaving
+								$sql.="AND DATEDIFF(NOW(), s.sendDate) <= 365 ";
+								break;
+							case '72' : //Cutting
+								$sql.="AND DATEDIFF(NOW(), s.sendDate) <= 90 ";
+								break;
+							default : //80					
+						}
+						$sql.="
+						GROUP BY itm.`prodCodeId`, s.sendDate, itm.`grade`, prd.code , itm.`qty`, isShelfed 			
+										
+						ORDER BY s.sendDate ASC  
+						";
+				}
 				//$result = mysqli_query($link, $sql);
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':id', $id);
 				$stmt->bindParam(':saleItemId', $saleItemId);
 				$stmt->bindParam(':pickNo', $pickNo);
 				$stmt->execute();	
+			}//end else
+
+				
 					
 				?>
               <div class="table-responsive">
