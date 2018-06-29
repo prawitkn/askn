@@ -48,7 +48,7 @@ class MYPDF extends TCPDF {
 		$html='<table width="100%"  >		
 		<tr>
 			<td rowspan="3" ><img src="../asset/img/logo-ak_60x60.jpg" /></td>
-			<td colspan="5"><span style="font-size: 120%;" >บริษัท เอเชีย กังนัม จำกัด</span></td>
+			<td colspan="5"><span style="font-size: 120%;" >บริษัท เอเซีย กังนัม จำกัด</span></td>
 			<td></td>
 			<td colspan="3" ></td>
 		</tr>
