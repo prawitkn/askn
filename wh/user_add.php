@@ -62,11 +62,6 @@ switch($s_userGroupCode){
 					<input type="hidden" name="action" value="add" />
 					<div class="col-md-6">					
                         <div class="form-group">
-                            <label for="userFullname">User Fullname</label>
-                            <input id="userFullname" type="text" class="form-control" name="userFullname" data-smk-msg="Require userFullname."required>
-                        </div>
-                        
-                        <div class="form-group">
                             <label for="userName">Username</label>
                             <input id="userName" type="text" class="form-control" name="userName" data-smk-msg="Require userName" required>
                         </div>
@@ -74,6 +69,16 @@ switch($s_userGroupCode){
                             <label for="userPassword">User Password</label>
                             <input id="userPassword" type="password" class="form-control" name="userPassword" data-smk-msg= "Require userPassword" required>
                         </div>
+                        <div class="form-group">
+                            <label for="userPin">User PIN</label>
+                            <input id="userPin" type="password" class="form-control" name="userPin" data-smk-msg= "Require userPin" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="userFullname">User Fullname</label>
+                            <input id="userFullname" type="text" class="form-control" name="userFullname" data-smk-msg="Require userFullname."required>
+                        </div>                     
+                        
                         <div class="form-group">
                             <label for="userEmail">User Email</label>
                             <input id="userEmail" type="email" class="form-control" name="userEmail" data-smk-msg="Require userEmail" required>

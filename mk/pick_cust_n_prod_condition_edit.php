@@ -10,8 +10,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
   <!-- Main Header -->
 <?php include 'header.php'; 
-$rootPage = 'shelf';
-$tb = "wh_shelf";
+$rootPage = 'pick_cust_n_prod_condition';
+$tb = "wh_pick_cond";
 
 //Check user roll.
 switch($s_userGroupCode){
@@ -21,32 +21,34 @@ switch($s_userGroupCode){
 		header('Location: access_denied.php');
 		exit();
 }
-$sql = "SELECT hdr.*
-FROM ".$tb." hdr
-WHERE 1
-AND hdr.id=:id 
-ORDER BY hdr.id desc
-";
-$stmt = $pdo->prepare($sql);	
-$stmt->bindParam(':id', $_GET['id']);
-$stmt->execute();
-$row=$stmt->fetch();
+
 ?>
   
   <!-- Left side column. contains the logo and sidebar -->
-   <?php include 'leftside.php'; ?>
+   <?php include 'leftside.php'; 
+   
+   $sql = "SELECT hdr.*
+	FROM ".$tb." hdr
+	WHERE 1
+	AND hdr.id=:id 
+	";
+	$stmt = $pdo->prepare($sql);	
+	$stmt->bindParam(':id', $_GET['id']);
+	$stmt->execute();
+	$row=$stmt->fetch();
+   ?>
 
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-      <h1><i class="glyphicon glyphicon-user"></i>
-       Shelf Rack
-        <small>Shelf Rack management</small>
+      <h1><i class="fa fa-filter"></i>
+       Picking Condition by Customer and Product
+        <small>Master Management</small>
       </h1>
 	  <ol class="breadcrumb">
-        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Shelf Rack List</a></li>
-		<li><a href="#"><i class="glyphicon glyphicon-edit"></i>Shelf Rack</a></li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Picking Condition by Customer and Product List</a></li>
+		<li><a href="#"><i class="glyphicon glyphicon-edit"></i>Edit Picking Condition</a></li>
       </ol>
     </section>
 
@@ -56,7 +58,7 @@ $row=$stmt->fetch();
       <!-- Your Page Content Here -->
     <div class="box box-primary">
         <div class="box-header with-border">
-        <h3 class="box-title">Edit Shelf Rack : <?=$row['name'];?></h3>
+        <h3 class="box-title">Edit Picking Condition by Customer and Product</h3>
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
@@ -67,67 +69,38 @@ $row=$stmt->fetch();
             <div class="row">                
                     <form id="form1" method="post" class="form" enctype="multipart/form-data" validate>
 					<input type="hidden" name="action" value="edit" />				
+					
 					<input type="hidden" name="id" value="<?=$row['id'];?>" />	
 					<div class="col-md-6">
 						<div class="form-group">
-							<label for="xId">Column</label>
-							<select id="xId" name="xId" class="form-control" data-code=""  data-smk-msg="Require Column" required >
-								<option value=""> -- Select -- </option>
-								<?php
-								$sql = "SELECT `id`, `code`, `name`, `statusCode`  FROM `wh_sloc_x` WHERE statusCode='A' ";							
-								$stmt = $pdo->prepare($sql);		
-								$stmt->execute();
-								while($opt = $stmt->fetch()){
-									$selected=($row['xId']==$opt['id']?' selected ':'');
-									echo '<option value="'.$opt['id'].'" 
-										data-code="'.$opt['code'].'" '.$selected.' 
-										 >'.$opt['code'].'</option>';
-								}
-								?>
-							</select>
+							<label for="custId">Customer</label>
+							<?php
+							$sql = "SELECT `id`, `code`, `name`  FROM `customer` WHERE 1=1 
+							AND id=:custId 
+							";							
+							$stmt = $pdo->prepare($sql);	
+							$stmt->bindParam(':custId', $row['custId']);								
+							$stmt->execute();
+							$opt = $stmt->fetch();
+							?>
+							<input type="text" id="custId" name="custId" class="form-control" value="<?=$opt['name'];?>" disabled >
 						</div>	
 						<div class="form-group">
-							<label for="yId">Row</label>
-							<select id="yId" name="yId" class="form-control" data-code="" data-smk-msg="Require Row" required >
-								<option value=""> -- Select -- </option>
-								<?php
-								$sql = "SELECT `id`, `code`, `name`, `statusCode`  FROM `wh_sloc_y` WHERE statusCode='A' ";							
-								$stmt = $pdo->prepare($sql);		
-								$stmt->execute();
-								while($opt = $stmt->fetch()){
-									$selected=($row['yId']==$opt['id']?' selected ':'');
-									echo '<option value="'.$opt['id'].'" 
-										data-code="'.$opt['code'].'" '.$selected.' 
-										 >'.$opt['code'].'</option>';
-								}
-								?>
-							</select>
+							<label for="prodId">Product</label>
+							<?php
+							$sql = "SELECT `id`, `code`  FROM `product` WHERE 1=1 
+							AND id=:prodId 
+							";							
+							$stmt = $pdo->prepare($sql);	
+							$stmt->bindParam(':prodId', $row['prodId']);								
+							$stmt->execute();
+							$opt = $stmt->fetch();
+							?>
+							<input type="text" id="prodId" name="prodId" class="form-control" value="<?=$opt['code'];?>" disabled >
 						</div>	
 						<div class="form-group">
-							<label for="zId">Rack</label>
-							<select id="zId" name="zId" class="form-control" data-code="" data-smk-msg="Require Rack" required >
-								<option value=""> -- Select -- </option>
-								<?php
-								$sql = "SELECT `id`, `code`, `name`, `statusCode`  FROM `wh_sloc_z` WHERE statusCode='A' ";							
-								$stmt = $pdo->prepare($sql);		
-								$stmt->execute();
-								while($opt = $stmt->fetch()){
-									$selected=($row['zId']==$opt['id']?' selected ':'');
-									echo '<option value="'.$opt['id'].'" 
-										data-code="'.$opt['code'].'" '.$selected.' 
-										 >'.$opt['code'].'</option>';
-								}
-								?>
-							</select>
-						</div>	
-						<div class="form-group">
-                            <label for="code" >Code</label>
-							<input type="hidden" id="hidCode" name="hidCode" class="form-control" value="<?=$row['code'];?>" >
-                            <input type="text" id="code" name="code" class="form-control" value="<?=$row['code'];?>" data-smk-msg="Require code" required disabled>
-                        </div>
-						<div class="form-group">
-                            <label for="name" >name</label>
-                            <input type="text" id="name" name="name" class="form-control" value="<?=$row['name'];?>" data-smk-msg="Require name" required >
+                            <label for="maxDays" >Allow Product Life (Days) / 1 Year=365, 1=Month=30 </label>
+                            <input type="text" id="maxDays" name="maxDays" class="form-control" value="<?=$row['maxDays'];?>" data-smk-msg="Require name" required >
                         </div>
 						
 						<div class="form-group">

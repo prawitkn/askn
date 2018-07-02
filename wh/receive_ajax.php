@@ -27,7 +27,7 @@ if(!isset($_POST['action'])){
 				$pdo->beginTransaction();
 				
 				//Query 1: Check Status for not gen running No.
-				$sql = "SELECT sdNo FROM send WHERE sdNo=:sdNo AND statusCode='P' LIMIT 1";
+				$sql = "SELECT sdNo FROM send WHERE sdNo=:sdNo AND statusCode='P' AND (rcNo IS NULL OR rcNo='')  LIMIT 1";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':sdNo', $sdNo);
 				$stmt->execute();
@@ -36,7 +36,7 @@ if(!isset($_POST['action'])){
 				if($row_count != 1 ){		
 					//return JSON
 					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Status incorrect.'));
+					echo json_encode(array('success' => false, 'message' => 'Data not found.'));
 					exit();
 				}	
 				

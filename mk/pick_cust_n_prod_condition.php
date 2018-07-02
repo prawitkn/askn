@@ -32,12 +32,12 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
 	<section class="content-header">
-		<h1><i class="glyphicon glyphicon-vertical"></i>
-       Pick Condition By Customer and Product
-        <small>Pick Condition management</small>
+		<h1><i class="fa fa-filter"></i>
+       Picking Condition by Customer and Product
+        <small>Master Management</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Pick Condition List</a></li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Picking Condition by Customer and Product List</a></li>
       </ol>
     </section>
 
@@ -47,8 +47,8 @@ switch($s_userGroupCode){
 <!-- To allow only admin to access the content -->      
     <div class="box box-primary">
         <div class="box-header with-border">
-		<label class="box-title">Pick Condition List</label>
-			<a href="<?=$rootPage;?>_add.php?id=" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add Self</a>
+		<label class="box-title">Picking Condition by Customer and Product List</label>
+			<a href="<?=$rootPage;?>_add.php?id=" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add Picking Condition by Customer and Product</a>
 		
 		
         <div class="box-tools pull-right">
@@ -57,7 +57,7 @@ switch($s_userGroupCode){
           <?php
 			$search_word="";
 			if(isset($_GET['search_word']) and isset($_GET['search_word'])){
-				$search_word=$_GET['search_word'];
+				$search_word=trim($_GET['search_word']);
 			}	
 			$sql = "
 			SELECT COUNT(*) AS countTotal 
@@ -65,10 +65,9 @@ switch($s_userGroupCode){
 			INNER JOIN customer cust ON cust.id=hdr.custId 
 			INNER JOIN product prod ON prod.id=hdr.prodId 
 			WHERE 1=1 ";
-			if(isset($_GET['search_word']) and isset($_GET['search_word'])){
-				$search_word=$_GET['search_word'];
-				$sql .= "and (cust.name like '%".$_GET['search_word']."%' ) ";
-			}	
+			if($search_word<>""){
+				$sql .= "and (cust.name like '%".$search_word."%' ) ";
+			}
 			//$sql .= "ORDER BY code ASC ";
 			$stmt = $pdo->prepare($sql);	
 			$stmt->execute();	
@@ -79,10 +78,10 @@ switch($s_userGroupCode){
 			$page=0;
 			if( !empty($_GET["page"]) and isset($_GET["page"]) ) $page=$_GET["page"];
 			if($page<=0) $page=1;
-			$total_data=$countTotal;
+			$total_data=($countTotal<>0?$countTotal:1);
 			$total_page=ceil($total_data/$rows);
 			if($page>=$total_page) $page=$total_page;
-			$start=($page-1)*$rows;			                
+			$start=($page-1)*$rows;
           ?>
           <span class="label label-primary">Total <?php echo $countTotal; ?> items</span>
         </div><!-- /.box-tools -->
@@ -114,9 +113,8 @@ switch($s_userGroupCode){
 			INNER JOIN customer cust ON cust.id=hdr.custId 
 			INNER JOIN product prod ON prod.id=hdr.prodId 
 			WHERE 1=1 ";
-			if(isset($_GET['search_word']) and isset($_GET['search_word'])){
-				$search_word=$_GET['search_word'];
-				$sql .= "and (cust.name like '%".$_GET['search_word']."%' ) ";
+			if($search_word<>""){
+				$sql .= "and (cust.name like '%".$search_word."%' ) ";
 			}	
 			$sql .= "ORDER BY cust.name, prod.code ASC ";
 			$sql.="LIMIT $start, $rows ";		

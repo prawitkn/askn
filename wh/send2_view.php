@@ -202,12 +202,16 @@ $sdNo = $hdr['sdNo'];
     </div><!-- /.box-body -->
   <div class="box-footer">
     <div class="col-md-12">
-		<?php if($hdr['statusCode']=='P' OR $hdr['statusCode']=='C'){ ?>
-          <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?sdNo=<?=$sdNo;?>" class="btn btn-primary"><i class="glyphicon glyphicon-print"></i> Print</a>		  
+		<?php if($hdr['statusCode']=='P'){ ?>
+          <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?sdNo=<?=$sdNo;?>" class="btn btn-primary"><i class="glyphicon glyphicon-print"></i> Print</a>			  
+		<?php } ?>
+
+		<?php if($hdr['statusCode']=='C'){ ?>         
 		  <button type="button" id="btn_approve_special" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['rcNo']==''?'':'disabled'); ?> >
 			<i class="glyphicon glyphicon-star"></i> Approve (Special)
 		  </button>
 		<?php } ?>
+
 		<?php if($hdr['statusCode']=='P' AND $hdr['rcNo']==""){ ?>         
 		  <button type="button" id="btn_remove" class="btn btn-default" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='P'?'':'disabled'); ?> >
 		 <i class="glyphicon glyphicon-trash">
@@ -217,7 +221,7 @@ $sdNo = $hdr['sdNo'];
 	
 		
 		  
-		  <?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whSup' :  case 'pdSup' : ?>
+		  <?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whSup' :  case 'pdSup' :   case 'pdOff' :  ?>
           <button type="button" id="btn_approve" class="btn btn-success pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='C'?'':'disabled'); ?> >
 		 <i class="glyphicon glyphicon-check">
 			</i> Approve

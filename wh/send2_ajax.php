@@ -296,65 +296,6 @@ if(!isset($_POST['action'])){
 				echo json_encode(array('success' => false, 'message' => $errors.$t));
 			}
 			break;
-		case 'edit' :
-			$id = $_POST['id'];
-			$custId = $_POST['custId'];
-			$code = $_POST['code'];
-			$name = $_POST['name'];
-			$addr1 = $_POST['addr1'];
-			$addr2 = $_POST['addr2'];
-			$addr3 = $_POST['addr3'];
-			$zipcode = $_POST['zipcode'];
-			$countryName = $_POST['countryName'];
-			$locationCode = $_POST['locationCode'];
-			$marketCode = $_POST['marketCode'];
-			$contact = $_POST['contact'];
-			$contactPosition = $_POST['contactPosition'];
-			$email = $_POST['email'];
-			$tel = $_POST['tel']; 
-			$fax = $_POST['fax']; 
-			$smId = $_POST['smId']; 
-			$smAdmId = (isset($_POST['smAdmId'])? $_POST['smAdmId'] : 0 );//if because column datatype = int
-			$statusCode = (isset($_POST['statusCode'])? $_POST['statusCode'] : 'I' );
-							
-			$sql = "UPDATE `".$tb."` SET `custId`=:custId, `code`=:code, `name`=:name, `addr1`=:addr1, `addr2`=:addr2
-			, `addr3`=:addr3, `zipcode`=:zipcode, `countryName`=:countryName, `locationCode`=:locationCode, `marketCode`=:marketCode
-			, `contact`=:contact, `contactPosition`=:contactPosition, `email`=:email, `tel`=:tel, `fax`=:fax, `smId`=:smId, `smAdmId`=:smAdmId
-			, `statusCode`=:statusCode 				
-			WHERE id=:id 
-			";	
-			$stmt = $pdo->prepare($sql);	
-			$stmt->bindParam(':custId', $custId);
-			$stmt->bindParam(':code', $code);
-			$stmt->bindParam(':name', $name);
-			$stmt->bindParam(':addr1', $addr1);
-			$stmt->bindParam(':addr2', $addr2);
-			$stmt->bindParam(':addr3', $addr3);
-			$stmt->bindParam(':zipcode', $zipcode);
-			$stmt->bindParam(':countryName', $countryName);
-			$stmt->bindParam(':locationCode', $locationCode);
-			$stmt->bindParam(':marketCode', $marketCode);
-			$stmt->bindParam(':contact', $contact);
-			$stmt->bindParam(':contactPosition', $contactPosition);
-			
-			$stmt->bindParam(':email', $email);
-			$stmt->bindParam(':tel', $tel);
-			$stmt->bindParam(':fax', $fax);
-			
-			
-			$stmt->bindParam(':smId', $smId);
-			$stmt->bindParam(':smAdmId', $smAdmId);
-			$stmt->bindParam(':statusCode', $statusCode);
-			$stmt->bindParam(':id', $id);
-			if ($stmt->execute()) {
-				  header('Content-Type: application/json');
-				  echo json_encode(array('success' => true, 'message' => 'Data Updated Complete.'));
-			   } else {
-				  header('Content-Type: application/json');
-				  $errors = "Error on Data Update. Please try new data. " . $pdo->errorInfo();
-				  echo json_encode(array('success' => false, 'message' => $errors));
-			}	
-			break;
 		case 'mapping' :
 			try{	
 				$sdNo = $_POST['sdNo'];
@@ -547,7 +488,7 @@ if(!isset($_POST['action'])){
 		case 'approve' :
 			//Check user roll.
 			switch($s_userGroupCode){
-				case 'it' : case 'admin' : case 'whSup' : case 'pdSup' :
+				case 'it' : case 'admin' : case 'whSup' : case 'pdSup' :  case 'pdOff' :
 					break;
 				default : 
 					//return JSON

@@ -10,7 +10,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
   <!-- Main Header -->
 <?php include 'header.php'; 
-$rootPage = 'shelf';
+$rootPage = 'pick_cust_n_prod_condition';
 
 //Check user roll.
 switch($s_userGroupCode){
@@ -30,12 +30,12 @@ switch($s_userGroupCode){
     <!-- Content Header (Page header) -->
     <section class="content-header">
       <h1><i class="glyphicon glyphicon-vertical"></i>
-       Shelf
-        <small>Shelf management</small>
+       Picking Condition by Customer and Product
+        <small>Master Management</small>
       </h1>
 	  <ol class="breadcrumb">
-        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Shelf List</a></li>
-		<li><a href="#"><i class="glyphicon glyphicon-edit"></i>Shelf</a></li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Picking Condition by Customer and Product List</a></li>
+		<li><a href="#"><i class="glyphicon glyphicon-edit"></i>Add Picking Condition</a></li>
       </ol>
     </section>
 
@@ -45,7 +45,7 @@ switch($s_userGroupCode){
       <!-- Your Page Content Here -->
     <div class="box box-primary">
         <div class="box-header with-border">
-        <h3 class="box-title">Add Shelf</h3>
+        <h3 class="box-title">Add Picking Condition</h3>
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
@@ -55,64 +55,47 @@ switch($s_userGroupCode){
         <div class="box-body">            
             <div class="row">                
                     <form id="form1" method="post" class="form" validate><!--enctype="multipart/form-data" -->
-					<input type="hidden" name="action" value="add" />			
+					<input type="hidden" name="action" value="add" />	
+					
 					<div class="col-md-6">
 						<div class="form-group">
-							<label for="xId">Column</label>
-							<select id="xId" name="xId" class="form-control" data-code=""  data-smk-msg="Require Column" required >
+							<label for="custId">Customer</label>
+							<select id="custId" name="custId" class="form-control" data-code=""  data-smk-msg="Require Customer" required >
 								<option value=""> -- Select -- </option>
 								<?php
-								$sql = "SELECT `id`, `code`, `name`, `statusCode`  FROM `wh_sloc_x` WHERE statusCode='A' ";							
+								$sql = "SELECT `id`, `code`, `name`  FROM `customer` WHERE statusCode='A'
+								ORDER BY name ";							
 								$stmt = $pdo->prepare($sql);		
 								$stmt->execute();
 								while($row = $stmt->fetch()){
 									echo '<option value="'.$row['id'].'" 
-										data-code="'.$row['code'].'"
+										 >'.$row['name'].' - '.$row['code'].'</option>';
+								}
+								?>
+							</select>
+						</div>	
+						<div class="form-group">
+							<label for="prodId">Product</label>
+							<select id="prodId" name="prodId" class="form-control" data-code="" data-smk-msg="Require Product" required >
+								<option value=""> -- Select -- </option>
+								<?php
+								$sql = "SELECT `id`, `code`   FROM `product` WHERE statusCode='A'
+								ORDER BY code ";							
+								$stmt = $pdo->prepare($sql);		
+								$stmt->execute();
+								while($row = $stmt->fetch()){
+									echo '<option value="'.$row['id'].'" 
 										 >'.$row['code'].'</option>';
 								}
 								?>
 							</select>
 						</div>	
 						<div class="form-group">
-							<label for="yId">Row</label>
-							<select id="yId" name="yId" class="form-control" data-code="" data-smk-msg="Require Row" required >
-								<option value=""> -- Select -- </option>
-								<?php
-								$sql = "SELECT `id`, `code`, `name`, `statusCode`  FROM `wh_sloc_y` WHERE statusCode='A' ";							
-								$stmt = $pdo->prepare($sql);		
-								$stmt->execute();
-								while($row = $stmt->fetch()){
-									echo '<option value="'.$row['id'].'" 
-										data-code="'.$row['code'].'"
-										 >'.$row['code'].'</option>';
-								}
-								?>
-							</select>
-						</div>	
-						<div class="form-group">
-							<label for="zId">Rack</label>
-							<select id="zId" name="zId" class="form-control" data-code="" data-smk-msg="Require Rack" required >
-								<option value=""> -- Select -- </option>
-								<?php
-								$sql = "SELECT `id`, `code`, `name`, `statusCode`  FROM `wh_sloc_z` WHERE statusCode='A' ";							
-								$stmt = $pdo->prepare($sql);		
-								$stmt->execute();
-								while($row = $stmt->fetch()){
-									echo '<option value="'.$row['id'].'" 
-										data-code="'.$row['code'].'"
-										 >'.$row['code'].'</option>';
-								}
-								?>
-							</select>
-						</div>	
-						<div class="form-group">
-                            <label for="code" >Code</label>
-							<input type="hidden" id="hidCode" name="hidCode" class="form-control" >
-                            <input type="text" id="code" name="code" class="form-control" data-smk-msg="Require code" required disabled>
-                        </div>
-						<div class="form-group">
-                            <label for="name" >name</label>
-                            <input type="text" id="name" name="name" class="form-control" data-smk-msg="Require name" required >
+                            <label for="maxDays" >Allow Product Life (Days) / 1 Year=365, 1=Month=30 </label>
+                            <input type="text" id="maxDays" name="maxDays" class="form-control" data-smk-msg="Require Allow Product Life (Days)" required 
+							onkeypress="return numbersOnly(this, event);" 
+							onpaste="return false;"
+							>
                         </div>
 						<button id="btn1" type="submit" class="btn btn-default">Submit</button>
 					</div>
@@ -260,6 +243,13 @@ $(document).ready(function() {
      fixed layout. -->
 	  
 	 
+<!--Integers (non-negative)-->
+<script>
+  function numbersOnly(oToCheckField, oKeyEvent) {
+    return oKeyEvent.charCode === 0 ||
+        /\d/.test(String.fromCharCode(oKeyEvent.charCode));
+  }
+</script>
 	
 </body>
 </html>

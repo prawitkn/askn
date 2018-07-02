@@ -76,6 +76,7 @@
 			<li class="header">Core Master Menu</li>
 			<!-- Optionally, you can add icons to the links -->
 			<li><a href="user.php"><i class="fa fa-male"></i> <span>User</span></a></li>
+			<li><a href="pick_cust_n_prod_condition.php"><i class="fa fa-filter"></i> <span>Picking Condition by Cust.and Prod.</span></a></li>
 		<?php } ?>
 		
 		<?php //switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' :  ?>		
