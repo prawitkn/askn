@@ -214,7 +214,7 @@ $hdr = $stmt->fetch();
 								$html.= $row2['shelfCode'].', ';
 								$shelfCount+=1;
 							}
-							if($shelfCount >= 10 ) exit;
+							if($shelfCount >= 10 )  break;
 						 }// end while 
 						$html .='</td>';
 					$html.='</tr>';	
