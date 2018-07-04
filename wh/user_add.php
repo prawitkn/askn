@@ -67,11 +67,11 @@ switch($s_userGroupCode){
                         </div>
                         <div class="form-group">
                             <label for="userPassword">User Password</label>
-                            <input id="userPassword" type="password" class="form-control" name="userPassword" data-smk-msg= "Require userPassword" required>
+                            <input id="userPassword" type="text" class="form-control" name="userPassword" data-smk-msg= "Require userPassword" required>
                         </div>
                         <div class="form-group">
                             <label for="userPin">User PIN</label>
-                            <input id="userPin" type="password" class="form-control" name="userPin" data-smk-msg= "Require userPin" required>
+                            <input id="userPin" type="text" class="form-control" name="userPin" data-smk-msg= "Require userPin" required>
                         </div>
 
                         <div class="form-group">

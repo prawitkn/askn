@@ -206,18 +206,25 @@ $sdNo = $hdr['sdNo'];
           <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?sdNo=<?=$sdNo;?>" class="btn btn-primary"><i class="glyphicon glyphicon-print"></i> Print</a>			  
 		<?php } ?>
 
-		<?php if($hdr['statusCode']=='C'){ ?>         
-		  <button type="button" id="btn_approve_special" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['rcNo']==''?'':'disabled'); ?> >
-			<i class="glyphicon glyphicon-star"></i> Approve (Special)
-		  </button>
-		<?php } ?>
+		<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whSup' :  case 'pdSup' :  ?>
+	          <?php if($hdr['statusCode']=='C'){ ?>         
+			  <button type="button" id="btn_approve_special" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['rcNo']==''?'':'disabled'); ?> >
+				<i class="glyphicon glyphicon-star"></i> Approve (Special)
+			  </button>
+			<?php } ?>
 
-		<?php if($hdr['statusCode']=='P' AND $hdr['rcNo']==""){ ?>         
-		  <button type="button" id="btn_remove" class="btn btn-default" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='P'?'':'disabled'); ?> >
-		 <i class="glyphicon glyphicon-trash">
-			</i> Remove Approved
-          </button>
-		<?php } ?>
+			<?php if($hdr['statusCode']=='P' AND $hdr['rcNo']==""){ ?>         
+			  <button type="button" id="btn_remove" class="btn btn-default" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='P'?'':'disabled'); ?> >
+			 <i class="glyphicon glyphicon-trash">
+				</i> Remove Approved
+	          </button>
+			<?php } ?>
+			
+		  <?php break; default : } ?>
+
+		
+
+		
 	
 		
 		  

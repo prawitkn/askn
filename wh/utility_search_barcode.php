@@ -120,7 +120,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			</div>
 			<div class="row">
 				<div class="col-md-3">
-					Grade : <b><?=$rpi['grade'];?></b>
+					<?php
+					$gradeName='';
+					switch($rpi['grade']){
+						case 0 : $gradeName='A'; break;
+						case 1 : $gradeName='B'; break;
+						case 2 : $gradeName='N'; break;
+						default : $gradeName='N/A';
+					}
+					?>
+					Grade : <b><?=$gradeName;?></b>
 				</div>
 				<div class="col-md-3">
 					Grade Date : <b><?= date('d M Y',strtotime( $rpi['gradeDate'] ));?></b>

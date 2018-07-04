@@ -12,6 +12,7 @@
 				$userFullname = $_POST['userFullname'];
 				$userName = $_POST['userName'];
 				$userPassword = mysqli_real_escape_string($link, $_POST['userPassword']);
+				$userPin = mysqli_real_escape_string($link, $_POST['userPin']);
 				$userEmail = $_POST['userEmail'];
 				$userTel = $_POST['userTel'];
 				$userGroupCode = $_POST['userGroupCode'];
@@ -32,6 +33,10 @@
 				$salt = "asdadasgfd";
 				$hash_userPassword = hash_hmac('sha256', $userPassword, $salt);
 
+				// Encript PIN
+				$salt = "asdadasgfd";
+				$hash_userPin = hash_hmac('sha256', $userPin, $salt);
+
 				$new_picture_name="";
 				 // Upload Picture
 				if (is_uploaded_file($_FILES['inputFile']['tmp_name'])){
@@ -41,8 +46,8 @@
 				}
 				
 				
-				$sql = "INSERT INTO ".$tb." (`userName`, `userPassword`, `userFullname`, `userEmail`, `userTel`, `userPicture`, `userGroupCode`,  `userDeptCode`, `statusCode`)"
-						. " VALUES ('$userName', '$hash_userPassword', '$userFullname', '$userEmail', '$userTel', '$new_picture_name', '$userGroupCode', '$userDeptCode','A')";
+				$sql = "INSERT INTO ".$tb." (`userName`, `userPassword`, `userPin`, `userFullname`, `userEmail`, `userTel`, `userPicture`, `userGroupCode`,  `userDeptCode`, `statusCode`)"
+						. " VALUES ('$userName', '$hash_userPassword', '$hash_userPin', '$userFullname', '$userEmail', '$userTel', '$new_picture_name', '$userGroupCode', '$userDeptCode','A')";
 						 
 				$result = mysqli_query($link, $sql);
 			 
@@ -61,6 +66,7 @@
 				$userFullname = $_POST['userFullname'];
 				$userName = $_POST['userName'];
 				$userPassword = $_POST['userPassword'];
+				$userPin = $_POST['userPin'];
 				$userEmail = $_POST['userEmail'];
 				$userTel = $_POST['userTel'];
 				$userGroupCode = $_POST['userGroupCode'];
@@ -74,7 +80,7 @@
 				
 				
 			 // Check user name duplication?
-				$sql = "SELECT userName,userPassword, userPicture FROM ".$tb." WHERE userId=$userId ";
+				$sql = "SELECT userName,userPassword,userPin, userPicture FROM ".$tb." WHERE userId=$userId ";
 				//$result_user = mysqli_query($link, $sql_user);
 				//$is_user = mysqli_num_rows($result_user);
 				
@@ -100,6 +106,16 @@
 					//Old Password
 					$hash_userPassword=$row['userPassword'];
 				}
+
+				$hash_userPin='';
+				if(isset($userPin) AND $userPin<>''){
+					 // Encript New Password
+					$salt = "asdadasgfd";
+					$hash_userPin = hash_hmac('sha256', $userPin, $salt);
+				}else{
+					//Old Password
+					$hash_userPin=$row['userPin'];
+				}
 				
 			  
 				//inputFile
@@ -115,6 +131,7 @@
 				
 				$sql = "UPDATE `wh_user` SET `userName`=:userName 
 				, `userPassword`=:userPassword
+				, `userPin`=:userPin
 				, `userFullname`=:userFullname
 				, `userEmail`=:userEmail 
 				, `userTel`=:userTel
@@ -128,6 +145,7 @@
 				$stmt = $pdo->prepare($sql);	
 				$stmt->bindParam(':userName', $userName);
 				$stmt->bindParam(':userPassword', $hash_userPassword);
+				$stmt->bindParam(':userPin', $hash_userPin);
 				$stmt->bindParam(':userFullname', $userFullname);
 				$stmt->bindParam(':userEmail', $userEmail);
 				$stmt->bindParam(':userTel', $userTel);

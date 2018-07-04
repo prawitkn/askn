@@ -85,7 +85,11 @@ $row = $stmt->fetch();
                             <label for="userPassword">User Password<small style="color: red;"> *** Leave blank for not change user password.</small></label>
                             <input id="userPassword" type="text" class="form-control" name="userPassword" >							
                         </div>
-						
+						<div class="form-group">
+                            <label for="userPin">User PIN<small style="color: red;"> *** Leave blank for not change user PIN.</small></label>
+                            <input id="userPin" type="text" class="form-control" name="userPin" >							
+                        </div>
+
                         <div class="form-group">
                             <label for="userFullname">User Fullname</label>
                             <input id="userFullname" type="text" class="form-control" name="userFullname" value="<?=$row['userFullname'];?>" data-smk-msg="Require userFullname."required>

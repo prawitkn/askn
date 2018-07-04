@@ -25,7 +25,7 @@ if(!isset($_POST['action'])){
 				$pdo->beginTransaction();
 				
 				//Query 1: Check Status for not gen running No.
-				$sql = "SELECT rtNo FROM rt WHERE rtNo=:refNo AND statusCode='P' LIMIT 1";
+				$sql = "SELECT rtNo FROM rt WHERE rtNo=:refNo AND statusCode='P' AND (rcNo IS NULL OR rcNo='') LIMIT 1";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':refNo', $refNo);
 				$stmt->execute();
@@ -324,7 +324,7 @@ if(!isset($_POST['action'])){
 					
 				//Query 6: INSERT STK BAl sloc to 
 				$sql = "INSERT INTO stk_bal (prodId, sloc, onway, receive, balance) 
-				SELECT itm.prodCodeId, :toCode, -1*SUM(itm.qty), SUM(itm.qty), -1*SUM(itm.qty) 
+				SELECT itm.prodCodeId, :toCode, -1*SUM(itm.qty), SUM(itm.qty), SUM(itm.qty) 
 				FROM receive_detail dtl
 				INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 				WHERE dtl.rcNo=:rcNo 

@@ -966,7 +966,7 @@ if(!isset($_POST['action'])){
 				
 				//return JSON
 				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data Approved', 'sdNo' => $sdNo));	
+				echo json_encode(array('success' => true, 'message' => 'Data Removed', 'sdNo' => $sdNo));	
 			} 
 			//Our catch block will handle any exceptions that are thrown.
 			catch(Exception $e){

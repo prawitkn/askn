@@ -389,7 +389,7 @@ if(!isset($_POST['action'])){
 					
 				//Query 6: INSERT STK BAl sloc to 
 				$sql = "INSERT INTO stk_bal (prodId, sloc, onway, receive, balance) 
-				SELECT itm.prodCodeId, :toCode, -1*SUM(itm.qty), SUM(itm.qty), -1*SUM(itm.qty) 
+				SELECT itm.prodCodeId, :toCode, -1*SUM(itm.qty), SUM(itm.qty), SUM(itm.qty) 
 				FROM receive_detail dtl
 				INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 				WHERE dtl.rcNo=:rcNo 
