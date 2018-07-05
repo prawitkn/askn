@@ -98,7 +98,7 @@ if(!isset($_POST['action'])){
 				FROM prepare_detail pDtl 
 				LEFT JOIN product_item itm ON itm.prodItemId=pDtl.prodItemId 
 				WHERE ppNo=:ppNo 
-				GROUP BY pDtl.prodId
+				GROUP BY itm.prodCodeId
 				";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':doNo', $doNo);
