@@ -236,7 +236,7 @@ if( isset($_GET['doNo']) ){
 	LEFT JOIN product pd ON pd.id=dtl.prodId 
 	WHERE 1 
 	AND hdr.doNo=:doNo
-
+	GROUP BY dtl.`prodId` 
 	ORDER BY dtl.`id`
 	";
 	$stmt = $pdo->prepare($sql);	
