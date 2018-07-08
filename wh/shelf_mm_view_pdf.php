@@ -33,7 +33,7 @@ class MYPDF extends TCPDF {
 		
 		$this->SetFont('Times', 'B', 16, '', true);		
 		$this->SetY(11);	
-		$this->Cell(0, 5, 'Asia Kungnum Co.,Ltd.', 0, false, 'C', 0, '', 0, false, 'M', 'M');
+		$this->Cell(0, 5, 'Asia Kangnam Co.,Ltd.', 0, false, 'C', 0, '', 0, false, 'M', 'M');
 		$this->Ln(7);
 		$this->SetFont('Times', 'B', 14, '', true);	
         $this->Cell(0, 5, 'Shelf Movement', 0, false, 'C', 0, '', 0, false, 'M', 'M');
@@ -163,8 +163,8 @@ if( isset($_GET['id']) ){
 							<table class="table table-striped no-margin" >
 								 <thead>									
 								  <tr>
-									<th style="font-weight: bold;">Sending No. :</th>
-									<th colspan="2" style="font-weight: bold; text-align: left;">'.$hdr['id'].$statusName.'</th>
+									<th style="font-weight: bold;">Movement ID :</th>
+									<th colspan="2" style="font-weight: bold; text-align: left;">'.$hdr['id'].'</th>
 									<th style="font-weight: bold; text-align: right;">From :</th>
 									<th> <span style="font-size: 1.5em;">'.$hdr['shelfNameFrom'].'</span></th>									
 									<th style="font-weight: bold; text-align: right;">To :</th>

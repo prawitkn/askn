@@ -47,7 +47,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <!-- Here is a label for example -->
           <?php
 				$dateFrom = (isset($_GET['dateFrom'])?$_GET['dateFrom']: date('d-m-Y') );
-				
+
 				$dateFrom = str_replace('/', '-', $dateFrom);
 				$dateFromYmd=$dateToYmd="";
 				if($dateFrom<>""){ $dateFromYmd = date('Y-m-d', strtotime($dateFrom));	}
@@ -60,7 +60,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				WHERE 1 
 				AND sh.statusCode='P' 
 				AND sh.isClose<>'Y' ";
-				if($dateFrom<>""){ $sql .= " AND sd.deliveryDate='$dateFrom' ";	}				
+				if($dateFromYmd<>""){ $sql .= " AND sd.deliveryDate='$dateFromYmd' ";	}				
                 //$result = mysqli_query($link, $sql);
                 //$countTotal = mysqli_fetch_assoc($result);
 				 //$countTotal = mysqli_row_count($result);
@@ -122,7 +122,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				WHERE 1 
 				AND sh.statusCode='P' 
 				AND sh.isClose<>'Y' ";
-				if($dateFrom<>""){ $sql .= " AND sd.deliveryDate='$dateFrom' ";	}
+				if($dateFromYmd<>""){ $sql .= " AND sd.deliveryDate='$dateFromYmd' ";	}
 				$sql .= "ORDER BY soNo desc
 				LIMIT $start, $rows 
 				";
@@ -161,7 +161,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					?>
 					<tr>
 						<td><?=$c_row;?></td>
-						<td><?=$row['soNo'];?></td>
+						<td><a target="_blank" href="sale_view.php?soNo=<?=$row['soNo'];?>" ><?=$row['soNo'];?></a></td>
 						<td><?=$row['saleDate'];?></td>
 						<td><?=$row['custName'];?></td>
 						<td><?=$row['smName'];?></td>
@@ -178,8 +178,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		<div class="col-md-12">
 			<?php $pagingString = "?dateFrom=".$dateFrom;
 			?>
-			<a href="<?="rpt_so_by_deli_hdr_xls.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
-				<i class="glyphicon glyphicon-save-file"></i> Excel (by item)</span></a>
 				
 			<a href="<?="rpt_so_by_deli_hdr_xls.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
 				<i class="glyphicon glyphicon-save-file"></i> Excel</span></a>

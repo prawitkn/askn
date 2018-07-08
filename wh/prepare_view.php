@@ -385,11 +385,13 @@ $('#btn_verify').click (function(e) {
 		$wrongProduct = <?=$wrongProduct;?>;
 		$diffQty = <?=$diffQty;?>;
 		if($wrongProduct>0){
-			alert('Cannot Confirm because there is WRONG PRODUCT in packing list');
+			//alert('Cannot Confirm because there is WRONG PRODUCT in packing list');
+			alert('ผิดพลาด : ไม่สามารถยืนยันการทำงานได้ (1. Wrong Product) \nสินค้าบางรายการ ไม่ตรงตามรายการสินค้า ในใบรายการสั่งเตรียมสินค้า (Picking list)');
 			return false;
 		}
 		if($diffQty>0){
-			alert('Cannot Confirm because there is DIFF QUANTITY in packing list');
+			//alert('Cannot Confirm because there is DIFF QUANTITY in packing list');
+			alert('ผิดพลาด : ไม่สามารถยืนยันการทำงานได้ (2. Difference Quanity) \nสินค้าบางรายการ มีจำนวนรวม ไม่ตรงตามจำนวนรวม ในใบรายการสั่งเตรียมสินค้า (Picking list)');
 			return false;
 		}
 		$.post({

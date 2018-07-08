@@ -33,7 +33,7 @@ class MYPDF extends TCPDF {
 		
 		$this->SetFont('Times', 'B', 16, '', true);		
 		$this->SetY(11);	
-		$this->Cell(0, 5, 'Asia Kungnum Co.,Ltd.', 0, false, 'C', 0, '', 0, false, 'M', 'M');
+		$this->Cell(0, 5, 'Asia Kangnam Co.,Ltd.', 0, false, 'C', 0, '', 0, false, 'M', 'M');
 		$this->Ln(7);
 		$this->SetFont('Times', 'B', 14, '', true);	
         $this->Cell(0, 5, 'Send by Product', 0, false, 'C', 0, '', 0, false, 'M', 'M');

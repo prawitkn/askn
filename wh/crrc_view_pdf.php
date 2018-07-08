@@ -24,7 +24,7 @@ class MYPDF extends TCPDF {
         //$image_file = '../asset/img/logo-asia-kangnam.jpg';
         //$this->Image($image_file, 10, 10, 15, '', 'JPG', '', 'T', false, 300, '', false, false, 0, false, false, false);
 		$this->SetY(11);	
-		$this->Cell(0, 5, 'Asia Kungnum CO.,LTD', 0, false, 'C', 0, '', 0, false, 'M', 'M');
+		$this->Cell(0, 5, 'Asia Kangnam CO.,LTD', 0, false, 'C', 0, '', 0, false, 'M', 'M');
 		$this->Ln(5);
         $this->Cell(0, 5, 'Return Receive', 0, false, 'C', 0, '', 0, false, 'M', 'M');
     }

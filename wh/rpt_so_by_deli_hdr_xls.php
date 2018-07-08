@@ -29,7 +29,7 @@ LEFT JOIN salesman sm on sm.id=sh.smId
 WHERE 1 
 AND sh.statusCode='P' 
 AND sh.isClose<>'Y' ";
-if($dateFrom<>""){ $sql .= " AND sd.deliveryDate='$dateFrom' ";	}
+if($dateFromYmd<>""){ $sql .= " AND sd.deliveryDate='$dateFromYmd' ";	}
 $sql .= "ORDER BY soNo desc
 ";
 $result = mysqli_query($link, $sql);      
@@ -59,7 +59,7 @@ if($countTotal>0){
 	WHERE 10
 	AND sh.statusCode='P' 
 	AND sh.isClose<>'Y' 	";
-	if($dateFrom<>""){ $sql .= " AND sd.deliveryDate='$dateFrom' ";	}
+	if($dateFromYmd<>""){ $sql .= " AND sd.deliveryDate='$dateFromYmd' ";	}
 	$sql .= "ORDER BY soNo desc 
 	";
 	$result = mysqli_query($link, $sql);             

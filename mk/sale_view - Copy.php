@@ -176,12 +176,10 @@ desired effect
 						$sql = "
 						SELECT a.`id`, a.`prodId`, a.`salesPrice`, a.`qty`, a.`rollLengthId`, a.`remark`, a.deliveryDate, a.`soNo`
 						, b.code as prodCode, b.name as prodName, b.uomCode as prodUomCode, b.description 
-						, (SELECT IFNULL(SUM(pdtl.qty),0) FROM picking_detail pdtl 
-								INNER JOIN picking phdr ON phdr.pickNo=pdtl.pickNo 
-								INNER JOIN prepare pph ON pph.pickNo=pdtl.pickNo 
-								INNER JOIN delivery_header dhdr ON dhdr.ppNo=pph.ppNo AND dhdr.statusCode='P' 
-								WHERE pdtl.saleItemId=a.id 
-								) as sentQty 
+						, (SELECT IFNULL(SUM(id.qty),0) FROM delivery_detail id 
+								INNER JOIN delivery_header dh on dh.doNo=id.doNo	
+								INNER JOIN product_item itm ON itm.prodItemId=id.prodItemId 
+								WHERE dh.soNo=a.soNo AND itm.prodCodeId=a.prodId ) as sentQty 
 						, rl.name as rollLengthName 
 						FROM `sale_detail` a
 						LEFT JOIN product b on a.prodId=b.id
@@ -348,19 +346,26 @@ desired effect
 		<?php switch($s_userGroupCode) { case 'admin' : case 'salesAdmin' : case 'sales' : ?>		
 		
 		  <?php switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' : ?>
-				<button type="button" id="btn_revise" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['isClose']=='N'?'':'disabled'); ?> >
-				<i class="glyphicon glyphicon-wrench"></i> Edit for Revise
-			  </button>
+				
 			  
 				<?php if($hdr['statusCode']=='P'){ ?>
 					<a href="<?=$rootPage;?>_view_pdf.php?soNo=<?=$soNo;?>" target="_blank" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
-					
+						  
+					<?php if($hdr['isClose']=='Y'){ ?>	  
+						<button type="button" id="btn_approve_special" class="btn btn-danger" style="margin-right: 5px;" >
+							<i class="glyphicon glyphicon-refresh"></i> Re-Open
+						</button>  
+					<?php }else{ //statusCode==P ?>
+						<button type="button" id="btn_revise" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['isClose']=='N'?'':'disabled'); ?> >
+							<i class="glyphicon glyphicon-wrench"></i> Edit for Revise
+						</button>
+					<?php }//statusCode==P ?>
 				
-				  <button type="button" id="btn_close_so" class="btn btn-danger pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='Y')?'disabled':''); ?>>
-				 <i class="glyphicon glyphicon-ok-sign">
-					</i> Close Sales Order
-				  </button>
-				  <?php } //statusCode==P ?>
+				
+				<button type="button" id="btn_close_so" class="btn btn-danger pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='Y')?'disabled':''); ?>>
+					<i class="glyphicon glyphicon-ok-sign"></i> Close Sales Order
+				</button>
+			<?php } //s_userGroupCode ?>
 		  
           <button type="button" id="btn_approve" class="btn btn-success pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='C'?'':'disabled'); ?> >
 		 <i class="glyphicon glyphicon-check">
@@ -401,9 +406,41 @@ desired effect
   <?php include'footer.php'; ?>
  
 
+ 
+ 
+ 
+<?php if($hdr['isClose']=='Y'){ ?>
+   <!-- Modal -->
+<div id="modal_pin" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-md">
 
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Re-open</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-horizontal">
+			<div class="form-group">	
+				<label for="txt_reason" class="control-label col-md-4">Password : </label>
+				<div class="col-md-6">					
+					<input type="text" class="form-control" id="txt_pin" />
+				</div>
+			</div>
+		
+		</form>
+      </div>
+      <div class="modal-footer">
+		<button type="button" class="btn btn-primary" id="btn_pin_ok" >OK</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
 
-
+  </div>
+</div>
+<!-- End Modal -->
+<?php }else{ //isClose ?>
 <!-- Modal -->
 <div id="modal_reason" class="modal fade" role="dialog">
   <div class="modal-dialog modal-md">
@@ -433,7 +470,7 @@ desired effect
 
   </div>
 </div>
-
+<?php } //isClose ?>
 
 
 
@@ -471,6 +508,54 @@ var spinner = new Spinner().spin();
 $("#spin").append(spinner.el);
 $("#spin").hide();
 //
+
+
+//Super Approve Begin
+$('#btn_approve_special').click(function(){
+	$('#modal_pin').modal('show');
+});			
+$('#btn_pin_ok').click(function(){
+	var params = {			
+		soNo: $('#soNo').val(),
+		pin: $('#txt_pin').val()
+	};	
+	if(params.pin.trim()==""){
+		alert('PIN is required.');
+		$('#txt_pin').select();
+		return false;
+	}
+	if (confirm('Are you sure to Re-Open Sales Order ?')) {
+		// Save it!
+		$.post({
+			url: 'sale_reopen_ajax.php',
+			data: params,
+			dataType: 'json'
+		}).done(function(data) {
+			if (data.success){  
+				$.smkAlert({
+					text: data.message,
+					type: 'success',
+					position:'top-center'
+				});
+				window.location.href = "sale_view.php?soNo=" + data.soNo;
+			}else{
+				$.smkAlert({
+					text: data.message,
+					type: 'danger',
+					position:'top-center'
+				});
+			}
+			//e.preventDefault();		
+		}).error(function (response) {
+			alert(response.responseText);
+		});
+		//.post
+	} else {
+		// Do nothing!
+	}
+});	
+//Super Approve End
+
 
 
 	//Reason Begin

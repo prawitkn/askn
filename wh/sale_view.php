@@ -176,10 +176,12 @@ desired effect
 						$sql = "
 						SELECT a.`id`, a.`prodId`, a.`salesPrice`, a.`qty`, a.`rollLengthId`, a.`remark`, a.deliveryDate, a.`soNo`
 						, b.code as prodCode, b.name as prodName, b.uomCode as prodUomCode, b.description 
-						, (SELECT IFNULL(SUM(id.qty),0) FROM invoice_detail id 
-								INNER JOIN invoice_header ih on ih.invNo=id.invNo										
-								INNER JOIN delivery_header dh on dh.doNo=ih.doNo 
-								WHERE dh.soNo=a.soNo AND id.prodCode=a.prodId ) as sentQty 
+						, (SELECT IFNULL(SUM(pdtl.qty),0) FROM picking_detail pdtl 
+								INNER JOIN picking phdr ON phdr.pickNo=pdtl.pickNo 
+								INNER JOIN prepare pph ON pph.pickNo=pdtl.pickNo 
+								INNER JOIN delivery_header dhdr ON dhdr.ppNo=pph.ppNo AND dhdr.statusCode='P' 
+								WHERE pdtl.saleItemId=a.id 
+								) as sentQty 
 						, rl.name as rollLengthName 
 						FROM `sale_detail` a
 						LEFT JOIN product b on a.prodId=b.id
