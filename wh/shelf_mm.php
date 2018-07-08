@@ -30,8 +30,8 @@ $tb="shelf_movement";
     <!-- Content Header (Page header) -->
     <section class="content-header" >	  
 	  <h1><i class="glyphicon glyphicon-object-align-bottom"></i>
-       Shelf
-        <small>Shelf management</small>
+       Shelf Movement
+        <small>Shelf Movement Management</small>
       </h1>
       <ol class="breadcrumb">
         <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Shelf Movement List</a></li>
@@ -46,7 +46,8 @@ $tb="shelf_movement";
         <div class="box-header with-border">
 		<div class="form-inline">
 			<label class="box-title">Shelf Movement List</label>
-			<a href="<?=$rootPage;?>_add.php" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add Shelf Movement</a>
+			<a href="<?=$rootPage;?>_add.php" class="btn btn-primary"><i class="glyphicon glyphicon-tag"></i> Add Shelf Movement by Item</a>
+			<a href="<?=$rootPage;?>_add_lot.php" class="btn btn-primary"><i class="glyphicon glyphicon-tags"></i> Add Shelf Movement by Group</a>
 		</div>
 		
 		

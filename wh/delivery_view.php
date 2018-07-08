@@ -208,7 +208,9 @@ $rowCount=$stmt->rowCount();
     		<?php if($hdr['statusCode']=='P'){ ?>
 			  <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?doNo=<?=$hdr['doNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
 
-			  <a target="_blank" href="<?=$rootPage;?>_view_pdf2.php?doNo=<?=$hdr['doNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print 2 (KNA)</a>
+			  <a target="_blank" href="<?=$rootPage;?>_view_pdf_kna.php?doNo=<?=$hdr['doNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print 2 (KNA)</a>
+			  
+			  <a target="_blank" href="<?=$rootPage;?>_view_send_cust_pdf.php?doNo=<?=$hdr['doNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print Sending to Customer</a>
 			<?php } ?>
 
 

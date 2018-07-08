@@ -33,7 +33,7 @@ class MYPDF extends TCPDF {
 		
 		$this->SetFont('Times', 'B', 16, '', true);		
 		$this->SetY(11);	
-		$this->Cell(0, 5, 'Asia Kungnum Co.,Ltd.', 0, false, 'C', 0, '', 0, false, 'M', 'M');
+		$this->Cell(0, 5, 'Asia Kangnam Co.,Ltd.', 0, false, 'C', 0, '', 0, false, 'M', 'M');
 		$this->Ln(7);
 		$this->SetFont('Times', 'B', 14, '', true);	
         $this->Cell(0, 5, 'Sending', 0, false, 'C', 0, '', 0, false, 'M', 'M');
@@ -57,7 +57,6 @@ $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8',
 // set document information
 $pdf->SetCreator(PDF_CREATOR);
 $pdf->SetAuthor('Prawit Khamnet');
-$pdf->SetTitle('RTARF DUTY');
 //$pdf->SetSubject('TCPDF Tutorial');
 //$pdf->SetKeywords('TCPDF, PDF, example, test, guide');
 
@@ -310,6 +309,7 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 
 // ---------------------------------------------------------
 
+$pdf->SetTitle($sdNo);
 // Close and output PDF document
 // This method has several options, check the source code documentation for more information.
 $pdf->Output($sdNo.'.pdf', 'I');

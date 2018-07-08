@@ -1,6 +1,5 @@
 <?php
   //  include '../db/database.php';
-  include 'inc_helper.php';
 ?>
 <!DOCTYPE html>
 <!--
@@ -91,7 +90,7 @@ $ppNo = $_GET['ppNo'];
 						
 					</div><!-- /.col-md-3-->	
 					<div class="col-md-3">
-						Prepare Date : <b><?= $hdr['prepareDate']; ?></b><br/>
+						Prepare Date : <b><?= date('d/m/Y',strtotime( $hdr['prepareDate'] )); ?></b><br/>
 						Picking No : <b><?= $hdr['pickNo']; ?></b><br/>		
 					</div>	<!-- /.col-md-3-->	
 					<div class="col-md-3">
@@ -160,10 +159,10 @@ $ppNo = $_GET['ppNo'];
 							default : 
 						} 
 						?>
-							<tr <?php if($row['inPick']==0 ) echo ' style="color: red;" '; $wrongProduct+=1; ?> >
+							<tr <?php if($row['inPick']==0 ) { echo ' style="color: red;" '; $wrongProduct+=1; } ?> >
 								<td style="text-align: center;"><?= $row_no; ?></td>
 								<td><?= $row['barcode']; ?></td>
-								<td><?= $row['issueDate']; ?></td>
+								<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>
 								<td><?= $gradeName; ?></td>
 								<td><?= $row['qty']; ?></td>
 							</tr>							

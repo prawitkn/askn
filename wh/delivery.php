@@ -1,5 +1,4 @@
 <?php
-	include 'inc_helper.php';
 ?>
 <!DOCTYPE html>
 <!--
@@ -154,7 +153,7 @@ if($start<0) $start=0;
                          <?= $row['soNo']; ?>
                     </td>
                     <td>
-                         <?= to_thai_date_fdt($row['deliveryDate']); ?>
+                         <?= date('d M Y',strtotime( $row['deliveryDate'] )); ?>
                     </td>
                     <td>
                          <?= $row['custName']; ?>

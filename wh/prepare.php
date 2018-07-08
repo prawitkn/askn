@@ -1,6 +1,5 @@
 <?php
     include '../db/database.php';
-	include 'inc_helper.php';
 ?>
 <!DOCTYPE html>
 <!--
@@ -141,7 +140,7 @@ $rootPage = 'prepare';
                          <?= $row['pickNo']; ?>
                     </td>
                     <td>
-                         <?= to_thai_date_fdt($row['prepareDate']); ?>
+                         <?= date('d/m/Y',strtotime( $row['prepareDate'] )); ?>
                     </td>
 					<td>
                          <?= $statusName; ?>

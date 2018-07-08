@@ -124,6 +124,10 @@ desired effect
 				AND hdr.statusCode='P' 	
 				AND dtl.statusCode='A' 
 				AND itm.prodCodeId=:id ";
+				switch($locationCode){
+					case 'E' : $sql.="AND hdr.toCode='E' "; break;
+					default : $sql.="AND hdr.toCode='8' "; //L
+				}
 				$sql.="AND DATEDIFF(NOW(), itm.issueDate) <= (SELECT maxDays FROM wh_pick_cond wpc 
 																	WHERE wpc.custId=:custId
 																	AND wpc.prodId=itm.prodCodeId  
@@ -149,6 +153,9 @@ desired effect
 				$row=$stmt->fetch();
 				$catCode=$row['catCode'];
 				
+				//switch coz
+				//Local order by issueDate, Export order by sendDate
+				//Local receive to 8 , Export receive to E
 				switch($locationCode){
 					case 'L' :
 						$sql = "
@@ -170,6 +177,7 @@ desired effect
 						LEFT JOIN wh_shelf_map_item smi ON smi.recvProdId=dtl.id 
 						LEFT JOIN product prd ON prd.id=itm.prodCodeId 				
 						WHERE 1=1
+						AND hdr.toCode='8' 
 						AND hdr.statusCode='P' 	
 						AND dtl.statusCode='A' 
 						AND itm.prodCodeId=:id ";
@@ -210,6 +218,7 @@ desired effect
 						LEFT JOIN wh_shelf_map_item smi ON smi.recvProdId=dtl.id 
 						LEFT JOIN product prd ON prd.id=itm.prodCodeId 				
 						WHERE 1=1
+						AND hdr.toCode='E' 
 						AND hdr.statusCode='P' 	
 						AND dtl.statusCode='A' 
 						AND itm.prodCodeId=:id ";

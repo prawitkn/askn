@@ -1,6 +1,5 @@
 <?php
     include '../db/database.php';
-	include 'inc_helper.php';
 ?>
 <!DOCTYPE html>
 <!--
@@ -155,7 +154,7 @@ switch($s_userGroupCode){
                          <?= $row['soNo']; ?>
                     </td>
                     <td>
-                         <?= to_thai_date_fdt($row['pickDate']); ?>
+                         <?= date('d M Y',strtotime( $row['pickDate'] )); ?>
                     </td>
 					<td>
                          <?= $statusName; ?>

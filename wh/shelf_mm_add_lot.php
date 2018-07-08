@@ -34,7 +34,7 @@ $tb="";
   <div class="content-wrapper">
 	<!-- Content Header (Page header) -->
     <section class="content-header">	  
-	  <h1><i class="glyphicon glyphicon-object-align-bottom"></i> 
+	  <h1><i class="glyphicon glyphicon-object-align-bottom"></i>
        Shelf Movement
         <small>Shelf Movement Management</small>
       </h1>
@@ -50,8 +50,8 @@ $tb="";
     <div class="box box-primary">
         <div class="box-header with-border">
 			<div class="form-inline">
-				<i class="glyphicon glyphicon-tag"></i>
-				<label class="box-title">Shelf Movement by Items</label>
+				<i class="glyphicon glyphicon-tags"></i>
+				<label class="box-title">Shelf Movement by Items Lot</label>
 				<a href="<?=$rootPage;?>.php" class="btn btn-primary"><i class="glyphicon glyphicon-arrow-left"></i> Back</a>
 			</div>
 		
@@ -88,7 +88,7 @@ $tb="";
 				<div class="col-md-12">
 				<form id="form2" action="" method="post" class="form-inline" novalidate>
 					<input type="hidden" name="shelfId" value="<?=$shelfId;?>" />
-					<input type="hidden" name="action" value="item_move" />	
+					<input type="hidden" name="action" value="item_move_lot" />	
 
 				<div class="row">
 					<div class="col-md-12">
@@ -114,11 +114,9 @@ $tb="";
 		<!--							<th><input type="checkbox" id="checkAll"  />Select All</th>-->
 									<th>No. </th>
 									<th>Product Code</th>
-									<th>Barcode</th>
 									<th>Grade</th>
-									<th>Qty</th>
-									<th>Issue Date</th>							
-									<th>Ref.ID</th>
+									<th>Meter</th>
+									<th>Issue Date</th>	
 								</tr>
 								</thead>
 								<tbody>
@@ -280,7 +278,7 @@ $(document).ready(function() {
 		//if($('#prodCode').val()!=""){ prodId=$('#prodId').val(); }			
 						
 		var params = {
-			action: 'searchItem',
+			action: 'searchItemLot',
 			shelfId: shelfId,
 			issueDate: issueDate,
 			prodId: prodId
@@ -321,7 +319,7 @@ $(document).ready(function() {
 								}
 								prevGroupId=value.prodId;								
 								
-								tmpNo=rowNo+':'+'<input type="checkbox" name="itmId[]" class="itmId" value="'+value.prodId+','+value.recvProdId+'" />'+
+								tmpNo=rowNo+':'+'<input type="checkbox" name="itmId[]" class="itmId" value="'+value.prodId+','+value.grade+','+value.qty+','+value.issueDate+'" />'+
 								'<input type="hidden" name="recvProdId[]" value="'+value.recvProdId+'" />';
 								; 
 								var $gradeName="";
@@ -335,11 +333,9 @@ $(document).ready(function() {
 								'<tr style="background-color: '+rowColor+'" >' +	
 									'<td>'+ tmpNo +'</td>' + 
 									'<td>'+ value.prodCode +'</td>' +
-									'<td>'+ value.barcode +'</td>' + 
 									'<td>'+ $gradeName +'</td>' +
 									'<td>'+ value.qty +'</td>' +
 									'<td>'+ value.issueDate +'</td>' +
-									'<td>'+ value.rcNo +'</td>' +
 								'</tr>'
 								);		
 								rowNo+=1;

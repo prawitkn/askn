@@ -33,10 +33,10 @@ class MYPDF extends TCPDF {
 		
 		$this->SetFont('Times', 'B', 16, '', true);		
 		$this->SetY(11);	
-		$this->Cell(0, 5, 'Asia Kungnum Co.,Ltd.', 0, false, 'C', 0, '', 0, false, 'M', 'M');
+		$this->Cell(0, 5, 'Asia Kangnam Co.,Ltd.', 0, false, 'C', 0, '', 0, false, 'M', 'M');
 		$this->Ln(7);
 		$this->SetFont('Times', 'B', 14, '', true);	
-        $this->Cell(0, 5, 'Shelf Movement', 0, false, 'C', 0, '', 0, false, 'M', 'M');
+        $this->Cell(0, 5, 'Sending', 0, false, 'C', 0, '', 0, false, 'M', 'M');
     }
     // Page footer
     public function Footer() {
@@ -57,7 +57,6 @@ $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8',
 // set document information
 $pdf->SetCreator(PDF_CREATOR);
 $pdf->SetAuthor('Prawit Khamnet');
-$pdf->SetTitle('Shelf Movement');
 //$pdf->SetSubject('TCPDF Tutorial');
 //$pdf->SetKeywords('TCPDF, PDF, example, test, guide');
 
@@ -106,26 +105,33 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 
 
 // Set some content to print
-if( isset($_GET['id']) ){
-	$tb='shelf_movement'; 
+					if( isset($_GET['doNo']) ){
 
-			$id = $_GET['id'];
-			$sql = "SELECT hdr.`id`, hdr.`shelfIdFrom`, hdr.`shelfIdTo`, hdr.`remark`, hdr.`statusCode`, hdr.`createTime`, hdr.`createById` 
-	            , sf.name as shelfNameFrom, st.name as shelfNameTo
-	            , uc.userFullName as createByName
-				FROM `".$tb."` hdr 
-				LEFT JOIN wh_shelf sf ON sf.id=hdr.shelfIdFrom
-				LEFT JOIN wh_shelf st ON st.id=hdr.shelfIdTo 
-				LEFT JOIN wh_user uc ON uc.userId=hdr.createById 
-				WHERE 1=1 
-				";
-				$sql.="AND hdr.id=:id ";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':id', $id);	
-				$stmt->execute();
-
-			$hdr = $stmt->fetch();			
-			
+			$doNo = $_GET['doNo'];
+			$sql = "SELECT hdr.`doNo`, hdr.`soNo`, hdr.`ppNo`, hdr.`custId`, hdr.`shipToId`, hdr.`smId`, hdr.`deliveryDate`
+			, hdr.`refInvNo`, hdr.`remark`, hdr.`statusCode`
+			, hdr.`createTime`, hdr.`createById`, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById` 
+			, cust.code as custCode, cust.name as custName, st.code as shipToCode, st.name as shipToName 
+			, sm.code as smCode, sm.name as smName 
+			, d.userFullname as createByName
+			, hdr.confirmTime, cu.userFullname as confirmByName
+			, hdr.approveTime, au.userFullname as approveByName
+			FROM `delivery_header` hdr
+			LEFT JOIN customer cust ON cust.id=hdr.custId 
+			LEFT JOIN shipto st ON st.id=hdr.shipToId 
+			LEFT JOIN salesman sm ON sm.id=hdr.smId 
+			left join wh_user d on hdr.createById=d.userId
+			left join wh_user cu on hdr.confirmById=cu.userId
+			left join wh_user au on hdr.approveById=au.userId
+			WHERE 1
+			AND hdr.doNo=:doNo 				
+			LIMIT 1
+					
+			";
+			$stmt = $pdo->prepare($sql);			
+			$stmt->bindParam(':doNo', $doNo);	
+			$stmt->execute();
+			$hdr = $stmt->fetch();	
 			$statusName = '';
 			switch($hdr['statusCode']){
 				case 'C' : $statusName=' / <span style="font-weight: bold; color: red;">Confirmed</span>'; break;
@@ -134,16 +140,15 @@ if( isset($_GET['id']) ){
 			}
 	   		
 	
-			$sql = "SELECT dtl.id, dtl.recvProdId 			
-			,itm.barcode, itm.grade, itm.NW, itm.GW, itm.qty, itm.issueDate  
-			FROM ".$tb."_detail dtl 
-			INNER JOIN receive_detail rdtl ON rdtl.id=dtl.recvProdId 
-			INNER JOIN product_item itm on itm.prodItemId=rdtl.prodItemId 						
-			WHERE dtl.hdrId=:id 
+			$sql = "SELECT dtl.id, dtl.prodItemId 
+			, itm.prodCodeId, itm.barcode, itm.NW, itm.GW, itm.grade, itm.qty, itm.issueDate 
+			FROM delivery_detail dtl 
+			LEFT JOIN product_item itm on itm.prodItemId=dtl.prodItemId 						
+			WHERE doNo=:doNo  
 			ORDER BY itm.barcode
 			";			
 			$stmt = $pdo->prepare($sql);	
-			$stmt->bindParam(':id', $hdr['id']);
+			$stmt->bindParam(':doNo', $doNo);
 			$stmt->execute();	
 
 						
@@ -154,7 +159,8 @@ if( isset($_GET['id']) ){
 							$html .='</tbody></table>';					
 							
 							$pdf->AddPage('P');
-							
+													
+							$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
 							$html='';
 							$rowPerPage=0;
 						}
@@ -164,18 +170,18 @@ if( isset($_GET['id']) ){
 								 <thead>									
 								  <tr>
 									<th style="font-weight: bold;">Sending No. :</th>
-									<th colspan="2" style="font-weight: bold; text-align: left;">'.$hdr['id'].$statusName.'</th>
+									<th colspan="2" style="font-weight: bold; text-align: left;">'.$hdr['doNo'].$statusName.'</th>
 									<th style="font-weight: bold; text-align: right;">From :</th>
-									<th> <span style="font-size: 1.5em;">'.$hdr['shelfNameFrom'].'</span></th>									
-									<th style="font-weight: bold; text-align: right;">To :</th>
-									<th> <span style="font-size: 1.5em;">'.$hdr['shelfNameTo'].'</span></th>
+									<th> '.$hdr['custName'].'-'.$hdr['custName'].'</th>									
+									<th style="font-weight: bold; text-align: right;">Sending Date :</th>
+									<th> '.date('d M Y',strtotime( $hdr['deliveryDate'] )).'</th>
 								</tr>
 								<tr>
 									<th colspan="3">
 										Remark : '.($hdr['remark']==''?'-':$hdr['remark']).'
 									</th>
-									<th style="font-weight: bold; text-align: right;"></th>
-									<th></th>
+									<th style="font-weight: bold; text-align: right;">To :</th>
+									<th> '.$hdr['custName'].'-'.$hdr['custName'].'</th>
 									<th colspan="2"></th>
 								</tr>
 								  <tr>
@@ -194,8 +200,8 @@ if( isset($_GET['id']) ){
 						$gradeName = '<b style="color: red;">N/A</b>'; 
 							switch($row['grade']){
 								case 0 : $gradeName = 'A'; break;
-								case 1 : $gradeName = '<b style="color: red;">B</b>';  break;
-								case 2 : $gradeName = '<b style="color: red;">N</b>'; break;
+								case 1 : $statusName = '<b style="color: red;">B</b>';  break;
+								case 2 : $statusName = '<b style="color: red;">N</b>'; break;
 								default : 
 							} 
 						
@@ -229,10 +235,27 @@ if( isset($_GET['id']) ){
 							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
 							<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('.$hdr['createByName'].')<br/>
 							วันที่จัดทำ : '.date('d M Y H:i',strtotime( $hdr['createTime'] )).'<br/>
+							ผู้ส่ง &nbsp;&nbsp;  :  <span style="text-decoration: underline;">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+							<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span style="text-decoration: underline;">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>)<br/>
+							วันที่ส่ง :  <span style="text-decoration: underline;">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><br/>
 						</td>
 						
 						<td colspan="6" style="text-align: left;"><br/><br/>							
-							
+							ผู้อนุมัติ &nbsp;&nbsp;&nbsp;&nbsp;: <span style="text-decoration: underline;">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+							<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('.$hdr['approveByName'].')<br/>
+							วันที่อนุมัติ : <span style="text-decoration: underline;">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><br/>
+							ผู้รับ &nbsp;&nbsp; : <span style="text-decoration: underline;">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+							<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+							('.'<span style="text-decoration: underline;">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>'.')<br/>
+							วันที่รับ : '.'<span style="text-decoration: underline;">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>'.'<br/>
 						</td>
 						
 					</tr>';
@@ -251,9 +274,10 @@ if( isset($_GET['id']) ){
 
 // ---------------------------------------------------------
 
+$pdf->SetTitle($doNo);
 // Close and output PDF document
 // This method has several options, check the source code documentation for more information.
-$pdf->Output('shelf_mm'.$hdr['id'].'.pdf', 'I');
+$pdf->Output($doNo.'.pdf', 'I');
 
 //============================================================+
 // END OF FILE

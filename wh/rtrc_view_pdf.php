@@ -3,37 +3,6 @@
 include('session.php');
 //include('prints_function.php');
 //include('inc_helper.php');
-function to_thai_date($eng_date){
-	if(strlen($eng_date) != 10){
-		return null;
-	}else{
-		$new_date = explode('-', $eng_date);
-
-		$new_y = (int) $new_date[0] + 543;
-		$new_m = $new_date[1];
-		$new_d = $new_date[2];
-
-		$thai_date = $new_d . '/' . $new_m . '/' . $new_y;
-
-		return $thai_date;
-	}
-}
-function to_thai_datetime_fdt($eng_date){
-	//if(strlen($eng_date) != 10){
-	//    return null;
-	//}else{
-		$new_datetime = explode(' ', $eng_date);
-		$new_date = explode('-', $new_datetime[0]);
-
-		$new_y = (int) $new_date[0] + 543;
-		$new_m = $new_date[1];
-		$new_d = $new_date[2];
-
-		$thai_date = $new_d . '/' . $new_m . '/' . $new_y . ' ' . substr($new_datetime[1],0,5);
-
-		return $thai_date;
-	//}
-}
 
 // Include the main TCPDF library (search for installation path).
 require_once('../tcpdf/tcpdf.php');
@@ -55,7 +24,7 @@ class MYPDF extends TCPDF {
         //$image_file = '../asset/img/logo-asia-kangnam.jpg';
         //$this->Image($image_file, 10, 10, 15, '', 'JPG', '', 'T', false, 300, '', false, false, 0, false, false, false);
 		$this->SetY(11);	
-		$this->Cell(0, 5, 'Asia Kungnum CO.,LTD', 0, false, 'C', 0, '', 0, false, 'M', 'M');
+		$this->Cell(0, 5, 'Asia Kangnam CO.,LTD', 0, false, 'C', 0, '', 0, false, 'M', 'M');
 		$this->Ln(5);
         $this->Cell(0, 5, 'Return Receive', 0, false, 'C', 0, '', 0, false, 'M', 'M');
     }
@@ -182,7 +151,7 @@ if( isset($_GET['rcNo']) ){
 									<th style="font-weight: bold; text-align: right;">From :</th>
 									<th>'.$hdr['fromCode'].'-'.$hdr['fromName'].'</th>									
 									<th style="font-weight: bold; text-align: right;">Receive Date :</th>
-									<th>'.to_thai_date($hdr['receiveDate']).'</th>
+									<th>'.date('d M Y',strtotime( $hdr['receiveDate'] )).'</th>
 								</tr>
 								<tr>
 									<th style="font-weight: bold;">Ref. SD No. :</th>
@@ -241,7 +210,7 @@ if( isset($_GET['rcNo']) ){
 					$html .='<tr>
 						<td colspan="2"><br/><br/>
 							ผู้จัดทำ .....'.$hdr['createByName'].'.....<br/>
-							วันที่จัดทำ .....'.to_thai_datetime_fdt($hdr['createTime']).'<br/>
+							วันที่จัดทำ .....'.date('d M Y H:i',strtotime( $hdr['createTime'] )).'<br/>
 							ผู้รับคืน .....'.$hdr['confirmByName'].'.....<br/>
 						</td>
 						

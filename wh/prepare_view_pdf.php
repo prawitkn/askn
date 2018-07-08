@@ -3,37 +3,6 @@
 include('session.php');
 //include('prints_function.php');
 //include('inc_helper.php');
-function to_thai_date($eng_date){
-	if(strlen($eng_date) != 10){
-		return null;
-	}else{
-		$new_date = explode('-', $eng_date);
-
-		$new_y = (int) $new_date[0] + 543;
-		$new_m = $new_date[1];
-		$new_d = $new_date[2];
-
-		$thai_date = $new_d . '/' . $new_m . '/' . $new_y;
-
-		return $thai_date;
-	}
-}
-function to_thai_datetime_fdt($eng_date){
-	//if(strlen($eng_date) != 10){
-	//    return null;
-	//}else{
-		$new_datetime = explode(' ', $eng_date);
-		$new_date = explode('-', $new_datetime[0]);
-
-		$new_y = (int) $new_date[0] + 543;
-		$new_m = $new_date[1];
-		$new_d = $new_date[2];
-
-		$thai_date = $new_d . '/' . $new_m . '/' . $new_y . ' ' . substr($new_datetime[1],0,5);
-
-		return $thai_date;
-	//}
-}
 
 // Include the main TCPDF library (search for installation path).
 require_once('../tcpdf/tcpdf.php');
@@ -60,7 +29,7 @@ class MYPDF extends TCPDF {
 		
 		$this->SetFont('Times', 'B', 16, '', true);		
 		$this->SetY(11);	
-		$this->Cell(0, 5, 'Asia Kungnum Co.,Ltd.', 0, false, 'C', 0, '', 0, false, 'M', 'M');
+		$this->Cell(0, 5, 'Asia Kangnam Co.,Ltd.', 0, false, 'C', 0, '', 0, false, 'M', 'M');
 		$this->Ln(7);
 		$this->SetFont('Times', 'B', 14, '', true);	
         $this->Cell(0, 5, 'Prepare Detail List', 0, false, 'C', 0, '', 0, false, 'M', 'M');
@@ -84,7 +53,6 @@ $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8',
 // set document information
 $pdf->SetCreator(PDF_CREATOR);
 $pdf->SetAuthor('Prawit Khamnet');
-$pdf->SetTitle('PDF');
 //$pdf->SetSubject('TCPDF Tutorial');
 //$pdf->SetKeywords('TCPDF, PDF, example, test, guide');
 
@@ -275,6 +243,7 @@ if( isset($_GET['ppNo']) ){
 
 // ---------------------------------------------------------
 
+$pdf->SetTitle($ppNo);
 // Close and output PDF document
 // This method has several options, check the source code documentation for more information.
 $pdf->Output($ppNo.'.pdf', 'I');

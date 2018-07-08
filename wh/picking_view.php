@@ -141,7 +141,7 @@ $hdr = $stmt->fetch();
 							<th>Issue Date</th>
 							<th>Grade</th>
 							<th>Meter</th>							
-							<th>Qty</th>
+							<th style="color:blue;">Qty</th>
 							<th>Total</th>
 							<th>Shelf</th>
 						</tr>
@@ -149,14 +149,14 @@ $hdr = $stmt->fetch();
 						$gradeName = '<b style="color: red;">N/A</b>'; 
 							switch($row['grade']){
 								case 0 : $gradeName = 'A'; break;
-								case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
-								case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+								case 1 : $gradeName = '<b style="color: red;">B</b>'; break;
+								case 2 : $gradeName = '<b style="color: red;">N</b>'; break;
 								default : 
-									$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
+									$gradeName = '<b style="color: red;">N/a</b>';
 							}
 							
 			$sql = "
-			SELECT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, ws.code as shelfCode, ws.name as shelfName
+			SELECT DISTINCT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, ws.code as shelfCode, ws.name as shelfName
 			, prd.code as prodCode 
 			FROM `picking_detail` dtl 		
 			INNER JOIN product_item itm ON itm.prodCodeId=dtl.prodId AND itm.issueDate=dtl.issueDate AND itm.grade=dtl.grade 				
@@ -167,27 +167,14 @@ $hdr = $stmt->fetch();
 			WHERE 1 
             AND rDtl.statusCode='A'  
 			AND dtl.`pickNo`=:pickNo 
+			AND dtl.`prodId`=:prodId 
 
 			ORDER BY dtl.id 
 			LIMIT 10 
 			";
-			/*$sql = "
-			SELECT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, dtl.`meter`, ws.code as shelfCode, ws.name as shelfName
-			, prd.code as prodCode 
-			FROM `picking_detail` dtl 		
-			INNER JOIN product_item itm ON itm.prodCodeId=dtl.prodId AND itm.issueDate=dtl.issueDate AND itm.grade=dtl.grade 						
-			INNER JOIN receive_detail rDtl on  itm.prodItemId=rDtl.prodItemId  
-			INNER JOIN wh_shelf_map_item wmi on wmi.recvProdId=rDtl.id 
-			INNER JOIN wh_shelf ws ON wmi.shelfId=ws.id 
-			LEFT JOIN product prd ON prd.id=itm.prodCodeId 
-			WHERE 1 
-			AND dtl.`pickNo`=:pickNo 
-
-			ORDER BY dtl.id 
-			LIMIT 10 
-			";*/
 			$stmt2 = $pdo->prepare($sql);	
 			$stmt2->bindParam(':pickNo', $hdr['pickNo']);
+			$stmt2->bindParam(':prodId', $row['prodId']);
 			$stmt2->execute();
 						?>
 							<tr>
@@ -195,9 +182,9 @@ $hdr = $stmt->fetch();
 								<td><?= $row['prodCode']; ?></td>
 								<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>
 								<td><?= $gradeName; ?></td>
-								<td><?= $row['meter']; ?></td>								
-								<td><?= ':'.($row['qty']/$row['meter']); ?></td>
-								<td><?= $row['qty']; ?></td>
+								<td style="text-align: right;"><?= $row['meter']; ?></td>								
+								<td style="text-align: right; color:blue;"><?= number_format(($row['qty']/$row['meter']),2,'.',','); ?></td>
+								<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
 								<td colspan="3"><small>
 								<?php $shelfCount=0; while ($row2 = $stmt2->fetch()) { 
 									if($row['prodId']==$row2['prodId'] AND $row['issueDate']==$row2['issueDate'] AND $row['grade']==$row2['grade']){

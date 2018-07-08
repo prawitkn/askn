@@ -197,7 +197,7 @@ $tb="send";
 							href="<?=$rootPage;?>_view.php?sdNo=<?=$row['sdNo'];?>" 
 							data-toggle="tooltip" title="Search"><i class="glyphicon glyphicon-search"></i></a>
 						<a class="btn btn-success" name="btn_row_edit" 
-							<?php echo ($row['statusCode']=='B'?'href="'.$rootPage.'_hdr.php?sdNo='.$row['sdNo'].'"':' disabled '); ?> 
+							<?php echo ($row['statusCode']=='B'?'href="'.$rootPage.'_add.php?sdNo='.$row['sdNo'].'"':' disabled '); ?> 
 							data-toggle="tooltip" title="Edit" ><i class="glyphicon glyphicon-edit"></i></a>		
                     </td>
                 </tr>

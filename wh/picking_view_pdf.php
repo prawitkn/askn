@@ -29,7 +29,7 @@ class MYPDF extends TCPDF {
 		
 		$this->SetFont('Times', 'B', 16, '', true);		
 		$this->SetY(11);	
-		$this->Cell(0, 5, 'Asia Kungnum Co.,Ltd.', 0, false, 'C', 0, '', 0, false, 'M', 'M');
+		$this->Cell(0, 5, 'Asia Kangnam Co.,Ltd.', 0, false, 'C', 0, '', 0, false, 'M', 'M');
 		$this->Ln(7);
 		$this->SetFont('Times', 'B', 14, '', true);	
         $this->Cell(0, 5, 'Picking List', 0, false, 'C', 0, '', 0, false, 'M', 'M');
@@ -53,7 +53,6 @@ $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8',
 // set document information
 $pdf->SetCreator(PDF_CREATOR);
 $pdf->SetAuthor('Prawit Khamnet');
-$pdf->SetTitle('PDF');
 //$pdf->SetSubject('TCPDF Tutorial');
 //$pdf->SetKeywords('TCPDF, PDF, example, test, guide');
 
@@ -150,7 +149,7 @@ $hdr = $stmt->fetch();
 									<th style="font-weight: bold; text-align: right;">Ref. SO No. :</th>
 									<th>'.$hdr['soNo'].'</th>									
 									<th style="font-weight: bold; text-align: right;">Pick Date :</th>
-									<th>'.$hdr['pickDate'].'</th>
+									<th>'.date('d M Y',strtotime( $hdr['pickDate'] )).'</th>
 								</tr>
 								<tr>
 									<th  colspan="6">Remark : '.($hdr['remark']==''?'-':$hdr['remark']).'</th>
@@ -174,13 +173,13 @@ $hdr = $stmt->fetch();
 					$gradeName = '<b style="color: red;">N/A</b>'; 
 					switch($row['grade']){
 						case 0 : $gradeName = 'A'; break;
-						case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
-						case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+						case 1 : $gradeName = '<b style="color: red;">B</b>'; break;
+						case 2 : $gradeName = '<b style="color: red;">N</b>'; break;
 						default : 
-							$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
+							$gradeName = '<b style="color: red;">N/a</b>'; 
 					}
 					$sql = "
-					SELECT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, ws.code as shelfCode, ws.name as shelfName
+					SELECT DISTINCT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, ws.code as shelfCode, ws.name as shelfName
 					, prd.code as prodCode 
 					FROM `picking_detail` dtl 		
 					INNER JOIN product_item itm ON itm.prodCodeId=dtl.prodId AND itm.issueDate=dtl.issueDate AND itm.grade=dtl.grade 				
@@ -191,14 +190,15 @@ $hdr = $stmt->fetch();
 					WHERE 1 
 					AND rDtl.statusCode='A'  
 					AND dtl.`pickNo`=:pickNo 
+					AND dtl.`prodId`=:prodId 
 
 					ORDER BY dtl.id 
 					LIMIT 10 
 					";
 					$stmt2 = $pdo->prepare($sql);	
 					$stmt2->bindParam(':pickNo', $hdr['pickNo']);
-					$stmt2->execute();	
-					
+					$stmt2->bindParam(':prodId', $row['prodId']);
+					$stmt2->execute();
 					
 					$html .='<tr>
 						<td style="border: 0.1em solid black; text-align: center; width: 30px;">'.$row_no.'</td>
@@ -252,6 +252,7 @@ $hdr = $stmt->fetch();
 
 // ---------------------------------------------------------
 
+$pdf->SetTitle($pickNo);
 // Close and output PDF document
 // This method has several options, check the source code documentation for more information.
 $pdf->Output($pickNo.'.pdf', 'I');
