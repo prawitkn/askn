@@ -386,11 +386,11 @@ $('#btn_verify').click (function(e) {
 		$diffQty = <?=$diffQty;?>;
 		if($wrongProduct>0){
 			alert('Cannot Confirm because there is WRONG PRODUCT in packing list');
-			//return false;
+			return false;
 		}
 		if($diffQty>0){
 			alert('Cannot Confirm because there is DIFF QUANTITY in packing list');
-			//return false;
+			return false;
 		}
 		$.post({
 			url: '<?=$rootPage;?>_ajax.php',
