@@ -160,7 +160,7 @@ desired effect
 					case 'L' :
 						$sql = "
 						SELECT itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, itm.`qty` as meters
-						, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total			
+						, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total		
 						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 								ON pickh.pickNo=pickd.pickNo
 								WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade

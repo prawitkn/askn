@@ -85,6 +85,61 @@ if(!isset($_POST['action'])){
 				$prodId = $_POST['prodId'];
 				$saleItemId = $_POST['saleItemId'];
 				
+				$sql = "SELECT qty FROM sale_detail WHERE id=:id ";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':id', $saleItemId);	
+				$stmt->execute();
+				$row=$stmt->fetch();
+				$orderQty=$row['qty'];
+
+				$sql = "SELECT sum(qty) as sumBookedQty FROM picking_detail WHERE pickNo<>:pickNo AND saleItemId=:saleItemId ";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':pickNo', $pickNo);
+				$stmt->bindParam(':saleItemId', $saleItemId);	
+				$stmt->execute();
+				$row=$stmt->fetch();
+				$sumBookedQty=$row['sumBookedQty'];
+
+				$sumPickQty=0;
+				foreach($_POST['pickQty'] as $index => $item )
+				{	
+					if($item<>0){
+						$issueDate=$_POST['issueDate'][$index];
+						$grade=$_POST['grade'][$index];
+						$meter=$_POST['meter'][$index];
+						$pickQty=$_POST['pickQty'][$index];
+						$balanceQty=$_POST['balanceQty'][$index];
+						$gradeName="";
+						switch($grade){
+							case '0' : $gradeName='A'; break;
+							case '1' : $gradeName='B'; break;
+							case '2' : $gradeName='N'; break;
+							default : $gradeName='N/A'; 
+						}
+
+						if($pickQty>$balanceQty){
+							header('Content-Type: application/json');
+							$errors="Pick : issue date = ".$issueDate.", grade = ".$gradeName.", meter = ".$meter." is OVER STOCK.";
+							echo json_encode(array('success' => false, 'message' => $errors));
+							exit();
+						}
+						if( ($pickQty % $meter) > 0 ){
+							header('Content-Type: application/json');
+							$errors="Pick quantity [ ".number_format($pickQty,0,'.',',')." ] with Meter [ ".number_format($meter,0,'.',',')." ] is incorrect.";
+							echo json_encode(array('success' => false, 'message' => $errors));
+							exit();
+						}
+						$sumPickQty+=$_POST['pickQty'][$index];
+					}											
+				}
+				if( ($sumPickQty+$sumBookedQty) > $orderQty ){
+					header('Content-Type: application/json');
+					$errors="Pick quantity total [ ".number_format($sumPickQty,0,'.',',')." ] is over then order quantity / remain quantity [ ".number_format($orderQty,0,'.',',')."/".number_format( ($orderQty-($sumBookedQty)) ,0,'.',',')." ] ";
+					echo json_encode(array('success' => false, 'message' => $errors));
+					exit();
+				}
+
+
 				$pdo->beginTransaction();	
 								
 				if(!empty($_POST['pickQty']) and isset($_POST['pickQty']))

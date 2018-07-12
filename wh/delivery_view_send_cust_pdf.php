@@ -36,7 +36,7 @@ class MYPDF extends TCPDF {
 		$this->Cell(0, 5, 'Asia Kangnam Co.,Ltd.', 0, false, 'C', 0, '', 0, false, 'M', 'M');
 		$this->Ln(7);
 		$this->SetFont('Times', 'B', 14, '', true);	
-        $this->Cell(0, 5, 'Sending', 0, false, 'C', 0, '', 0, false, 'M', 'M');
+        $this->Cell(0, 5, 'Product Sending Detail Report', 0, false, 'C', 0, '', 0, false, 'M', 'M');
     }
     // Page footer
     public function Footer() {
@@ -145,7 +145,7 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			FROM delivery_detail dtl 
 			LEFT JOIN product_item itm on itm.prodItemId=dtl.prodItemId 						
 			WHERE doNo=:doNo  
-			ORDER BY itm.barcode
+			ORDER BY itm.barcode ASC 
 			";			
 			$stmt = $pdo->prepare($sql);	
 			$stmt->bindParam(':doNo', $doNo);
@@ -169,29 +169,24 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 							<table class="table table-striped no-margin" >
 								 <thead>									
 								  <tr>
-									<th style="font-weight: bold;">Sending No. :</th>
-									<th colspan="2" style="font-weight: bold; text-align: left;">'.$hdr['doNo'].$statusName.'</th>
-									<th style="font-weight: bold; text-align: right;">From :</th>
-									<th> '.$hdr['custName'].'-'.$hdr['custName'].'</th>									
-									<th style="font-weight: bold; text-align: right;">Sending Date :</th>
-									<th> '.date('d M Y',strtotime( $hdr['deliveryDate'] )).'</th>
+								  	<th  colspan="4"><span style="font-weight: bold;">Sending Date :</span> '.date('d M Y',strtotime( $hdr['deliveryDate'] )).'</th>
+
+								  	<th  colspan="4"><span style="font-weight: bold;">Delivery Order No. :</span> '.$hdr['doNo'].'</th>
+									
 								</tr>
+
 								<tr>
-									<th colspan="3">
-										Remark : '.($hdr['remark']==''?'-':$hdr['remark']).'
-									</th>
-									<th style="font-weight: bold; text-align: right;">To :</th>
-									<th> '.$hdr['custName'].'-'.$hdr['custName'].'</th>
-									<th colspan="2"></th>
+									<th  colspan="4"><span style="font-weight: bold;">Customer :</span> '.$hdr['custCode'].' - '.$hdr['custName'].'</th>
+
+								  	<th  colspan="4"><span style="font-weight: bold;">Remark :</span> '.($hdr['remark']==''?'-':$hdr['remark']).'</th>
 								</tr>
 								  <tr>
 										<th style="font-weight: bold; text-align: center; width: 30px;" border="1">No.</th>
 										<th style="font-weight: bold; text-align: center; width: 320px;" border="1">Barcode</th>
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Grade</th>
-										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Net<br/>Weight<br/>(kg.)</th>
-										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Gross<br/>Weight<br/>(kg.)</th>										
-										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Qty</th>
-										<th style="font-weight: bold; text-align: center; width: 80px;" border="1">Issue Date</th>
+										<th style="font-weight: bold; text-align: center; width: 70px;" border="1">Net<br/>Weight<br/>(kg.)</th>
+										<th style="font-weight: bold; text-align: center; width: 70px;" border="1">Gross<br/>Weight<br/>(kg.)</th>		
+										<th style="font-weight: bold; text-align: center; width: 70px;" border="1">Quanity (m.)</th>
 									</tr>
 								  </thead>
 								  <tbody>
@@ -209,10 +204,9 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 						<td style="border: 0.1em solid black; text-align: center; width: 30px;">'.$row_no.'</td>
 						<td style="border: 0.1em solid black; padding: 10px; width: 320px;"> '.$row['barcode'].'</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$gradeName.'</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['NW'].'&nbsp;&nbsp;</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['GW'].'&nbsp;&nbsp;</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['qty'],0,'.',',').'&nbsp;&nbsp;</td>
-						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.date('d M Y',strtotime( $row['issueDate'] )).'</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.$row['NW'].'&nbsp;&nbsp;</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.$row['GW'].'&nbsp;&nbsp;</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($row['qty'],0,'.',',').'&nbsp;&nbsp;</td>
 					</tr>';			
 												
 					$sumQty+=$row['qty'] ; $sumNW+=$row['NW']; $sumGW+=$row['GW'] ;								
@@ -221,15 +215,14 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 					
 					$html .='<tr>
 						<td style="border: 0.1em solid black; text-align: center; width: 30px;"></td>
-						<td style="border: 0.1em solid black; text-align: center; padding: 10px; width: 320px;">Total</td>
+						<td style="border: 0.1em solid black; text-align: center; padding: 10px; width: 320px;">Total '.number_format($row_no-1,0,'.',',').' items</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 50px;"></td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumNW,2,'.',',').'&nbsp;&nbsp;</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumGW,2,'.',',').'&nbsp;&nbsp;</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumQty,0,'.',',').'&nbsp;&nbsp;</td>
-						<td style="border: 0.1em solid black; text-align: center; width: 80px;"></td>
+						<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($sumNW,2,'.',',').'&nbsp;&nbsp;</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($sumGW,2,'.',',').'&nbsp;&nbsp;</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($sumQty,0,'.',',').'&nbsp;&nbsp;</td>
 					</tr>';
 					
-					$html .='<tr>
+					/*$html .='<tr>
 						<td colspan="2"><br/><br/>
 							ผู้จัดทำ : <span style="text-decoration: underline;">
 							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
@@ -258,7 +251,7 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>'.'<br/>
 						</td>
 						
-					</tr>';
+					</tr>';*/
 						
 						//Footer for write 
 						$html .='</tbody></table>';					
