@@ -23,16 +23,18 @@ if($result_user->num_rows >= 1){
     session_start();
 	
     $row_user = mysqli_fetch_array($result_user, MYSQLI_ASSOC);
-	
+	$s_userId=$row_user['userId'];
+	$_SESSION['userId'] = $s_userId;
+	$_SESSION['userName'] = $row_user['userName'];
 	if($row_user['loginStatus']==0){
-		$s_userId=$row_user['userId'];
-		$_SESSION['userId'] = $s_userId;
-		$_SESSION['userName'] = $row_user['userName'];
+		
 		
 		//Set Login 
-		setcookie("loginWh", "1", time()+1200);	//3600=1Hour; 1800=30Min; 60=1Min
+		setcookie("loginWh", "1", time()+3600);	//3600=1Hour; 1800=30Min; 60=1Min
 			
-		$qry_user = "UPDATE wh_user SET lastLoginTime=NOW(), loginStatus=1 WHERE userId='$s_userId'";
+
+		$SID = session_id();
+		$qry_user = "UPDATE wh_user SET lastLoginTime=NOW(), loginStatus=1, SID='$SID' WHERE userId='$s_userId'";
 		$result_user = mysqli_query($link,$qry_user);
 		
 		//force to create new password
@@ -45,11 +47,21 @@ if($result_user->num_rows >= 1){
 		header('Content-Type: application/json');
 		echo json_encode(array('status' => 'success'));
 	}else{
-		//header('Content-Type: application/json');
-		//echo json_encode(array('status' => 'success'));
-		header('Content-Type: application/json');
-		$errors = "Another user is logged in this username.". mysqli_error($link);
-		echo json_encode(array('status' => 'danger', 'message' => $errors));
+		$tmp=session_id();
+		if( $tmp == $row_user['SID'] ){
+			header('Content-Type: application/json');
+			$errors = "Another user is logged in this username. 222". mysqli_error($link);
+			echo json_encode(array('status' => 'danger'
+		}else{
+			header('Content-Type: application/json');
+			$errors = "Another user is logged in this username.". mysqli_error($link);
+			echo json_encode(array('status' => 'danger'
+		}
+		/*if(!isset($_COOKIE["loginWh"])){
+			header('Content-Type: application/json');
+			$errors = "Another user is logged in this username.". mysqli_error($link);
+			echo json_encode(array('status' => 'danger'
+		}*/
 	}      
 } else {
     header('Content-Type: application/json');
@@ -59,3 +71,4 @@ if($result_user->num_rows >= 1){
 mysqli_stmt_free_result($stmt);
 mysqli_stmt_close($stmt);
 mysqli_close($link);
+
