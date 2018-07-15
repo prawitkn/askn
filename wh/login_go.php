@@ -1,6 +1,6 @@
 <?php
 
-include '../db/database.php';
+include '../db/db.php';
 
 $userName = mysqli_real_escape_string($link,$_POST['userName']);
 $userPassword = mysqli_real_escape_string($link,$_POST['userPassword']);
