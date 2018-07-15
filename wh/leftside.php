@@ -30,8 +30,9 @@
       <!-- Sidebar Menu -->
       <ul class="sidebar-menu ">
 		
-		<li class="header">Core Master Menu</li>
-		<?php switch($s_userGroupCode){ case 'it' : ?>			
+		
+		<?php switch($s_userGroupCode){ case 'it' : case 'admin' :  ?>	
+		<li class="header">Core Master Menu</li>		
 			<!-- Optionally, you can add icons to the links -->
 			<?php if($s_userFullname=="Mr.Prawit  Khamnet"){ ?>
 				<li><a href="shelf_x.php"><i class="glyphicon glyphicon-wrench"></i> <span>Shelf Column</span></a></li>	
@@ -45,13 +46,13 @@
 		<?php switch($s_userGroupCode){ case 'it' : case 'whOff' : case 'whSup' : ?>
 			
 		<?php } ?>
-		<?php switch($s_userGroupCode){ case 'it' : case 'tech' : ?>
+		<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'tech' : ?>
 			<li><a href="product.php"><i class="fa fa-barcode"></i> <span>Product Data</span></a></li>
 			<li><a href="productionMappingProduct.php"><i class="fa fa-list-ol"></i> <span>Production Prod. Mapping</span></a></li>		
 		<?php } ?>
 		
-		<li class="header">Master Management</li>
 		<?php switch($s_userGroupCode){ case 'admin' : case 'it' : ?>
+		<li class="header">Master Management</li>
 			<li><a href="user.php"><i class="fa fa-male"></i> <span>User</span></a></li>
 			<li><a href="shelf.php"><i class="glyphicon glyphicon-wrench"></i> <span>Shelf</span></a></li>	
 		<?php } ?>

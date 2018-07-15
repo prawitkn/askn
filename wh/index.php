@@ -700,7 +700,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						case 'admin' :
 						case 'whOff' :
 						case 'whSup' :
-							$sql = "SELECT * FROM sale_header hdr 
+							$sql = "SELECT DISTINCT hdr.soNo, hdr.deliveryDate FROM sale_header hdr 
 							INNER JOIN sale_detail dtl on dtl.soNo=hdr.soNo
 							WHERE hdr.isClose='N'  
 							AND hdr.statusCode='P' 
@@ -712,7 +712,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						case 'pdSup' : 
 							switch($s_userDeptCode){
 								case '4' :
-									$sql = "SELECT * FROM sale_header hdr 
+									$sql = "SELECT  DISTINCT hdr.soNo, hdr.deliveryDate FROM sale_header hdr 
 									INNER JOIN sale_detail dtl on dtl.soNo=hdr.soNo
 										AND dtl.prodId IN (SELECT id FROM product prd WHERE catCode='70')								
 									WHERE hdr.isClose=0 
@@ -722,7 +722,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 									";
 									break;
 								case '5' :
-									$sql = "SELECT * FROM sale_header hdr 
+									$sql = "SELECT  DISTINCT hdr.soNo, hdr.deliveryDate FROM sale_header hdr 
 									INNER JOIN sale_detail dtl on dtl.soNo=hdr.soNo
 										AND dtl.prodId IN (SELECT id FROM product prd WHERE catCode='71')								
 									WHERE hdr.isClose=0 
@@ -732,7 +732,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 									";
 									break;
 								case '6' :
-									$sql = "SELECT * FROM sale_header hdr 
+									$sql = "SELECT  DISTINCT hdr.soNo, hdr.deliveryDate FROM sale_header hdr 
 									INNER JOIN sale_detail dtl on dtl.soNo=hdr.soNo
 										AND dtl.prodId IN (SELECT id FROM product prd WHERE catCode='72')								
 									WHERE hdr.isClose=0 
@@ -780,7 +780,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			</div>
             <!-- /.box-body -->
             <div class="box-footer text-center">
-              <a href="#" class="uppercase">View All Sales Order</a>
+              <a href="sales_order_pending.php" class="uppercase">View All Pending Sales Order</a>
             </div>
             <!-- /.box-footer -->
           </div>

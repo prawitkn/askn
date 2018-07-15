@@ -6,12 +6,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
 <?php include 'head.php'; 
-	$is_local = true;
-	if($is_local){
-		include '../db/database_sqlsrv_localhost.php';
-	}else{
-		include '../db/database_sqlsrv.php';
-	}
+	
+	include '../db/db_sqlsrv.php';
+	
 $rootPage = 'productionMappingProduct';
 //Check user roll.
 switch($s_userGroupCode){
@@ -180,7 +177,7 @@ switch($s_userGroupCode){
                 $result = mysqli_query($link, $sql);
                 $countTotal = mysqli_fetch_assoc($result);			
 				
-				$rows=20;
+				$rows=100;
 				$page=0;
 				if( !empty($_GET["page"]) and isset($_GET["page"]) ) $page=$_GET["page"];
 				if($page<=0) $page=1;

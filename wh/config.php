@@ -27,13 +27,46 @@ scratch. This page gets rid of all links and provides the needed markup only.
    <?php
 	$rootPage = 'config';
 	$tb="cadet18_person";
-	$reCheckIn=0;
-	if(isset($_GET['reCheckIn'])){
-		$sql = "UPDATE `".$tb."` SET isCount=0 ";
-		$stmt = $pdo->prepare($sql);
-		$stmt->execute();	
-		$reCheckIn=0;
-	}//isset reCheckIn
+	$reWms=1;
+	if(isset($_GET['reWms'])){
+		if($_GET['reWms']==1){
+			try{
+				$pdo->beginTransaction();
+				$arr = array("TRUNCATE TABLE delivery_detail"	
+				, "TRUNCATE TABLE delivery_prod"	
+				, "TRUNCATE TABLE delivery_header"	
+				, "DELETE FROM doc_running WHERE name IN ('send','receive','picking','prepare','delivery','return')"	
+				, "TRUNCATE TABLE prepare_detail"	
+				, "TRUNCATE TABLE prepare"	
+				, "TRUNCATE TABLE picking_detail"	
+				, "TRUNCATE TABLE picking"	
+				, "TRUNCATE TABLE product_item"	
+				, "TRUNCATE TABLE receive_detail"	
+				, "TRUNCATE TABLE receive"	
+				, "TRUNCATE TABLE rt_detail"	
+				, "TRUNCATE TABLE rt"	
+				, "TRUNCATE TABLE send_detail"	
+				, "TRUNCATE TABLE send"	
+				, "TRUNCATE TABLE send_detail_mssql"	
+				, "TRUNCATE TABLE send_mssql"	
+				, "TRUNCATE TABLE send_scan"	
+				, "TRUNCATE TABLE shelf_movement_detail"	
+				, "TRUNCATE TABLE shelf_movement"	
+				, "TRUNCATE TABLE stk_bal"	
+				, "TRUNCATE TABLE wh_shelf_map_item"	
+				);
+				foreach ($arr as $value) {
+					$stmt = $pdo->prepare($value);
+					echo $stmt->execute();	
+				}	
+				$pdo->commit();
+			}catch(Exception $e){
+				$pdo->rollBack();
+				echo $e;
+			}
+		$reWms=0;
+		}//is reWms=1
+	}//isset reWms
 	
 	$reInvite=0;
 	if(isset($_GET['reInvite'])){
@@ -80,8 +113,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <div class="row">                
 					<div class="col-md-6">		
 						<form id="form1"  onsubmit="return confirm('Do you really want to submit the form?');" >
-						<input type="hidden" name="reCheckIn" value="<?=$reCheckIn;?>" />
-                        <button id="btn_reset_check_in" type="submit" class="btn btn-primary">Reset Production</button>
+						<input type="hidden" name="reWms" value="<?=$reWms;?>" />
+                        <button id="btn_reset_check_in" type="submit" class="btn btn-primary">Reset WMS</button>
 						</form>
 					</div>
 					<div class="col-md-6">		

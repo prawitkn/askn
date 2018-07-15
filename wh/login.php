@@ -33,6 +33,7 @@
   </div>
   <!-- /.login-logo -->
   <div class="login-box-body">
+  <?php  //echo $_COOKIE['SID']; ?>
     <p class="login-box-msg">Sign in to start your session</p>
     <form id="form1" action="login_go.php" method="post" novalidate>
       <div class="form-group has-feedback">
@@ -79,7 +80,7 @@
            if($('#form1').smkValidate()) {
     //alert("Ok validate");      
                 $.post("login_go.php", $("#form1").serialize() )
-                        .done(function(data) {
+                        .done(function(data) { //alert(data);
                             if (data.status === "danger") {
     // alert("danger message");            
                                 $.smkAlert({text: data.message, type: data.status});

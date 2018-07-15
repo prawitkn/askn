@@ -2,7 +2,7 @@
 
     session_start();
     if (!isset($_SESSION['userId'])){
-        //header("Location: login.php");
+        header("Location: login.php");
     }
     
 	include '../db/db.php';
@@ -28,14 +28,11 @@
 		mysqli_free_result($result_user);  
 		
 		//Set Login 
-		setcookie("loginWh", "1", time()+3600);	//3600=1Hour; 1800=30Min; 60=1Min
+		//setcookie("loginWh", "1", time()+3600);	//3600=1Hour; 1800=30Min; 60=1Min
 		
-		$qry_user = "UPDATE wh_user SET lastLoginTime=NOW() WHERE userId='$s_userId'";
-		$result_user = mysqli_query($link,$qry_user);
-        
-        
-        
+		$qry_user = "UPDATE wh_user SET loginStatus=1, lastLoginTime=NOW() WHERE userId='$s_userId'";
+		$result_user = mysqli_query($link,$qry_user);        
         
     }else{
-		//header("Location: login.php");
+		header("Location: login.php");
 	}
