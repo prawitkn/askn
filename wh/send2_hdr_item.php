@@ -303,9 +303,10 @@ $(document).ready(function() {
 					//alert(data);
 					$('#lblTotal').text('Total '+data.rowCount+' items');
 					
+					$('#tbl_items tbody').empty();
+					$('#selItmId').empty();
 					switch(data.rowCount){
 						case 0 : alert('Data not found.');
-							$('#tbl_items tbody').empty();
 							return false; break;
 						default : 
 							var prevSendId="";
@@ -313,7 +314,7 @@ $(document).ready(function() {
 							var rowColor="lightBlue";	
 							var tmpNo="";
 							
-							$('#tbl_items tbody').empty();
+							
 							var rowNo=1;
 							$.each($.parseJSON(data.data), function(key,value){
 								if( prevSendId == ""){

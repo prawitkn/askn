@@ -16,7 +16,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 $rootPage='picking';
 $pickNo = $_GET['pickNo'];
 $sql = "
-SELECT hdr.`pickNo`, hdr.`soNo`, hdr.`pickDate`, hdr.`remark`, hdr.`statusCode`
+SELECT hdr.`pickNo`, hdr.`soNo`, hdr.`pickDate`, hdr.`isFinish`, hdr.`remark`, hdr.`statusCode`
 , hdr.`createTime`, hdr.`createById`, hdr.`updateTime`, hdr.`updateById`
 , hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById`
 					, uca.userFullname as createByName, ucf.userFullname as confirmByName, uap.userFullname as approveByName
@@ -74,6 +74,7 @@ $hdr = $stmt->fetch();
 					case 'B' : $statusName = '<b style="color: blue;">Begin</b>'; break;
 					case 'C' : $statusName = '<b style="color: blue;">Confirmed</b>'; break;
 					case 'P' : $statusName = '<b style="color: green;">Approved</b>'; break;
+					case 'X' : $statusName = '<b style="color: red;">Removed</b>'; break;
 					default : 
 				} ?>
 				<h3 class="box-title" id="statusName">Status : <?= $statusName; ?></h3>
@@ -225,8 +226,13 @@ $hdr = $stmt->fetch();
     <div class="col-md-12">
 			<?php if($hdr['statusCode']=='P'){ ?>
 			  <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?pickNo=<?=$hdr['pickNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
+			<?php } ?>			
+			<?php if($hdr['statusCode']=='P' AND $hdr['isFinish']=="N"){ ?>         
+			  <button type="button" id="btn_remove" class="btn btn-default" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='P'?'':'disabled'); ?> >
+			 <i class="glyphicon glyphicon-trash">
+				</i> Remove Approved
+	          </button>
 			<?php } ?>
-			
 			
 			
 		  <?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whSup' : ?>
@@ -436,7 +442,42 @@ $('#btn_approve').click (function(e) {
 });
 //.btn_click
 
-
+$('#btn_remove').click (function(e) {				 
+	var params = {
+	action: 'remove',					
+	pickNo: $('#pickNo').val()					
+	};
+	//alert(params.hdrID);
+	$.smkConfirm({text:'Are you sure to Remove Approved ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+		$.post({
+			url: '<?=$rootPage;?>_ajax.php',
+			data: params,
+			dataType: 'json'
+		}).done(function(data) {
+			if (data.success){  
+				$.smkAlert({
+					text: data.message,
+					type: 'success',
+					position:'top-center'
+				});		
+				alert(data.message);
+				window.location.href = '<?=$rootPage;?>.php';
+			}else{
+				$.smkAlert({
+					text: data.message,
+					type: 'danger',
+					position:'top-center'
+				});
+			}
+			//e.preventDefault();		
+		}).error(function (response) {
+			alert(response.responseText);
+		});
+		//.post		
+	}});
+	//smkConfirm
+});
+//.btn_click
 
 	$("html,body").scrollTop(0);
 	$("#statusName").fadeOut('slow').fadeIn('slow').fadeOut('slow').fadeIn('slow');

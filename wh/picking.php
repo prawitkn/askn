@@ -108,7 +108,7 @@ switch($s_userGroupCode){
 				</div>
            <?php
                 $sql = "
-				SELECT hdr.`pickNo`, hdr.`soNo`, hdr.`pickDate`, hdr.`remark`, hdr.`statusCode`, hdr.`createTime`, hdr.`createByID`
+				SELECT hdr.`pickNo`, hdr.`soNo`, hdr.`pickDate`, hdr.`isFinish`, hdr.`remark`, hdr.`statusCode`, hdr.`createTime`, hdr.`createByID`
 				, hdr.`updateTime`, hdr.`updateById`, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById` 
 				FROM `picking` hdr 
 				left join user d on hdr.createByID=d.userID
@@ -140,6 +140,7 @@ switch($s_userGroupCode){
 						case 'B' : $statusName = '<label class="label label-info">Begin</label>'; break;
 						case 'C' : $statusName = '<label class="label label-primary">Confirmed</label>'; break;
 						case 'P' : $statusName = '<label class="label label-success">Approved</label>'; break;
+						case 'X' : $statusName = '<label class="label label-danger">Removed</label>'; break;
 						default : 						
 					}
 					?>

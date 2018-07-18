@@ -53,26 +53,40 @@ scratch. This page gets rid of all links and provides the needed markup only.
               </div>
             </div>
             <!-- /.box-header -->
+			<?php
+				$prodId=(isset($_GET['prodId'])?$_GET['prodId']:'');
+	
+				$prodCode="";
+				if($prodId<>""){
+					$sql = "SELECT code FROM product WHERE id=:id ";			
+					$stmt = $pdo->prepare($sql);
+					$stmt->bindParam(':id', $prodId);			
+					$stmt->execute();
+					$row=$stmt->fetch();
+					$prodCode=$row['code'];
+				}
+			?>
             <div class="box-body">
-				<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
-					<div class="row">
-						<div class="col-md-6">					
-							<label for="prodId" >Product Code</label>
-							<div class="form-group row">
-								<div class="col-md-9">
-									<input type="hidden" name="prodId" value="" />
-									<input type="text" name="prodCode" class="form-control" value=""  />
-								</div>
-								<div class="col-md-3">
-									<a href="#" name="btnSdNo" class="btn btn-primary"  ><i class="glyphicon glyphicon-search" ></i></a>								
-								</div>
-							</div>   
-							<button id="btn1" type="submit" class="btn btn-default">Submit</button>
-						</div>
+				<div class="row">
+					<div class="col-md-12">		
+					<form id="form1" action="#" method="get" class="form-inline" style="background-color: gray; padding: 5px;" novalidate>
+					
+									
+							
+							<label for="prodCode">Product Code</label> 
+							<input type="hidden" name="prodId" id="prodId" class="form-control" value="<?=$prodId;?>"  />
+							<input type="text" name="prodCode" id="prodCode" class="form-control" value="<?=$prodCode;?>"  />
+							<a href="#" name="btnSdNo" class="btn btn-default" ><i class="glyphicon glyphicon-search" ></i> </a>	
+														
+						
 						<!--/.col-md-->
-						<div class="col-md-6">
-						</div>
-					</div><!--row-->
+						<br/><br/>
+					</form>
+					<!--form-->
+					
+					<a name="btnSubmit" id="btnSubmit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-search"></i> Search</a>
+					</div>	
+				</div><!--row-->
 			<?php
 				$id=(isset($_GET['prodId'])?$_GET['prodId']:0);
 				$sql = "
@@ -109,10 +123,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                   <tr>
 					<th>No.</th>
                     <th>Product Code</th>
-					<th>issue Date</th>
+					<th>MFD.</th>
 					<th>Grade</th>
-					<th>Per Pack</th>
-                    <th style="color: blue;">Pack</th>
+					<th>Meter</th>
+                    <th style="color: blue;">Qty</th>
 					<th style="color: blue;">Qty Total</th>	
 					<th>#</th>
                   </tr>
@@ -152,8 +166,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				
             </div>
             <!-- /.box-footer -->
-			</form>
-			<!--form-->
           </div>
           <!-- /.box -->
 		  
@@ -191,18 +203,22 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			<div class="form-group">	
 				<label for="year_month" class="control-label col-md-2">Product Code</label>
 				<div class="col-md-4">
-					<input type="text" class="form-control" id="txt_search_fullname" />
+					<input type="text" class="form-control" id="txt_search_word" />
 				</div>
 			</div>
 		
 		<table id="tbl_search_person_main" class="table">
 			<thead>
 				<tr bgcolor="4169E1" style="color: white; text-align: center;">
-					<td>#Select</td>
-					<td style="display: none;">Id</td>
-					<td>Code</td>
-					<td>Category</td>
-					<td>Name</td>
+					<td><i class="glyphicon glyphicon-check"></i> Select</td>
+					<td style="display: none;">ID</td>
+					<td>Product Code.</td>
+					<td>Product Name</td>
+					<td style="display: none;">UOM</td>
+					<td>Product Category</td>
+					<td>App ID</td>
+					<td style="display: none;">Balance</td>
+					<td style="display: none;">Sales</td>
 				</tr>
 			</thead>
 			<tbody>
@@ -253,71 +269,70 @@ $(document).ready(function() {
 	$("#spin").append(spinner.el);
 	$("#spin").hide();
 				
-				
-				
-				
+	
 				
 	
 	//SEARCH Begin
 	$('a[name="btnSdNo"]').click(function(){
-		//prev() and next() count <br/> too.		
-		$txtName = $(this).closest("div").prev().find('input[type="text"]');
-		//alert($btn.attr('name'));
-		//curId = $btn.attr('name');
-		curId = $(this).closest("div").prev().find('input[type="hidden"]').attr('name');
-		curName = $(this).closest("div").prev().find('input[type="text"]').attr('name');
-		//alert($txtName);
-		//alert(curId);
-		//alert(curName);
-		if(!$txtName.prop('disabled')){
+		curName = $(this).prev().attr('name');
+		curId = $(this).prev().prev().attr('name');
+		if(!$('#'+curName).prop('disabled')){
 			$('#modal_search_person').modal('show');
 		}
-		
-		//alert(curHidMid+' '+curSlOrgCode+' '+curTxtFullName+' ' +curTxtMobilePhoneNo);
-		
 	});	
-	$('#txt_search_fullname').keyup(function(e){
+	$('#txt_search_word').keyup(function(e){ 
 		if(e.keyCode == 13)
 		{
 			var params = {
-				search_fullname: $('#txt_search_fullname').val()
+				search_word: $('#txt_search_word').val()
 			};
-			if(params.search_fullname.length < 3){
+			if(params.search_word.length < 3){
 				alert('search word must more than 3 character.');
 				return false;
 			}
 			/* Send the data using post and put the results in a div */
 			  $.ajax({
-				  url: "search_production_mapping_ajax.php",
+				  url: "search_product_ajax.php",
 				  type: "post",
 				  data: params,
 				datatype: 'json',
-				  success: function(data){
-								//alert(data);
+				  success: function(data){	
+						data=$.parseJSON(data);
+						switch(data.rowCount){
+							case 0 : alert('Data not found.');
+								return false; break;
+							default : 
 								$('#tbl_search_person_main tbody').empty();
-								$.each($.parseJSON(data), function(key,value){
+								$.each($.parseJSON(data.data), function(key,value){
 									$('#tbl_search_person_main tbody').append(
 									'<tr>' +
 										'<td>' +
 										'	<div class="btn-group">' +
 										'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
 										'	class="btn" title="เลือก"> ' +
-										'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
+										'	<i class="glyphicon glyphicon-unchecked"></i></a> ' +
 										'	</div>' +
-										'</td>' +
+										'</td>' + 
 										'<td style="display: none;">'+ value.prodId +'</td>' +
 										'<td>'+ value.prodCode +'</td>' +
-										'<td>'+ value.prodCatCode +'</td>' +
 										'<td>'+ value.prodName +'</td>' +
+										'<td style="display: none;">'+ value.prodUomCode +'</td>' +
+										'<td>'+ value.prodCatName +'</td>' +
+										'<td>'+ value.prodAppName+'</td>' +									
+										'<td style="display: none;">'+ value.balance+'</td>' +	
+										'<td style="display: none;">'+ value.sales+'</td>' +	
 									'</tr>'
-									);			
+									);		
 								});
+								$('#modal_search_person').modal('show');	
+						}	
+						
+								
 							
-				  }, //success
-				  error:function(){
-					  alert('error');
 				  }   
-				}); 
+				}).error(function (response) {
+					alert(response.responseText);
+				});  
 		}/* e.keycode=13 */	
 	});
 	
@@ -330,9 +345,72 @@ $(document).ready(function() {
 	//Search End
 	
 	
+	$('#prodCode').keyup(function(e){ 
+		if(e.keyCode == 13)
+		{
+			var params = {
+				search_word: $('#prodCode').val()
+			};
+			if(params.search_word.length < 3){
+				alert('search word must more than 3 character.');
+				return false;
+			}
+			curName = $(this).attr('name');
+			curId = $(this).prev().attr('name');
+			/* Send the data using post and put the results in a div */
+			  $.ajax({
+				  url: "search_product_ajax.php",
+				  type: "post",
+				  data: params,
+				datatype: 'json',
+				  success: function(data){	
+						data=$.parseJSON(data);
+						switch(data.rowCount){
+							case 0 : alert('Data not found.');
+								$('#tbl_items tbody').empty();
+								return false; break;
+							case 1 :
+								$.each($.parseJSON(data.data), function(key,value){
+									$('input[name='+curName+']').val(value.prodCode);
+									$('input[name='+curId+']').val(value.prodId);
+								});
+								break;
+							default : 
+								$('#tbl_search_person_main tbody').empty();
+								$.each($.parseJSON(data.data), function(key,value){
+									$('#tbl_search_person_main tbody').append(
+									'<tr>' +
+										'<td>' +
+										'	<div class="btn-group">' +
+										'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
+										'	class="btn" title="เลือก"> ' +
+										'	<i class="glyphicon glyphicon-unchecked"></i></a> ' +
+										'	</div>' +
+										'</td>' + 
+										'<td style="display: none;">'+ value.prodId +'</td>' +
+										'<td>'+ value.prodCode +'</td>' +
+										'<td>'+ value.prodName +'</td>' +
+										'<td style="display: none;">'+ value.prodUomCode +'</td>' +
+										'<td>'+ value.prodCatName +'</td>' +
+										'<td>'+ value.prodAppName+'</td>' +									
+										'<td style="display: none;">'+ value.balance+'</td>' +	
+										'<td style="display: none;">'+ value.sales+'</td>' +	
+									'</tr>'
+									);		
+								});								
+								$('#modal_search_person').modal('show');	
+						}	
+				  }   
+				}).error(function (response) {
+					alert(response.responseText);
+				});  
+		}/* e.keycode=13 */	
+	});
 	
-	
-	
+	$("#btnSubmit").click(function(){ 
+		var prodId = $('#prodId').val();
+		window.location.href = "<?=$rootPage;?>.php?prodId="+prodId;
+	});
 	
 	function post_data(params){
 		if ($('#form1').smkValidate()){

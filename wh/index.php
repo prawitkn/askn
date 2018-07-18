@@ -69,17 +69,17 @@ scratch. This page gets rid of all links and provides the needed markup only.
 										AND rcNo IS NULL						
 										";
 							switch($s_userGroupCode){
-								case 'wh' :
+								case 'whOff' : case 'whSup' :
 									$sql .= " AND toCode IN ('0','7','8','E') ";
 									break;
-								case 'pd' : 
+								case 'pdOff' :  case 'pdSup' : 
 									$sql .= " AND toCode=:toCode ";
 									break;
 								default : // it, admin
 							}
 							$stmt = $pdo->prepare($sql);
 							switch($s_userGroupCode){
-								case 'pd' : 
+								case 'pdOff' :  case 'pdSup' : 
 									$stmt->bindParam(':toCode', $s_userDeptCode);
 									break;
 								default : // it, admin
@@ -105,17 +105,17 @@ scratch. This page gets rid of all links and provides the needed markup only.
 										AND rcNo IS NULL						
 										";
 							switch($s_userGroupCode){
-								case 'wh' :
+								case 'whOff' : case 'whSup' :
 									$sql .= " AND fromCode IN ('0','7','8','E') ";
 									break;
-								case 'pd' : 
+								case 'pdOff' :  case 'pdSup' : 
 									$sql .= " AND fromCode=:fromCode ";
 									break;
 								default : // it, admin
 							}
 							$stmt = $pdo->prepare($sql);
 							switch($s_userGroupCode){
-								case 'pd' : 
+								case 'pdOff' :  case 'pdSup' : 
 									$stmt->bindParam(':fromCode', $s_userDeptCode);
 									break;
 								default : // it, admin
@@ -138,29 +138,29 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					   <div class="info-box-content"> 
 						   <?php
 							$sql ="SELECT COUNT(*) as countOrder
-										FROM send
+										FROM receive
 										WHERE statusCode='P'					
 										";
 							switch($s_userGroupCode){
-								case 'wh' :
-									$sql .= " AND fromCode IN ('0','7','8','E') ";
+								case 'whOff' : case 'whSup' :
+									$sql .= " AND toCode IN ('0','7','8','E') ";
 									break;
-								case 'pd' : 
-									$sql .= " AND fromCode=:fromCode ";
+								case 'pdOff' :  case 'pdSup' : 
+									$sql .= " AND toCode=:toCode ";
 									break;
 								default : // it, admin
 							}
 							$stmt = $pdo->prepare($sql);
 							switch($s_userGroupCode){
-								case 'pd' : 
-									$stmt->bindParam(':fromCode', $s_userDeptCode);
+								case 'pdOff' :  case 'pdSup' :  
+									$stmt->bindParam(':toCode', $s_userDeptCode);
 									break;
 								default : // it, admin
 							}							
 							$stmt->execute();
 							$row = $stmt->fetch();		
 							?>
-						   <span class="info-box-text"> Sending </span>
+						   <span class="info-box-text"> Received </span>
 						   <span class="info-box-number"><?= number_format($row['countOrder'], 0, '.', ','); ?> <small> Trans.</small>.</span>
 						   
 					   </div><!-- /.info-box-content -->
@@ -173,29 +173,29 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					   <div class="info-box-content"> 
 						   <?php
 							$sql ="SELECT COUNT(*) as countOrder
-										FROM receive
+										FROM send
 										WHERE statusCode='P'					
 										";
 							switch($s_userGroupCode){
-								case 'wh' :
-									$sql .= " AND toCode IN ('0','7','8','E') ";
+								case 'whOff' : case 'whSup' :
+									$sql .= " AND fromCode IN ('0','7','8','E') ";
 									break;
-								case 'pd' : 
-									$sql .= " AND toCode=:toCode ";
+								case 'pdOff' :  case 'pdSup' : 
+									$sql .= " AND fromCode=:fromCode ";
 									break;
 								default : // it, admin
 							}
 							$stmt = $pdo->prepare($sql);
 							switch($s_userGroupCode){
-								case 'pd' : 
-									$stmt->bindParam(':toCode', $s_userDeptCode);
+								case 'pdOff' :  case 'pdSup' : 
+									$stmt->bindParam(':fromCode', $s_userDeptCode);
 									break;
 								default : // it, admin
 							}							
 							$stmt->execute();
 							$row = $stmt->fetch();		
 							?>
-							<span class="info-box-text"> Receiving </span>
+							<span class="info-box-text"> Sent </span>
 						   <span class="info-box-number"><?= number_format($row['countOrder'], 0, '.', ','); ?> <small> Trans.</small>.</span>
 						   
 					   </div><!-- /.info-box-content -->
@@ -358,7 +358,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						default : // it, admin
 					}							
 					$stmt->execute();
-					$row = $stmt->fetch();	
 				?>
               <div class="table-responsive">
                 <table class="table no-margin">
@@ -446,7 +445,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						default : // it, admin
 					}							
 					$stmt->execute();
-					$row = $stmt->fetch();	
 				?>
               <div class="table-responsive">
                 <table class="table no-margin">
@@ -607,7 +605,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							";
 					switch($s_userGroupCode){
 						case 'whOff' : case 'whSup' :
-							$sql .="AND a.fromCode IN ('0','7','8','E') ";
+							$sql .="AND a.toCode IN ('0','7','8','E') ";
 							break;
 						case 'pdOff' : case 'pdSup' :
 							$sql .="AND a.toCode=:toCode ";
@@ -618,7 +616,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							LIMIT 10";
 					$stmt = $pdo->prepare($sql);
 					switch($s_userGroupCode){
-						case 'whOff' : case 'whSup' :
 						case 'pdOff' : case 'pdSup' :
 							$stmt->bindParam(':toCode', $s_userDeptCode);
 							break;

@@ -202,7 +202,7 @@ $pickNo = $hdr['pickNo'];
 							<th>No.</th>
 							<th>Barcode</th>
 							<th>Grade</th>
-							<th>Seding Date</th>							
+							<th>MFD.</th>							
 							<th>Qty</th>
 							<th>#</th>
 						</tr>

@@ -108,7 +108,8 @@ desired effect
 				, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 						ON pickh.pickNo=pickd.pickNo
 						WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade
-						AND pickh.isFinish='N' ) as bookedQty
+						AND pickh.isFinish='N'
+						AND pickh.statusCode<>'X' ) as bookedQty
 				, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 						ON pickh.pickNo=pickd.pickNo
 						WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade
@@ -164,7 +165,8 @@ desired effect
 						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 								ON pickh.pickNo=pickd.pickNo
 								WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade
-								AND pickh.isFinish='N' ) as bookedQty
+								AND pickh.isFinish='N' 
+								AND pickh.statusCode<>'X' ) as bookedQty
 						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 								ON pickh.pickNo=pickd.pickNo
 								WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade
@@ -204,7 +206,8 @@ desired effect
 						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 								ON pickh.pickNo=pickd.pickNo
 								WHERE pickd.prodId=itm.prodCodeId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade
-								AND pickh.isFinish='N' ) as bookedQty
+								AND pickh.isFinish='N' 
+								AND pickh.statusCode<>'X') as bookedQty
 						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 								ON pickh.pickNo=pickd.pickNo
 								WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade
@@ -254,9 +257,9 @@ desired effect
                   <tr>
 					<th>No.</th>
                     <th>Product Code</th>
-					<th>issue Date</th>
+					<th>MFD.</th>
 					<th>Grade</th>
-					<th>Meters</th>
+					<th>Meter</th>
                     <th>Qty</th>
 					<th>Total</th>
 					<th style="color: red;">Booked</th>

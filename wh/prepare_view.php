@@ -38,7 +38,7 @@ $ppNo = $_GET['ppNo'];
 	$stmt->bindParam(':ppNo', $ppNo);	
 	$stmt->execute();
 	$hdr = $stmt->fetch();	
-
+	$pickNo=$hdr['pickNo']; 
 ?>
 
 <div class="wrapper">
@@ -90,7 +90,7 @@ $ppNo = $_GET['ppNo'];
 						
 					</div><!-- /.col-md-3-->	
 					<div class="col-md-3">
-						Prepare Date : <b><?= date('d/m/Y',strtotime( $hdr['prepareDate'] )); ?></b><br/>
+						Prepare Date : <b><?= date('d M Y',strtotime( $hdr['prepareDate'] )); ?></b><br/>
 						Picking No : <b><?= $hdr['pickNo']; ?></b><br/>		
 					</div>	<!-- /.col-md-3-->	
 					<div class="col-md-3">
@@ -126,7 +126,8 @@ $ppNo = $_GET['ppNo'];
 							WHERE pickDtl.pickNo=hdr.pickNo				
 							AND itm.prodCodeId=pickDtl.prodId
 							AND itm.issueDate=pickDtl.issueDate 
-							AND itm.grade=pickDtl.grade 						
+							AND itm.grade=pickDtl.grade 
+							AND itm.qty=pickDtl.meter  							
 							),0) AS inPick 
 					FROM `prepare_detail` dtl
 					INNER JOIN prepare hdr ON hdr.ppNo=dtl.ppNo 
@@ -146,7 +147,7 @@ $ppNo = $_GET['ppNo'];
 						<tr>
 							<th>No.</th>
 							<th>Barcode</th>
-							<th>Issue Date</th>
+							<th>MFD.</th>
 							<th>Grade</th>
 							<th>Qty</th>
 						</tr>
@@ -171,13 +172,14 @@ $ppNo = $_GET['ppNo'];
 					
 					<?php
 						$sql = "
-						SELECT prd.code as prodCode, itm.`issueDate`, itm.`grade`
+						SELECT prd.code as prodCode, itm.`issueDate`, itm.`grade`, itm.`qty` as meter 
 						,IFNULL((SELECT SUM(pickDtl.qty) 
 								FROM picking_detail pickDtl 
 								WHERE pickDtl.pickNo=hdr.pickNo
 								AND pickDtl.prodId=itm.prodCodeId 
 								AND pickDtl.issueDate=itm.issueDate 
-								AND pickDtl.grade=itm.grade 						
+								AND pickDtl.grade=itm.grade 
+								AND itm.qty=pickDtl.meter  	
 						),0) AS sumPickQty 
 						, SUM(itm.`qty`) AS sumPackQty
 						FROM `prepare_detail` dtl
@@ -191,23 +193,25 @@ $ppNo = $_GET['ppNo'];
 						UNION 
 						
 						SELECT * FROM (
-						SELECT prd.code as prodCode, pick.`issueDate`, pick.`grade`, IFNULL(SUM(pick.qty),0) as sumPickQty, 0 as sumPackQty 
-						FROM picking_detail pick
-						LEFT JOIN product prd ON prd.id=pick.prodId  
-						WHERE pick.pickNo=(SELECT pickNo FROM prepare WHERE ppNo=:ppNo2)
-						AND pick.prodId NOT IN (SELECT itm.prodCodeId FROM `prepare_detail` dtl
-													INNER JOIN prepare hdr ON hdr.ppNo=dtl.ppNo 
-													LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-													WHERE 1
-													AND dtl.`ppNo`=:ppNo3  )		
-										) as tmp 
-						WHERE tmp.sumPackQty<>0 AND tmp.sumPackQty<>0 
-						
+							SELECT prd.code as prodCode, pick.`issueDate`, pick.`grade`, pick.`meter`, IFNULL(SUM(pick.qty),0) as sumPickQty
+							, IFNULL((SELECT SUM(itm.qty) 
+									FROM prepare_detail ppDtl 
+									LEFT JOIN product_item itm ON itm.prodItemId=ppDtl.prodItemId 
+									WHERE 1=1 
+									AND pick.prodId=itm.prodCodeId 
+									AND pick.issueDate=itm.issueDate 
+									AND pick.grade=itm.grade 
+									AND pick.meter=itm.qty	
+							),0) as sumPackQty 
+							FROM picking_detail pick
+							LEFT JOIN product prd ON prd.id=pick.prodId  
+							WHERE pick.pickNo=(SELECT pickNo FROM prepare WHERE ppNo=:ppNo2)	
+							GROUP BY pick.prodId, pick.`issueDate`, pick.`grade`, pick.`meter`							
+							) as tmp 	
 						";
 						$stmt = $pdo->prepare($sql);	
 						$stmt->bindParam(':ppNo', $hdr['ppNo']);
 						$stmt->bindParam(':ppNo2', $hdr['ppNo']);
-						$stmt->bindParam(':ppNo3', $hdr['ppNo']);
 						$stmt->execute();
 						
 				   ?>
@@ -218,6 +222,7 @@ $ppNo = $_GET['ppNo'];
 							<th>Product</th>
 							<th>Issue Date</th>
 							<th>Grade</th>
+							<th>Meter</th>
 							<th>Picking Qty</th>
 							<th>Packing Qty</th>
 						</tr>
@@ -236,6 +241,7 @@ $ppNo = $_GET['ppNo'];
 								<td><?= $row['prodCode']; ?></td>
 								<td><?= $row['issueDate']; ?></td>
 								<td><?= $gradeName; ?></td>
+								<td><?= $row['meter']; ?></td>
 								<td><?= $row['sumPickQty']; ?></td>
 								<td><?= $row['sumPackQty']; ?></td>
 							</tr>							
@@ -271,9 +277,7 @@ $ppNo = $_GET['ppNo'];
     <div class="col-md-12">
 			<?php if($hdr['statusCode']=='P'){ ?>
 			  <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?ppNo=<?=$hdr['ppNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
-			<?php } ?>
-			
-			
+			<?php } ?>			
 			
 		  <?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whSup' : ?>
 			  <button type="button" id="btn_approve" class="btn btn-success pull-right" <?php echo ($hdr['statusCode']=='C'?'':'disabled'); ?>>

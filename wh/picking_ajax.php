@@ -502,7 +502,7 @@ if(!isset($_POST['action'])){
 		case 'remove' :
 			//Check user roll.
 			switch($s_userGroupCode){
-				case 'admin' : case 'whSup' : case 'pdSup' : 
+				case 'admin' : case 'whSup' :
 					break;
 				default : 
 					//return JSON
@@ -511,7 +511,7 @@ if(!isset($_POST['action'])){
 					exit();
 			}
 
-			$sdNo = $_POST['sdNo'];
+			$pickNo = $_POST['pickNo'];
 
 			//We will need to wrap our queries inside a TRY / CATCH block.
 			//That way, we can rollback the transaction if a query fails and a PDO exception occurs.
@@ -519,9 +519,14 @@ if(!isset($_POST['action'])){
 				//We start our transaction.
 				$pdo->beginTransaction();
 				//Query 1: Check Status for not gen running No.
-				$sql = "SELECT * FROM send WHERE sdNo=:sdNo AND statusCode='P' LIMIT 1";
+				$sql = "SELECT p.*, pp.ppNo 
+				FROM picking p 
+				LEFT JOIN prepare pp ON pp.pickNo=p.pickNo 
+				WHERE p.pickNo=:pickNo 
+				AND p.statusCode='P' 
+				LIMIT 1";
 				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
+				$stmt->bindParam(':pickNo', $pickNo);
 				$stmt->execute();
 				$row_count = $stmt->rowCount();	
 				if($row_count != 1 ){
@@ -531,97 +536,31 @@ if(!isset($_POST['action'])){
 					exit();
 				}				
 				$hdr = $stmt->fetch();
-				if(trim($hdr['rcNo'])<>"" ){
+				if(trim($hdr['ppNo'])<>"" ){
 					//return JSON
 					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Sending has been received.'));
+					echo json_encode(array('success' => false, 'message' => 'Picking has been prepared.'));
 					exit();
-				}			
-				$fromCode = $hdr['fromCode'];
-				$toCode = $hdr['toCode'];
-							
+				}										
 				
 				//Query 1: UPDATE DATA
-				$sql = "UPDATE send SET statusCode='X'
+				$sql = "UPDATE picking SET statusCode='X'
 				, updateTime=now()
 				, updateById=:updateById
-				WHERE sdNo=:sdNo  
+				WHERE pickNo=:pickNo  
 				AND statusCode='P' 
 				";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':updateById', $s_userId);
-				$stmt->bindParam(':sdNo', $sdNo);
+				$stmt->bindParam(':pickNo', $pickNo);
 				$stmt->execute();
 								
-				//Query 5: UPDATE STK BAl sloc from 
-				$sql = "		
-				UPDATE stk_bal sb,
-				( SELECT itm.prodCodeId, sum(itm.qty)  as sumQty
-					   FROM send_detail dtl
-					   INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-					   WHERE sdNo=:sdNo GROUP BY itm.prodCodeId) as s
-				SET sb.send=sb.send-s.sumQty
-				, sb.balance=sb.balance+s.sumQty 
-				WHERE sb.prodId=s.prodCodeId
-				AND sb.sloc=:fromCode
-				";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->bindParam(':fromCode', $fromCode);
-				$stmt->execute();
-					
-				//Query 6: INSERT STK BAl sloc from 
-				$sql = "INSERT INTO stk_bal (prodId, sloc, send, balance) 
-				SELECT itm.prodCodeId, :fromCode, -1*SUM(itm.qty), SUM(itm.qty) 
-				FROM send_detail sd
-				INNER JOIN product_item itm ON itm.prodItemId=sd.prodItemId 
-				WHERE sd.sdNo=:sdNo 
-				AND itm.prodCodeId NOT IN (SELECT sb2.prodId FROM stk_bal sb2 WHERE sb2.sloc=:fromCode2)
-				GROUP BY itm.prodCodeId
-				";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->bindParam(':fromCode', $fromCode);
-				$stmt->bindParam(':fromCode2', $fromCode);
-				$stmt->execute();
-				
-				//Query 5: UPDATE STK BAl sloc to 
-				$sql = "		
-				UPDATE stk_bal sb,
-				( SELECT itm.prodCodeId, sum(itm.qty)  as sumQty
-					   FROM send_detail dtl
-					   INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-					   WHERE sdNo=:sdNo GROUP BY itm.prodCodeId) as s
-				SET sb.onway=sb.onway-s.sumQty
-				WHERE sb.prodId=s.prodCodeId
-				AND sb.sloc=:toCode
-				";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->bindParam(':toCode', $toCode);
-				$stmt->execute();
-				
-				//Query 6: INSERT STK BAl sloc to 
-				$sql = "INSERT INTO stk_bal (prodId, sloc, onway) 
-						SELECT itm.prodCodeId, :toCode, -1*SUM(itm.qty) 
-						FROM send_detail sd 
-						INNER JOIN product_item itm ON itm.prodItemId=sd.prodItemId 
-						WHERE sd.sdNo=:sdNo 
-						AND itm.prodCodeId NOT IN (SELECT sb2.prodId FROM stk_bal sb2 WHERE sb2.sloc=:toCode2)
-						GROUP BY itm.prodCodeId
-						";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
-				$stmt->bindParam(':toCode', $toCode);
-				$stmt->bindParam(':toCode2', $toCode);
-				$stmt->execute();
-				
 				//We've got this far without an exception, so commit the changes.
 				$pdo->commit();
 				
 				//return JSON
 				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data Approved', 'sdNo' => $noNext));	
+				echo json_encode(array('success' => true, 'message' => 'Data Approved', 'sdNo' => $pickNo));	
 			} 
 			//Our catch block will handle any exceptions that are thrown.
 			catch(Exception $e){
