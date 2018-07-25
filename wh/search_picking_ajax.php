@@ -12,7 +12,8 @@
 	LEFT JOIN customer cust on cust.id=s.custId
 	left join user d on hdr.createById=d.userId
 	WHERE 1 
-	AND hdr.statusCode='P' ";
+	AND hdr.statusCode='P' 
+	AND hdr.isFinish='N' " ;
 	$sql .= "ORDER BY hdr.approveTime  DESC
 	";
 	//$result = mysqli_query($link, $sql);

@@ -299,11 +299,9 @@ if(!isset($_POST['action'])){
 				$sql = "UPDATE doc_running SET cur_no=? WHERE year=? and name=? and prefix=?";
 				$stmt = $pdo->prepare($sql);		
 				$stmt->execute(array($cur_no, $year, $name, $prefix));
+								
 				
-				
-				
-				
-				
+
 				//Query 5: UPDATE STK BAl sloc to 
 				$sql = "		
 				UPDATE stk_bal sb,

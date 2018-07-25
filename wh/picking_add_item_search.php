@@ -107,13 +107,14 @@ desired effect
 				, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total			
 				, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 						ON pickh.pickNo=pickd.pickNo
-						WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade
+						WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty 
 						AND pickh.isFinish='N'
-						AND pickh.statusCode<>'X' ) as bookedQty
+						AND pickh.statusCode<>'X' 
+						AND pickh.pickNo<>:pickNo) as bookedQty
 				, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 						ON pickh.pickNo=pickd.pickNo
-						WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade
-						AND pickh.pickNo=:pickNo ) as pickQty
+						WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty 
+						AND pickh.pickNo=:pickNo2 ) as pickQty
 				,prd.id as prodId, prd.code as prodCode
 				, (SELECT COUNT(x.shelfId) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
 				FROM `receive` hdr 
@@ -142,6 +143,7 @@ desired effect
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':id', $id);
 				$stmt->bindParam(':pickNo', $pickNo);
+				$stmt->bindParam(':pickNo2', $pickNo);
 				$stmt->bindParam(':saleItemId', $saleItemId);
 				$stmt->bindParam(':custId', $custId);
 				$stmt->execute();	
@@ -164,13 +166,14 @@ desired effect
 						, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total		
 						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 								ON pickh.pickNo=pickd.pickNo
-								WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade
+								WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty 
 								AND pickh.isFinish='N' 
-								AND pickh.statusCode<>'X' ) as bookedQty
+								AND pickh.statusCode<>'X' 
+								AND pickh.pickNo<>:pickNo) as bookedQty
 						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 								ON pickh.pickNo=pickd.pickNo
-								WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade
-								AND pickh.pickNo=:pickNo ) as pickQty
+								WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty 
+								AND pickh.pickNo=:pickNo2 ) as pickQty
 						,prd.id as prodId, prd.code as prodCode
 						, (SELECT COUNT(x.shelfId) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
 						FROM `receive` hdr 
@@ -205,13 +208,14 @@ desired effect
 						, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total			
 						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 								ON pickh.pickNo=pickd.pickNo
-								WHERE pickd.prodId=itm.prodCodeId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade
+								WHERE pickd.prodId=itm.prodCodeId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty 
 								AND pickh.isFinish='N' 
-								AND pickh.statusCode<>'X') as bookedQty
+								AND pickh.statusCode<>'X'
+								AND pickh.pickNo<>:pickNo) as bookedQty
 						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 								ON pickh.pickNo=pickd.pickNo
-								WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade
-								AND pickh.pickNo=:pickNo ) as pickQty
+								WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty 
+								AND pickh.pickNo=:pickNo2 ) as pickQty
 						,itm.prodCodeId as prodId, prd.code as prodCode
 						, (SELECT COUNT(x.shelfId) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
 						FROM `receive` hdr 
@@ -245,6 +249,7 @@ desired effect
 				$stmt->bindParam(':id', $id);
 				$stmt->bindParam(':saleItemId', $saleItemId);
 				$stmt->bindParam(':pickNo', $pickNo);
+				$stmt->bindParam(':pickNo2', $pickNo);
 				$stmt->execute();	
 			}//end else
 

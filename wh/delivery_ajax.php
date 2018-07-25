@@ -362,6 +362,21 @@ if(!isset($_POST['action'])){
 				$row=$stmt->fetch();
 				$pickNo=$row['pickNo'];
 				
+				$sql = "SELECT ct.locationCode FROM sale_header sh
+				INNER JOIN customer ct ON ct.id=sh.custId 
+				WHERE sh.soNo=:soNo LIMIT 1";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':soNo', $soNo);
+				$stmt->execute();
+				$sloc=$stmt->fetch()['locationCode'];
+				if ( $sloc == "" ){		
+					//return JSON
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => false, 'message' => 'Customer Location Error.'));
+					exit();
+				}
+				if($sloc=='L') { $sloc='8'; } 
+				
 				//Query 1: GET Next Doc No.
 				$year = date('Y'); $name = 'delivery'; $prefix = 'DO'.date('y'); $cur_no=1;
 				$sql = "SELECT prefix, cur_no FROM doc_running WHERE year=? and name=? LIMIT 1";
@@ -389,6 +404,15 @@ if(!isset($_POST['action'])){
 				$sql = "UPDATE receive_detail rDtl 
 						INNER JOIN delivery_detail dDtl ON dDtl.prodItemId=rDtl.prodItemId AND dDtl.doNo=:doNo 
 						SET rDtl.statusCode='X' ";
+			    $stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':doNo', $doNo);
+			    $stmt->execute();
+
+			    //Query 2: Delete from Shelf
+				$sql = "DELETE smi
+				FROM `wh_shelf_map_item` smi
+				INNER JOIN receive_detail rDtl ON rDtl.id=smi.recvProdId 
+				INNER JOIN delivery_detail dDtl ON dDtl.prodItemId=rDtl.prodItemId AND dDtl.doNo=:doNo ";
 			    $stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':doNo', $doNo);
 			    $stmt->execute();
@@ -433,36 +457,29 @@ if(!isset($_POST['action'])){
 				}
 				
 				//Query 5: UPDATE STK BAl
-				$sql = "UPDATE stk_bal sb		
-				SET sb.delivery = sb.delivery+(SELECT SUM(dd.qty) FROM delivery_detail dd 	
-												INNER JOIN product_item itm ON dd.prodItemId=itm.prodItemId 	 
-												WHERE itm.prodCodeId=sb.prodId
-												AND dd.doNo=:nextNo) 
-				, sb.sales = sb.sales-(SELECT SUM(dd.qty) FROM delivery_detail dd 	
-												INNER JOIN product_item itm ON dd.prodItemId=itm.prodItemId 	 
-												WHERE itm.prodCodeId=sb.prodId
-												AND dd.doNo=:nextNo2) 
-				, sb.balance = sb.balance-(SELECT SUM(dd.qty) FROM delivery_detail dd 	
-												INNER JOIN product_item itm ON dd.prodItemId=itm.prodItemId 	 
-												WHERE itm.prodCodeId=sb.prodId
-												AND dd.doNo=:nextNo3) 
-				AND sb.sloc='8' 
+				$sql = "UPDATE stk_bal sb
+				INNER JOIN delivery_prod dp ON dp.prodId=sb.prodId AND dp.doNo=:nextNo 
+				SET sb.delivery = sb.delivery + dp.qty
+				, sb.sales =  sb.sales - dp.qty 
+				, sb.balance = sb.balance - dp.qty 
+				WHERE sb.sloc=:sloc 
 				";
 			    $stmt = $pdo->prepare($sql);
 			    $stmt->bindParam(':nextNo', $nextNo);
-				$stmt->bindParam(':nextNo2', $nextNo);
-				$stmt->bindParam(':nextNo3', $nextNo);
+				$stmt->bindParam(':sloc', $sloc);
 			    $stmt->execute();
 				
 				//Query 6: INSERT STK BAl
 				$sql = "INSERT INTO stk_bal (prodId, sloc, delivery, sales, balance) 
-				SELECT dd.prodId,'8', SUM(dd.qty), SUM(-1*dd.qty), SUM(-1*dd.qty)  FROM delivery_detail dd 
+				SELECT dd.prodId, :sloc, dd.qty, -1*dd.qty, -1*dd.qty  
+				FROM delivery_prod dd 
 				WHERE dd.doNo=:nextNo 
-				AND dd.prodId NOT IN (SELECT sb.prodId FROM stk_bal sb WHERE sloc='8' )
-				GROUP BY dd.prodId
+				AND dd.prodId NOT IN (SELECT sb.prodId FROM stk_bal sb WHERE sloc=:sloc2 )
 				";
 			    $stmt = $pdo->prepare($sql);
 			    $stmt->bindParam(':nextNo', $nextNo);
+				$stmt->bindParam(':sloc', $sloc);
+				$stmt->bindParam(':sloc2', $sloc);
 			    $stmt->execute();
 				
 				//We've got this far without an exception, so commit the changes.

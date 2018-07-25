@@ -86,7 +86,7 @@ $soNo = $hdr['soNo'];
                 <div class="col-md-12">   
 					<div class="row">
 						<div class="col-md-3">
-							<label for="ppNo" >Prepack No.</label>
+							<label for="ppNo" >Prepare No.</label>
 							<div class="form-group row">
 								<div class="col-md-9">
 									<input type="text" name="ppNo" class="form-control" 

@@ -172,16 +172,19 @@ $rcNo = $hdr['rcNo'];
 							$isReturn = "";
 							if($row['statusCode']=='R') { $isReturn = '<label class="label label-danger">Yes</label>'; }
 							
+							$style="";
+							if($row['shelfName']=="") { $style=' style="background-color: #ff9999;" '; } 
+							
 							$gradeName = '<b style="color: red;">N/A</b>'; 
 								switch($row['grade']){
 									case 0 : $gradeName = 'A'; break;
-									case 1 : $statusName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
-									case 2 : $statusName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+									case 1 : $statusName = '<b style="color: red;">B</b>'; break;
+									case 2 : $statusName = '<b style="color: red;">N</b>'; break;
 									default : 
-										$statusName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
+										$statusName = '<b style="color: red;">N/a</b>';
 								} 
 						?>
-						<tr>
+						<tr <?=$style;?> >
 							<td style="text-align: center;"><input type="checkbox" name="itmId[]" value="<?=$row['id'];?>"  />
 							&nbsp;<?= $row_no; ?></td>							
 							<td><?= $row['prodCode']; ?></td>

@@ -1,7 +1,7 @@
 <?php
   //include '../db/database_sqlsrv.php';
   include_once '../db/db_sqlsrv.php';
-  include 'inc_helper.php';  
+  //include 'inc_helper.php';  
 ?>
 <!DOCTYPE html>
 <!--
@@ -78,76 +78,185 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						//echo date("Y-m-d",strtotime($sendDate));
 						//echo $sendDate;
 						
-						$sql = "SELECT DISTINCT barcode FROM  i_adjust_with_shelf LIMIT 100   ";			
-						$stmt1 = $pdo->prepare($sql);
-						if($stmt1->execute()){
-							$sumFound=0;
-							$sumNotFound=0;
-							
-							while ($row1 = $stmt1->fetch() )  {	
-							$barcode=$row1['barcode'];
-								$sql = "  SELECT TOP 1 itm.[ProductItemID]
-								  ,itm.[ProductID]
-								  ,itm.[ItemCode]
-								  , CONVERT(VARCHAR, itm.[IssueDate], 121) as IssueDate
-								  ,itm.[MachineID]
-								  ,itm.[SeqNo]
-								  ,itm.[NW]
-								  ,itm.[GW]
-								  ,itm.[Length]
-								  ,itm.[Grade]
-								  , CONVERT(VARCHAR, itm.[IssueGrade], 121) as IssueGrade
-								  ,itm.[UserID]
-								  ,itm.[RefItemID]
-								  ,itm.[ItemStatus]
-								  ,itm.[Remark]
-								  ,itm.[RecordDate]
-								  ,itm.[ProblemID]
-							  FROM [product_item] itm 
-							  WHERE REPLACE(itm.ItemCode, '-', '')='$barcode' 
-								  "; //echo $sql;
-								  //echo $sql; 
-								$msResult = sqlsrv_query($ssConn, $sql, array(), array( "Scrollable" => 'static' ));
-									if(sqlsrv_num_rows($msResult)==1){
-									$sumFound+=1;}else{ $sumNotFound+=1; }
-									
-								 //$msRow = sqlsrv_fetch_array($msResult, SQLSRV_FETCH_ASSOC);
+						$sql = "SELECT DISTINCT DocNo, CONVERT(char(10), IssueDate,121) as IssueDate, FromCode, ToCode
+						FROM z_adjust_in WHERE IssueDate='$sendDate' ";	
+						$msResult = sqlsrv_query($ssConn, $sql);
 						
-							/*$sql = "INSERT INTO  `i_product_item` 
-							(`prodItemId`, `prodId`, `barcode`, `issueDate`, `machineId`, `seqNo`, `NW`, `GW`
-							, `qty`, `packQty`, `grade`, `gradeDate`, `refItemId`, `itemStatus`, `remark`, `problemId`) 
-							VALUES
-							(:ProductItemID,:ProductID,:ItemCode,:IssueDate,:MachineID,:SeqNo,:NW,:GW
-							,:Length,null,:Grade,:IssueGrade,:RefItemID,:ItemStatus,:Remark,:ProblemID
-							)
-							";	
-							var_dump($msRow); echo '</br></br/>';
-							/*$stmt = $pdo->prepare($sql);
-							$stmt->bindParam(':ProductItemID', $msRow['ProductItemID']);	
-							$stmt->bindParam(':ProductID', $msRow['ProductID']);	
-							$stmt->bindParam(':ItemCode', $msRow['ItemCode']);	
-							$stmt->bindParam(':IssueDate', $msRow['IssueDate']);	
-							$stmt->bindParam(':MachineID', $msRow['MachineID']);	
-							$stmt->bindParam(':SeqNo', $msRow['SeqNo']);	
-							$stmt->bindParam(':NW', $msRow['NW']);			
-							$stmt->bindParam(':GW', $msRow['GW']);	
-							
-							$stmt->bindParam(':Length', $msRow['Length']);	
-							$stmt->bindParam(':Grade', $msRow['Grade']);	
-							$stmt->bindParam(':IssueGrade', $msRow['IssueGrade']);	
-							$stmt->bindParam(':RefItemID', $msRow['RefItemID']);	
-							$stmt->bindParam(':ItemStatus', $msRow['ItemStatus']);	
-							$stmt->bindParam(':Remark', $msRow['Remark']);	
-							$stmt->bindParam(':ProblemID', $msRow['ProblemID']);			
-							
-							$stmt->execute();
-							*/
+						$arrDocNo=array();
+						$msRowCount = 0;
+						$c = 1;
+						//set_time_limit(0);
+						if($msResult){
+							while ($msRow = sqlsrv_fetch_array($msResult, SQLSRV_FETCH_ASSOC))  {	
+								//Insert Header mysql from mssql
+								$sql = "INSERT INTO  `receive` 
+								(`rcNo`, `refNo`, `type`, `ReceiveDate`, `fromCode`, `toCode`, `sdNo`
+								, `statusCode`, `createTime`, `createById`) 
+								VALUES
+								(:rcNo,'INI','S',:receiveDate, :fromCode, :toCode, 'INI'
+								,'P',NOW(),0)
+								";		
+								
+								$stmt = $pdo->prepare($sql);
+								$stmt->bindParam(':rcNo', $msRow['DocNo']);	
+								$stmt->bindParam(':receiveDate', $msRow['IssueDate']);	
+								$stmt->bindParam(':fromCode', $msRow['FromCode']);	
+								$stmt->bindParam(':toCode', $msRow['toCode']);									
+								//$stmt->execute();
+								
+								$arrDocNo[] = $msRow['DocNo'];
 								//$msRowCount+=1;
 							}
 							//end while mssql
-							echo '<h1>'.$sumFound.'</h1>';
-							echo '<h1>'.$sumNotFound.'</h1>';
-						}	
+						}else{
+							print_r(sqlsrv_errors());
+						}
+						//if
+						
+						
+						$docNoList='\''.implode('\',\'', $arrDocNo).'\'';
+						echo $docNoList;
+						
+						$sql = "SELECT DocNo, CONVERT(char(10), IssueDate,121) as IssueDate, FromCode, ToCode, ProdItemId, ItemCode, ShelfName 
+						FROM z_adjust_in WHERE IssueDate='$sendDate' AND ProdItemId IS NOT NULL ";	
+						$msResult = sqlsrv_query($ssConn, $sql);
+						$msRowCount = 0;
+						$c = 1;
+						//set_time_limit(0);
+						if($msResult){
+							while ($msRow = sqlsrv_fetch_array($msResult, SQLSRV_FETCH_ASSOC))  {	
+								//Insert Detail mysql from mssql
+								$sql = "INSERT INTO  `receive_detail` 
+								(`prodItemId`, `statusCode`, `rcNo`) 
+								VALUES
+								(:prodItemId,'A',:rcNo)
+								";		
+								
+								$stmt = $pdo->prepare($sql);								
+								$stmt->bindParam(':prodItemId', $msRow['ProdItemId']);
+								$stmt->bindParam(':rcNo', $msRow['DocNo']);									
+								$stmt->execute();
+
+								//$msRowCount+=1;
+							}
+							//end while mssql
+						}else{
+							print_r(sqlsrv_errors());
+						}
+						//if
+						
+						sqlsrv_free_stmt($msResult);
+						
+						
+						
+						//Insert Detail mysql from mssql
+						$sql = "TRUNCATE TABLE `product_item_temp` ";	
+						$stmt = $pdo->prepare($sql);												
+						$stmt->execute();
+						
+						
+						$sql = "SELECT
+						itm.ProductItemID, itm.ProductID, itm.ItemCode, 
+						CONVERT(char(10), itm.IssueDate,121) as IssueDate
+						, itm.MachineID, itm.SeqNo, itm.NW, itm.GW, itm.Length, itm.Grade
+						,CONVERT(char(10), itm.IssueGrade,121) as IssueGrade
+						, itm.UserID, itm.RefItemID, itm.ItemStatus, itm.Remark, itm.RecordDate, itm.ProblemID
+						FROM z_adjust_in h
+						INNER JOIN product_item itm ON itm.ProductItemID=h.ProdItemId 						
+						WHERE h.IssueDate='$sendDate'
+						AND h.prodItemId IS NOT NULL  ";	
+						$msResult = sqlsrv_query($ssConn, $sql);
+						$msRowCount = 0;
+						$c = 1;
+						//set_time_limit(0);
+						if($msResult){
+							while ($msRow = sqlsrv_fetch_array($msResult, SQLSRV_FETCH_ASSOC))  {								
+								$sql = "INSERT INTO  `product_item_temp` 
+								(`prodItemId`, `prodId`, `barcode`, `issueDate`, `machineId`, `seqNo`, `NW`, `GW`
+								, `qty`, `packQty`, `grade`, `gradeDate`, `refItemId`, `itemStatus`, `remark`, `problemId`) 
+								VALUES
+								(:ProductItemID,:ProductID,:ItemCode,:IssueDate,:MachineID,:SeqNo,:NW,:GW
+								,:Length,null,:Grade,:IssueGrade,:RefItemID,:ItemStatus,:Remark,:ProblemID
+								)
+								";		
+								$stmt = $pdo->prepare($sql);
+								$stmt->bindParam(':ProductItemID', $msRow['ProductItemID']);	
+								$stmt->bindParam(':ProductID', $msRow['ProductID']);	
+								$stmt->bindParam(':ItemCode', $msRow['ItemCode']);	
+								$stmt->bindParam(':IssueDate', $msRow['IssueDate']);	
+								$stmt->bindParam(':MachineID', $msRow['MachineID']);	
+								$stmt->bindParam(':SeqNo', $msRow['SeqNo']);	
+								$stmt->bindParam(':NW', $msRow['NW']);			
+								$stmt->bindParam(':GW', $msRow['GW']);	
+								
+								$stmt->bindParam(':Length', $msRow['Length']);	
+								$stmt->bindParam(':Grade', $msRow['Grade']);	
+								$stmt->bindParam(':IssueGrade', $msRow['IssueGrade']);	
+								$stmt->bindParam(':RefItemID', $msRow['RefItemID']);	
+								$stmt->bindParam(':ItemStatus', $msRow['ItemStatus']);	
+								$stmt->bindParam(':Remark', $msRow['Remark']);	
+								$stmt->bindParam(':ProblemID', $msRow['ProblemID']);	
+													
+								$stmt->execute();
+
+								//$msRowCount+=1;
+							}
+							//end while mssql
+						}else{
+							print_r(sqlsrv_errors());
+						}
+						//if
+						
+						sqlsrv_free_stmt($msResult);
+												
+						
+						//Update prodCodeId in product item.////////////////////////////////////////////
+						$sql = "UPDATE product_item_temp tmp 
+						INNER JOIN product_mapping map ON map.invProdId=tmp.prodId 
+						SET tmp.prodCodeId=map.wmsProdId 
+						";			
+						$stmt = $pdo->prepare($sql);
+						$stmt->execute();	
+						//Update prodCodeId in product item.////////////////////////////////////////////
+						
+						
+						//Insert Product ITem Production
+						$sql = "INSERT INTO product_item
+						SELECT *
+						, 1, '' 
+						FROM product_item_temp 
+						";			
+						$stmt = $pdo->prepare($sql);
+						$stmt->execute();	
+												
+						//Query 5: UPDATE STK BAl sloc to 
+						$sql = "		
+						UPDATE stk_bal sb,
+						( SELECT itm.prodCodeId, hdr.toCode, sum(itm.qty)  as sumQty
+							   FROM receive hdr 
+							   INNER JOIN receive_detail dtl ON hdr.rcNo=dtl.rcNo 
+							   INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+							   WHERE hdr.rcNo IN (".$docNoList.") 
+							   GROUP BY itm.prodCodeId, dtl.toCode) as s
+						SET sb.onway=sb.onway-s.sumQty
+						WHERE sb.prodId=s.prodCodeId
+						AND sb.sloc=s.toCode 
+						";
+						$stmt = $pdo->prepare($sql);
+						$stmt->execute();
+						
+						//Query 6: INSERT STK BAl sloc to 
+						$sql = "INSERT INTO stk_bal (prodId, sloc, balance) 
+								SELECT itm.prodCodeId, hdr.toCode, SUM(itm.qty) 
+								FROM receive hdr 
+							   INNER JOIN receive_detail dtl ON hdr.rcNo=dtl.rcNo 
+								INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+								WHERE hdr.rcNo IN (".$docNoList.") 
+								AND itm.prodCodeId NOT IN (SELECT sb2.prodId FROM stk_bal sb2 WHERE sb2.sloc=hdr.toCode)
+								GROUP BY itm.prodCodeId
+								";
+						$stmt = $pdo->prepare($sql);
+						$stmt->execute();				
 
 				}
 				//end if isset fromDate and toDate 

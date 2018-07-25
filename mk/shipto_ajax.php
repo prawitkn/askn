@@ -103,7 +103,7 @@ function to_mysql_date($thai_date){
 				$stmt->bindParam(':email', $email); $stmt->bindParam(':tel', $tel); $stmt->bindParam(':fax', $fax); 
 				$stmt->bindParam(':smId', $smId); $stmt->bindParam(':smAdmId', $smAdmId); 
 				$stmt->bindParam(':s_userId', $s_userId);
-				$stmt->execute();
+				//$stmt->execute();
 
 				if ($stmt->execute()) {
 					header('Content-Type: application/json');

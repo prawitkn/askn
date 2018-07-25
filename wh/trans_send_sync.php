@@ -296,6 +296,19 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						";			
 						$stmt = $pdo->prepare($sql);
 						$stmt->execute();	*/
+						$sql = "UPDATE  product_item map
+						INNER JOIN product_item_temp tmp ON tmp.prodItemId=map.prodItemId
+						INNER JOIN send_detail sd ON sd.prodItemId=map.prodItemId
+						INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.statusCode NOT IN ('P','X') 
+						SET map.NW=tmp.NW 
+						, map.GW=tmp.GW
+						, map.qty=tmp.qty
+						, map.grade=tmp.grade
+						, map.gradeDate=tmp.gradeDate 
+						";			
+						$stmt = $pdo->prepare($sql);
+						$stmt->execute();	
+
 							
 						//Insert prod with temp
 						$sql = "INSERT INTO product_item

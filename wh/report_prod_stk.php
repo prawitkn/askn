@@ -423,7 +423,7 @@ $(document).ready(function() {
 		$('input[name='+curName+']').val($(this).closest("tr").find('td:eq(2)').text());
 						
 		$('#modal_search_person').modal('hide');
-		getList();
+		//getList();
 	});
 	//Search End
 

@@ -111,7 +111,7 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			$sql = "SELECT hdr.`doNo`, hdr.`soNo`, hdr.`ppNo`, hdr.`custId`, hdr.`shipToId`, hdr.`smId`, hdr.`deliveryDate`
 			, hdr.`refInvNo`, hdr.`remark`, hdr.`statusCode`
 			, hdr.`createTime`, hdr.`createById`, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById` 
-			, cust.code as custCode, cust.name as custName, st.code as shipToCode, st.name as shipToName 
+			, cust.code as custCode, cust.name as custName, st.code as shipToCode, st.name as shipToName, st.contact as contactName 
 			, sm.code as smCode, sm.name as smName 
 			, d.userFullname as createByName
 			, hdr.confirmTime, cu.userFullname as confirmByName
@@ -176,9 +176,13 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 								</tr>
 
 								<tr>
-									<th  colspan="4"><span style="font-weight: bold;">Customer :</span> '.$hdr['custCode'].' - '.$hdr['custName'].'</th>
+									<th  colspan="4"><span style="font-weight: bold;">Customer :</span> '.$hdr['shipToName'].'</th>
 
-								  	<th  colspan="4"><span style="font-weight: bold;">Remark :</span> '.($hdr['remark']==''?'-':$hdr['remark']).'</th>
+								  	<th  colspan="4"><span style="font-weight: bold;">Contract :</span> '.$hdr['contactName'].'</th>
+								</tr>
+
+								<tr>
+								  	<th  colspan="8"><span style="font-weight: bold;">Remark :</span> '.($hdr['remark']==''?'-':$hdr['remark']).'</th>
 								</tr>
 								  <tr>
 										<th style="font-weight: bold; text-align: center; width: 30px;" border="1">No.</th>
