@@ -57,6 +57,13 @@
 			<li><a href="shelf.php"><i class="glyphicon glyphicon-wrench"></i> <span>Shelf</span></a></li>	
 		<?php } ?>
 			
+
+
+
+
+
+
+
 		<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whOff' : case 'whSup' : case 'pdOff' : case 'pdSup' :  ?>
 			<li class="header">Transaction Menu</li>
 			<li><a href="trans_send_sync.php"><i class="glyphicon glyphicon-transfer"></i> <span>Sync Data</span></a></li>
@@ -98,7 +105,15 @@
 			<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whOff' : case 'whSup' : ?>
 			<li><a href="report_delivery.php"><i class="fa fa-list-alt"></i> <span>Delivery Report</span></a></li>
 			<?php break; default : } ?>	
-		<?php break; default : } ?>						
+		<?php break; default : } ?>		
+
+
+		<?php switch($s_userGroupCode){ case 'admin' :  ?>	
+		<li class="header">Config Menu</li>		
+			<!-- Optionally, you can add icons to the links -->
+			<li><a href="trans_adj_stk_in_import_file.php"><i class="glyphicon glyphicon-wrench"></i> <span>Adjust In</span></a></li>
+			<li><a href="trans_adj_stk_out_import_file.php"><i class="glyphicon glyphicon-wrench"></i> <span>Adjust Out</span></a></li>	 
+		<?php break; default : break; } ?>				
       </ul>
       <!-- /.sidebar-menu -->
     </section>

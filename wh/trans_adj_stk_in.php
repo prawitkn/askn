@@ -27,12 +27,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			
 		?>
       <h1>
-       Sending to Warehouse
-        <small>Sending to Warehouse</small>
+       Adjust In
+        <small>Config Menu</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="customer.php"><i class="fa fa-dashboard"></i>Sending to Warehouse</a></li>
-        <li class="active">Sending to Warehouse</li>
+        <li><a href="customer.php"><i class="fa fa-dashboard"></i>Adjust In</a></li>
+        <li class="active">Import</li>
       </ol>
     </section>
 
@@ -42,7 +42,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <!-- Your Page Content Here -->
     <div class="box box-primary">		
         <div class="box-header with-border">
-        <h3 class="box-title">Product Item Sync</h3>
+        <h3 class="box-title">Import File</h3>
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
@@ -77,7 +77,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						$sendDate = date("Y-m-d",strtotime($sendDate));
 						//echo date("Y-m-d",strtotime($sendDate));
 						//echo $sendDate;
-						
+
+						//"DocNo", "IssueDate", "FromCode", "ToCode", "ProdItemId", "ItemCode", "ShelfName" FROM "dbo"."z_adjust_in"
 						$sql = "SELECT DISTINCT DocNo, CONVERT(char(10), IssueDate,121) as IssueDate, FromCode, ToCode
 						FROM z_adjust_in WHERE IssueDate='$sendDate' ";	
 						$msResult = sqlsrv_query($ssConn, $sql);

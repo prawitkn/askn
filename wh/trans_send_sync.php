@@ -312,7 +312,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							
 						//Insert prod with temp
 						$sql = "INSERT INTO product_item
-						SELECT *,1,'' FROM product_item_temp 
+						SELECT * FROM product_item_temp 
 						WHERE prodItemId NOT IN (SELECT prodItemId FROM product_item)	
 						";			
 						$stmt = $pdo->prepare($sql);

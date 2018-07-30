@@ -137,7 +137,7 @@ $tb="send";
 						break;
 					case 'whOff' :
 					case 'whSup' :
-						$sql .= "AND hdr.fromCode in ('0','7','8','E') ";
+						$sql .= "AND hdr.fromCode in ('0','8','E','C') ";
 						break;
 					default :	// it, admin 
 				}	

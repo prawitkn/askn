@@ -30,7 +30,7 @@ if(!isset($_POST['action'])){
 				INNER JOIN receive_detail rd ON rd.id=smi.recvProdId
 				INNER JOIN product_item itm ON itm.prodItemId=rd.prodItemId
 				LEFT JOIN product prd ON prd.id=itm.prodCodeId 
-				WHERE smi.statusCode='A' 
+				WHERE 1=1 
 				AND smi.shelfId=:shelfId ";
 				
 				//if($shelfId<>"") $sql.="AND hdr.issueDate=:sendDate ";
@@ -73,7 +73,7 @@ if(!isset($_POST['action'])){
 				INNER JOIN receive_detail rd ON rd.id=smi.recvProdId
 				INNER JOIN product_item itm ON itm.prodItemId=rd.prodItemId
 				LEFT JOIN product prd ON prd.id=itm.prodCodeId 
-				WHERE smi.statusCode='A' 
+				WHERE 1=1 
 				AND smi.shelfId=:shelfId ";				
 
 				$sql.="ORDER BY prd.code "; 
