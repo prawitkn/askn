@@ -371,6 +371,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					$stmt = $pdo->prepare($sql);
 					$stmt->execute();	
 
+					$sql = "INSERT INTO product_item
+					SELECT * FROM product_item_temp WHERE prodItemId NOT IN (SELECT prodItemId FROM product_itemd)
+					";			
+					$stmt = $pdo->prepare($sql);
+					$stmt->execute();	
 
 					$sql = "INSERT INTO receive (`rcNo`, `refNo`, `type`, `receiveDate`, `fromCode`, `toCode`, `remark`, `sdNo`, `statusCode`, `createTime`, `createById`, `confirmTime`, `confirmById`, `approveTime`, `approveById`)
 					VALUES ('$docNo', '', 'S', NOW(), 'A', '$toCode', 'Adjust In', 'X', 'P',NOW(), 0, NOW(), 0, NOW(), 0) 
