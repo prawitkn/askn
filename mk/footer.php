@@ -1,4 +1,4 @@
-<<footer class="main-footer">
+<footer class="main-footer">
     <!-- To the right -->
     <div class="pull-right hidden-xs">
       Developed May 2017

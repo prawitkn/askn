@@ -10,8 +10,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <div class="wrapper">
 
   <!-- Main Header -->
-  <?php 
-include 'header.php'; 
+  <?php include 'header.php'; 
+  
 $rootPage = 'user';
 //Check user roll.
 switch($s_userGroupCode){
@@ -21,8 +21,8 @@ switch($s_userGroupCode){
 		header('Location: access_denied.php');
 		exit();
 }
-  
-  ?>
+
+?>
   
   <!-- Left side column. contains the logo and sidebar -->
    <?php include 'leftside.php'; ?>

@@ -112,7 +112,6 @@ desired effect
 					case 'B' : $statusName = '<b style="color: blue;">Begin</b>'; break;
 					case 'C' : $statusName = '<b style="color: blue;">Confirmed</b>'; break;
 					case 'P' : $statusName = '<b style="color: green;">Approved</b>'; break;
-					case 'X' : $statusName = '<b style="color: black;">Removed</b>'; break;
 					default : 
 				} ?>
 				<h3 class="box-title" id="statusName">Status : <?= $statusName; ?></h3>
@@ -349,37 +348,25 @@ desired effect
 		<?php switch($s_userGroupCode) { case 'admin' : case 'salesAdmin' : case 'sales' : ?>		
 		
 		  <?php switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' : ?>	
-				<?php switch($hdr['statusCode']){ case 'P' : ?>	
-
+				<?php if($hdr['statusCode']=='P'){ ?>
 					<a href="<?=$rootPage;?>_view_pdf.php?soNo=<?=$soNo;?>" target="_blank" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
-					
-					<?php if($hdr['isClose']=='N'){ ?>
-						<button type="button" id="btn_revise" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['isClose']=='N'?'':'disabled'); ?> >
-						<i class="glyphicon glyphicon-wrench"></i> Edit for Revise
-						</button>
-						
-						<button type="button" id="btn_remove" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['isClose']=='N'?'':'disabled'); ?> >
-						<i class="glyphicon glyphicon-remove"></i> Remove Approved SO
-						</button>
-						
-					<?php }else{ //.else isClose ?>
-						<button type="button" id="btn_close_so" class="btn btn-danger pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='Y')?'disabled':''); ?>>
-						<i class="glyphicon glyphicon-ok-sign">
-						</i> Close Sales Order
-						</button>
-						
-					<?php } //.if isClose ?>
+
+					<button type="button" id="btn_revise" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['isClose']=='N'?'':'disabled'); ?> >
+				<i class="glyphicon glyphicon-wrench"></i> Edit for Revise
+			  </button>
+
+				<button type="button" id="btn_remove" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['isClose']=='N'?'':'disabled'); ?> >
+								<i class="glyphicon glyphicon-remove"></i> Remove Approved SO
+							  </button>
 					
 
-					<button type="button" id="btn_close_so" class="btn btn-danger pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='Y')?'disabled':''); ?>>
-					<i class="glyphicon glyphicon-ok-sign">
+
+				
+				  <button type="button" id="btn_close_so" class="btn btn-danger pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='Y')?'disabled':''); ?>>
+				 <i class="glyphicon glyphicon-ok-sign">
 					</i> Close Sales Order
-					</button>	
-
-					<?php break; 
-					default : ?>				
-				<?php } //.switch statusCode ?> 
-		<?php break; ?>	
+				  </button>
+				  <?php } //statusCode==P ?>
 		  
           <button type="button" id="btn_approve" class="btn btn-success pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='C'?'':'disabled'); ?> >
 		 <i class="glyphicon glyphicon-check">
@@ -397,7 +384,7 @@ desired effect
           </button>      
 		  </button>   
 		  
-          <button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ((($hdr['statusCode']<>'P' AND $hdr['statusCode']<>'X' ) AND ($hdr['revCount']==0))?'':'disabled'); ?> >
+          <button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ((($hdr['statusCode']<>'P') AND ($hdr['revCount']==0))?'':'disabled'); ?> >
             <i class="glyphicon glyphicon-trash"></i> Delete
           </button>
 		  
@@ -491,53 +478,7 @@ $("#spin").append(spinner.el);
 $("#spin").hide();
 //
 
-	$('#btn_remove').click(function(e) {
-	  e.preventDefault();
-	  $.smkPrompt({
-	    text:'Enter your password to remove approved SO.',
-	    accept:'Remove Approved SO.',
-	    cancel:'Cancel'
-	  },function(res){
-	    // Code here
-	    if (res) {
-	      var params = {					
-				soNo: $('#soNo').val(),
-				pw: res
-			};	
-			if(params.pw.trim()==""){
-				alert('password is required.');
-				return false;
-			}
-			$.post({
-				url: '<?=$rootPage;?>_remove_ajax.php',
-				data: params,
-				dataType: 'json'
-			}).done(function(data) {
-				if (data.success){  
-					$.smkAlert({
-						text: data.message,
-						type: 'success',
-						position:'top-center'
-					});
-					window.location.href = "<?=$rootPage;?>_view.php?soNo=" + data.soNo;
-				}else{
-					$.smkAlert({
-						text: data.message,
-						type: 'danger',
-						position:'top-center'
-					});
-				}
-				//e.preventDefault();		
-			}).error(function (response) {
-				alert(response.responseText);
-			});
-			//.post
-	    } else {
-	      //Do nothing.
-	    }
-	  });
-	});
-
+	
 	//Reason Begin
 	$('#btn_revise').click(function(){
 		$('#modal_reason').modal('show');
