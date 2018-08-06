@@ -11,7 +11,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		$s_userGroupCode = $row_user['userGroupCode'];
 		$s_userDeptCode = $row_user['userDeptCode'];
 		$s_userID=$_SESSION['userID'];*/
-	include 'inc_helper.php'; 
 	
 	$sloc = (isset($_GET['sloc'])?$_GET['sloc']:'8');
 	$catCode = (isset($_GET['catCode'])?$_GET['catCode']:'');
@@ -90,27 +89,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	
 ?>    
 
-<!--
-BODY TAG OPTIONS:
-=================
-Apply one or more of the following classes to get the
-desired effect
-|---------------------------------------------------------|
-| SKINS         | skin-blue                               |
-|               | skin-black                              |
-|               | skin-purple                             |
-|               | skin-yellow                             |
-|               | skin-red                                |
-|               | skin-green                              |
-|---------------------------------------------------------|
-|LAYOUT OPTIONS | fixed                                   |
-|               | layout-boxed                            |
-|               | layout-top-nav                          |
-|               | sidebar-collapse                        |
-|               | sidebar-mini                            |
-|---------------------------------------------------------|
--->
-<body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
   <!-- Main Header -->
   <?php include 'header.php'; ?>  
@@ -370,72 +348,7 @@ $(document).ready(function() {
             var spinner = new Spinner().spin();
             $("#spin").append(spinner.el);
             $("#spin").hide();
-			
-	  
-			   
-	$('a[name=btn_row_delete]').click(function(){
-		var params = {
-			id: $(this).attr('data-id')
-		};
-		$.smkConfirm({text:'คุณแน่ใจที่จะลบรายการนี้ใช่หรือไม่ ?',accept:'ลบรายการ', cancel:'ไม่ลบรายการ'}, function (e){if(e){
-			$.post({
-				url: 'product_del_ajax.php',
-				data: params,
-				dataType: 'json'
-			}).done(function (data) {					
-				if (data.success){ 
-					$.smkAlert({
-						text: data.message,
-						type: 'success',
-						position:'top-center'
-					});
-					location.reload();
-				} else {
-					alert(data.message);
-					$.smkAlert({
-						text: data.message,
-						type: 'danger'//,
-					//                        position:'top-center'
-					});
-				}
-			}).error(function (response) {
-				alert(response.responseText);
-			}); 
-		}});
-		e.preventDefault();
-	});
-	
-	$('a[name=btn_row_remove]').click(function(){
-		var params = {
-			id: $(this).attr('data-id')
-		};
-		$.smkConfirm({text:'คุณแน่ใจที่จะยกเลิกรายการนี้ใช่หรือไม่ ?',accept:'ยกเลิกรายการ', cancel:'ไม่ยกเลิกรายการ'}, function (e){if(e){
-			$.post({
-				url: 'product_remove_ajax.php',
-				data: params,
-				dataType: 'json'
-			}).done(function (data) {					
-				if (data.success){ 
-					$.smkAlert({
-						text: data.message,
-						type: 'success',
-						position:'top-center'
-					});
-					location.reload();
-				} else {
-					alert(data.message);
-					$.smkAlert({
-						text: data.message,
-						type: 'danger'//,
-					//                        position:'top-center'
-					});
-				}
-			}).error(function (response) {
-				alert(response.responseText);
-			}); 
-		}});
-		e.preventDefault();
-	});
+				
 });
 </script>
 

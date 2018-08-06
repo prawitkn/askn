@@ -18,15 +18,20 @@ $objPHPExcel->getProperties()->setCreator("Prawit Khamnet")
 $search_word = (isset($_GET['search_word'])?$_GET['search_word']:'');
 $sloc = (isset($_GET['sloc'])?$_GET['sloc']:'');
 $catCode = (isset($_GET['catCode'])?$_GET['catCode']:'');
+$prodId = (isset($_GET['prodId'])?$_GET['prodId']:'');
+$prodCode = (isset($_GET['prodCode'])?$_GET['prodCode']:'');
 
 							
 $sql = "SELECT count(*) as countTotal
 FROM stk_bal sb 
-INNER JOIN product prd on prd.id=sb.prodId  
+INNER JOIN product prd on prd.id=sb.prodId  ";
+if($prodCode<>""){ $sql .= " AND prd.code like '%".$prodCode."%' ";	}
+$sql.="
 WHERE 1 ";
 if($search_word<>""){ $sql = "and (prd.code like '%".$search_word."%' OR prd.name like '%".$search_word."%') "; }
 if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
 if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
+if($prodId<>""){ $sql .= " AND prodId=$prodId ";	}	
 
 $result = mysqli_query($link, $sql);
 $countTotal = mysqli_fetch_assoc($result);
@@ -40,21 +45,27 @@ if($countTotal>0){
 		->setCellValue('A2', 'Product Code')
 		->setCellValue('B2', 'SLOC')
 		->setCellValue('C2', 'Category')
-		->setCellValue('D2', 'Receive')
+		->setCellValue('D2', 'Onway')
 		->setCellValue('E2', 'Send')
 		->setCellValue('F2', 'Delivery')
-		->setCellValue('G2', 'Balance');
+		->setCellValue('G2', 'Balance')
+		->setCellValue('H2', 'Pick')
+		->setCellValue('I2', 'Net Balance');
 	
 		
 	$sql = "SELECT prd.`id`, prd.`code`, prd.`catCode`, prd.`name`, prd.`name2`, prd.`uomCode`, prd.`packUomCode`
 	, prd.`sourceTypeCode`, prd.`appCode`, prd.`description`, prd.`statusCode`
-	,sb.sloc, sb.`open`, sb.`produce`, sb.`onway`, sb.`receive`, sb.`send`, sb.`sales`, sb.`delivery`, sb.`balance` 
+	,sb.sloc, sb.`open`, sb.`produce`, sb.`onway`, sb.`receive`, sb.`send`, sb.`sales`, sb.`delivery`, sb.`balance`
+	,IFNULL((SELECT SUM(pDtl.qty) FROM picking pHdr, picking_detail pDtl WHERE pHdr.isFinish='N' AND pDtl.prodId=sb.prodId),0) as pick 
 	FROM stk_bal sb 
-	INNER JOIN product prd on prd.id=sb.prodId  
+	INNER JOIN product prd on prd.id=sb.prodId  ";
+	if($prodCode<>""){ $sql .= " AND prd.code like '%".$prodCode."%' ";	}
+	$sql.="
 	WHERE 1 ";
 	if($search_word<>""){ $sql = "and (prd.code like '%".$search_word."%' OR prd.name like '%".$search_word."%') "; }
 	if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
 	if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
+	if($prodId<>""){ $sql .= " AND prodId=$prodId ";	}	
 	$sql.="ORDER BY prd.code desc ";
 	$result = mysqli_query($link, $sql);    
 	
@@ -64,11 +75,12 @@ if($countTotal>0){
 		->setCellValue('A'.$iRow, $row['code'])
 		->setCellValue('B'.$iRow, $row['sloc'])
 		->setCellValue('C'.$iRow, $row['catCode'])
-		->setCellValue('D'.$iRow, $row['receive'])
+		->setCellValue('D'.$iRow, $row['onway'])
 		->setCellValue('E'.$iRow, $row['send'])
 		->setCellValue('F'.$iRow, $row['delivery'])
-		->setCellValue('G'.$iRow, $row['balance']);
-		
+		->setCellValue('G'.$iRow, $row['balance'])
+		->setCellValue('H'.$iRow, $row['pick'])
+		->setCellValue('I'.$iRow, $row['balance']-$row['pick']);
 		$iRow+=1;
 	}
 }

@@ -83,7 +83,9 @@ desired effect
 				
                 $sql = "SELECT count(*) as countTotal
 				FROM stk_bal sb 
-				INNER JOIN product prd on prd.id=sb.prodId  
+				INNER JOIN product prd on prd.id=sb.prodId ";
+				if($prodCode<>""){ $sql .= " AND prd.code like '%".$prodCode."%' ";	}	
+				$sql.="
 				WHERE 1 ";
 				if($search_word<>""){ $sql = "and (prd.code like '%".$search_word."%' OR prd.name like '%".$search_word."%') "; }
 				if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
@@ -167,37 +169,50 @@ desired effect
 			<!--row-->
 			
 			<div class="table-responsive">
-                <table class="table no-margin">
+                <table class="table table-hover no-margin">
                   <thead>
                   <tr>
 					<th>No.</th>
                     <th>Product Code</th>
 					<th>SLOC</th>
 					<th>Category</th>
-					<th>Receive</th>
+					<th>Onway</th>
 					<th>Send</th>
 					<th>Delivery</th>
-					<th>Balance</th>
+					<th style="color: #00cc00;">Balance</th>					
+					<th>Pick</th>
+					<th style="color: #006600; background-color: #ccccff;">Net Balance</th>
                   </tr>
                   </thead>
                   <tbody>
 					<?php
 						$sql = "SELECT DISTINCT prd.*
-						,sb.sloc, sb.`open`, sb.`produce`, sb.`onway`, sb.`receive`, sb.`send`, sb.`sales`, sb.`delivery`, sb.`balance` 
+						,sb.sloc, sb.`open`, sb.`produce`, sb.`onway`, sb.`receive`, sb.`send`, sb.`sales`, sb.`delivery`, sb.`balance`
+						,(SELECT SUM(pDtl.qty) FROM picking pHdr, picking_detail pDtl WHERE pHdr.isFinish='N' AND pDtl.prodId=sb.prodId) as pick
 						FROM stk_bal sb 
-						INNER JOIN product prd on prd.id=sb.prodId  
+						INNER JOIN product prd on prd.id=sb.prodId  ";
+						if($prodCode<>""){ $sql .= " AND prd.code like '%".$prodCode."%' ";	}	
+						$sql.="
 						WHERE 1 ";
 						if($search_word<>""){ $sql = "and (prd.code like '%".$search_word."%' OR prd.name like '%".$search_word."%') "; }
 						if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
 						if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
-						if($prodId<>""){ $sql .= " AND prodId='$prodId' ";	}	
+						if($prodId<>""){ $sql .= " AND prodId='$prodId' ";	}		
 						$sql.="ORDER BY prd.code  ";
 						$sql.="LIMIT $start, $rows ";
-						$result = mysqli_query($link, $sql);                
+						$result = mysqli_query($link, $sql);   
+						$stmt = $pdo->prepare($sql);		
+						$stmt->execute();
+						$rowCount=$stmt->rowCount();
+						if($rowCount==0){ ?>
+							<tr>
+								<td colspan="8" style="text-align: center; color: red; font-weight: bold;" >Data not found.</td>
+			                </tr><?php
+						}
 				   ?>             
 					
 					
-						<?php $c_row=($start+1); while ($row = mysqli_fetch_assoc($result)) { 
+						<?php $c_row=($start+1); while ($row = $stmt->fetch() ) { 
 							//$img = 'dist/img/product/'.(empty($row['photo'])? 'default.jpg' : $row['photo']);
 					?>
                   <tr>
@@ -205,10 +220,12 @@ desired effect
                     <td><a href="product_view_stk.php?id=<?=$row['id'];?>" ><?= $row['code']; ?></a></td>
 					<td><?= $row['sloc']; ?></td>
 					<td><?= $row['catCode']; ?></td>
-					<td><?= number_format($row['receive'],0,'.',','); ?></td>
-					<td><?= number_format($row['send'],0,'.',','); ?></td>
-					<td><?= number_format($row['delivery'],0,'.',','); ?></td>
-					<td><?= number_format($row['balance'],0,'.',','); ?></td>
+					<td style="text-align: right;"><?= number_format($row['onway'],0,'.',','); ?></td>
+					<td style="text-align: right;"><?= number_format($row['send'],0,'.',','); ?></td>
+					<td style="text-align: right;"><?= number_format($row['delivery'],0,'.',','); ?></td>
+					<td style="text-align: right; color: #00cc00;"><?= number_format($row['balance'],0,'.',','); ?></td>
+					<td style="text-align: right;"><?= number_format(-1*$row['pick'],0,'.',','); ?></td>
+					<td style="text-align: right; color: #006600; background-color: #ccccff;"><?= number_format($row['balance']-$row['pick'],0,'.',','); ?></td>
                 </tr>
                  <?php $c_row +=1; } ?>
                   </tbody>
@@ -218,9 +235,9 @@ desired effect
 			  
 			<?php $condQuery="?sloc=".$sloc."&catCode=".$catCode."&prodId=".$prodId."&prodCode=".$prodCode; ?>
 
-                
+             <?php if($rowCount>0){    ?>
                <div class="col-md-12">
-			<a href="<?=$rootPage;?>_xls.php?<?=$condQuery;?>" class="btn btn-default pull-right"><i class="glyphicon glyphicon-print"></i> Export</a>
+			<a href="<?=$rootPage;?>_xls.php<?=$condQuery;?>" class="btn btn-default pull-right"><i class="glyphicon glyphicon-print"></i> Export</a>
 			
 			<nav>
 			<ul class="pagination">				
@@ -239,7 +256,8 @@ desired effect
 			</ul>
 			</nav>
 			</div>
-			
+		<?php } ?>
+
         </div><!-- /.box-body -->
   <div class="box-footer">
  
@@ -414,7 +432,7 @@ $(document).ready(function() {
 		$('input[name='+curName+']').val($(this).closest("tr").find('td:eq(2)').text());
 						
 		$('#modal_search_person').modal('hide');
-		getList();
+		//getList();
 	});
 	//Search End
 
@@ -430,6 +448,7 @@ $(document).ready(function() {
 			} 
 			curName = $(this).attr('name');
 			curId = $(this).prev().attr('name');
+			//alert(curId);
 			/* Send the data using post and put the results in a div */
 			  $.ajax({
 				  url: "search_product_ajax.php",

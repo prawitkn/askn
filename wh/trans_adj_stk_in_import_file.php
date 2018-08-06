@@ -372,7 +372,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					$stmt->execute();	
 
 					$sql = "INSERT INTO product_item
-					SELECT * FROM product_item_temp WHERE prodItemId NOT IN (SELECT prodItemId FROM product_itemd)
+					SELECT * FROM product_item_temp WHERE prodItemId NOT IN (SELECT prodItemId FROM product_item)
 					";			
 					$stmt = $pdo->prepare($sql);
 					$stmt->execute();	

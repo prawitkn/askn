@@ -113,27 +113,41 @@ try{
 	}//end if not revised
 	
 	
-	
-	
+	$sloc=0;
+	switch($locationCode){
+		case 'L' : $sloc='8';
+			break;
+		case 'E' : $sloc='E';
+			break;
+		default :
+	}
 	
 	//Query 5: UPDATE STK BAl
-	$sql = "UPDATE stk_bal sb
-			INNER JOIN sale_detail sd on sd.prodId=sb.prodId AND sb.sloc=8
-			SET sb.sales = sb.sales + sd.qty 			
-			WHERE sd.soNo=:soNo 			
-			";
+	$sql = "UPDATE stk_bal tmp
+	INNER JOIN (SELECT sd.prodId, SUM(sd.qty) as sumQty
+				FROM sale_detail sd  
+				WHERE sd.soNo=:soNo 	
+				GROUP BY sd.prodId) as x 
+	SET tmp.sales=tmp.sales+x.sumQty
+	WHERE tmp.prodId=x.prodId
+	AND tmp.sloc=:sloc 		
+	";
     $stmt = $pdo->prepare($sql);
     $stmt->bindParam(':soNo', $soNoNext);
+    $stmt->bindParam(':sloc', $sloc);
     $stmt->execute();
 	
 	//Query 6: UPDATE STK BAl
 	$sql = "INSERT INTO stk_bal (prodId, sloc, sales) 
-			SELECT sd.prodId,8, sd.qty FROM sale_detail sd 
+			SELECT sd.prodId,:sloc, SUM(sd.qty) FROM sale_detail sd 
 			WHERE sd.soNo=:soNo 
-			AND sd.prodId NOT IN (SELECT sb.prodId FROM stk_bal sb WHERE sb.sloc=8 )
+			AND sd.prodId NOT IN (SELECT sb.prodId FROM stk_bal sb WHERE sb.sloc=:sloc2 )
+			GROUP BY sd.prodId
 			";
     $stmt = $pdo->prepare($sql);
     $stmt->bindParam(':soNo', $soNoNext);
+    $stmt->bindParam(':sloc', $sloc);
+    $stmt->bindParam(':sloc2', $sloc);
     $stmt->execute();
 			
 	//We've got this far without an exception, so commit the changes.

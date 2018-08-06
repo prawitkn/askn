@@ -26,7 +26,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
    <?php include 'leftside.php'; ?>
    <?php
 	$rootPage = 'config';
-	$tb="cadet18_person";
+	$tb="";
+
 	$reWms=1;
 	if(isset($_GET['reWms'])){
 		if($_GET['reWms']==1){
@@ -79,6 +80,109 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		$stmt->execute();	
 		$reInvite=0;
 	}//isset reInvite
+
+
+	//Rerun Stock Balance
+	$rerunStockBalance=0;
+	if(isset($_GET['rerunStockBalance'])){
+		$sql = "
+		TRUNCATE TABLE `zz_stk_bal`;
+
+		UPDATE `zz_stk_bal` tmp
+		SET tmp.`send`=tmp.`send`+(SELECT SUM(itm.`qty`) 
+					FROM `product_item` itm 
+					INNER JOIN `send_detail` dtl ON  dtl.`prodItemId`=itm.`prodItemId`
+					INNER JOIN `send` hdr ON hdr.`sdNo`=dtl.`sdNo` AND hdr.`statusCode`='P' AND hdr.`rcNo`<>'' 
+					WHERE itm.`prodCodeId`=tmp.`prodId`
+					AND hdr.`fromCode`=tmp.`sloc`
+					)
+		,tmp.balance=tmp.balance+(SELECT -1*SUM(itm.qty) 
+					FROM product_item itm 
+					INNER JOIN send_detail dtl ON  dtl.prodItemId=itm.prodItemId
+					INNER JOIN send hdr ON hdr.sdNo=dtl.sdNo AND hdr.statusCode='P' AND hdr.rcNo<>'' 
+					WHERE itm.prodCodeId=tmp.prodId
+					AND hdr.fromCode=tmp.sloc
+					)		
+		,tmp.onway=tmp.onway+(SELECT SUM(itm.qty) 
+					FROM product_item itm 
+					INNER JOIN send_detail dtl ON  dtl.prodItemId=itm.prodItemId
+					INNER JOIN send hdr ON hdr.sdNo=dtl.sdNo AND hdr.statusCode='P' AND hdr.rcNo IS NULL
+					WHERE itm.prodCodeId=tmp.prodId
+					AND hdr.toCode=tmp.sloc
+					)				
+		;
+
+		UPDATE zz_stk_bal tmp
+		SET tmp.send=tmp.send+(SELECT SUM(itm.qty) 
+					FROM product_item itm 
+					INNER JOIN rt_detail dtl ON  dtl.prodItemId=itm.prodItemId
+					INNER JOIN rt hdr ON hdr.rtNo=dtl.rtNo AND hdr.statusCode='P' AND hdr.rcNo<>'' 
+					WHERE itm.prodCodeId=tmp.prodId
+					AND hdr.fromCode=tmp.sloc
+					)
+		,tmp.balance=tmp.balance+(SELECT -1*SUM(itm.qty) 
+					FROM product_item itm 
+					INNER JOIN rt_detail dtl ON  dtl.prodItemId=itm.prodItemId
+					INNER JOIN rt hdr ON hdr.rtNo=dtl.rtNo AND hdr.statusCode='P' AND hdr.rcNo<>'' 
+					WHERE itm.prodCodeId=tmp.prodId
+					AND hdr.fromCode=tmp.sloc
+					)		
+		,tmp.onway=tmp.onway+(SELECT SUM(itm.qty) 
+					FROM product_item itm 
+					INNER JOIN rt_detail dtl ON  dtl.prodItemId=itm.prodItemId
+					INNER JOIN rt hdr ON hdr.rtNo=dtl.rtNo AND hdr.statusCode='P' AND hdr.rcNo IS NULL
+					WHERE itm.prodCodeId=tmp.prodId
+					AND hdr.toCode=tmp.sloc
+					)	
+		;
+					
+		UPDATE zz_stk_bal tmp
+		SET tmp.receive=tmp.receive+(SELECT SUM(itm.qty) 
+					FROM product_item itm 
+					INNER JOIN receive_detail dtl ON  dtl.prodItemId=itm.prodItemId
+					INNER JOIN receive hdr ON hdr.rcNo=dtl.rcNo AND hdr.statusCode='P' 
+					WHERE itm.prodCodeId=tmp.prodId
+					AND hdr.toCode=tmp.sloc
+					)
+		,tmp.balance=tmp.balance+(SELECT SUM(itm.qty) 
+					FROM product_item itm 
+					INNER JOIN receive_detail dtl ON  dtl.prodItemId=itm.prodItemId
+					INNER JOIN receive hdr ON hdr.rcNo=dtl.rcNo AND hdr.statusCode='P'
+					WHERE itm.prodCodeId=tmp.prodId
+					AND hdr.toCode=tmp.sloc
+					)
+		;			
+					
+		UPDATE zz_stk_bal tmp
+		SET tmp.delivery=tmp.delivery+(SELECT SUM(itm.qty) 
+					FROM product_item itm 
+					INNER JOIN delivery_detail dtl ON  dtl.prodItemId=itm.prodItemId
+					INNER JOIN delivery_header hdr ON hdr.doNo=dtl.doNo AND hdr.statusCode='P' 
+					WHERE itm.prodCodeId=tmp.prodId
+					AND hdr.toCode=(SELECT xh.toCode FROM receive xh
+									INNER JOIN receive_detail xd ON xd.rcNo=xh.rcNo
+									WHERE xd.prodItemId=dtl.prodItemId 
+									LIMIT 1) 
+					)
+		,tmp.balance=tmp.balance-(SELECT SUM(itm.qty) 
+					FROM product_item itm 
+					INNER JOIN delivery_detail dtl ON  dtl.prodItemId=itm.prodItemId
+					INNER JOIN delivery_header hdr ON hdr.doNo=dtl.doNo AND hdr.statusCode='P' 
+					WHERE itm.prodCodeId=tmp.prodId
+					AND hdr.toCode=(SELECT xh.toCode FROM receive xh
+									INNER JOIN receive_detail xd ON xd.rcNo=xh.rcNo
+									WHERE xd.prodItemId=dtl.prodItemId 
+									LIMIT 1) 
+					)
+		;
+
+		DELETE zz_stk_bal WHERE `open`=0 AND `produce`=0 AND `onway`=0 AND `receive`=0 AND `send`=0 AND `sales`=0 AND `delivery`=0 AND `balance`=0;
+		";
+		$stmt = $pdo->prepare($sql);
+		$stmt->execute();	
+		
+		$rerunStockBalance=0;
+	}//isset reInvite
 	
    ?>
 
@@ -117,10 +221,22 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         <button id="btn_reset_check_in" type="submit" class="btn btn-primary">Reset WMS</button>
 						</form>
 					</div>
+					<!--/.col-md-->
 					<div class="col-md-6">		
 						<form id="form1"  onsubmit="return confirm('Do you really want to submit the form?');" >
 						<input type="hidden" name="reInvite" value="<?=$reInvite;?>" />
                         <button id="btn_reset_invite" type="submit" class="btn btn-primary">Reset Invite</button>
+						</form>
+					</div>
+					<!--/.col-md-->
+                </div>
+                <!--/.row-->       
+             <div class="row">                
+					<div class="col-md-6">
+						<label for="btnRerunStockBalance">Rerun stock balance</label>
+						<form id="form1"  onsubmit="return confirm('Do you really want to submit the form?');" >
+						<input type="hidden" name="rerunStockBalance" value="<?=$rerunStockBalance;?>" />
+                        <button id="btn_reset_check_in" name="btnRerunStockBalance" type="submit" class="btn btn-primary">Rerun Stock Balance</button>
 						</form>
 					</div>
 					<!--/.col-md-->
