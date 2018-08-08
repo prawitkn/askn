@@ -7,27 +7,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <html>
 <?php include 'head.php'; ?>  
 
-   
-<!--
-BODY TAG OPTIONS:
-=================
-Apply one or more of the following classes to get the
-desired effect
-|---------------------------------------------------------|
-| SKINS         | skin-blue                               |
-|               | skin-black                              |
-|               | skin-purple                             |
-|               | skin-yellow                             |
-|               | skin-red                                |
-|               | skin-green                              |
-|---------------------------------------------------------|
-|LAYOUT OPTIONS | fixed                                   |
-|               | layout-boxed                            |
-|               | layout-top-nav                          |
-|               | sidebar-collapse                        |
-|               | sidebar-mini                            |
-|---------------------------------------------------------|
--->
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
   <!-- Main Header -->
@@ -141,7 +120,7 @@ desired effect
           <!-- TABLE: LATEST ORDERS -->
           <div class="box box-success">
             <div class="box-header with-border">
-              <h3 class="box-title">Avalible Stock by Size</h3>
+              <h3 class="box-title">Avalible Stock by Meter</h3>
 
               <div class="box-tools pull-right">
                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
@@ -173,20 +152,19 @@ desired effect
                 <table class="table no-margin">
                   <thead>
 					<th>No.</th>
-                    <th style="text-align: center;">Size</th>
-                    <th style="text-align: right;">Total</th>
-					<th style="text-align: right;">Pack</th>
+                    <th style="text-align: center;">Meter</th>
+                    <th style="text-align: right;">Qty</th>
+					<th style="text-align: right;">Qty Total</th>
                   </tr>
                   </thead>
                   <tbody>
 				  <?php $row_no = 1; while ($row = $stmt->fetch()) { 
-					  
-						?>
+					?>
                   <tr>
 					<td><?= $row_no; ?></td>
 					<td style="text-align: center;"><?= number_format($row['qty'],0,'.',','); ?></td>
-					<td style="text-align: right;"><?= number_format($row['sumQty'],0,'.',','); ?></td>
 					<td style="text-align: right;"><?= number_format($row['sumQty']/$row['qty'],0,'.',','); ?></td>
+					<td style="text-align: right;"><?= number_format($row['sumQty'],0,'.',','); ?></td>
                 </tr>
                 <?php $row_no+=1; } ?>
                   </tbody>
@@ -225,6 +203,7 @@ desired effect
 					LEFT JOIN product prd ON prd.id=sd.prodId 
 					WHERE 1 
 					AND sd.prodId=:id 
+					LIMIT 10 
 					";
 					$stmt = $pdo->prepare($sql);
 					$stmt->bindParam(':id', $id);

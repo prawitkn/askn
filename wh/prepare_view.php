@@ -136,7 +136,7 @@ $ppNo = $_GET['ppNo'];
 					WHERE 1
 					AND dtl.`ppNo`=:ppNo 
 					
-					ORDER BY prd.code 
+					ORDER BY itm.barcode  
 					";
 					$stmt = $pdo->prepare($sql);	
 					$stmt->bindParam(':ppNo', $hdr['ppNo']);
@@ -198,6 +198,7 @@ $ppNo = $_GET['ppNo'];
 									FROM prepare_detail ppDtl 
 									LEFT JOIN product_item itm ON itm.prodItemId=ppDtl.prodItemId 
 									WHERE 1=1 
+									AND ppDtl.ppNo=:ppNo3 
 									AND pick.prodId=itm.prodCodeId 
 									AND pick.issueDate=itm.issueDate 
 									AND pick.grade=itm.grade 
@@ -212,6 +213,7 @@ $ppNo = $_GET['ppNo'];
 						$stmt = $pdo->prepare($sql);	
 						$stmt->bindParam(':ppNo', $hdr['ppNo']);
 						$stmt->bindParam(':ppNo2', $hdr['ppNo']);
+						$stmt->bindParam(':ppNo3', $hdr['ppNo']);
 						$stmt->execute();
 						
 				   ?>

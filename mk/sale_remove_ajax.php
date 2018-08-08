@@ -14,7 +14,7 @@ try{
 	$salt = "asdadasgfd";
 	$hash_login_password = hash_hmac('sha256', $userPassword, $salt);
 
-	//Query 1: Check Status for not gen running No.
+	//Query 1: Check Password is correct
 	$sql = "SELECT userId FROM user WHERE userId=:userId AND userPassword=:userPassword LIMIT 1
 	";
 	$stmt = $pdo->prepare($sql);
@@ -29,6 +29,19 @@ try{
 		exit();
 	}
 
+	//Query 1: Check SO is not Pick
+	$sql = "SELECT pickNo FROM `picking` WHERE soNo=:soNo LIMIT 1
+	";
+	$stmt = $pdo->prepare($sql);
+	$stmt->bindParam(':soNo', $soNo);	
+	$stmt->execute();
+	$row_count = $stmt->rowCount();	
+	if($row_count == 1 ){
+		//return JSON
+		header('Content-Type: application/json');
+		echo json_encode(array('success' => false, 'message' => 'Cannot remove used SO.'));
+		exit();
+	}
 
 	//Query 1: Check Status for not gen running No.
 	$sql = "SELECT hdr.*, cust.locationCode FROM sale_header hdr

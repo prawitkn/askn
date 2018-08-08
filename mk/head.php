@@ -38,7 +38,7 @@
   <![endif]-->
   
   <style>
-	body { font-family: Browallia New; font-size: 18px; }
+	body { font-family: Browallia New; font-size: 22px; }
 
 	 body .content-wrapper{font-size: 20px;}
 	@media (max-width: @screen-xs) {

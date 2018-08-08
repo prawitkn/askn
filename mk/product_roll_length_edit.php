@@ -34,7 +34,7 @@ switch($s_userGroupCode){
 	WHERE 1
 	AND h.id=".$_GET['id']." 
 	";
-	echo $sql;
+	//echo $sql;
 	$result = mysqli_query($link, $sql);  
 	$row = mysqli_fetch_assoc($result);
    ?>

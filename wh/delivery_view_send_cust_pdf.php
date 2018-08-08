@@ -145,7 +145,7 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			FROM delivery_detail dtl 
 			LEFT JOIN product_item itm on itm.prodItemId=dtl.prodItemId 						
 			WHERE doNo=:doNo  
-			ORDER BY itm.barcode ASC 
+			ORDER BY itm.issueDate, itm.barcode ASC 
 			";			
 			$stmt = $pdo->prepare($sql);	
 			$stmt->bindParam(':doNo', $doNo);

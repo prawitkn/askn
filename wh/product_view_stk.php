@@ -120,7 +120,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <!-- TABLE: LATEST ORDERS -->
           <div class="box box-success">
             <div class="box-header with-border">
-              <h3 class="box-title">Avalible Stock by Size</h3>
+              <h3 class="box-title">Avalible Stock by Meter</h3>
 
               <div class="box-tools pull-right">
                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
@@ -163,8 +163,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                   <tr>
 					<td><?= $row_no; ?></td>
 					<td style="text-align: center;"><?= number_format($row['qty'],0,'.',','); ?></td>
-					<td style="text-align: right;"><?= number_format($row['sumQty'],0,'.',','); ?></td>
 					<td style="text-align: right;"><?= number_format($row['sumQty']/$row['qty'],0,'.',','); ?></td>
+					<td style="text-align: right;"><?= number_format($row['sumQty'],0,'.',','); ?></td>
                 </tr>
                 <?php $row_no+=1; } ?>
                   </tbody>
@@ -203,6 +203,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					LEFT JOIN product prd ON prd.id=sd.prodId 
 					WHERE 1 
 					AND sd.prodId=:id 
+					LIMIT 10 
 					";
 					$stmt = $pdo->prepare($sql);
 					$stmt->bindParam(':id', $id);
