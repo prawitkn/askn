@@ -30,14 +30,26 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
     <!-- Main content -->
     <section class="content">
-	
+		
+	<?php				
+		$id = $_GET['id'];
+		$sql = "SELECT `code`, `name`, `name2`, `photo`, `price`, `description`, `appCode`, `statusCode` 
+				FROM `product` 
+				WHERE 1
+				AND id=:id 
+				";
+		$stmt = $pdo->prepare($sql);
+		$stmt->bindParam(':id', $id);
+		$stmt->execute();
+		$row = $stmt->fetch();
+	?>
       <!-- Your Page Content Here -->
 	  <div class="row">
         <div class="col-md-12">
           <div class="box">
             <div class="box-header with-border">              
 			  <form id="frmPeriod" method="get" class="form-inline">
-				<label class="box-title">Product Stock Info</label>			
+				<label class="box-title">Product Code : <?=$row['code'];?></label>			
 			  </form>
               <div class="box-tools pull-right">
                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
@@ -59,55 +71,87 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <!-- /.box-header -->
             <div class="box-body">
               <div class="row">
-				<?php				
-					$id = $_GET['id'];
-					$sql = "SELECT `code`, `name`, `name2`, `photo`, `price`, `description`, `appCode`, `statusCode` 
-							FROM `product` 
+				<div class="col-md-8">
+					<div class="col-md-4" style="text-align: center;">
+						
+						<a href="../images/product/<?php echo (empty($row['photo'])? 'default.jpg' : $row['photo']) ?> " data-fancybox="images" data-caption="<?=$row['code'];?>">
+							<image src="../images/product/<?php echo (empty($row['photo'])? 'default.jpg' : $row['photo']) ?> " width="200" height="200" />
+						</a>
+					</div>				
+	                <div class="col-md-8">
+						<label>Product Name : </label>
+						<?= $row['name']; ?><br/>
+						<label>Description : </label>
+						<?= $row['description']; ?><br/>
+						
+						<?php				
+							$sql = "SELECT `prodId`, `open`, `receive`, `sales`, `delivery`, `balance`, uomCode
+							FROM `stk_bal` 
+							LEFT JOIN product on product.id=stk_bal.prodId
 							WHERE 1
-							AND id=:id 
+							AND sloc=8 
+							AND prodId=:id 
 							";
-					$stmt = $pdo->prepare($sql);
-					$stmt->bindParam(':id', $id);
-					$stmt->execute();
-					$row = $stmt->fetch();
-				?>
-				<div class="col-md-3" style="text-align: center;">
-					<image src="../images/product/<?php echo (empty($sm['photo'])? 'default.jpg' : $row['photo']) ?> " width="200" height="200" />
-				</div>				
-                <div class="col-md-5">
-					<label>Product Name : </label>
-					<?= $row['code'].'&nbsp;&nbsp;'.$row['name']; ?><br/>
-					<label>Description : </label>
-					<?= $row['description']; ?><br/>
-					
-					<?php				
-						$sql = "SELECT `prodId`, `open`, `receive`, `sales`, `delivery`, `balance`, uomCode
-						FROM `stk_bal` 
-						LEFT JOIN product on product.id=stk_bal.prodId
+							$id = $_GET['id'];
+							if(ISSET($_GET['sloc'])){ $sql.="AND sloc=:sloc "; }
+							$stmt = $pdo->prepare($sql);
+							$stmt->bindParam(':id', $id);
+							if(ISSET($_GET['sloc'])){ $stmt->bindParam(':sloc', $_GET['sloc']); }
+							$stmt->execute();
+							$row = $stmt->fetch();
+						?>
+						<label>Total Stock Balance</label>
+						<?php if($row['sales']>0) { ?>
+							<h3 style="color: blue;"><?php echo number_format($row['balance'],0,'.',',').' (-'.$row['sales'].') '.' '.$row['uomCode']; ?></h3> <br/>
+						<?php }else{ ?>
+						<h3 style="color: blue;"><?= number_format($row['balance'],0,'.',',').' '.$row['uomCode']; ?></h3> <br/>
+						<?php } ?>
+						
+	                </div><!-- /.col-10 -->
+	         	</div>
+	         	<!--/.col-md-8-->
+
+				<div class="col-md-4">
+					<h3>Avalible Stock by Length/Box/KG</h3>
+					<?php									
+						$sql = "SELECT itm.prodCodeId as prodId,
+						itm.qty, sum(itm.qty) as sumQty
+						FROM `receive_detail` dtl 
+						INNER JOIN receive hdr ON hdr.rcNo=dtl.rcNo AND hdr.toCode=8 
+						INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId AND itm.prodCodeId=:id 
 						WHERE 1
-						AND sloc=8 
-						AND prodId=:id 
+						GROUP BY itm.prodCodeId, itm.qty
 						";
-						$id = $_GET['id'];
-						if(ISSET($_GET['sloc'])){ $sql.="AND sloc=:sloc "; }
+						if(ISSET($_GET['sloc'])){ $sql.="AND hdr.toCode=:sloc "; }
 						$stmt = $pdo->prepare($sql);
 						$stmt->bindParam(':id', $id);
+						
 						if(ISSET($_GET['sloc'])){ $stmt->bindParam(':sloc', $_GET['sloc']); }
 						$stmt->execute();
-						$row = $stmt->fetch();
-					?>
-					<label>Stock Balance</label>
-					<?php if($row['sales']>0) { ?>
-						<h1 style="red"><?php echo $row['balance'].' (-'.$row['sales'].') '.' '.$row['uomCode']; ?></h1> <br/>
-					<?php }else{ ?>
-					<h1 style="red"><?= number_format($row['balance'],0,'.',',').' '.$row['uomCode']; ?></h1> <br/>
-					<?php } ?>
+							?>
+			              <div class="table-responsive">
+			                <table class="table no-margin">
+			                  <thead>
+			                    <th style="text-align: center;">Length/Pieces/KG</th>
+			                    <th style="text-align: right;">Qty</th>
+								<th style="text-align: right;">Qty Total</th>
+			                  </tr>
+			                  </thead>
+			                  <tbody>
+							  <?php $row_no = 1; while ($row = $stmt->fetch()) { 
+								?>
+			                  <tr>
+								<td style="text-align: center;"><?= number_format($row['qty'],0,'.',','); ?></td>
+								<td style="text-align: right;"><?= number_format($row['sumQty']/$row['qty'],0,'.',','); ?></td>
+								<td style="text-align: right;"><?= number_format($row['sumQty'],0,'.',','); ?></td>
+			                </tr>
+			                <?php $row_no+=1; } ?>
+			                  </tbody>
+			                </table>
+			              </div>
+			              <!-- /.table-responsive -->
 					
-                </div><!-- /.col-10 -->
-				<div class="col-md-4">
-					
-					
-                </div><!-- /.col-10 -->
+                </div><!-- /.col-4 -->
             </div><!-- /.row -->
             </div>  
 <!-- Day8 00:05:45-->            
@@ -118,66 +162,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <!-- Left col -->
         <div class="col-md-12">
           <!-- TABLE: LATEST ORDERS -->
-          <div class="box box-success">
-            <div class="box-header with-border">
-              <h3 class="box-title">Avalible Stock by Meter</h3>
-
-              <div class="box-tools pull-right">
-                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
-                </button>
-                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
-              </div>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-			
-			<?php	
-					
-			$sql = "SELECT itm.prodCodeId as prodId,
-			itm.qty, sum(itm.qty) as sumQty
-			FROM `receive_detail` dtl 
-			INNER JOIN receive hdr ON hdr.rcNo=dtl.rcNo AND hdr.toCode=8 
-			INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId AND itm.prodCodeId=:id 
-			WHERE 1
-			GROUP BY itm.prodCodeId, itm.qty
-			";
-			if(ISSET($_GET['sloc'])){ $sql.="AND hdr.toCode=:sloc "; }
-			$stmt = $pdo->prepare($sql);
-			$stmt->bindParam(':id', $id);
-			
-			if(ISSET($_GET['sloc'])){ $stmt->bindParam(':sloc', $_GET['sloc']); }
-			$stmt->execute();
-				?>
-              <div class="table-responsive">
-                <table class="table no-margin">
-                  <thead>
-					<th>No.</th>
-                    <th style="text-align: center;">Meter</th>
-                    <th style="text-align: right;">Qty</th>
-					<th style="text-align: right;">Qty Total</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-				  <?php $row_no = 1; while ($row = $stmt->fetch()) { 
-					?>
-                  <tr>
-					<td><?= $row_no; ?></td>
-					<td style="text-align: center;"><?= number_format($row['qty'],0,'.',','); ?></td>
-					<td style="text-align: right;"><?= number_format($row['sumQty']/$row['qty'],0,'.',','); ?></td>
-					<td style="text-align: right;"><?= number_format($row['sumQty'],0,'.',','); ?></td>
-                </tr>
-                <?php $row_no+=1; } ?>
-                  </tbody>
-                </table>
-              </div>
-              <!-- /.table-responsive -->
-            </div>
-            <!-- /.box-body -->
-            <div class="box-footer clearfix">
-            </div>
-            <!-- /.box-footer -->
-          </div>
-          <!-- /.box -->		
+          		
 		
 		
           <!-- TABLE: LATEST ORDERS -->
@@ -233,9 +218,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
               <!-- /.table-responsive -->
             </div>
             <!-- /.box-body -->
-            <div class="box-footer clearfix">
-            </div>
-            <!-- /.box-footer -->
           </div>
           <!-- /.box -->
 		  
@@ -274,7 +256,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <script src="bootstrap/js/smoke.min.js"></script>
 <!-- Add _.$ jquery coding -->
 <script src="assets/underscore-min.js"></script>
-
+<!-- Add fancybox JS 
+<script src="//code.jquery.com/jquery-3.2.1.min.js"></script>-->
+<script src="plugins/fancybox-master/dist/jquery.fancybox.min.js"></script>
  
 <script> 
   // to start and stop spiner.  

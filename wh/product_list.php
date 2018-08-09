@@ -1,3 +1,6 @@
+<?php
+	include 'inc_helper.php'; 
+?>
 <!DOCTYPE html>
 <!--
 This is a starter template page. Use this page to start your new project from
@@ -6,36 +9,17 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <html>
 <?php 
 	include 'head.php'; 
-	include 'inc_helper.php'; 
+	
 ?>    
 
-<!--
-BODY TAG OPTIONS:
-=================
-Apply one or more of the following classes to get the
-desired effect
-|---------------------------------------------------------|
-| SKINS         | skin-blue                               |
-|               | skin-black                              |
-|               | skin-purple                             |
-|               | skin-yellow                             |
-|               | skin-red                                |
-|               | skin-green                              |
-|---------------------------------------------------------|
-|LAYOUT OPTIONS | fixed                                   |
-|               | layout-boxed                            |
-|               | layout-top-nav                          |
-|               | sidebar-collapse                        |
-|               | sidebar-mini                            |
-|---------------------------------------------------------|
--->
-<body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
   <!-- Main Header -->
-  <?php include 'header.php'; ?>  
+  <?php include 'header.php';  
+  
+  ?>  
   
   <!-- Left side column. contains the logo and sidebar -->
-   <?php include 'leftside.php'; ?>
+   <?php include 'leftside.php';  ?>
    
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
@@ -64,22 +48,22 @@ desired effect
           <!-- Here is a label for example -->
           <?php
 				$catCode = (isset($_GET['catCode'])?$_GET['catCode']:'');
-				$marketCode = (isset($_GET['marketCode'])?$_GET['marketCode']:'');
+				$appCode = (isset($_GET['appCode'])?$_GET['appCode']:'');
 				$search_word="";
 				$sqlSearch = "";
 				$url="product_list.php";
-				if(isset($_GET['search_word']) and isset($_GET['search_word'])){
-					$search_word=$_GET['search_word'];
-					$sqlSearch = "and (prodName like '%".$_GET['search_word']."%' OR prodNameNew like '%".$_GET['search_word']."%') ";
-				}
-				if($marketCode<>""){ $sqlSearch .= " AND appId='$marketCode' ";	}
-				if($catCode<>""){ $sqlSearch .= " AND prodCat='$catCode' ";	}
+				
 				
                 $sql = "SELECT count(*) as countTotal
 						FROM product a
-						WHERE 1 "
-						.$sqlSearch."
-						";
+						WHERE 1 ";
+				if(isset($_GET['search_word']) and isset($_GET['search_word'])){
+					$search_word=$_GET['search_word'];
+					$sql .= "and (a.code like '%".$_GET['search_word']."%' OR a.name like '%".$_GET['search_word']."%') ";
+				}
+				if($appCode<>""){ $sql .= " AND a.appCode='$appCode' ";	}
+				if($catCode<>""){ $sql .= " AND a.catCode='$catCode' ";	}
+				
                 $result = mysqli_query($link, $sql);
                 $countTotal = mysqli_fetch_assoc($result);
 				
@@ -128,15 +112,15 @@ desired effect
 						}
 						?>
 					</select>				
-					<label>Market : </label>
-					<select name="marketCode" class="form-control">
-						<option value="" <?php echo ($marketCode==""?'selected':''); ?> >--All--</option>
+					<label>App ID : </label>
+					<select name="appCode" class="form-control">
+						<option value="" <?php echo ($appCode==""?'selected':''); ?> >--All--</option>
 						<?php
 						$sql = "SELECT `code`, `name` FROM market WHERE statusCode='A' ORDER BY code ASC ";
 						$stmt = $pdo->prepare($sql);
 						$stmt->execute();					
 						while ($row = $stmt->fetch()){
-							$selected=($marketCode==$row['code']?'selected':'');						
+							$selected=($appCode==$row['code']?'selected':'');						
 							echo '<option value="'.$row['code'].'" '.$selected.'>'.$row['code'].' : '.$row['name'].'</option>';
 						}
 						?>
@@ -156,30 +140,39 @@ desired effect
 			</div>
            <?php
                 $sql = "SELECT a.*
-						FROM product a
-						WHERE 1 "
-						.$sqlSearch."
-						ORDER BY a.code desc
-						LIMIT $start, $rows 
-						";
+				FROM product a
+				WHERE 1 ";
+				if(isset($_GET['search_word']) and isset($_GET['search_word'])){
+					$search_word=$_GET['search_word'];
+					$sql .= "and (a.code like '%".$_GET['search_word']."%' OR a.name like '%".$_GET['search_word']."%') ";
+				}
+				if($appCode<>""){ $sql .= " AND a.appCode='$appCode' ";	}
+				if($catCode<>""){ $sql .= " AND a.catCode='$catCode' ";	}
+				$sql .= "ORDER BY a.code desc
+				LIMIT $start, $rows 
+				";
                 $result = mysqli_query($link, $sql);                
            ?>             
 			
             
                 <?php $c_row=($start+1); while ($row = mysqli_fetch_assoc($result)) { 
-					$img = 'dist/img/product/'.(empty($row['photo'])? 'default.jpg' : $row['photo']);
+					$img = '../images/product/'.(empty($row['photo'])? 'default.jpg' : $row['photo']);
 				?>
 				<div class="row" style="margin-bottm: 5px;">
 					<div class="col-md-3"><?=$c_row;?>.&nbsp;
-						<img class="" src="<?=$img;?>" alt="Product Image" width="200" />
+						<a href="<?=$img;?>" data-fancybox="images" data-caption="<?=$row['code'];?>">
+							<image src="<?=$img;?>" width="200" height="200" />
+						</a>
 					</div>
 					<!--col-md-->
 					<div class="col-md-9">
-						<label>Code : </label> <?=$row['code'];?></br>
-						<label>Name : </label> <?=$row['prodNameNew'];?></br>
-						<label>Description : </label> <?=$row['prodDesc'];?></br>
-						<label>Sales Price : </label> <label class="label label-primary"> <?=number_format($row['prodPrice'],2,'.',',');?></label></br>
-						<label>Sales UOM : </label> <?=$row['salesUom'];?>
+						<label>Code : <a href="product_view_stk.php?id=<?=$row['id'];?>"></label><?=$row['code'];?></a></br>
+						<label>Name : </label> <?=$row['name'];?></br>
+						<label>Description : </label> <?=$row['description'];?></br>
+						<label>Sales Price : </label> <label class="label label-primary"> <?=number_format($row['price'],2,'.',',');?></label></br>
+						<label>Units of Measurement (UOM) : </label> <?=$row['uomCode'];?></br>
+						<label>Source Type : </label> <?=$row['sourceTypeCode'];?></br>
+						<label>App ID : </label> <?=$row['appCode'];?></br>
 					</div>
 					<!--col-md-->
 				</div></br>
@@ -190,15 +183,15 @@ desired effect
 			<nav>
 			<ul class="pagination">
 				<li <?php if($page==1) echo 'class="disabled"'; ?> >
-					<a href="<?=$url;?>?search_word=<?= $search_word;?>&catCode=<?= $catCode;?>&marketCode=<?= $marketCode;?>&=page=<?= $page-1; ?>" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
+					<a href="<?=$url;?>?search_word=<?= $search_word;?>&catCode=<?= $catCode;?>&appCode=<?= $appCode;?>&=page=<?= $page-1; ?>" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
 				</li>
 				<?php for($i=1; $i<=$total_page;$i++){ ?>
 				<li <?php if($page==$i) echo 'class="active"'; ?> >
-					<a href="<?=$url;?>?search_word=<?= $search_word;?>&catCode=<?= $catCode;?>&marketCode=<?= $marketCode;?>&page=<?= $i?>" > <?= $i;?></a>			
+					<a href="<?=$url;?>?search_word=<?= $search_word;?>&catCode=<?= $catCode;?>&appCode=<?= $appCode;?>&page=<?= $i?>" > <?= $i;?></a>			
 				</li>
 				<?php } ?>
 				<li <?php if($page==$total_page) echo 'class="disabled"'; ?> >
-					<a href="<?=$url;?>?search_word=<?= $search_word;?>&catCode=<?= $catCode;?>&marketCode=<?= $marketCode;?>&page=<?=$page+1?>" aria-labels="Next"><span aria-hidden="true">&raquo;</span></a>
+					<a href="<?=$url;?>?search_word=<?= $search_word;?>&catCode=<?= $catCode;?>&appCode=<?= $appCode;?>&page=<?=$page+1?>" aria-labels="Next"><span aria-hidden="true">&raquo;</span></a>
 				</li>
 			</ul>
 			</nav>
@@ -236,6 +229,9 @@ desired effect
 <script src="bootstrap/js/smoke.min.js"></script>
 <!-- Add Spinner feature -->
 <script src="bootstrap/js/spin.min.js"></script>
+<!-- Add fancybox JS 
+<script src="//code.jquery.com/jquery-3.2.1.min.js"></script>-->
+<script src="plugins/fancybox-master/dist/jquery.fancybox.min.js"></script>
 
 
 <script> 		

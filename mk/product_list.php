@@ -160,11 +160,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				?>
 				<div class="row" style="margin-bottm: 5px;">
 					<div class="col-md-3"><?=$c_row;?>.&nbsp;
-						<img class="" src="<?=$img;?>" alt="Product Image" width="200" />
+						<a href="<?=$img;?>" data-fancybox="images" data-caption="<?=$row['code'];?>">
+							<image src="<?=$img;?>" width="200" height="200" />
+						</a>
 					</div>
 					<!--col-md-->
 					<div class="col-md-9">
-						<label>Code : </label> <?=$row['code'].' / id:'.$row['id'];?></br>
+						<label>Code : <a href="product_view_stk.php?id=<?=$row['id'];?>"></label><?=$row['code'];?></a></br>
 						<label>Name : </label> <?=$row['name'];?></br>
 						<label>Description : </label> <?=$row['description'];?></br>
 						<label>Sales Price : </label> <label class="label label-primary"> <?=number_format($row['price'],2,'.',',');?></label></br>
@@ -227,6 +229,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <script src="bootstrap/js/smoke.min.js"></script>
 <!-- Add Spinner feature -->
 <script src="bootstrap/js/spin.min.js"></script>
+<!-- Add fancybox JS 
+<script src="//code.jquery.com/jquery-3.2.1.min.js"></script>-->
+<script src="plugins/fancybox-master/dist/jquery.fancybox.min.js"></script>
 
 
 <script> 		

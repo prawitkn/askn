@@ -12,42 +12,48 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		$s_userDeptCode = $row_user['userDeptCode'];
 		$s_userID=$_SESSION['userID'];*/
 	
-	$rootPage="report_prod_stk";
+	$rootPage="report_onway_sending";
 	
-	$search_word = (isset($_GET['search_word'])?$_GET['search_word']:'');
-	$sloc = (isset($_GET['sloc'])?$_GET['sloc']:'8');
-	$catCode = (isset($_GET['catCode'])?$_GET['catCode']:'');
+	$dateFrom=$dateTo="";
+	$dateFromYmd=$dateToYmd="";
+	if(isset($_GET['dateFrom'])){
+		$dateFrom=$_GET['dateFrom'];
+		$dateArr = explode('/', $dateFrom);
+	    $dateY = (int)$dateArr[2];
+	    $dateM = $dateArr[1];
+	    $dateD = $dateArr[0];
+	    $dateFromYmd = $dateY . '-' . $dateM . '-' . $dateD;
+	}else{
+		$dateFrom=date('d/m/Y');
+		$dateFromYmd=date('Y-m-d');
+	}
+	if(isset($_GET['dateTo'])){
+		$dateTo=$_GET['dateTo'];
+		$dateArr = explode('/', $dateTo);
+	    $dateY = (int)$dateArr[2];
+	    $dateM = $dateArr[1];
+	    $dateD = $dateArr[0];
+	    $dateToYmd = $dateY . '-' . $dateM . '-' . $dateD;
+	}else{
+		$dateTo=date('d/m/Y');
+		$dateToYmd=date('Y-m-d');
+	}
+	$fromCode = (isset($_GET['fromCode'])?$_GET['fromCode']:'');
+	$toCode = (isset($_GET['toCode'])?$_GET['toCode']:'');
 	$prodCode = (isset($_GET['prodCode'])?$_GET['prodCode']:'');
-	$prodId = (isset($_GET['prodId']) ?$_GET['prodId']:'');
+	$prodId = (isset($_GET['prodId']) ?$_GET['prodId']:'');	
 	if($prodCode=="") $prodId="";
+
+	//$dateFromYmd = str_replace('/', '.', $dateFrom);
+	//$dateToYmd = str_replace('/', '.', $dateTo);
+	//if($dateFrom<>""){ $dateFromYmd = date('Y-m-d', strtotime($dateFrom));	}
+	//if($dateTo<>""){ $dateToYmd =  date('Y-m-d', strtotime($dateTo));	}
 ?>    
 
-<!--
-BODY TAG OPTIONS:
-=================
-Apply one or more of the following classes to get the
-desired effect
-|---------------------------------------------------------|
-| SKINS         | skin-blue                               |
-|               | skin-black                              |
-|               | skin-purple                             |
-|               | skin-yellow                             |
-|               | skin-red                                |
-|               | skin-green                              |
-|---------------------------------------------------------|
-|LAYOUT OPTIONS | fixed                                   |
-|               | layout-boxed                            |
-|               | layout-top-nav                          |
-|               | sidebar-collapse                        |
-|               | sidebar-mini                            |
-|---------------------------------------------------------|
--->
-<body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
   <!-- Main Header -->
   <?php include 'header.php'; 
   
-	include 'inc_helper.php'; 
   ?>  
   
   <!-- Left side column. contains the logo and sidebar -->
@@ -58,7 +64,7 @@ desired effect
     <!-- Content Header (Page header) -->
     <section class="content-header">
       <h1>
-		Report
+		Unreceived Sending Report
         <small>Report</small>
       </h1>
       <ol class="breadcrumb">
@@ -73,40 +79,53 @@ desired effect
       <!-- Your Page Content Here -->
     <div class="box box-primary">
         <div class="box-header with-border">
-        <h3 class="box-title">Product Stock Report</h3>		
+        <h3 class="box-title">Unreceived Sending Report</h3>		
 		
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
           <?php
-					
-				
-                $sql = "SELECT count(*) as countTotal
-				FROM stk_bal sb 
-				INNER JOIN product prd on prd.id=sb.prodId ";
-				if($prodCode<>""){ $sql .= " AND prd.code like '%".$prodCode."%' ";	}	
-				$sql.="
+				 $sql = "SELECT hdr.sdNo, prd.code, prd.description
+				FROM `send` hdr
+				INNER JOIN send_detail dtl on dtl.sdNo=hdr.sdNo
+				INNER JOIN product_item itm on itm.prodItemId=dtl.prodItemId  
+				INNER JOIN sloc fsl on hdr.fromCode=fsl.code
+				INNER JOIN sloc tsl on hdr.toCode=tsl.code					
+				INNER JOIN product prd on prd.id=itm.prodCodeId  
 				WHERE 1 ";
-				if($search_word<>""){ $sql = "and (prd.code like '%".$search_word."%' OR prd.name like '%".$search_word."%') "; }
-				if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
-				if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
-				if($prodId<>""){ $sql .= " AND prodId=$prodId ";	}	
+
+				if($dateFromYmd<>""){ $sql .= " AND hdr.sendDate>=:dateFromYmd ";	}
+				if($dateToYmd<>""){ $sql .= " AND hdr.sendDate<=:dateToYmd ";	}		
+				if($fromCode<>""){ $sql .= " AND hdr.fromCode=:fromCode ";	}
+				if($toCode<>""){ $sql .= " AND hdr.toCode=:toCode ";	}			
+				if($prodCode<>""){ $sql .= " AND prd.code like :prodCode ";	}	
+				if($prodId<>""){ $sql .= " AND prd.id=:prodId ";	}	
+				$sql .= "AND hdr.statusCode='P' AND hdr.rcNo IS NULL ";
+				$sql.="GROUP BY hdr.sdNo, prd.code, prd.description ";
+
+				$stmt = $pdo->prepare($sql);
+				if($dateFromYmd<>""){ $stmt->bindParam(':dateFromYmd', $dateFromYmd );	}
+				if($dateToYmd<>""){ $stmt->bindParam(':dateToYmd', $dateToYmd );	}
+				if($fromCode<>""){ $stmt->bindParam(':fromCode', $fromCode );	}
+				if($toCode<>""){ $stmt->bindParam(':toCode', $toCode );	}
+				if($prodCode<>""){ $tmp='%'.$prodCode.'%'; $stmt->bindParam(':prodCode', $tmp );	}
+				if($prodId<>""){ $stmt->bindParam(':prodId', $prodId );	}
+				$stmt->execute();	
 			
-                $result = mysqli_query($link, $sql);
-                $countTotal = mysqli_fetch_assoc($result);
+                $countTotal = $stmt->rowCount();
 				
 				$rows=20;
 				$page=0;
 				if( !empty($_GET["page"]) and isset($_GET["page"]) ) $page=$_GET["page"];
 				if($page<=0) $page=1;
-				$total_data=$countTotal['countTotal'];
+				$total_data=$countTotal;
 				$total_page=ceil($total_data/$rows);
 				if($page>=$total_page) $page=$total_page;
 				$start=($page-1)*$rows;
 				if($page==0) $start=0;
           ?>
 		  
-          <span class="label label-primary">Total <?php echo $countTotal['countTotal']; ?> items</span>
+          <span class="label label-primary">Total <?php echo $countTotal; ?> items</span>
         </div><!-- /.box-tools -->
         </div><!-- /.box-header -->
         <div class="box-body">
@@ -127,35 +146,41 @@ desired effect
 			</div>-->
 			<div class="col-md-12">					
                     <form id="form1" action="#" method="get" class="form-inline"  style="background-color: gray; padding: 5px;"  novalidate>
-						<label>SLOC : </label>
-					<select name="sloc" class="form-control">
-						<option value="" <?php echo ($sloc==""?'selected':''); ?> >--All--</option>
+                    	<label for="dateFrom">Date From : </label>
+						<input type="text" id="dateFrom" name="dateFrom" value="" class="form-control datepicker" data-smk-msg="Require From Date." required >
+
+						<label for="dateTo">Date To : </label>
+						<input type="text" id="dateTo" name="dateTo" value="" class="form-control datepicker" data-smk-msg="Require To Date." required >
+
+						<label>From : </label>
+					<select name="fromCode" class="form-control">
+						<option value="" <?php echo ($fromCode==""?'selected':''); ?> >--All--</option>
 						<?php
-						$sql = "SELECT `code`, `name` FROM sloc WHERE statusCode='A' AND code IN ('8','E') ORDER BY code ASC ";
+						$sql = "SELECT `code`, `name` FROM sloc WHERE statusCode='A' ORDER BY code ASC ";
 						$stmt = $pdo->prepare($sql);
 						$stmt->execute();					
 						while ($row = $stmt->fetch()){
-							$selected=($sloc==$row['code']?'selected':'');						
+							$selected=($fromCode==$row['code']?'selected':'');						
 							echo '<option value="'.$row['code'].'" '.$selected.'>'.$row['code'].' : '.$row['name'].'</option>';
 						}
 						?>
 					</select>	
-					
-						<label>Cat : </label>
-					<select name="catCode" class="form-control">
-						<option value="" <?php echo ($catCode==""?'selected':''); ?> >--All--</option>
+
+					<label>To : </label>
+					<select name="toCode" class="form-control">
+						<option value="" <?php echo ($toCode==""?'selected':''); ?> >--All--</option>
 						<?php
-						$sql = "SELECT `code`, `name` FROM product_category WHERE statusCode='A'	ORDER BY code ASC ";
+						$sql = "SELECT `code`, `name` FROM sloc WHERE statusCode='A' ORDER BY code ASC ";
 						$stmt = $pdo->prepare($sql);
 						$stmt->execute();					
 						while ($row = $stmt->fetch()){
-							$selected=($catCode==$row['code']?'selected':'');						
+							$selected=($toCode==$row['code']?'selected':'');						
 							echo '<option value="'.$row['code'].'" '.$selected.'>'.$row['code'].' : '.$row['name'].'</option>';
 						}
 						?>
-					</select>				
+					</select>		
 					
-					<label for="prodCode">Product Code</label>
+					<label for="prodCode">Product Code : </label>
 					<input type="hidden" name="prodId" id="prodId" class="form-control" value="<?=$prodId;?>"  />
 					<input type="text" name="prodCode" id="prodCode" class="form-control" value="<?=$prodCode;?>"  />
 					<a href="#" name="btnSdNo" class="btn btn-default" ><i class="glyphicon glyphicon-search" ></i> </a>
@@ -173,71 +198,98 @@ desired effect
                   <thead>
                   <tr>
 					<th>No.</th>
-                    <th>Product Code</th>
-					<th>SLOC</th>
-					<th>Category</th>
-					<th>Onway</th>
-					<th>Send</th>
-					<th>Delivery</th>
-					<th style="color: #00cc00;">Balance</th>					
-					<th>Pick</th>
-					<th style="color: #006600; background-color: #ccccff;">Net Balance</th>
+                    <th>Product Code</th>                    
+                    <th>Sending No.</th>
+					<th>Description</th>
+					<th>Grade</th>
+					<th>Box/Roll</th>
+					<th>Piece/Length/KG</th>
                   </tr>
                   </thead>
                   <tbody>
 					<?php
-						$sql = "SELECT DISTINCT prd.*
-						,sb.sloc, sb.`open`, sb.`produce`, sb.`onway`, sb.`receive`, sb.`send`, sb.`sales`, sb.`delivery`, sb.`balance`
-						,IFNULL((SELECT SUM(pDtl.qty) FROM picking pHdr, picking_detail pDtl WHERE pHdr.pickNo=pDtl.pickNo AND pHdr.isFinish='N' AND pDtl.prodId=sb.prodId),0) as pick 
-						FROM stk_bal sb 
-						INNER JOIN product prd on prd.id=sb.prodId  ";
-						if($prodCode<>""){ $sql .= " AND prd.code like '%".$prodCode."%' ";	}	
-						$sql.="
+						 $sql = "SELECT hdr.sdNo, prd.code, prd.description, itm.grade, count(itm.prodItemId) as qty, sum(itm.qty) as totalQty 
+						FROM `send` hdr
+						INNER JOIN send_detail dtl on dtl.sdNo=hdr.sdNo
+						INNER JOIN product_item itm on itm.prodItemId=dtl.prodItemId  
+						INNER JOIN sloc fsl on hdr.fromCode=fsl.code
+						INNER JOIN sloc tsl on hdr.toCode=tsl.code
+						INNER JOIN product prd on prd.id=itm.prodCodeId  
 						WHERE 1 ";
-						if($search_word<>""){ $sql = "and (prd.code like '%".$search_word."%' OR prd.name like '%".$search_word."%') "; }
-						if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
-						if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
-						if($prodId<>""){ $sql .= " AND prodId='$prodId' ";	}		
-						$sql.="ORDER BY prd.code  ";
+
+						if($dateFromYmd<>""){ $sql .= " AND hdr.sendDate>=:dateFromYmd ";	}
+						if($dateToYmd<>""){ $sql .= " AND hdr.sendDate<=:dateToYmd ";	}		
+						if($fromCode<>""){ $sql .= " AND hdr.fromCode=:fromCode ";	}
+						if($toCode<>""){ $sql .= " AND hdr.toCode=:toCode ";	}			
+						if($prodCode<>""){ $sql .= " AND prd.code like :prodCode ";	}	
+						if($prodId<>""){ $sql .= " AND prd.id=:prodId ";	}	
+						$sql .= "AND hdr.statusCode='P' AND hdr.rcNo IS NULL ";
+
+						$sql.="GROUP BY hdr.sdNo, prd.code, prd.description ";
+						$sql.="ORDER BY prd.code ";
 						$sql.="LIMIT $start, $rows ";
-						$result = mysqli_query($link, $sql);   
-						$stmt = $pdo->prepare($sql);		
-						$stmt->execute();
+
+						$stmt = $pdo->prepare($sql);
+						if($dateFromYmd<>""){ $stmt->bindParam(':dateFromYmd', $dateFromYmd );	}
+						if($dateToYmd<>""){ $stmt->bindParam(':dateToYmd', $dateToYmd );	}
+						if($fromCode<>""){ $stmt->bindParam(':fromCode', $fromCode );	}
+						if($toCode<>""){ $stmt->bindParam(':toCode', $toCode );	}
+						if($prodCode<>""){ $tmp='%'.$prodCode.'%'; $stmt->bindParam(':prodCode', $tmp );	}
+						if($prodId<>""){ $stmt->bindParam(':prodId', $prodId );	}
+						$stmt->execute();	
 						$rowCount=$stmt->rowCount();
 						if($rowCount==0){ ?>
 							<tr>
-								<td colspan="8" style="text-align: center; color: red; font-weight: bold;" >Data not found.</td>
+								<td colspan="6" style="text-align: center; color: red; font-weight: bold;" >Data not found.</td>
 			                </tr><?php
 						}
 				   ?>             
 					
 					
-						<?php $c_row=($start+1); while ($row = $stmt->fetch() ) { 
-							//$img = 'dist/img/product/'.(empty($row['photo'])? 'default.jpg' : $row['photo']);
+						<?php $c_row=($start+1); $sumQty=$sumTotalQty=0; while ($row = $stmt->fetch() ) { 
+							$gradeName='';
+							switch($row['grade']){
+								case '0' : $gradeName='A'; break;
+								case '1' : $gradeName='B'; break;
+								case '2' : $gradeName='N'; break;
+								default : $gradeName='N/A';
+							}
 					?>
                   <tr>
 					<td><?= $c_row; ?></td>
-                    <td><a href="product_view_stk.php?id=<?=$row['id'];?>" ><?= $row['code']; ?></a></td>
-					<td><?= $row['sloc']; ?></td>
-					<td><?= $row['catCode']; ?></td>
-					<td style="text-align: right;"><?= number_format($row['onway'],0,'.',','); ?></td>
-					<td style="text-align: right;"><?= number_format($row['send'],0,'.',','); ?></td>
-					<td style="text-align: right;"><?= number_format($row['delivery'],0,'.',','); ?></td>
-					<td style="text-align: right; color: #00cc00;"><?= number_format($row['balance'],0,'.',','); ?></td>
-					<td style="text-align: right;"><?= number_format(-1*$row['pick'],0,'.',','); ?></td>
-					<td style="text-align: right; color: #006600; background-color: #ccccff;"><?= number_format($row['balance']-$row['pick'],0,'.',','); ?></td>
+					<td><?= $row['code']; ?></td>
+					<td><?= $row['sdNo']; ?></td>
+					<td><?= $row['description']; ?></td>
+					<td><?= $gradeName; ?></td>
+					<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
+					<td style="text-align: right;"><?= number_format($row['totalQty'],2,'.',','); ?></td>
                 </tr>
-                 <?php $c_row +=1; } ?>
+                 <?php $c_row +=1; $sumQty+=$row['qty']; $sumTotalQty+=$row['totalQty']; } ?>
                   </tbody>
+                  <tfooter>
+                  	 <tr>
+						<td></td>
+						<td><?= 'Total '.($c_row-1).' Items'; ?></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td style="text-align: right;"><?= number_format($sumQty,0,'.',','); ?></td>
+						<td style="text-align: right;"><?= number_format($sumTotalQty,2,'.',','); ?></td>
+	                </tr>
+                  </tfooter>
                 </table>
               </div>
               <!-- /.table-responsive -->
 			  
-			<?php $condQuery="?sloc=".$sloc."&catCode=".$catCode."&prodId=".$prodId."&prodCode=".$prodCode; ?>
+			<?php $condQuery="?dateFrom=".$dateFrom."&dateTo=".$dateTo."&fromCode=".$fromCode."&toCode=".$toCode."&prodCode=".$prodCode."&prodId=".$prodId; ?>
 
              <?php if($rowCount>0){    ?>
+			<!--<a href="<?=$rootPage;?>_pdf_detail.php<?=$condQuery;?>" class="btn btn-default pull-right" style="margin-right: 5px;"><i class="glyphicon glyphicon-print"></i> Export Detail</a>
+
                <div class="col-md-12">
-			<a href="<?=$rootPage;?>_xls.php<?=$condQuery;?>" class="btn btn-default pull-right"><i class="glyphicon glyphicon-print"></i> Export</a>
+			<a href="<?=$rootPage;?>_pdf_summary.php<?=$condQuery;?>" class="btn btn-default pull-right"><i class="glyphicon glyphicon-print"></i> Export Summary</a>-->
+
+
 			
 			<nav>
 			<ul class="pagination">				
@@ -483,6 +535,42 @@ $(document).ready(function() {
 	});
 
 });
+</script>
+
+<link href="bootstrap-datepicker-custom-thai/dist/css/bootstrap-datepicker.css" rel="stylesheet" />
+<script src="bootstrap-datepicker-custom-thai/dist/js/bootstrap-datepicker-custom.js"></script>
+<script src="bootstrap-datepicker-custom-thai/dist/locales/bootstrap-datepicker.th.min.js" charset="UTF-8"></script>
+
+<script>
+	$(document).ready(function () {
+		$('.datepicker').datepicker({
+			daysOfWeekHighlighted: "0,6",
+			autoclose: true,
+			format: 'dd/mm/yyyy',
+			todayBtn: true,
+			language: 'en',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
+			thaiyear: false              //Set เป็นปี พ.ศ.
+		});  //กำหนดเป็นวันปัจุบัน
+		//กำหนดเป็น วันที่จากฐานข้อมูล		
+		<?php if($dateFromYmd<>"") { ?>
+			var queryDate = '<?=$dateFromYmd;?>',
+			dateParts = queryDate.match(/(\d+)/g)
+			realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
+			$('#dateFrom').datepicker('setDate', realDate);
+		<?php }else{ ?> $('#dateFrom').datepicker('setDate', '0'); <?php } ?>
+		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
+		
+		//กำหนดเป็น วันที่จากฐานข้อมูล		
+		<?php if($dateToYmd<>"") { ?>
+			var queryDate = '<?=$dateToYmd;?>',
+			dateParts = queryDate.match(/(\d+)/g)
+			realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
+			$('#dateTo').datepicker('setDate', realDate);
+		<?php }else{ ?> $('#dateTo').datepicker('setDate', '0'); <?php } ?>
+		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
+		
+		
+	});
 </script>
 
 </body>

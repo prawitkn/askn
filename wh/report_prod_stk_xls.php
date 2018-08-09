@@ -56,7 +56,7 @@ if($countTotal>0){
 	$sql = "SELECT prd.`id`, prd.`code`, prd.`catCode`, prd.`name`, prd.`name2`, prd.`uomCode`, prd.`packUomCode`
 	, prd.`sourceTypeCode`, prd.`appCode`, prd.`description`, prd.`statusCode`
 	,sb.sloc, sb.`open`, sb.`produce`, sb.`onway`, sb.`receive`, sb.`send`, sb.`sales`, sb.`delivery`, sb.`balance`
-	,IFNULL((SELECT SUM(pDtl.qty) FROM picking pHdr, picking_detail pDtl WHERE pHdr.isFinish='N' AND pDtl.prodId=sb.prodId),0) as pick 
+	,IFNULL((SELECT SUM(pDtl.qty) FROM picking pHdr, picking_detail pDtl WHERE pHdr.pickNo=pDtl.pickNo AND pHdr.isFinish='N' AND pDtl.prodId=sb.prodId),0) as pick 
 	FROM stk_bal sb 
 	INNER JOIN product prd on prd.id=sb.prodId  ";
 	if($prodCode<>""){ $sql .= " AND prd.code like '%".$prodCode."%' ";	}
@@ -66,7 +66,7 @@ if($countTotal>0){
 	if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
 	if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
 	if($prodId<>""){ $sql .= " AND prodId=$prodId ";	}	
-	$sql.="ORDER BY prd.code desc ";
+	$sql.="ORDER BY prd.code ";
 	$result = mysqli_query($link, $sql);    
 	
 	$iRow=3; while($row = mysqli_fetch_assoc($result) ){

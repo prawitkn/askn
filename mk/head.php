@@ -72,5 +72,7 @@
 	  display: inline;
 	}
 	</style>  
+	<!-- fancybox CSS -->
+  <link rel="stylesheet" type="text/css" href="plugins/fancybox-master/dist/jquery.fancybox.min.css">
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
