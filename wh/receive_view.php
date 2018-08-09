@@ -136,7 +136,7 @@ $rcNo = $hdr['rcNo'];
 						, itm.`gradeTypeId`, itm.`remarkWh`
 						,prd.code as prodCode 
 						, igt.name as gradeTypeName 
-						, dtl.`isReturn`, dtl.`shelfCode`, dtl.`rcNo` 
+						, dtl.`statusCode`, dtl.`shelfCode`, dtl.`rcNo` 
 						, ws.name as shelfName 
 						FROM `receive_detail` dtl
 						LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
@@ -167,15 +167,16 @@ $rcNo = $hdr['rcNo'];
 						</tr>
 						<?php $row_no=1;  $sumQty=$sumNW=$sumGW=$sumGradeNotOk=0;  while ($row = $stmt->fetch()) { 
 							$isReturn = "";
-							if($row['isReturn']=='Y') { $isReturn = '<label class="label label-danger">Yes</label>'; }
-								$gradeName = '<b style="color: red;">N/A</b>'; 
-								switch($row['grade']){
-									case 0 : $gradeName = 'A'; break;
-									case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
-									case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
-									default : 
-										$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
-								} 
+							if($row['statusCode']=='R') { $isReturn = '<label class="label label-danger">Yes</label>'; }
+							
+							$gradeName = '<b style="color: red;">N/A</b>'; 
+							switch($row['grade']){
+								case 0 : $gradeName = 'A'; break;
+								case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
+								case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+								default : 
+									$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
+							} 
 						?>
 						<tr>
 							<td style="text-align: center;"><?= $row_no; ?></td>							

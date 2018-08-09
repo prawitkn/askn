@@ -71,8 +71,6 @@ $rootPage="rtrc";
 				AND hdr.type='R' 
 				AND hdr.statusCode<>'X' ";							
 				switch($s_userGroupCode){ 
-					case 'whOff' :
-					case 'whSup' :
 					case 'pdOff' :
 					case 'pdSup' :
 						$sql .= "AND hdr.toCode=:s_userDeptCode ";
@@ -83,9 +81,7 @@ $rootPage="rtrc";
 					$sql .= "AND hdr.rcNo like :search_word ";		
 				}		
 				$stmt = $pdo->prepare($sql);
-				switch($s_userGroupCode){ 					
-					case 'whOff' : 
-					case 'whSup' :
+				switch($s_userGroupCode){ 	
 					case 'pdOff' :
 					case 'pdSup' :
 						$stmt->bindParam(':s_userDeptCode', $s_userDeptCode);
@@ -142,8 +138,6 @@ $rootPage="rtrc";
 				AND hdr.type='R' 
 				AND hdr.statusCode<>'X' ";
 				switch($s_userGroupCode){ 
-					case 'whOff' :
-					case 'whSup' :
 					case 'pdOff' :
 					case 'pdSup' :
 						$sql .= "AND hdr.toCode=:s_userDeptCode ";
@@ -157,12 +151,7 @@ $rootPage="rtrc";
 				$sql .= "LIMIT $start, $rows ";
 				
 				$stmt = $pdo->prepare($sql);
-				switch($s_userGroupCode){ 					
-					case 'whOff' : 
-					case 'whSup' : 
-						$userDeptCode='8';
-						$stmt->bindParam(':s_userDeptCode', $userDeptCode);
-						break;
+				switch($s_userGroupCode){ 
 					case 'pdOff' :
 					case 'pdSup' :
 						$stmt->bindParam(':s_userDeptCode', $s_userDeptCode);

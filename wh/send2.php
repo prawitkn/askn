@@ -149,9 +149,7 @@ $tb="send";
 				LIMIT $start, $rows 
 				";				
 				$stmt = $pdo->prepare($sql);
-				switch($s_userGroupCode){ 					
-					case 'whOff' : 
-					case 'whSup' : 
+				switch($s_userGroupCode){ 
 					case 'pdOff' :
 					case 'pdSup' :
 						$stmt->bindParam(':s_userDeptCode', $s_userDeptCode);

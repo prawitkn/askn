@@ -179,7 +179,7 @@ $ppNo = $_GET['ppNo'];
 								AND pickDtl.prodId=itm.prodCodeId 
 								AND pickDtl.issueDate=itm.issueDate 
 								AND pickDtl.grade=itm.grade 
-								AND itm.qty=pickDtl.meter  	
+								AND pickDtl.meter=itm.qty	
 						),0) AS sumPickQty 
 						, SUM(itm.`qty`) AS sumPackQty
 						FROM `prepare_detail` dtl
@@ -188,7 +188,7 @@ $ppNo = $_GET['ppNo'];
 						LEFT JOIN product prd ON prd.id=itm.prodCodeId 
 						WHERE 1
 						AND dtl.`ppNo`=:ppNo 
-						GROUP BY prd.`code`, itm.`issueDate`, itm.`grade`
+						GROUP BY prd.`code`, itm.`issueDate`, itm.`grade`, itm.`qty`
 												
 						UNION 
 						

@@ -72,8 +72,8 @@ $rootPage="receive";
 						break;
 					default :	// it, admin 
 				}	
-				if(isset($_GET['search_word']) and $_GET['search_word']<>"" ){
-					$sql .= "AND hdr.rcNo like :search_word ";			
+				if( $search_word<>"" ){
+					$sql .= "AND hdr.rcNo like :search_word OR hdr.sdNo like :search_word2 ";			
 				}
 				$stmt = $pdo->prepare($sql);			
 				switch($s_userGroupCode){ 
@@ -83,8 +83,10 @@ $rootPage="receive";
 						break;
 					default :	// it, admin 
 				}
-				if(isset($_GET['search_word']) and $_GET['search_word']<>"" ){
-					$stmt->bindParam(':search_word', '%'.$search_word.'%');
+				if( $search_word <>"" ){
+					$tmp='%'.$search_word.'%';
+					$stmt->bindParam(':search_word', $tmp);
+					$stmt->bindParam(':search_word2', $tmp);
 				}
 				$stmt->execute();
 				$row = $stmt->fetch();
@@ -110,7 +112,7 @@ $rootPage="receive";
 				<div class="col-md-6">					
 						<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
 							<div class="form-group">
-								<label for="search_word">Receive No. search key word.</label>
+								<label for="search_word">Receive No. / Sending No. search key word.</label>
 								<div class="input-group">
 									<input id="search_word" type="text" class="form-control" name="search_word" data-smk-msg="Require userFullname."required>
 									<span class="input-group-addon">
@@ -144,8 +146,8 @@ $rootPage="receive";
 						break;
 					default :	// it, admin 
 				}	
-				if(isset($_GET['search_word']) and $_GET['search_word']<>"" ){
-					$sql .= "AND hdr.rcNo like :search_word ";			
+				if( $search_word<>"" ){
+					$sql .= "AND hdr.rcNo like :search_word OR hdr.sdNo like :search_word2 ";			
 				}
 				$sql .="ORDER BY hdr.createTime DESC ";
 				$sql .= "LIMIT $start, $rows ";
@@ -159,8 +161,10 @@ $rootPage="receive";
 						break;
 					default :	// it, admin 
 				}
-				if(isset($_GET['search_word']) and $_GET['search_word']<>"" ){
-					$stmt->bindParam(':search_word', '%'.$search_word.'%');
+				if( $search_word<>"" ){
+					$tmp='%'.$search_word.'%';
+					$stmt->bindParam(':search_word', $tmp);
+					$stmt->bindParam(':search_word2', $tmp);
 				}
 				$stmt->execute();
 				

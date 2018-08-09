@@ -98,7 +98,7 @@
 			<li class="header">Report</li>
 			<li><a href="rpt_so_by_deli.php"><i class="fa fa-list-alt"></i> <span>Sales Order by Delivery Date Report</span></a></li>			
 			<li><a href="report_prod_stk.php"><i class="fa fa-list-alt"></i> <span>Stock Report</span></a></li>
-			<li><a href="report_sending.php"><i class="fa fa-list-alt"></i> <span>Sending Report</span></a></li>
+			<li><a href="report_sending2.php"><i class="fa fa-list-alt"></i> <span>Sending Report</span></a></li>
 			<li><a href="report_send_by_prod.php"><i class="fa fa-list-alt"></i> <span>Sending by Prod. Report</span></a></li>
 			<li><a href="report_send_pending.php"><i class="fa fa-list-alt"></i> <span>Send Pending Report</span></a></li>
 			<li><a href="report_receiving.php"><i class="fa fa-list-alt"></i> <span>Receiving Report</span></a></li>

@@ -343,19 +343,13 @@ $rootPage="sale";
 						</button>
 						
 					<?php }else{ //.else isClose ?>
-						<button type="button" id="btn_close_so" class="btn btn-danger pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='Y')?'disabled':''); ?>>
+						<button type="button" id="btn_close_so" class="btn btn-danger pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='N')?'':'disabled'); ?>>
 						<i class="glyphicon glyphicon-ok-sign">
 						</i> Close Sales Order
 						</button>
 						
 					<?php } //.if isClose ?>
 					
-
-					<button type="button" id="btn_close_so" class="btn btn-danger pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='Y')?'disabled':''); ?>>
-					<i class="glyphicon glyphicon-ok-sign">
-					</i> Close Sales Order
-					</button>	
-
 					<?php break; 
 					default : ?>				
 				<?php } //.switch statusCode ?> 

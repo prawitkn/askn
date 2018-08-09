@@ -143,9 +143,10 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			$sql = "SELECT dtl.id, dtl.prodItemId 
 			, itm.prodCodeId, itm.barcode, itm.NW, itm.GW, itm.grade, itm.qty, itm.issueDate 
 			FROM delivery_detail dtl 
-			LEFT JOIN product_item itm on itm.prodItemId=dtl.prodItemId 						
+			LEFT JOIN product_item itm on itm.prodItemId=dtl.prodItemId 
+			LEFT JOIN product prd ON prd.id=itm.prodCodeId 
 			WHERE doNo=:doNo  
-			ORDER BY itm.issueDate, itm.barcode ASC 
+			ORDER BY prd.code, itm.issueDate, itm.barcode ASC 
 			";			
 			$stmt = $pdo->prepare($sql);	
 			$stmt->bindParam(':doNo', $doNo);

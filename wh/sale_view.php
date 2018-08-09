@@ -15,26 +15,6 @@ $rootPage="sale";
 
 ?>
     
-<!--
-BODY TAG OPTIONS:
-=================
-Apply one or more of the following classes to get the
-desired effect
-|---------------------------------------------------------|
-| SKINS         | skin-blue                               |
-|               | skin-black                              |
-|               | skin-purple                             |
-|               | skin-yellow                             |
-|               | skin-red                                |
-|               | skin-green                              |
-|---------------------------------------------------------|
-|LAYOUT OPTIONS | fixed                                   |
-|               | layout-boxed                            |
-|               | layout-top-nav                          |
-|               | sidebar-collapse                        |
-|               | sidebar-mini                            |
-|---------------------------------------------------------|
--->
 <!-- iCheck for checkboxes and radio inputs -->
 <link rel="stylesheet" href="plugins/iCheck/all.css">
 
@@ -363,23 +343,16 @@ desired effect
 						</button>
 						
 					<?php }else{ //.else isClose ?>
-						<button type="button" id="btn_close_so" class="btn btn-danger pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='Y')?'disabled':''); ?>>
+						<button type="button" id="btn_close_so" class="btn btn-danger pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='N')?'':'disabled'); ?>>
 						<i class="glyphicon glyphicon-ok-sign">
 						</i> Close Sales Order
 						</button>
 						
 					<?php } //.if isClose ?>
 					
-
-					<button type="button" id="btn_close_so" class="btn btn-danger pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='Y')?'disabled':''); ?>>
-					<i class="glyphicon glyphicon-ok-sign">
-					</i> Close Sales Order
-					</button>	
-
 					<?php break; 
 					default : ?>				
 				<?php } //.switch statusCode ?> 
-		<?php break; ?>	
 		  
           <button type="button" id="btn_approve" class="btn btn-success pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='C'?'':'disabled'); ?> >
 		 <i class="glyphicon glyphicon-check">

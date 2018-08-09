@@ -550,7 +550,7 @@ $(document).ready(function() {
 		action: 'confirm',
 		rcNo: $('#rcNo').val()			
 		};
-		alert(params.rcNo);
+		//alert(params.rcNo);
 		$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 			$.post({
 				url: '<?=$rootPage;?>_ajax.php',

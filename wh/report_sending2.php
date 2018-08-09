@@ -14,28 +14,51 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	
 	$rootPage="report_sending2";
 	
-	$dateFrom = (isset($_GET['dateFrom'])?$_GET['dateFrom']:'');
-	$dateTo = (isset($_GET['dateTo'])?$_GET['dateTo']:'');
+	$dateFrom=$dateTo="";
+	$dateFromYmd=$dateToYmd="";
+	if(isset($_GET['dateFrom'])){
+		$dateFrom=$_GET['dateFrom'];
+		$dateArr = explode('/', $dateFrom);
+	    $dateY = (int)$dateArr[2];
+	    $dateM = $dateArr[1];
+	    $dateD = $dateArr[0];
+	    $dateFromYmd = $dateY . '-' . $dateM . '-' . $dateD;
+	}else{
+		$dateFrom=date('d/m/Y');
+		$dateFromYmd=date('Y-m-d');
+	}
+	if(isset($_GET['dateTo'])){
+		$dateTo=$_GET['dateTo'];
+		$dateArr = explode('/', $dateTo);
+	    $dateY = (int)$dateArr[2];
+	    $dateM = $dateArr[1];
+	    $dateD = $dateArr[0];
+	    $dateToYmd = $dateY . '-' . $dateM . '-' . $dateD;
+	}else{
+		$dateTo=date('d/m/Y');
+		$dateToYmd=date('Y-m-d');
+	}
 	$fromCode = (isset($_GET['fromCode'])?$_GET['fromCode']:'');
 	$toCode = (isset($_GET['toCode'])?$_GET['toCode']:'');
 	$prodCode = (isset($_GET['prodCode'])?$_GET['prodCode']:'');
 	$prodId = (isset($_GET['prodId']) ?$_GET['prodId']:'');	
 	if($prodCode=="") $prodId="";
 
-	$dateFrom = str_replace('/', '-', $dateFrom);
-	$dateTo = str_replace('/', '-', $dateTo);
-	$dateFromYmd=$dateToYmd="";
-	if($dateFrom<>""){ $dateFromYmd = date('Y-m-d', strtotime($dateFrom));	}
-	if($dateTo<>""){ $dateToYmd =  date('Y-m-d', strtotime($dateTo));	}
+	//$dateFromYmd = str_replace('/', '.', $dateFrom);
+	//$dateToYmd = str_replace('/', '.', $dateTo);
+	//if($dateFrom<>""){ $dateFromYmd = date('Y-m-d', strtotime($dateFrom));	}
+	//if($dateTo<>""){ $dateToYmd =  date('Y-m-d', strtotime($dateTo));	}
 ?>    
 
 <div class="wrapper">
   <!-- Main Header -->
   <?php include 'header.php'; 
+  
   ?>  
   
   <!-- Left side column. contains the logo and sidebar -->
    <?php include 'leftside.php'; ?>
+   
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
@@ -62,17 +85,17 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
           <?php
-				 $sql = "SELECT count(DISTINCT prd.code, prd.description) as countTotal
+				 $sql = "SELECT prd.code, prd.description
 				FROM `send` hdr
 				INNER JOIN send_detail dtl on dtl.sdNo=hdr.sdNo
 				INNER JOIN product_item itm on itm.prodItemId=dtl.prodItemId  
-				LEFT JOIN sloc fsl on hdr.fromCode=fsl.code
-				LEFT JOIN sloc tsl on hdr.toCode=tsl.code					
-				LEFT JOIN product prd on prd.id=itm.prodCodeId  
+				INNER JOIN sloc fsl on hdr.fromCode=fsl.code
+				INNER JOIN sloc tsl on hdr.toCode=tsl.code					
+				INNER JOIN product prd on prd.id=itm.prodCodeId  
 				WHERE 1 ";
 
-				if($dateFrom<>""){ $sql .= " AND hdr.sendDate>=:dateFrom ";	}
-				if($dateTo<>""){ $sql .= " AND hdr.sendDate<=:dateTo ";	}		
+				if($dateFromYmd<>""){ $sql .= " AND hdr.sendDate>=:dateFromYmd ";	}
+				if($dateToYmd<>""){ $sql .= " AND hdr.sendDate<=:dateToYmd ";	}		
 				if($fromCode<>""){ $sql .= " AND hdr.fromCode=:fromCode ";	}
 				if($toCode<>""){ $sql .= " AND hdr.toCode=:toCode ";	}			
 				if($prodCode<>""){ $sql .= " AND prd.code like :prodCode ";	}	
@@ -81,16 +104,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				$sql.="GROUP BY prd.code, prd.description ";
 
 				$stmt = $pdo->prepare($sql);
-				if($dateFrom<>""){ $stmt->bindParam(':dateFrom', $dateFromYmd );	}
-				if($dateTo<>""){ $stmt->bindParam(':dateTo', $dateToYmd );	}
+				if($dateFromYmd<>""){ $stmt->bindParam(':dateFromYmd', $dateFromYmd );	}
+				if($dateToYmd<>""){ $stmt->bindParam(':dateToYmd', $dateToYmd );	}
 				if($fromCode<>""){ $stmt->bindParam(':fromCode', $fromCode );	}
-				if($dateFrom<>""){ $stmt->bindParam(':dateFrom', $dateFrom );	}
 				if($toCode<>""){ $stmt->bindParam(':toCode', $toCode );	}
 				if($prodCode<>""){ $tmp='%'.$prodCode.'%'; $stmt->bindParam(':prodCode', $tmp );	}
 				if($prodId<>""){ $stmt->bindParam(':prodId', $prodId );	}
 				$stmt->execute();	
 			
-                $countTotal = $stmt->fetch()['countTotal'];
+                $countTotal = $stmt->rowCount();
 				
 				$rows=20;
 				$page=0;
@@ -189,13 +211,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						FROM `send` hdr
 						INNER JOIN send_detail dtl on dtl.sdNo=hdr.sdNo
 						INNER JOIN product_item itm on itm.prodItemId=dtl.prodItemId  
-						LEFT JOIN sloc fsl on hdr.fromCode=fsl.code
-						LEFT JOIN sloc tsl on hdr.toCode=tsl.code
-						LEFT JOIN product prd on prd.id=itm.prodCodeId  
+						INNER JOIN sloc fsl on hdr.fromCode=fsl.code
+						INNER JOIN sloc tsl on hdr.toCode=tsl.code
+						INNER JOIN product prd on prd.id=itm.prodCodeId  
 						WHERE 1 ";
 
-						if($dateFrom<>""){ $sql .= " AND hdr.sendDate>=:dateFrom ";	}
-						if($dateTo<>""){ $sql .= " AND hdr.sendDate<=:dateTo ";	}		
+						if($dateFromYmd<>""){ $sql .= " AND hdr.sendDate>=:dateFromYmd ";	}
+						if($dateToYmd<>""){ $sql .= " AND hdr.sendDate<=:dateToYmd ";	}		
 						if($fromCode<>""){ $sql .= " AND hdr.fromCode=:fromCode ";	}
 						if($toCode<>""){ $sql .= " AND hdr.toCode=:toCode ";	}			
 						if($prodCode<>""){ $sql .= " AND prd.code like :prodCode ";	}	
@@ -203,14 +225,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						$sql .= "AND hdr.statusCode='P' ";
 
 						$sql.="GROUP BY prd.code, prd.description ";
-						$sql.="ORDER BY hdr.createTime DESC
-						LIMIT $start, $rows 
-						";
+						$sql.="ORDER BY prd.code ";
+						$sql.="LIMIT $start, $rows ";
+
 						$stmt = $pdo->prepare($sql);
-						if($dateFrom<>""){ $stmt->bindParam(':dateFrom', $dateFromYmd );	}
-						if($dateTo<>""){ $stmt->bindParam(':dateTo', $dateToYmd );	}
+						if($dateFromYmd<>""){ $stmt->bindParam(':dateFromYmd', $dateFromYmd );	}
+						if($dateToYmd<>""){ $stmt->bindParam(':dateToYmd', $dateToYmd );	}
 						if($fromCode<>""){ $stmt->bindParam(':fromCode', $fromCode );	}
-						if($dateFrom<>""){ $stmt->bindParam(':dateFrom', $dateFrom );	}
 						if($toCode<>""){ $stmt->bindParam(':toCode', $toCode );	}
 						if($prodCode<>""){ $tmp='%'.$prodCode.'%'; $stmt->bindParam(':prodCode', $tmp );	}
 						if($prodId<>""){ $stmt->bindParam(':prodId', $prodId );	}
@@ -224,7 +245,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				   ?>             
 					
 					
-						<?php $c_row=($start+1); while ($row = $stmt->fetch() ) { 
+						<?php $c_row=($start+1); $sumQty=$sumTotalQty=0; while ($row = $stmt->fetch() ) { 
 							$gradeName='';
 							switch($row['grade']){
 								case '0' : $gradeName='A'; break;
@@ -241,8 +262,18 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
 					<td style="text-align: right;"><?= number_format($row['totalQty'],2,'.',','); ?></td>
                 </tr>
-                 <?php $c_row +=1; } ?>
+                 <?php $c_row +=1; $sumQty+=$row['qty']; $sumTotalQty+=$row['totalQty']; } ?>
                   </tbody>
+                  <tfooter>
+                  	 <tr>
+						<td></td>
+						<td><?= 'Total '.($c_row-1).' Items'; ?></td>
+						<td></td>
+						<td></td>
+						<td style="text-align: right;"><?= number_format($sumQty,0,'.',','); ?></td>
+						<td style="text-align: right;"><?= number_format($sumTotalQty,2,'.',','); ?></td>
+	                </tr>
+                  </tfooter>
                 </table>
               </div>
               <!-- /.table-responsive -->
@@ -250,10 +281,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			<?php $condQuery="?dateFrom=".$dateFrom."&dateTo=".$dateTo."&fromCode=".$fromCode."&toCode=".$toCode."&prodCode=".$prodCode."&prodId=".$prodId; ?>
 
              <?php if($rowCount>0){    ?>
-               <div class="col-md-12">
-			<a href="<?=$rootPage;?>_xls.php<?=$condQuery;?>" class="btn btn-default pull-right"><i class="glyphicon glyphicon-print"></i> Export Summary</a>
+			<a href="<?=$rootPage;?>_pdf_detail.php<?=$condQuery;?>" class="btn btn-default pull-right" style="margin-right: 5px;"><i class="glyphicon glyphicon-print"></i> Export Detail</a>
 
-			<a href="<?=$rootPage;?>_dtl_xls.php<?=$condQuery;?>" class="btn btn-default pull-right" style="margin-right: 5px;"><i class="glyphicon glyphicon-print"></i> Export Detail</a>
+               <div class="col-md-12">
+			<a href="<?=$rootPage;?>_pdf_summary.php<?=$condQuery;?>" class="btn btn-default pull-right"><i class="glyphicon glyphicon-print"></i> Export Summary</a>
+
 
 			
 			<nav>

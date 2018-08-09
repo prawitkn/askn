@@ -425,6 +425,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							LEFT JOIN `sloc` tsl on tsl.code=a.toCode
 							WHERE 1=1
 							AND a.statusCode='P' 
+							AND a.rcNo='' 
 							";
 					switch($s_userGroupCode){
 						case 'whOff' : case 'whSup' :

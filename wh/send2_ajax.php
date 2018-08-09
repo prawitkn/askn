@@ -95,6 +95,7 @@ if(!isset($_POST['action'])){
 				LEFT JOIN product prd ON prd.id=itm.prodCodeId
 				WHERE 1=1 ";
 				
+				
 				/*$sql = "SELECT hdr.sendId, dtl.`productItemId`, itm.`barcode`, itm.`issueDate`
 				, itm.`machineId`, itm.`seqNo`, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`
 				, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId`					
