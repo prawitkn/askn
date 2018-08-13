@@ -36,7 +36,7 @@ class MYPDF extends TCPDF {
 		$this->Cell(0, 5, 'Asia Kangnam Co.,Ltd.', 0, false, 'C', 0, '', 0, false, 'M', 'M');
 		$this->Ln(7);
 		$this->SetFont('Times', 'B', 14, '', true);	
-        $this->Cell(0, 5, 'Product Sending Detail Report', 0, false, 'C', 0, '', 0, false, 'M', 'M');
+        $this->Cell(0, 5, 'Product Delivery Summary Report', 0, false, 'C', 0, '', 0, false, 'M', 'M');
     }
     // Page footer
     public function Footer() {
@@ -137,31 +137,20 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			$dateFromYmd=$dateToYmd="";
 			if($dateFrom<>""){ $dateFromYmd = date('Y-m-d', strtotime($dateFrom));	}
 			if($dateTo<>""){ $dateToYmd =  date('Y-m-d', strtotime($dateTo));	}
-			
-			$fromCode = (isset($_GET['fromCode'])?$_GET['fromCode']:'');
+
 			$toCode = (isset($_GET['toCode'])?$_GET['toCode']:'');
 			$prodCode = (isset($_GET['prodCode'])?$_GET['prodCode']:'');
 			$prodId = (isset($_GET['prodId']) ?$_GET['prodId']:'');	
-			if($prodCode=="") $prodId="";		
+			if($prodCode=="") $prodId="";
 
-			
 
 			//SQL Header
-			$fromCodeName="All";
-			if($fromCode<>""){
-				$sql = "SELECT * FROM sloc WHERE code=:fromCode ";
-				$stmt = $pdo->prepare($sql);
-				if($fromCode<>""){ $stmt->bindParam(':fromCode', $fromCode );	}
-				if($stmt->execute()){
-					$fromCodeName=$stmt->fetch()['name'];
-				}
-			}
 
 			$toCodeName="All";
 			if($toCode<>""){
-				$sql = "SELECT * FROM sloc WHERE code=:toCode ";
+				$sql = "SELECT * FROM customer WHERE id=:id ";
 				$stmt = $pdo->prepare($sql);
-				if($toCode<>""){ $stmt->bindParam(':toCode', $toCode );	}
+				if($toCode<>""){ $stmt->bindParam(':id', $toCode );	}
 				if($stmt->execute()){
 					$toCodeName=$stmt->fetch()['name'];
 				}
@@ -186,77 +175,57 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			}
 		
 	
-			$sql = "SELECT dtl.id, dtl.prodItemId 
-			, itm.prodCodeId, itm.barcode, itm.NW, itm.GW, itm.grade, itm.qty, itm.issueDate 
-			, hdr.sendDate
-			FROM `send` hdr
-			INNER JOIN send_detail dtl on dtl.sdNo=hdr.sdNo
+			$sql = "SELECT prd.code , prd.description, itm.grade, count(itm.prodItemId) as qty, sum(itm.qty) as totalQty 
+			FROM `delivery_header` hdr
+			INNER JOIN delivery_detail dtl on dtl.doNo=hdr.doNo
+            INNER JOIN sale_header sh ON sh.soNo=hdr.soNo 
+            INNER JOIN customer cust ON cust.id=sh.custId 
 			INNER JOIN product_item itm on itm.prodItemId=dtl.prodItemId  
-			LEFT JOIN sloc fsl on hdr.fromCode=fsl.code
-			LEFT JOIN sloc tsl on hdr.toCode=tsl.code
-			LEFT JOIN product prd on prd.id=itm.prodCodeId  
+			INNER JOIN product prd on prd.id=itm.prodCodeId  
 			WHERE 1 ";
 
-			if($dateFromYmd<>""){ $sql .= " AND hdr.sendDate>=:dateFromYmd ";	}
-			if($dateToYmd<>""){ $sql .= " AND hdr.sendDate<=:dateToYmd ";	}		
-			if($fromCode<>""){ $sql .= " AND hdr.fromCode=:fromCode ";	}
-			if($toCode<>""){ $sql .= " AND hdr.toCode=:toCode ";	}			
+			if($dateFromYmd<>""){ $sql .= " AND hdr.deliveryDate>=:dateFromYmd ";	}
+			if($dateToYmd<>""){ $sql .= " AND hdr.deliveryDate<=:dateToYmd ";	}	
+			if($toCode<>""){ $sql .= " AND sh.custId=:toCode ";	}				
 			if($prodCode<>""){ $sql .= " AND prd.code like :prodCode ";	}	
 			if($prodId<>""){ $sql .= " AND prd.id=:prodId ";	}	
 			$sql .= "AND hdr.statusCode='P' ";
-
-			$sql.="ORDER BY prd.code, itm.issueDate, itm.barcode ASC ";
+			$sql.="GROUP BY prd.code, prd.description ";
+			$sql.="ORDER BY prd.code ";
 
 			$stmt = $pdo->prepare($sql);
 			if($dateFromYmd<>""){ $stmt->bindParam(':dateFromYmd', $dateFromYmd );	}
 			if($dateToYmd<>""){ $stmt->bindParam(':dateToYmd', $dateToYmd );	}
-			if($fromCode<>""){ $stmt->bindParam(':fromCode', $fromCode );	}
 			if($toCode<>""){ $stmt->bindParam(':toCode', $toCode );	}
 			if($prodCode<>""){ $tmp='%'.$prodCode.'%'; $stmt->bindParam(':prodCode', $tmp );	}
 			if($prodId<>""){ $stmt->bindParam(':prodId', $prodId );	}
 			$stmt->execute();	
 
-						
-			$html='';		
-			$row_no = 1; $rowPerPage=0; $sumQty=$sumNW=$sumGW=0; while ($row = $stmt->fetch()) {
-				if($rowPerPage==40){
-					//Footer for write 
-					$html .='</tbody></table>';					
-					
-					$pdf->AddPage('P');
-											
-					$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
-					$html='';
-					$rowPerPage=0;
-				}
-				if($html==''){
-					$html ='
-					<table class="table table-striped no-margin" >
-						 <thead>									
-						  <tr>
-						  	<th  colspan="4"><span style="font-weight: bold;">Sending Date :</span> '.date('d M Y',strtotime( $dateFrom )).' to '.date('d M Y',strtotime( $dateTo )).'</th>
-						  	<th  colspan="4"><span style="font-weight: bold;">Product Code :</span> '.$prodCodeName.'</th>
-						</tr>
+							
+			$html ='
+			<table class="table table-striped no-margin" >
+				 <thead>									
+				  <tr>
+				  	<th  colspan="4"><span style="font-weight: bold;">Sending Date :</span> '.date('d M Y',strtotime( $dateFrom )).' to '.date('d M Y',strtotime( $dateTo )).'</th>
+				  	<th  colspan="4"><span style="font-weight: bold;">Product Code :</span> '.$prodCodeName.'</th>
+				</tr>
 
-						<tr>
-							<th  colspan="4"><span style="font-weight: bold;">From :</span> '.$fromCodeName.'</th>
-
-						  	<th  colspan="4"><span style="font-weight: bold;">To :</span> '.$toCodeName.'</th>
-						</tr>
-
-						  <tr>
-								<th style="font-weight: bold; text-align: center; width: 30px;" border="1">No.</th>
-								<th style="font-weight: bold; text-align: center; width: 250px;" border="1">Barcode</th>
-								<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Grade</th>
-								<th style="font-weight: bold; text-align: center; width: 70px;" border="1">Net<br/>Weight<br/>(kg.)</th>
-								<th style="font-weight: bold; text-align: center; width: 70px;" border="1">Gross<br/>Weight<br/>(kg.)</th>		
-								<th style="font-weight: bold; text-align: center; width: 70px;" border="1">Quantity (m.)</th>
-								<th style="font-weight: bold; text-align: center; width: 70px;" border="1">Send Date</th>
-							</tr>
-						  </thead>
-						  <tbody>
-					'; 
-				}
+				<tr>
+				  	<th  colspan="4"><span style="font-weight: bold;">To :</span> '.$toCodeName.'</th>
+				</tr>
+				  <tr>
+						<th style="font-weight: bold; text-align: center; width: 30px;" border="1">No.</th>
+						<th style="font-weight: bold; text-align: center; width: 150px;" border="1">Product Code</th>
+						<th style="font-weight: bold; text-align: center; width: 250px;" border="1">Description</th>
+						<th style="font-weight: bold; text-align: center; width: 40px;" border="1">Grade</th>
+						<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Box/Roll</th>
+						<th style="font-weight: bold; text-align: center; width: 70px;" border="1">Piece/Length<br/>/KG</th>
+					</tr>
+				  </thead>
+				  <tbody>
+			'; 	
+			$row_no = 1; $rowPerPage=0; $sumQty=$sumTotalQty=0; while ($row = $stmt->fetch()) {
+				
 				$gradeName = '<b style="color: red;">N/A</b>'; 
 					switch($row['grade']){
 						case 0 : $gradeName = 'A'; break;
@@ -267,26 +236,24 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 				
 			$html .='<tr>
 				<td style="border: 0.1em solid black; text-align: center; width: 30px;">'.$row_no.'</td>
-				<td style="border: 0.1em solid black; padding: 10px; width: 250px;"> '.$row['barcode'].'</td>
-				<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$gradeName.'</td>
-				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.$row['NW'].'&nbsp;&nbsp;</td>
-				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.$row['GW'].'&nbsp;&nbsp;</td>
-				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($row['qty'],0,'.',',').'&nbsp;&nbsp;</td>
-				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.date('d M Y',strtotime( $row['sendDate'] )).'&nbsp;&nbsp;</td>
+				<td style="border: 0.1em solid black; padding: 10px; width: 150px;"> '.$row['code'].'</td>
+				<td style="border: 0.1em solid black; padding: 10px; width: 250px;"> '.$row['description'].'</td>
+				<td style="border: 0.1em solid black; text-align: center; width: 40px;">'.$gradeName.'</td>
+				<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['qty'].'&nbsp;&nbsp;</td>
+				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($row['totalQty'],0,'.',',').'&nbsp;&nbsp;</td>
 			</tr>';			
 										
-			$sumQty+=$row['qty'] ; $sumNW+=$row['NW']; $sumGW+=$row['GW'] ;								
+			$sumQty+=$row['qty'] ; $sumTotalQty+=$row['totalQty'];					
 			$row_no +=1; $rowPerPage+=1; }
 			//<!--end while div-->	
 			
 			$html .='<tr>
-				<td style="border: 0.1em solid black; text-align: center; width: 30px;"></td>
-				<td style="border: 0.1em solid black; text-align: center; padding: 10px; width: 250px;">Total '.number_format($row_no-1,0,'.',',').' items</td>
-				<td style="border: 0.1em solid black; text-align: center; width: 50px;"></td>
-				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($sumNW,2,'.',',').'&nbsp;&nbsp;</td>
-				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($sumGW,2,'.',',').'&nbsp;&nbsp;</td>
-				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($sumQty,0,'.',',').'&nbsp;&nbsp;</td>
-				<td style="border: 0.1em solid black; text-align: right; width: 70px;"></td>
+				<td style="font-weight: bold; border: 0.1em solid black; text-align: center; width: 30px;"></td>
+				<td style="font-weight: bold; border: 0.1em solid black; text-align: center; padding: 10px; width: 150px;">Total '.number_format($row_no-1,0,'.',',').' items</td>
+				<td style="font-weight: bold; border: 0.1em solid black; text-align: center; padding: 10px; width: 250px;"></td>
+				<td style="font-weight: bold; border: 0.1em solid black; text-align: center; width: 40px;"></td>
+				<td style="font-weight: bold; border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumQty,0,'.',',').'&nbsp;&nbsp;</td>
+				<td style="font-weight: bold; border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($sumTotalQty,0,'.',',').'&nbsp;&nbsp;</td>
 			</tr>';
 			
 			

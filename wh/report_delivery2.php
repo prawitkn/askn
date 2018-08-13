@@ -12,7 +12,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		$s_userDeptCode = $row_user['userDeptCode'];
 		$s_userID=$_SESSION['userID'];*/
 	
-	$rootPage="report_sending2";
+	$rootPage="report_delivery2";
 	
 	$dateFrom=$dateTo="";
 	$dateFromYmd=$dateToYmd="";
@@ -64,7 +64,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- Content Header (Page header) -->
     <section class="content-header">
       <h1>
-		Sending Report
+		Delivery Report
         <small>Report</small>
       </h1>
       <ol class="breadcrumb">
@@ -79,25 +79,24 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <!-- Your Page Content Here -->
     <div class="box box-primary">
         <div class="box-header with-border">
-        <h3 class="box-title">Sending Report</h3>		
+        <h3 class="box-title">Delivery Report</h3>		
 		
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
           <?php
 				 $sql = "SELECT prd.code, prd.description
-				FROM `send` hdr
-				INNER JOIN send_detail dtl on dtl.sdNo=hdr.sdNo
+				FROM `delivery_header` hdr
+				INNER JOIN delivery_detail dtl on dtl.doNo=hdr.doNo
+	            INNER JOIN sale_header sh ON sh.soNo=hdr.soNo 
+	            INNER JOIN customer cust ON cust.id=sh.custId 
 				INNER JOIN product_item itm on itm.prodItemId=dtl.prodItemId  
-				INNER JOIN sloc fsl on hdr.fromCode=fsl.code
-				INNER JOIN sloc tsl on hdr.toCode=tsl.code					
 				INNER JOIN product prd on prd.id=itm.prodCodeId  
 				WHERE 1 ";
 
-				if($dateFromYmd<>""){ $sql .= " AND hdr.sendDate>=:dateFromYmd ";	}
-				if($dateToYmd<>""){ $sql .= " AND hdr.sendDate<=:dateToYmd ";	}		
-				if($fromCode<>""){ $sql .= " AND hdr.fromCode=:fromCode ";	}
-				if($toCode<>""){ $sql .= " AND hdr.toCode=:toCode ";	}			
+				if($dateFromYmd<>""){ $sql .= " AND hdr.deliveryDate>=:dateFromYmd ";	}
+				if($dateToYmd<>""){ $sql .= " AND hdr.deliveryDate<=:dateToYmd ";	}	
+				if($toCode<>""){ $sql .= " AND sh.custId=:toCode ";	}			
 				if($prodCode<>""){ $sql .= " AND prd.code like :prodCode ";	}	
 				if($prodId<>""){ $sql .= " AND prd.id=:prodId ";	}	
 				$sql .= "AND hdr.statusCode='P' ";
@@ -152,30 +151,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						<label for="dateTo">Date To : </label>
 						<input type="text" id="dateTo" name="dateTo" value="" class="form-control datepicker" data-smk-msg="Require To Date." required >
 
-						<label>From : </label>
-					<select name="fromCode" class="form-control">
-						<option value="" <?php echo ($fromCode==""?'selected':''); ?> >--All--</option>
-						<?php
-						$sql = "SELECT `code`, `name` FROM sloc WHERE statusCode='A' ORDER BY code ASC ";
-						$stmt = $pdo->prepare($sql);
-						$stmt->execute();					
-						while ($row = $stmt->fetch()){
-							$selected=($fromCode==$row['code']?'selected':'');						
-							echo '<option value="'.$row['code'].'" '.$selected.'>'.$row['code'].' : '.$row['name'].'</option>';
-						}
-						?>
-					</select>	
-
-					<label>To : </label>
+					<label>To Customer : </label>
 					<select name="toCode" class="form-control">
 						<option value="" <?php echo ($toCode==""?'selected':''); ?> >--All--</option>
 						<?php
-						$sql = "SELECT `code`, `name` FROM sloc WHERE statusCode='A' ORDER BY code ASC ";
+						$sql = "SELECT `id`, `code`, `name` FROM customer WHERE statusCode='A' ORDER BY name ASC ";
 						$stmt = $pdo->prepare($sql);
 						$stmt->execute();					
 						while ($row = $stmt->fetch()){
-							$selected=($toCode==$row['code']?'selected':'');						
-							echo '<option value="'.$row['code'].'" '.$selected.'>'.$row['code'].' : '.$row['name'].'</option>';
+							$selected=($toCode==$row['id']?'selected':'');						
+							echo '<option value="'.$row['id'].'" '.$selected.'>'.$row['name'].' : '.$row['code'].'</option>';
 						}
 						?>
 					</select>		
@@ -208,18 +193,17 @@ scratch. This page gets rid of all links and provides the needed markup only.
                   <tbody>
 					<?php
 						 $sql = "SELECT prd.code, prd.description, itm.grade, count(itm.prodItemId) as qty, sum(itm.qty) as totalQty 
-						FROM `send` hdr
-						INNER JOIN send_detail dtl on dtl.sdNo=hdr.sdNo
+						FROM `delivery_header` hdr
+						INNER JOIN delivery_detail dtl on dtl.doNo=hdr.doNo
+                        INNER JOIN sale_header sh ON sh.soNo=hdr.soNo 
+                        INNER JOIN customer cust ON cust.id=sh.custId 
 						INNER JOIN product_item itm on itm.prodItemId=dtl.prodItemId  
-						INNER JOIN sloc fsl on hdr.fromCode=fsl.code
-						INNER JOIN sloc tsl on hdr.toCode=tsl.code
 						INNER JOIN product prd on prd.id=itm.prodCodeId  
 						WHERE 1 ";
 
-						if($dateFromYmd<>""){ $sql .= " AND hdr.sendDate>=:dateFromYmd ";	}
-						if($dateToYmd<>""){ $sql .= " AND hdr.sendDate<=:dateToYmd ";	}		
-						if($fromCode<>""){ $sql .= " AND hdr.fromCode=:fromCode ";	}
-						if($toCode<>""){ $sql .= " AND hdr.toCode=:toCode ";	}			
+						if($dateFromYmd<>""){ $sql .= " AND hdr.deliveryDate>=:dateFromYmd ";	}
+						if($dateToYmd<>""){ $sql .= " AND hdr.deliveryDate<=:dateToYmd ";	}	
+						if($toCode<>""){ $sql .= " AND sh.custId=:toCode ";	}			
 						if($prodCode<>""){ $sql .= " AND prd.code like :prodCode ";	}	
 						if($prodId<>""){ $sql .= " AND prd.id=:prodId ";	}	
 						$sql .= "AND hdr.statusCode='P' ";
@@ -278,12 +262,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
               </div>
               <!-- /.table-responsive -->
 			  
-			<?php $condQuery="?dateFrom=".$dateFrom."&dateTo=".$dateTo."&fromCode=".$fromCode."&toCode=".$toCode."&prodCode=".$prodCode."&prodId=".$prodId; ?>
+			<?php $condQuery="?dateFrom=".$dateFrom."&dateTo=".$dateTo."&toCode=".$toCode."&prodCode=".$prodCode."&prodId=".$prodId; ?>
 
              <?php if($rowCount>0){    ?>
 			<a href="<?=$rootPage;?>_pdf_detail.php<?=$condQuery;?>" class="btn btn-default pull-right" style="margin-right: 5px;"><i class="glyphicon glyphicon-print"></i> Export Detail</a>
 
-     
 			<a href="<?=$rootPage;?>_pdf_summary.php<?=$condQuery;?>" class="btn btn-default pull-right" style="margin-right: 5px;"><i class="glyphicon glyphicon-print"></i> Export Summary</a>
 
 

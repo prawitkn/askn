@@ -120,10 +120,11 @@ $hdr = $stmt->fetch();
 				<div class="box-body">
 				   <?php
 						$sql = "
-						SELECT dtl.`id`, dtl.prodId, dtl.`issueDate`, dtl.`grade`, dtl.`meter`, dtl.`qty`, dtl.`pickNo` 
+						SELECT dtl.`id`, dtl.prodId, dtl.`issueDate`, dtl.`grade`, dtl.`meter`, dtl.`qty`, dtl.`pickNo` , dtl.`gradeTypeId`, pgt.`name` as gradeTypeName 
 						, prd.code as prodCode 
 						FROM `picking_detail` dtl 
 						LEFT JOIN product prd ON prd.id=dtl.prodId 
+						LEFT JOIN product_item_grade_type pgt ON pgt.id=dtl.gradeTypeId 
 						WHERE 1
 						AND dtl.`pickNo`=:pickNo 
 						
@@ -141,6 +142,7 @@ $hdr = $stmt->fetch();
 							<th>Product Name</th>
 							<th>Issue Date</th>
 							<th>Grade</th>
+							<th>Grade Type</th>
 							<th>Meter</th>							
 							<th style="color:blue;">Qty</th>
 							<th>Total</th>
@@ -183,6 +185,7 @@ $hdr = $stmt->fetch();
 								<td><?= $row['prodCode']; ?></td>
 								<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>
 								<td><?= $gradeName; ?></td>
+								<td><?= $row['gradeTypeName']; ?></td>	
 								<td style="text-align: right;"><?= $row['meter']; ?></td>								
 								<td style="text-align: right; color:blue;"><?= number_format(($row['qty']/$row['meter']),2,'.',','); ?></td>
 								<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>

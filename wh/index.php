@@ -316,7 +316,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		  
 		  
 		  <!-- TABLE: LATEST ORDERS -->		  
-          <div class="box box-info">
+          <div class="box box-warning">
             <div class="box-header with-border">
               <h3 class="box-title">Last Waiting For Receiving</h3>
 
@@ -404,7 +404,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		  
 		  
 		  <!-- TABLE: LATEST ORDERS -->		  
-          <div class="box box-info">
+          <div class="box box-warning">
             <div class="box-header with-border">
               <h3 class="box-title">Last Waiting For Return Receiving</h3>
 
@@ -573,7 +573,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             </div>
             <!-- /.box-body -->
             <div class="box-footer clearfix">
-              <a href="send2_add.php" class="btn btn-sm btn-info btn-flat pull-left">Place New Sending</a>
+              <a href="send2_hdr.php" class="btn btn-sm btn-info btn-flat pull-left">Place New Sending</a>
               <a href="send2.php" class="btn btn-sm btn-default btn-flat pull-right">View All Sending</a>
             </div>
             <!-- /.box-footer -->
@@ -740,6 +740,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 									";
 									break;
 								default : 
+									$sql = "SELECT DISTINCT hdr.soNo, hdr.deliveryDate FROM sale_header hdr 
+									INNER JOIN sale_detail dtl on dtl.soNo=hdr.soNo
+									WHERE hdr.isClose='N'  
+									AND hdr.statusCode='P' 
+									ORDER BY hdr.`createTime` DESC
+									LIMIT 10
+									";
 							}
 							break;
 						default : // it, admin

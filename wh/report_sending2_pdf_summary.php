@@ -132,17 +132,18 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 				$dateTo=date('d/m/Y');
 				$dateToYmd=date('Y-m-d');
 			}
+			$dateFrom = str_replace('/', '-', $dateFrom);
+			$dateTo = str_replace('/', '-', $dateTo);
+			$dateFromYmd=$dateToYmd="";
+			if($dateFrom<>""){ $dateFromYmd = date('Y-m-d', strtotime($dateFrom));	}
+			if($dateTo<>""){ $dateToYmd =  date('Y-m-d', strtotime($dateTo));	}
+			
 			$fromCode = (isset($_GET['fromCode'])?$_GET['fromCode']:'');
 			$toCode = (isset($_GET['toCode'])?$_GET['toCode']:'');
 			$prodCode = (isset($_GET['prodCode'])?$_GET['prodCode']:'');
 			$prodId = (isset($_GET['prodId']) ?$_GET['prodId']:'');	
 			if($prodCode=="") $prodId="";
 
-			$dateFrom = str_replace('/', '-', $dateFrom);
-			$dateTo = str_replace('/', '-', $dateTo);
-			$dateFromYmd=$dateToYmd="";
-			if($dateFrom<>""){ $dateFromYmd = date('Y-m-d', strtotime($dateFrom));	}
-			if($dateTo<>""){ $dateToYmd =  date('Y-m-d', strtotime($dateTo));	}
 
 			//SQL Header
 			$fromCodeName="All";

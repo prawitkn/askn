@@ -27,10 +27,10 @@ if($result_user->num_rows >= 1){
 	$_SESSION['userId'] = $s_userId;
 	$_SESSION['userName'] = $row_user['userName'];
 	if($row_user['loginStatus']==0){
-		//Set Login 
+		//Set Login Cookie
 		//setcookie("loginWh", "1", time()+3600);	//3600=1Hour; 1800=30Min; 60=1Min
 		$SID = session_id();
-		setcookie("SID", $SID, time()+3600);	//3600=1Hour; 1800=30Min; 60=1Min
+		setcookie("loginWh", $SID, time()+3600);	//3600=1Hour; 1800=30Min; 60=1Min
 		$qry_user = "UPDATE wh_user SET loginStatus=1, lastLoginTime=NOW(), SID='$SID' WHERE userId='$s_userId'";
 		$result_user = mysqli_query($link,$qry_user);
 		

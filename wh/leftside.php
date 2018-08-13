@@ -103,7 +103,7 @@
 			<li><a href="report_onway_sending.php"><i class="fa fa-list-alt"></i> <span>Unreceived Sending Report</span></a></li>
 			<li><a href="report_receiving.php"><i class="fa fa-list-alt"></i> <span>Receiving Report</span></a></li>
 			<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whOff' : case 'whSup' : ?>
-			<li><a href="report_delivery.php"><i class="fa fa-list-alt"></i> <span>Delivery Report</span></a></li>
+			<li><a href="report_delivery2.php"><i class="fa fa-list-alt"></i> <span>Delivery Report</span></a></li>
 			<?php break; default : } ?>	
 		<?php break; default : } ?>		
 

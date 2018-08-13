@@ -104,16 +104,17 @@ desired effect
 			if($stmt->rowCount()>0){
 				$sql = "
 				SELECT itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, itm.`qty` as meters
+				, itm.`gradeTypeId`, pgt.name as `gradeTypeName` 
 				, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total			
 				, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 						ON pickh.pickNo=pickd.pickNo
-						WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty 
+						WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty AND pickd.`gradeTypeId`= itm.`gradeTypeId`
 						AND pickh.isFinish='N'
 						AND pickh.statusCode<>'X' 
 						AND pickh.pickNo<>:pickNo) as bookedQty
 				, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 						ON pickh.pickNo=pickd.pickNo
-						WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty 
+						WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty  AND pickd.`gradeTypeId`= itm.`gradeTypeId`
 						AND pickh.pickNo=:pickNo2 ) as pickQty
 				,prd.id as prodId, prd.code as prodCode
 				, (SELECT COUNT(x.shelfId) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
@@ -121,7 +122,8 @@ desired effect
 				INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  		
 				INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 				LEFT JOIN wh_shelf_map_item smi ON smi.recvProdId=dtl.id 
-				LEFT JOIN product prd ON prd.id=itm.prodCodeId 				
+				LEFT JOIN product prd ON prd.id=itm.prodCodeId 		
+				LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  				
 				WHERE 1=1
 				AND hdr.statusCode='P' 	
 				AND dtl.statusCode='A' 
@@ -136,7 +138,7 @@ desired effect
 																	LIMIT 1) ";
 				
 				$sql.="
-				GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`, isShelfed 			
+				GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`, itm.`gradeTypeId`, isShelfed 			
 								
 				ORDER BY itm.`issueDate` ASC  
 				";
@@ -163,16 +165,17 @@ desired effect
 					case 'L' :
 						$sql = "
 						SELECT itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, itm.`qty` as meters
+						, itm.`gradeTypeId`, pgt.name as `gradeTypeName` 
 						, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total		
 						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 								ON pickh.pickNo=pickd.pickNo
-								WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty 
+								WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty  AND pickd.`gradeTypeId`= itm.`gradeTypeId`
 								AND pickh.isFinish='N' 
 								AND pickh.statusCode<>'X' 
 								AND pickh.pickNo<>:pickNo) as bookedQty
 						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 								ON pickh.pickNo=pickd.pickNo
-								WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty 
+								WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty  AND pickd.`gradeTypeId`= itm.`gradeTypeId`
 								AND pickh.pickNo=:pickNo2 ) as pickQty
 						,prd.id as prodId, prd.code as prodCode
 						, (SELECT COUNT(x.shelfId) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
@@ -180,7 +183,8 @@ desired effect
 						INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  		
 						INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 						LEFT JOIN wh_shelf_map_item smi ON smi.recvProdId=dtl.id 
-						LEFT JOIN product prd ON prd.id=itm.prodCodeId 				
+						LEFT JOIN product prd ON prd.id=itm.prodCodeId 		
+						LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  		
 						WHERE 1=1
 						AND hdr.toCode='8' 
 						AND hdr.statusCode='P' 	
@@ -197,7 +201,7 @@ desired effect
 						}
 						
 						$sql.="
-						GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`, isShelfed 			
+						GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`, itm.`gradeTypeId`, isShelfed 			
 										
 						ORDER BY itm.`issueDate` ASC  
 						";
@@ -205,16 +209,17 @@ desired effect
 					default : //Export 
 						$sql = "
 						SELECT itm.`prodCodeId`, s.sendDate as issueDate, itm.`grade`, itm.`qty` as meters
+						, itm.`gradeTypeId`, pgt.name as `gradeTypeName` 
 						, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total			
 						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 								ON pickh.pickNo=pickd.pickNo
-								WHERE pickd.prodId=itm.prodCodeId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty 
+								WHERE pickd.prodId=itm.prodCodeId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty  AND pickd.`gradeTypeId`= itm.`gradeTypeId`
 								AND pickh.isFinish='N' 
 								AND pickh.statusCode<>'X'
 								AND pickh.pickNo<>:pickNo) as bookedQty
 						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 								ON pickh.pickNo=pickd.pickNo
-								WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty 
+								WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty  AND pickd.`gradeTypeId`= itm.`gradeTypeId`
 								AND pickh.pickNo=:pickNo2 ) as pickQty
 						,itm.prodCodeId as prodId, prd.code as prodCode
 						, (SELECT COUNT(x.shelfId) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
@@ -223,7 +228,8 @@ desired effect
 						INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 						INNER JOIN send s ON s.sdNo=hdr.refNo 
 						LEFT JOIN wh_shelf_map_item smi ON smi.recvProdId=dtl.id 
-						LEFT JOIN product prd ON prd.id=itm.prodCodeId 				
+						LEFT JOIN product prd ON prd.id=itm.prodCodeId 	
+						LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  			
 						WHERE 1=1
 						AND hdr.toCode='E' 
 						AND hdr.statusCode='P' 	
@@ -239,7 +245,7 @@ desired effect
 							default : //80					
 						}
 						$sql.="
-						GROUP BY itm.`prodCodeId`, s.sendDate, itm.`grade`, prd.code , itm.`qty`, isShelfed 			
+						GROUP BY itm.`prodCodeId`, s.sendDate, itm.`grade`, prd.code , itm.`qty`, itm.`gradeTypeId`, isShelfed 			
 										
 						ORDER BY s.sendDate ASC  
 						";
@@ -263,7 +269,8 @@ desired effect
 					<th>No.</th>
                     <th>Product Code</th>
 					<th>MFD.</th>
-					<th>Grade</th>
+					<th>Grade</th>					
+					<th>Grade Type</th>
 					<th>Meter</th>
                     <th>Qty</th>
 					<th>Total</th>
@@ -287,6 +294,7 @@ desired effect
 					<td><?= $row['prodCode']; ?></td>					
 					<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>
 					<td><?= $gradeName; ?></td>
+					<td style="text-align: right;"><?= $row['gradeTypeName']; ?></td>
 					<td style="text-align: right;"><?= $row['meters']; ?></td>
 					<td style="text-align: right;"><?= $row['qty']; ?></td>
 					<td style="text-align: right;"><?= $row['total']; ?></td>
@@ -301,11 +309,11 @@ desired effect
 						<?php }else{ ?>
 						<input type="hidden" name="issueDate[]" value="<?=$row['issueDate'];?>" />
 						<input type="hidden" name="grade[]" value="<?=$row['grade'];?>" />
-						<input type="hidden" name="meter[]" value="<?=$row['meters'];?>" />
+						<input type="hidden" name="meter[]" value="<?=$row['meters'];?>" />						
+						<input type="hidden" name="gradeTypeId[]" value="<?=$row['gradeTypeId'];?>" />
 						<input type="hidden" name="balanceQty[]" value="<?=$row['total']-$row['bookedQty'];?>" />
 						<input type="textbox" name="pickQty[]" class="form-control" value="<?=$row['pickQty'];?>"  
-						data-prodId="<?=$row['prodId'];?>" data-issueDate="<?=$row['issueDate'];?>" 
-						data-grade="<?=$row['grade'];?>"  data-isShelfed="1" 
+						data-isShelfed="1" 
 						onkeypress="return numbersOnly(this, event);" 
 						onpaste="return false;"
 						style="text-align: right;"

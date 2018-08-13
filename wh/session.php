@@ -7,10 +7,9 @@
     
 	include '../db/db.php';
 		
-	//ALTER TABLE `wh_user` ADD `loginStatus` INT NOT NULL DEFAULT '0' AFTER `statusCode`, ADD `lastLoginTime` DATETIME NOT NULL AFTER `loginStatus`;
-	/*if(!isset($_COOKIE["loginWh"])){
-		header("Location: login.php");
-	}*/
+	if(!isset($_COOKIE["loginWh"])){
+		header("Location: logout.php");
+	}
 	
     $s_userId=$_SESSION['userId'];
     $qry_user = "SELECT * FROM wh_user WHERE userId='$s_userId'";

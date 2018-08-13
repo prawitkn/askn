@@ -71,14 +71,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <!-- /.box-header -->
             <div class="box-body">
               <div class="row">
-				<div class="col-md-8">
-					<div class="col-md-4" style="text-align: center;">
+				<div class="col-md-6">
+					<div class="col-md-6" style="text-align: center;">
 						
 						<a href="../images/product/<?php echo (empty($row['photo'])? 'default.jpg' : $row['photo']) ?> " data-fancybox="images" data-caption="<?=$row['code'];?>">
 							<image src="../images/product/<?php echo (empty($row['photo'])? 'default.jpg' : $row['photo']) ?> " width="200" height="200" />
 						</a>
 					</div>				
-	                <div class="col-md-8">
+	                <div class="col-md-6">
 						<label>Product Name : </label>
 						<?= $row['name']; ?><br/>
 						<label>Description : </label>
@@ -111,16 +111,19 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	         	</div>
 	         	<!--/.col-md-8-->
 
-				<div class="col-md-4">
+				<div class="col-md-6">
 					<h3>Avalible Stock by Length/Box/KG</h3>
 					<?php									
-						$sql = "SELECT itm.prodCodeId as prodId,
-						itm.qty, sum(itm.qty) as sumQty
+						$sql = "SELECT itm.prodCodeId as prodId
+						, itm.qty, itm.grade, itm.gradeTypeId, pgt.name as gradeTypeName 
+						, sum(itm.qty) as sumQty
 						FROM `receive_detail` dtl 
 						INNER JOIN receive hdr ON hdr.rcNo=dtl.rcNo AND hdr.toCode=8 
 						INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId AND itm.prodCodeId=:id 
+						LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId 
 						WHERE 1
-						GROUP BY itm.prodCodeId, itm.qty
+						AND dtl.statusCode='A' 
+						GROUP BY itm.prodCodeId , itm.qty, itm.grade, itm.gradeTypeId
 						";
 						if(ISSET($_GET['sloc'])){ $sql.="AND hdr.toCode=:sloc "; }
 						$stmt = $pdo->prepare($sql);
@@ -133,15 +136,27 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			                <table class="table no-margin">
 			                  <thead>
 			                    <th style="text-align: center;">Length/Pieces/KG</th>
+			                    <th style="text-align: right;">Grade</th>
+			                    <th style="text-align: right;">Grade Type</th>
 			                    <th style="text-align: right;">Qty</th>
 								<th style="text-align: right;">Qty Total</th>
 			                  </tr>
 			                  </thead>
 			                  <tbody>
 							  <?php $row_no = 1; while ($row = $stmt->fetch()) { 
+							  	$gradeName = '<b style="color: red;">N/A</b>'; 
+								switch($row['grade']){
+									case 0 : $gradeName = 'A'; break;
+									case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
+									case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
+									default : 
+										$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
+								} 
 								?>
 			                  <tr>
 								<td style="text-align: center;"><?= number_format($row['qty'],0,'.',','); ?></td>
+								<td style="text-align: center;"><?= $gradeName; ?></td>
+								<td style="text-align: center;"><?= $row['gradeTypeName']; ?></td>
 								<td style="text-align: right;"><?= number_format($row['sumQty']/$row['qty'],0,'.',','); ?></td>
 								<td style="text-align: right;"><?= number_format($row['sumQty'],0,'.',','); ?></td>
 			                </tr>
@@ -209,7 +224,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						?>
                   <tr>
                     <td><a href="sale_view.php?soNo=<?=$row['soNo'];?>" target="_blank"><?= $row['soNo']; ?></a></td>
-					<td><?= $row['qty']; ?></td>
+					<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
                 </tr>
                 <?php $row_no+=1; } ?>
                   </tbody>

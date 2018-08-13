@@ -36,7 +36,7 @@ class MYPDF extends TCPDF {
 		$this->Cell(0, 5, 'Asia Kangnam Co.,Ltd.', 0, false, 'C', 0, '', 0, false, 'M', 'M');
 		$this->Ln(7);
 		$this->SetFont('Times', 'B', 14, '', true);	
-        $this->Cell(0, 5, 'Product Sending Detail Report', 0, false, 'C', 0, '', 0, false, 'M', 'M');
+        $this->Cell(0, 5, 'Product Delivery Detail Report', 0, false, 'C', 0, '', 0, false, 'M', 'M');
     }
     // Page footer
     public function Footer() {
@@ -137,8 +137,7 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			$dateFromYmd=$dateToYmd="";
 			if($dateFrom<>""){ $dateFromYmd = date('Y-m-d', strtotime($dateFrom));	}
 			if($dateTo<>""){ $dateToYmd =  date('Y-m-d', strtotime($dateTo));	}
-			
-			$fromCode = (isset($_GET['fromCode'])?$_GET['fromCode']:'');
+
 			$toCode = (isset($_GET['toCode'])?$_GET['toCode']:'');
 			$prodCode = (isset($_GET['prodCode'])?$_GET['prodCode']:'');
 			$prodId = (isset($_GET['prodId']) ?$_GET['prodId']:'');	
@@ -147,21 +146,12 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			
 
 			//SQL Header
-			$fromCodeName="All";
-			if($fromCode<>""){
-				$sql = "SELECT * FROM sloc WHERE code=:fromCode ";
-				$stmt = $pdo->prepare($sql);
-				if($fromCode<>""){ $stmt->bindParam(':fromCode', $fromCode );	}
-				if($stmt->execute()){
-					$fromCodeName=$stmt->fetch()['name'];
-				}
-			}
 
 			$toCodeName="All";
 			if($toCode<>""){
-				$sql = "SELECT * FROM sloc WHERE code=:toCode ";
+				$sql = "SELECT * FROM customer WHERE id=:id ";
 				$stmt = $pdo->prepare($sql);
-				if($toCode<>""){ $stmt->bindParam(':toCode', $toCode );	}
+				if($toCode<>""){ $stmt->bindParam(':id', $toCode );	}
 				if($stmt->execute()){
 					$toCodeName=$stmt->fetch()['name'];
 				}
@@ -188,19 +178,18 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 	
 			$sql = "SELECT dtl.id, dtl.prodItemId 
 			, itm.prodCodeId, itm.barcode, itm.NW, itm.GW, itm.grade, itm.qty, itm.issueDate 
-			, hdr.sendDate
-			FROM `send` hdr
-			INNER JOIN send_detail dtl on dtl.sdNo=hdr.sdNo
+			, hdr.deliveryDate 
+			FROM `delivery_header` hdr
+			INNER JOIN delivery_detail dtl on dtl.doNo=hdr.doNo
+            INNER JOIN sale_header sh ON sh.soNo=hdr.soNo 
+            INNER JOIN customer cust ON cust.id=sh.custId 
 			INNER JOIN product_item itm on itm.prodItemId=dtl.prodItemId  
-			LEFT JOIN sloc fsl on hdr.fromCode=fsl.code
-			LEFT JOIN sloc tsl on hdr.toCode=tsl.code
-			LEFT JOIN product prd on prd.id=itm.prodCodeId  
+			INNER JOIN product prd on prd.id=itm.prodCodeId  
 			WHERE 1 ";
 
-			if($dateFromYmd<>""){ $sql .= " AND hdr.sendDate>=:dateFromYmd ";	}
-			if($dateToYmd<>""){ $sql .= " AND hdr.sendDate<=:dateToYmd ";	}		
-			if($fromCode<>""){ $sql .= " AND hdr.fromCode=:fromCode ";	}
-			if($toCode<>""){ $sql .= " AND hdr.toCode=:toCode ";	}			
+			if($dateFromYmd<>""){ $sql .= " AND hdr.deliveryDate>=:dateFromYmd ";	}
+			if($dateToYmd<>""){ $sql .= " AND hdr.deliveryDate<=:dateToYmd ";	}	
+			if($toCode<>""){ $sql .= " AND sh.custId=:toCode ";	}			
 			if($prodCode<>""){ $sql .= " AND prd.code like :prodCode ";	}	
 			if($prodId<>""){ $sql .= " AND prd.id=:prodId ";	}	
 			$sql .= "AND hdr.statusCode='P' ";
@@ -210,7 +199,6 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			$stmt = $pdo->prepare($sql);
 			if($dateFromYmd<>""){ $stmt->bindParam(':dateFromYmd', $dateFromYmd );	}
 			if($dateToYmd<>""){ $stmt->bindParam(':dateToYmd', $dateToYmd );	}
-			if($fromCode<>""){ $stmt->bindParam(':fromCode', $fromCode );	}
 			if($toCode<>""){ $stmt->bindParam(':toCode', $toCode );	}
 			if($prodCode<>""){ $tmp='%'.$prodCode.'%'; $stmt->bindParam(':prodCode', $tmp );	}
 			if($prodId<>""){ $stmt->bindParam(':prodId', $prodId );	}
@@ -239,7 +227,6 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 						</tr>
 
 						<tr>
-							<th  colspan="4"><span style="font-weight: bold;">From :</span> '.$fromCodeName.'</th>
 
 						  	<th  colspan="4"><span style="font-weight: bold;">To :</span> '.$toCodeName.'</th>
 						</tr>
@@ -251,7 +238,7 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 								<th style="font-weight: bold; text-align: center; width: 70px;" border="1">Net<br/>Weight<br/>(kg.)</th>
 								<th style="font-weight: bold; text-align: center; width: 70px;" border="1">Gross<br/>Weight<br/>(kg.)</th>		
 								<th style="font-weight: bold; text-align: center; width: 70px;" border="1">Quantity (m.)</th>
-								<th style="font-weight: bold; text-align: center; width: 70px;" border="1">Send Date</th>
+								<th style="font-weight: bold; text-align: center; width: 70px;" border="1">Delivery Date</th>
 							</tr>
 						  </thead>
 						  <tbody>
@@ -272,7 +259,7 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.$row['NW'].'&nbsp;&nbsp;</td>
 				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.$row['GW'].'&nbsp;&nbsp;</td>
 				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($row['qty'],0,'.',',').'&nbsp;&nbsp;</td>
-				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.date('d M Y',strtotime( $row['sendDate'] )).'&nbsp;&nbsp;</td>
+				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.date('d M Y',strtotime( $row['deliveryDate'] )).'&nbsp;&nbsp;</td>
 			</tr>';			
 										
 			$sumQty+=$row['qty'] ; $sumNW+=$row['NW']; $sumGW+=$row['GW'] ;								

@@ -32,7 +32,9 @@ if($result_user->num_rows >= 1){
 		$_SESSION['userName'] = $row_user['userName'];
 		
 		//Set Login 
-		setcookie("loginMk", "1", time()+1200);	//3600=1Hour; 1800=30Min; 60=1Min
+		//setcookie("loginMk", "1", time()+1200);	//3600=1Hour; 1800=30Min; 60=1Min
+		$SID = session_id();
+		setcookie("loginMk", $SID, time()+3600);	//3600=1Hour; 1800=30Min; 60=1Min
 			
 		$qry_user = "UPDATE user SET lastLoginTime=NOW(), loginStatus=1 WHERE userId='$s_userId'";
 		$result_user = mysqli_query($link,$qry_user);

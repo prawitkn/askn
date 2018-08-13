@@ -161,9 +161,11 @@ $custId = $hdr['custId'];
 					$stmt->execute();
 					
 						$sql = "SELECT dtl.`id`, dtl.prodId, dtl.`issueDate`, dtl.`grade`, dtl.`qty`, dtl.`pickNo` 
+						, dtl.`gradeTypeId`, pgt.`name` as gradeTypeName  
 						,prd.code as prodCode, prd.name as prodName  
 						FROM `picking_detail` dtl
-						LEFT JOIN product prd ON prd.id=dtl.prodId 
+						LEFT JOIN product prd ON prd.id=dtl.prodId 						
+						LEFT JOIN product_item_grade_type pgt ON pgt.id=dtl.gradeTypeId  
 						WHERE 1
 						AND pickNo=:pickNo 
 						
@@ -194,10 +196,10 @@ $custId = $hdr['custId'];
 						<td><?= date('d M Y',strtotime( $row['deliveryDate'] )); ?></td>	
 						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',',').'/'.number_format($qtyRem,0,'.',','); ?></td>
 						<td style="text-align: right;"><?= number_format($row['pickQty'],0,'.',','); ?></td>
-					<td>					
-					<a href="<?=$rootPage;?>_add_item_search.php?locCode=<?=$hdr['locationCode'];?>&pickNo=<?=$hdr['pickNo'];?>&doDtlId=<?=$row['id'];?>&saleItemId=<?=$row['id'];?>&id=<?=$row['prodId'];?>&custId=<?=$custId;?>" class="btn btn-primary">
-						<i class="glyphicon glyphicon-edit"></i> Add
-					</a>					
+					<td>
+						<a href="<?=$rootPage;?>_add_item_search.php?locCode=<?=$hdr['locationCode'];?>&pickNo=<?=$hdr['pickNo'];?>&doDtlId=<?=$row['id'];?>&saleItemId=<?=$row['id'];?>&id=<?=$row['prodId'];?>&custId=<?=$custId;?>" class="btn btn-primary">
+								<i class="glyphicon glyphicon-edit"></i> Add
+							</a>					
 					</td>
 					</tr>
 					<?php $row_no+=1; } ?>
@@ -216,6 +218,7 @@ $custId = $hdr['custId'];
 						<th>Product Code</th>
 						<th>Issue Date</th>
 						<th>Grade</th>
+						<th>Grade Type</th>
 						<th>Qty</th>
 						<th>#</th>
 					</tr>
@@ -233,6 +236,7 @@ $custId = $hdr['custId'];
 						<td><?= $row['prodCode']; ?></td>	
 						<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>	
 						<td><?= $gradeName; ?></td>	
+						<td><?= $row['gradeTypeName']; ?></td>	
 						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
 					<td>										
 					<a class="btn btn-danger fa fa-trash" name="btn_row_delete" <?php echo ($hdr['statusCode']=='B'?' data-id="'.$row['id'].'" ':' disabled '); ?> > Delete</a>

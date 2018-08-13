@@ -121,17 +121,20 @@ $ppNo = $_GET['ppNo'];
 				   <?php
 					$sql = "
 					SELECT dtl.`id`, itm.prodCodeId as prodCode, itm.`barcode`, itm.`issueDate`, itm.`grade`, itm.`qty`, dtl.`ppNo` 
+					, itm.gradeTypeId, pgt.name as gradeTypeName 
 					, prd.code as prodCode 
 					,IFNULL((SELECT COUNT(*) FROM picking_detail pickDtl 			
 							WHERE pickDtl.pickNo=hdr.pickNo				
 							AND itm.prodCodeId=pickDtl.prodId
 							AND itm.issueDate=pickDtl.issueDate 
 							AND itm.grade=pickDtl.grade 
-							AND itm.qty=pickDtl.meter  							
+							AND itm.qty=pickDtl.meter  		
+							AND itm.gradeTypeId=pickDtl.gradeTypeId  						
 							),0) AS inPick 
 					FROM `prepare_detail` dtl
 					INNER JOIN prepare hdr ON hdr.ppNo=dtl.ppNo 
 					LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+					LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  
 					LEFT JOIN product prd ON prd.id=itm.prodCodeId 
 					WHERE 1
 					AND dtl.`ppNo`=:ppNo 
@@ -149,6 +152,7 @@ $ppNo = $_GET['ppNo'];
 							<th>Barcode</th>
 							<th>MFD.</th>
 							<th>Grade</th>
+							<th>Grade Type</th>
 							<th>Qty</th>
 						</tr>
 						<?php $wrongProduct=0; $row_no=1; while ($row = $stmt->fetch()) { 
@@ -165,6 +169,7 @@ $ppNo = $_GET['ppNo'];
 								<td><?= $row['barcode']; ?></td>
 								<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>
 								<td><?= $gradeName; ?></td>
+								<td><?= $row['gradeTypeName']; ?></td>
 								<td><?= $row['qty']; ?></td>
 							</tr>							
 						<?php $row_no+=1; } ?>
@@ -173,6 +178,7 @@ $ppNo = $_GET['ppNo'];
 					<?php
 						$sql = "
 						SELECT prd.code as prodCode, itm.`issueDate`, itm.`grade`, itm.`qty` as meter 
+						, itm.gradeTypeId, pgt.name as gradeTypeName 
 						,IFNULL((SELECT SUM(pickDtl.qty) 
 								FROM picking_detail pickDtl 
 								WHERE pickDtl.pickNo=hdr.pickNo
@@ -180,20 +186,24 @@ $ppNo = $_GET['ppNo'];
 								AND pickDtl.issueDate=itm.issueDate 
 								AND pickDtl.grade=itm.grade 
 								AND pickDtl.meter=itm.qty	
+								AND pickDtl.gradeTypeId=itm.gradeTypeId	
 						),0) AS sumPickQty 
 						, SUM(itm.`qty`) AS sumPackQty
 						FROM `prepare_detail` dtl
 						INNER JOIN prepare hdr ON hdr.ppNo=dtl.ppNo 
 						LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+						LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  
 						LEFT JOIN product prd ON prd.id=itm.prodCodeId 
 						WHERE 1
 						AND dtl.`ppNo`=:ppNo 
-						GROUP BY prd.`code`, itm.`issueDate`, itm.`grade`, itm.`qty`
+						GROUP BY prd.`code`, itm.`issueDate`, itm.`grade`, itm.`qty`, itm.`gradeTypeId`
 												
 						UNION 
 						
 						SELECT * FROM (
-							SELECT prd.code as prodCode, pick.`issueDate`, pick.`grade`, pick.`meter`, IFNULL(SUM(pick.qty),0) as sumPickQty
+							SELECT prd.code as prodCode, pick.`issueDate`, pick.`grade`, pick.`meter`
+							, pick.gradeTypeId, pgt.name as gradeTypeName 
+							, IFNULL(SUM(pick.qty),0) as sumPickQty
 							, IFNULL((SELECT SUM(itm.qty) 
 									FROM prepare_detail ppDtl 
 									LEFT JOIN product_item itm ON itm.prodItemId=ppDtl.prodItemId 
@@ -203,11 +213,13 @@ $ppNo = $_GET['ppNo'];
 									AND pick.issueDate=itm.issueDate 
 									AND pick.grade=itm.grade 
 									AND pick.meter=itm.qty	
+									AND pick.gradeTypeId=itm.gradeTypeId	
 							),0) as sumPackQty 
 							FROM picking_detail pick
 							LEFT JOIN product prd ON prd.id=pick.prodId  
+							LEFT JOIN product_item_grade_type pgt ON pgt.id=pick.gradeTypeId  
 							WHERE pick.pickNo=(SELECT pickNo FROM prepare WHERE ppNo=:ppNo2)	
-							GROUP BY pick.prodId, pick.`issueDate`, pick.`grade`, pick.`meter`							
+							GROUP BY pick.prodId, pick.`issueDate`, pick.`grade`, pick.`meter`, pick.`gradeTypeId`							
 							) as tmp 	
 						";
 						$stmt = $pdo->prepare($sql);	
@@ -224,6 +236,7 @@ $ppNo = $_GET['ppNo'];
 							<th>Product</th>
 							<th>Issue Date</th>
 							<th>Grade</th>
+							<th>Grade Type</th>
 							<th>Meter</th>
 							<th>Picking Qty</th>
 							<th>Packing Qty</th>
@@ -243,6 +256,7 @@ $ppNo = $_GET['ppNo'];
 								<td><?= $row['prodCode']; ?></td>
 								<td><?= $row['issueDate']; ?></td>
 								<td><?= $gradeName; ?></td>
+								<td><?= $row['gradeTypeName']; ?></td>
 								<td><?= $row['meter']; ?></td>
 								<td><?= $row['sumPickQty']; ?></td>
 								<td><?= $row['sumPackQty']; ?></td>

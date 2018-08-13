@@ -126,9 +126,10 @@ $hdr = $stmt->fetch();
 
 			$sql = "
 			SELECT dtl.`id`, dtl.`prodId`, dtl.`issueDate`, dtl.`grade`,  dtl.`meter`, dtl.`qty`, dtl.`pickNo` 
-			, prd.code as prodCode  
+			, prd.code as prodCode  , dtl.`gradeTypeId`, pgt.`name` as gradeTypeName 
 			FROM `picking_detail` dtl 	
 			LEFT JOIN product prd ON prd.id=dtl.prodId 
+			LEFT JOIN product_item_grade_type pgt ON pgt.id=dtl.gradeTypeId 
 			WHERE 1
 			AND dtl.`pickNo`=:pickNo 
 			
@@ -159,6 +160,7 @@ $hdr = $stmt->fetch();
 										<th style="font-weight: bold; text-align: center; width: 30px;" border="1">No.</th>
 										<th style="font-weight: bold; text-align: center; width: 150px;" border="1">Product Code</th>
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Grade</th>
+										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Grade Type</th>
 										<th style="font-weight: bold; text-align: center; width: 80px;" border="1">Issue Date</th>
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Meter</th>
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Qty</th>
@@ -204,6 +206,7 @@ $hdr = $stmt->fetch();
 						<td style="border: 0.1em solid black; text-align: center; width: 30px;">'.$row_no.'</td>
 						<td style="border: 0.1em solid black; padding: 10px; width: 150px;"> '.$row['prodCode'].'</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$gradeName.'</td>
+						<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$row['gradeTypeName'].'</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.date('d M Y',strtotime( $row['issueDate'] )).'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['meter'],0,'.',',').'&nbsp;&nbsp;</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format(($row['qty']/$row['meter']),0,'.',',').'&nbsp;&nbsp;</td>

@@ -203,7 +203,12 @@ $sdNo = $hdr['sdNo'];
   <div class="box-footer">
     <div class="col-md-12">
 		<?php if($hdr['statusCode']=='P'){ ?>
-          <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?sdNo=<?=$sdNo;?>" class="btn btn-primary"><i class="glyphicon glyphicon-print"></i> Print</a>			  
+          <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?sdNo=<?=$sdNo;?>" class="btn btn-primary"><i class="glyphicon glyphicon-print"></i> Print</a>	
+
+	          <?php if($s_userGroupCode=='admin'){ ?>
+	         		 <a target="_blank" href="<?=$rootPage;?>_view_pdf_barcode.php?sdNo=<?=$sdNo;?>" class="btn btn-primary"><i class="glyphicon glyphicon-barcode"></i> Barcode</a>			  
+			<?php } ?>
+
 		<?php } ?>
 
 		<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whSup' :  case 'pdSup' :  ?>

@@ -194,10 +194,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							//Insert mysql from mssql
 							$sql = "INSERT INTO  `product_item_temp` 
 							(`prodItemId`, `prodId`, `barcode`, `issueDate`, `machineId`, `seqNo`, `NW`, `GW`
-							, `qty`, `packQty`, `grade`, `gradeDate`, `refItemId`, `itemStatus`, `remark`, `problemId`) 
+							, `qty`, `packQty`, `grade`, `gradeDate`, `refItemId`, `itemStatus`, `remark`, `problemId`, `gradeTypeId`, `remarkWh`) 
 							VALUES
 							(:ProductItemID,:ProductID,:ItemCode,:IssueDate,:MachineID,:SeqNo,:NW,:GW
 							,:Length,null,:Grade,:IssueGrade,:RefItemID,:ItemStatus,:Remark,:ProblemID
+							,1 ,''
 							)
 							";		
 							$stmt = $pdo->prepare($sql);
