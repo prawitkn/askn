@@ -13,7 +13,7 @@ class MYPDF extends TCPDF {
 }
 
 // create new PDF document
-$size = array(  200,  100);
+$size = array(  100,  50);
 $pdf = new MYPDF('L', 'mm', $size, true, 'UTF-8', false);
 
 // set document information

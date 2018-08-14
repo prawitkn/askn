@@ -49,7 +49,6 @@ switch($s_userGroupCode){
 		  AND [IsActive]='Y'
 		  AND [ProductID] NOT IN (SELECT [ProductID]
 									FROM [askn].[dbo].[product] group by ProductID having count(*) > 1)
-		  AND [ProductID] > $lastInvProdId 
 		  ";
 		//echo $sql;
 		$msResult = sqlsrv_query($ssConn, $sql);
