@@ -92,7 +92,9 @@ if(!isset($_POST['action'])){
 				$row=$stmt->fetch();
 				$orderQty=$row['qty'];
 
-				$sql = "SELECT sum(qty) as sumBookedQty FROM picking_detail WHERE pickNo<>:pickNo AND saleItemId=:saleItemId ";
+				$sql = "SELECT sum(dtl.qty) as sumBookedQty FROM picking hdr 
+				INNER JOIN picking_detail dtl ON dtl.pickNo=hdr.pickNo AND hdr.statusCode<>'X' 
+				WHERE hdr.pickNo<>:pickNo AND dtl.saleItemId=:saleItemId ";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':pickNo', $pickNo);
 				$stmt->bindParam(':saleItemId', $saleItemId);	
