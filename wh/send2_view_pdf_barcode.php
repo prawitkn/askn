@@ -12,6 +12,8 @@ class MYPDF extends TCPDF {
     
 }
 
+date_default_timezone_set("Asia/Bangkok");
+
 // create new PDF document
 $size = array(  100,  50);
 $pdf = new MYPDF('L', 'mm', $size, true, 'UTF-8', false);

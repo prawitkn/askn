@@ -64,7 +64,7 @@
 
 
 
-		<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whOff' : case 'whSup' : case 'pdOff' : case 'pdSup' :  ?>
+		<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whOff' : case 'whSup' : case 'pdOff' : case 'pdSup' : case 'pdMgr' : case 'whMgr' : ?>
 			<li class="header">Transaction Menu</li>
 			<li><a href="trans_send_sync.php"><i class="glyphicon glyphicon-transfer"></i> <span>Sync Data</span></a></li>
 			<li><a href="send2.php"><i class="glyphicon glyphicon-arrow-up"></i> <span>Send</span></a></li>
@@ -72,13 +72,15 @@
 			<li><a href="send.php"><i class="glyphicon glyphicon-eject"></i> <span>Send (Ad hoc)</span></a></li>
 			<li><a href="rt.php"><i class="glyphicon glyphicon-arrow-left"></i> <span>Return</span></a></li>
 			
-			<?php switch($s_userGroupCode){ case 'whOff' : case 'whSup' : break; //Not Show ?>
+			<?php switch($s_userGroupCode){ case 'whOff' : case 'whSup
+
+			' : break; //Not Show ?>
 			<?php default : ?>				
 				<li><a href="rtrc.php"><i class="glyphicon glyphicon-retweet"></i> <span>Return Receive</span></a></li>
 			<?php } ?>		
 			
 			<!--<li><a href="wip.php"><i class="glyphicon glyphicon-hourglass"></i> <span>Work In Process</span></a></li-->
-			<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whOff' : case 'whSup' ?>
+			<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whOff' : case 'whSup' : case 'whMgr' : ?>
 			<li><a href="picking.php"><i class="glyphicon glyphicon-shopping-cart"></i> <span>Picking</span></a></li>			
 			<li><a href="prepare.php"><i class="glyphicon glyphicon-th-large"></i> <span>Prepare</span></a></li>
 			<li><a href="delivery.php"><i class="glyphicon glyphicon-shopping-cart"></i> <span>Delivery</span></a></li>
@@ -87,14 +89,14 @@
 			<?php break; default : } ?>	
 		<?php break; default : } ?>			
 		
-		<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whSup' : case 'pdSup' : ?> 
+		<?php switch($s_userGroupCode){ default : ?> 
 			<li class="header">Tool Menu</li>
 			<li><a href="picking_prod_search_shelf.php"><i class="glyphicon glyphicon-search"></i> <span>Picking Shelf</span></a></li>
-			<li><a href="picking_prod_search_barcode.php"><i class="glyphicon glyphicon-search"></i> <span>Prepare Barcode</span></a></li>
+			<li><a href="report_itm_dtl_by_prd.php?sloc=8&prodCode=109"><i class="glyphicon glyphicon-search"></i> <span>Available Item Stock Info</span></a></li>
 			<li><a href="utility_search_barcode.php"><i class="glyphicon glyphicon-search"></i> <span>Barcode Info</span></a></li>
-		<?php break; default : } ?>	
+		<?php } ?>	
 
-		<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whOff' : case 'whSup' : case 'pdOff' : case 'pdSup' :   ?>
+		<?php switch($s_userGroupCode){  default :   ?>
 			<li class="header">Report</li>
 			<li><a href="rpt_so_by_deli.php"><i class="fa fa-list-alt"></i> <span>Sales Order by Delivery Date Report</span></a></li>			
 			<li><a href="report_prod_stk.php"><i class="fa fa-list-alt"></i> <span>Stock Report</span></a></li>
@@ -104,8 +106,9 @@
 			<li><a href="report_receiving.php"><i class="fa fa-list-alt"></i> <span>Receiving Report</span></a></li>
 			<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whOff' : case 'whSup' : ?>
 			<li><a href="report_delivery2.php"><i class="fa fa-list-alt"></i> <span>Delivery Report</span></a></li>
-			<?php break; default : } ?>	
-		<?php break; default : } ?>		
+			<?php  } ?>	
+
+		<?php break; } ?>		
 
 
 		<?php switch($s_userGroupCode){ case 'admin' :  ?>	

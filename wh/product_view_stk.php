@@ -85,15 +85,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						<?= $row['description']; ?><br/>
 						
 						<?php				
-							$sql = "SELECT `prodId`, `open`, `receive`, `sales`, `delivery`, `balance`, uomCode
+							$sql = "SELECT `prodId`, `open`, `receive`, `sales`, `delivery`, sum(`balance`) as balance, uomCode
 							FROM `stk_bal` 
-							LEFT JOIN product on product.id=stk_bal.prodId
+							INNER JOIN product on product.id=stk_bal.prodId
 							WHERE 1
-							AND sloc=8 
 							AND prodId=:id 
 							";
-							$id = $_GET['id'];
-							if(ISSET($_GET['sloc'])){ $sql.="AND sloc=:sloc "; }
+							if(ISSET($_GET['sloc'])){ $sql.="AND sloc=:sloc "; }else{ $sql.="AND sloc IN ('8','E') "; }
+							$sql.="GROUP BY `prodId`,  uomCode ";
 							$stmt = $pdo->prepare($sql);
 							$stmt->bindParam(':id', $id);
 							if(ISSET($_GET['sloc'])){ $stmt->bindParam(':sloc', $_GET['sloc']); }
@@ -114,16 +113,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				<div class="col-md-6">
 					<h3>Avalible Stock by Length/Box/KG</h3>
 					<?php									
-						$sql = "SELECT itm.prodCodeId as prodId
+						$sql = "SELECT hdr.toCode as sloc, itm.prodCodeId as prodId
 						, itm.qty, itm.grade, itm.gradeTypeId, pgt.name as gradeTypeName 
 						, sum(itm.qty) as sumQty
-						FROM `receive_detail` dtl 
-						INNER JOIN receive hdr ON hdr.rcNo=dtl.rcNo AND hdr.toCode=8 
+						FROM  `receive_detail` dtl 
+						INNER JOIN receive hdr ON hdr.rcNo=dtl.rcNo
 						INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId AND itm.prodCodeId=:id 
 						LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId 
 						WHERE 1
 						AND dtl.statusCode='A' 
-						GROUP BY itm.prodCodeId , itm.qty, itm.grade, itm.gradeTypeId
+						GROUP BY hdr.toCode, itm.prodCodeId , itm.qty, itm.grade, itm.gradeTypeId
 						";
 						if(ISSET($_GET['sloc'])){ $sql.="AND hdr.toCode=:sloc "; }
 						$stmt = $pdo->prepare($sql);
@@ -135,6 +134,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			              <div class="table-responsive">
 			                <table class="table no-margin">
 			                  <thead>
+			                    <th style="text-align: center;">Location</th>
 			                    <th style="text-align: center;">Length/Pieces/KG</th>
 			                    <th style="text-align: right;">Grade</th>
 			                    <th style="text-align: right;">Grade Type</th>
@@ -154,6 +154,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 								} 
 								?>
 			                  <tr>
+								<td style="text-align: center;"><?= $row['sloc']; ?></td>
 								<td style="text-align: center;"><?= number_format($row['qty'],0,'.',','); ?></td>
 								<td style="text-align: center;"><?= $gradeName; ?></td>
 								<td style="text-align: center;"><?= $row['gradeTypeName']; ?></td>

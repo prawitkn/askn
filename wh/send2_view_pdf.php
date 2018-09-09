@@ -51,6 +51,8 @@ class MYPDF extends TCPDF {
     }
 }
 
+date_default_timezone_set("Asia/Bangkok");
+
 // create new PDF document
 $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
@@ -144,7 +146,7 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			FROM send_detail dtl 
 			LEFT JOIN product_item itm on itm.prodItemId=dtl.prodItemId 						
 			WHERE sdNo=:sdNo  
-			ORDER BY dtl.refNo, itm.barcode
+			ORDER BY dtl.refNo, itm.issueDate, itm.barcode ASC
 			";			
 			$stmt = $pdo->prepare($sql);	
 			$stmt->bindParam(':sdNo', $hdr['sdNo']);

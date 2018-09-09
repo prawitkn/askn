@@ -133,7 +133,7 @@ $sdNo = $hdr['sdNo'];
 						LEFT JOIN product prd ON prd.id=itm.prodCodeId 
 						LEFT JOIN product_item_grade_type igt ON igt.id=itm.gradeTypeId 
 						WHERE sdNo=:sdNo  
-						ORDER BY dtl.refNo, itm.barcode
+						ORDER BY dtl.refNo, itm.issueDate, itm.barcode ASC
 						";			
 						$stmt = $pdo->prepare($sql);	
 						$stmt->bindParam(':sdNo', $hdr['sdNo']);

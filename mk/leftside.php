@@ -69,13 +69,26 @@
       <!-- /.search form -->
 
       <!-- Sidebar Menu -->
-      <ul class="sidebar-menu">
-		
+      <ul class="sidebar-menu" >	
 		
 		<?php switch($s_userGroupCode){ case 'admin' :   case 'it' :   ?>
-			<li class="header">Core Master Menu</li>
+			<li class="header"> Admin Master Menu</li>	
+			<li><a href="userGroup.php"><i class="fa fa-users"></i> <span>User Group</span></a></li>
+			<li><a href="custGroup.php"><i class="fa fa-object-group"></i> <span>Customer Group</span></a></li>
+			<li><a href="custLocation.php"><i class="fa fa-map-pin"></i> <span>Customer Location</span></a></li>
+			<li><a href="market.php"><i class="fa fa-puzzle-piece"></i> <span>Market</span></a></li>
+			<li><a href="prodCat.php"><i class="fa fa-industry"></i> <span> Product Catagory</span></a></li>
+			<li><a href="prdSuppType.php"><i class="fa fa-object-ungroup"></i> <span> Product Supplier Group</span></a></li>
+			<li><a href="saleStkType.php"><i class="fa fa-battery-3"></i> <span> Sale Stock Type</span></a></li>
+			<li><a href="salePackType.php"><i class="fa fa-cube"></i> <span> Sale Package Type</span></a></li>
+			<li><a href="salePriceType.php"><i class="fa fa-money"></i> <span> Sale Price Type</span></a></li>
+			<li><a href="saleDeliveryType.php"><i class="fa fa-truck"></i> <span> Sale Delivery Type</span></a></li>
+			<li><a href="saleCreditType.php"><i class="fa fa-credit-card"></i> <span> Sale Credit Type</span></a></li>
+			<li><a href="saleOptionType.php"><i class="fa fa-sticky-note"></i> <span> Sale Option</span></a></li>	
+
+			<li class="header"> Master Menu</li>			
 			<!-- Optionally, you can add icons to the links -->
-			<li><a href="user.php"><i class="fa fa-male"></i> <span>User</span></a></li>
+			<li><a href="user.php"><i class="fa fa-user"></i> <span>User</span></a></li>
 			<li><a href="pick_cust_n_prod_condition.php"><i class="fa fa-filter"></i> <span>Picking Condition by Cust.and Prod.</span></a></li>
 		<?php } ?>
 		
@@ -87,6 +100,8 @@
 			<li><a href="shipto.php"><i class="glyphicon glyphicon-download-alt"></i> <span>Ship to Customer Data</span></a></li>
 			<li><a href="shipping_marks.php"><i class="fa fa-table"></i> <span>Shipping Marks Data</span></a></li>
 			<li><a href="product.php"><i class="fa fa-barcode"></i> <span>Product Data</span></a></li>
+
+			
 			<li><a href="product_roll_length.php"><i class="glyphicon glyphicon-compressed"></i> <span>Product Roll Length</span></a></li>
 			<li><a href="salesman.php"><i class="glyphicon glyphicon-briefcase"></i> <span>Salesman Data</span></a></li>
 		<?php } ?>
@@ -109,7 +124,8 @@
 		
 		<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'salesAdmin' : case 'sales' : ?>
 			<li class="header">Transaction Menu</li>
-			<li><a href="sale.php"><i class="fa fa-cart-plus"></i> <span>Sales Order</span></a></li>		
+			<li><a href="sale.php"><i class="fa fa-cart-plus"></i> <span>Sales Order</span></a></li>	
+			<li><a href="sale2.php"><i class="fa fa-cart-plus"></i> <span>Sales Order [Beta]</span></a></li>		
 			<!--<li><a href="delivery.php"><i class="fa fa-truck"></i> <span>Delivery</span></a></li>
 			<li><a href="invoice.php"><i class="glyphicon glyphicon-usd"></i> <span>Invoice</span></a></li>
 			<li><a href="inv_ret.php"><i class="glyphicon glyphicon-repeat"></i> <span>Customer Return</span></a></li>-->
@@ -148,27 +164,9 @@
 		<li class="header">Setting</li>	
 		<li><a href="user_change_pw.php"><i class="fa fa-bars"></i> <span> Change Password </span></a></li>	    
 		
-		<?php switch($s_userId){ case 39 :  ?>
-			<li class="header" style="background-color: white; color: blue;">Dev. Core Master Menu</li>
-			<li style="background-color: white; color: blue;"><a href="user.php"><i class="fa fa-list-ol"></i> <span>User Group</span></a></li>
-			<li style="background-color: white; color: blue;"><a href="customerGroup.php"><i class="fa fa-list-ol"></i> <span>Market</span></a></li>
-			<li style="background-color: white; color: blue;"><a href="customerGroup.php"><i class="fa fa-list-ol"></i> <span>Customer Location</span></a></li>
-			<li style="background-color: white; color: blue;"><a href="customerGroup.php"><i class="fa fa-list-ol"></i> <span>Customer Group</span></a></li>
-			<li style="background-color: white; color: blue;"><a href="product_type.php"><i class="fa fa-list-ol"></i> <span>Product Catagory</span></a></li>				
-			
-			<li class="header"  style="background-color: white;">Dev. Transaction Management</li>	
-			<li style="background-color: white; color: blue;"><a href="visit_customer.php"><i class="fa fa-map-marker"></i> <span>Visit Customer</span></a></li>	
-			<li style="background-color: white; color: blue;"><a href=""><i class="fa fa-eyedropper"></i> <span>New Product Development</span></a></li>
-			<li style="background-color: white; color: blue;"><a href=""><i class="fa fa-comments"></i> <span>Customer Complain</span></a></li>
-			<!--Master management-->
-			<li style="background-color: white; color: blue;"><a href=""><i class="fa fa-table"></i> <span>Customer Target Data</span></a></li>		
-			<li style="background-color: white; color: blue;"><a href="product_set_target.php"><i class="fa fa-table"></i> <span>Product Target Data</span></a></li>
-			<li style="background-color: white; color: blue;"><a href=""><i class="fa fa-table"></i> <span>Salesman Target Data</span></a></li>		
-			
-
-		<?php } ?>
       </ul>
       <!-- /.sidebar-menu -->
     </section>
     <!-- /.sidebar -->
   </aside>
+

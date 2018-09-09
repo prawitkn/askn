@@ -53,7 +53,20 @@ if(!isset($_POST['action'])){
 				
 				$pickDate = str_replace('/', '-', $pickDate);
 				$pickDate = date("Y-m-d",strtotime($pickDate));
-					
+				
+				//Query 1: Check Status for not gen running No.
+				$sql = "SELECT soNo FROM sale_header WHERE soNo=:soNo AND statusCode='P' LIMIT 1";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':soNo', $soNo);
+				$stmt->execute();
+				$row_count = $stmt->rowCount();	
+				if($row_count != 1 ){		
+					//return JSON
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => false, 'message' => 'Sales order no. incorrect.'));
+					exit();
+				}	
+
 				$sql = "INSERT INTO `picking`
 				(`pickNo`, `soNo`, `pickDate`, `isFinish`, `remark`, `statusCode`, `createTime`, `createById`) 
 				VALUES (:pickNo,:soNo,:pickDate,'N', :remark,'B',now(),:s_userId)
@@ -92,7 +105,10 @@ if(!isset($_POST['action'])){
 				$row=$stmt->fetch();
 				$orderQty=$row['qty'];
 
-				$sql = "SELECT sum(qty) as sumBookedQty FROM picking_detail WHERE pickNo<>:pickNo AND saleItemId=:saleItemId ";
+				$sql = "SELECT sum(dtl.qty) as sumBookedQty 
+				FROM picking hdr 
+				INNER JOIN picking_detail dtl ON dtl.pickNo=hdr.pickNo
+				WHERE hdr.pickNo<>:pickNo AND hdr.statusCode<>'X' AND dtl.saleItemId=:saleItemId ";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':pickNo', $pickNo);
 				$stmt->bindParam(':saleItemId', $saleItemId);	

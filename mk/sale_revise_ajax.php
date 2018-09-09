@@ -2,12 +2,13 @@
 
 include 'session.php';
 
-$soNo = $_POST['soNo'];
-$reason = $_POST['reason'];
+
 
 //We will need to wrap our queries inside a TRY / CATCH block.
 //That way, we can rollback the transaction if a query fails and a PDO exception occurs.
 try{	
+	$soNo = $_POST['soNo'];
+	$reason = $_POST['reason'];
 
 	//Query 1: Check Status for not gen running No.
 	$sql = "SELECT hdr.*, cust.locationCode FROM sale_header hdr

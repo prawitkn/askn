@@ -278,7 +278,20 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						
 						sqlsrv_free_stmt($msResult);
 						//END MSSQL 
-												
+						
+
+
+
+						//Update KG Product from NW to Qty
+						$sql = "UPDATE product_item_temp tmp 
+						SET tmp.qty=tmp.NW 
+						WHERE tmp.qty=0 
+						";			
+						$stmt = $pdo->prepare($sql);
+						$stmt->execute();
+						//Update KG Product from NW to Qty
+
+
 						//PRODUCT ITEM (INSERT ONLY) 
 						//Update prodCodeId in product item.////////////////////////////////////////////
 						$sql = "UPDATE product_item_temp tmp 
@@ -297,6 +310,21 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						";			
 						$stmt = $pdo->prepare($sql);
 						$stmt->execute();	*/
+						
+						//Update un sent item.
+						$sql = "UPDATE  product_item map
+						INNER JOIN product_item_temp tmp ON tmp.prodItemId=map.prodItemId
+							AND tmp.prodItemId NOT IN (SELECT x.prodItemId FROM send_detail x)  
+						SET map.NW=tmp.NW 
+						, map.GW=tmp.GW
+						, map.qty=tmp.qty
+						, map.grade=tmp.grade
+						, map.gradeDate=tmp.gradeDate 
+						";			
+						$stmt = $pdo->prepare($sql);
+						$stmt->execute();
+						
+						
 						$sql = "UPDATE  product_item map
 						INNER JOIN product_item_temp tmp ON tmp.prodItemId=map.prodItemId
 						INNER JOIN send_detail sd ON sd.prodItemId=map.prodItemId

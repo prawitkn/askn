@@ -88,7 +88,7 @@ desired effect
 				$sql.="
 				WHERE 1 ";
 				if($search_word<>""){ $sql = "and (prd.code like '%".$search_word."%' OR prd.name like '%".$search_word."%') "; }
-				if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
+				if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}else{ $sql .= " AND sb.sloc IN ('8','E') "; }
 				if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
 				if($prodId<>""){ $sql .= " AND prodId=$prodId ";	}	
 			
@@ -181,21 +181,21 @@ desired effect
 					<th>Delivery</th>
 					<th style="color: #00cc00;">Balance</th>					
 					<th>Pick</th>
-					<th style="color: #006600; background-color: #ccccff;">Net Balance</th>
+					<th style="color: #006600; background-color: #ccccff;">Remain (Balance-Pick)</th>
                   </tr>
                   </thead>
                   <tbody>
 					<?php
 						$sql = "SELECT DISTINCT prd.*
 						,sb.sloc, sb.`open`, sb.`produce`, sb.`onway`, sb.`receive`, sb.`send`, sb.`sales`, sb.`delivery`, sb.`balance`
-						,IFNULL((SELECT SUM(pDtl.qty) FROM picking pHdr, picking_detail pDtl WHERE pHdr.pickNo=pDtl.pickNo AND pHdr.isFinish='N' AND pDtl.prodId=sb.prodId),0) as pick 
+						,IFNULL((SELECT SUM(pDtl.qty) FROM picking pHdr, picking_detail pDtl WHERE pHdr.pickNo=pDtl.pickNo AND pHdr.isFinish='N' AND pHdr.statusCode<>'X' AND pDtl.prodId=sb.prodId),0) as pick 
 						FROM stk_bal sb 
 						INNER JOIN product prd on prd.id=sb.prodId  ";
 						if($prodCode<>""){ $sql .= " AND prd.code like '%".$prodCode."%' ";	}	
 						$sql.="
 						WHERE 1 ";
 						if($search_word<>""){ $sql = "and (prd.code like '%".$search_word."%' OR prd.name like '%".$search_word."%') "; }
-						if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
+						if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}else{ $sql .= " AND sb.sloc IN ('8','E') "; }
 						if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
 						if($prodId<>""){ $sql .= " AND prodId='$prodId' ";	}		
 						$sql.="ORDER BY prd.code  ";

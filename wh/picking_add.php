@@ -144,7 +144,9 @@ $custId = $hdr['custId'];
 					$sql = "SELECT od.`id`, od.`prodId`, od.deliveryDate, od.`qty`
 					,prd.code as prodCode, prd.name as prodName 
 					, (SELECT IFNULL(SUM(dtl.qty),0) FROM picking_detail dtl WHERE dtl.pickNo=:pickNo AND dtl.saleItemId=od.id) as pickQty
-					, (SELECT IFNULL(SUM(dtl.qty),0) FROM picking_detail dtl WHERE dtl.pickNo<>:pickNo2 AND dtl.saleItemId=od.id) as pickedQty
+					, (SELECT IFNULL(SUM(dtl.qty),0) FROM picking hdr 
+						INNER JOIN picking_detail dtl ON hdr.pickNo=dtl.pickNo 
+						WHERE hdr.statusCode<>'X' AND hdr.pickNo<>:pickNo2 AND dtl.saleItemId=od.id) as pickedQty
 					FROM `sale_detail` od
 					LEFT JOIN product prd ON prd.id=od.prodId 
 					WHERE 1

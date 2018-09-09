@@ -18,7 +18,7 @@ $ppNo = $_GET['ppNo'];
 	$sql = "
 	SELECT hdr.`ppNo`, hdr.`pickNo`, hdr.`prepareDate`, hdr.`remark`, hdr.`statusCode`
 	, pk.soNo 
-	, cust.name as custName 
+	, cust.name as custName, cust.locationCode as custSlocCode 
 	, st.code as shipToCode, st.name as shipToName 
 	, hdr.`createTime`, hdr.`createById`, hdr.`updateTime`, hdr.`updateById`
 	, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById`
@@ -39,6 +39,7 @@ $ppNo = $_GET['ppNo'];
 	$stmt->execute();
 	$hdr = $stmt->fetch();	
 	$pickNo=$hdr['pickNo']; 
+	$custSlocCode=$hdr['custSlocCode'];
 ?>
 
 <div class="wrapper">
@@ -119,28 +120,61 @@ $ppNo = $_GET['ppNo'];
 				</div><!-- /.box-header -->
 				<div class="box-body">
 				   <?php
-					$sql = "
-					SELECT dtl.`id`, itm.prodCodeId as prodCode, itm.`barcode`, itm.`issueDate`, itm.`grade`, itm.`qty`, dtl.`ppNo` 
-					, itm.gradeTypeId, pgt.name as gradeTypeName 
-					, prd.code as prodCode 
-					,IFNULL((SELECT COUNT(*) FROM picking_detail pickDtl 			
-							WHERE pickDtl.pickNo=hdr.pickNo				
-							AND itm.prodCodeId=pickDtl.prodId
-							AND itm.issueDate=pickDtl.issueDate 
-							AND itm.grade=pickDtl.grade 
-							AND itm.qty=pickDtl.meter  		
-							AND itm.gradeTypeId=pickDtl.gradeTypeId  						
-							),0) AS inPick 
-					FROM `prepare_detail` dtl
-					INNER JOIN prepare hdr ON hdr.ppNo=dtl.ppNo 
-					LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-					LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  
-					LEFT JOIN product prd ON prd.id=itm.prodCodeId 
-					WHERE 1
-					AND dtl.`ppNo`=:ppNo 
+				   $sql="";
+				   switch($custSlocCode){
+				   	case 'E' :
+				   		$sql = "
+						SELECT dtl.`id`, itm.prodCodeId as prodCode, itm.`barcode`, sh.sendDate as `issueDate`, itm.`grade`, itm.`qty`, dtl.`ppNo` 
+						, itm.gradeTypeId, pgt.name as gradeTypeName 
+						, prd.code as prodCode 
+						,IFNULL((SELECT COUNT(*) FROM picking pickHdr
+								INNER JOIN picking_detail pickDtl 			
+								WHERE pickDtl.pickNo=hdr.pickNo				
+								AND itm.prodCodeId=pickDtl.prodId
+								AND sh.sendDate=pickDtl.issueDate 
+								AND itm.grade=pickDtl.grade 
+								AND itm.qty=pickDtl.meter  		
+								AND itm.gradeTypeId=pickDtl.gradeTypeId  						
+								),0) AS inPick 
+						FROM `prepare_detail` dtl
+						INNER JOIN prepare hdr ON hdr.ppNo=dtl.ppNo 
+						LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+						LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  						
+						LEFT JOIN send_detail sd ON sd.prodItemId=itm.prodItemId 
+						LEFT JOIN send sh ON sh.sdNo=sd.sdNo AND sh.toCode='E' 
+						LEFT JOIN product prd ON prd.id=itm.prodCodeId 
+						WHERE 1
+						AND dtl.`ppNo`=:ppNo 
+						
+						ORDER BY itm.barcode  
+						";				   		
+				   		break;
+				   	default : 
+				   		$sql = "
+						SELECT dtl.`id`, itm.prodCodeId as prodCode, itm.`barcode`, itm.`issueDate`, itm.`grade`, itm.`qty`, dtl.`ppNo` 
+						, itm.gradeTypeId, pgt.name as gradeTypeName 
+						, prd.code as prodCode 
+						,IFNULL((SELECT COUNT(*) FROM picking_detail pickDtl 			
+								WHERE pickDtl.pickNo=hdr.pickNo				
+								AND itm.prodCodeId=pickDtl.prodId
+								AND itm.issueDate=pickDtl.issueDate 
+								AND itm.grade=pickDtl.grade 
+								AND itm.qty=pickDtl.meter  		
+								AND itm.gradeTypeId=pickDtl.gradeTypeId  						
+								),0) AS inPick 
+						FROM `prepare_detail` dtl
+						INNER JOIN prepare hdr ON hdr.ppNo=dtl.ppNo 
+						LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+						LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  
+						LEFT JOIN product prd ON prd.id=itm.prodCodeId 
+						WHERE 1
+						AND dtl.`ppNo`=:ppNo 
+						
+						ORDER BY itm.barcode  
+						";
+				   		break;
+				   }
 					
-					ORDER BY itm.barcode  
-					";
 					$stmt = $pdo->prepare($sql);	
 					$stmt->bindParam(':ppNo', $hdr['ppNo']);
 					$stmt->execute();
@@ -176,52 +210,110 @@ $ppNo = $_GET['ppNo'];
 					</table>
 					
 					<?php
-						$sql = "
-						SELECT prd.code as prodCode, itm.`issueDate`, itm.`grade`, itm.`qty` as meter 
-						, itm.gradeTypeId, pgt.name as gradeTypeName 
-						,IFNULL((SELECT SUM(pickDtl.qty) 
-								FROM picking_detail pickDtl 
-								WHERE pickDtl.pickNo=hdr.pickNo
-								AND pickDtl.prodId=itm.prodCodeId 
-								AND pickDtl.issueDate=itm.issueDate 
-								AND pickDtl.grade=itm.grade 
-								AND pickDtl.meter=itm.qty	
-								AND pickDtl.gradeTypeId=itm.gradeTypeId	
-						),0) AS sumPickQty 
-						, SUM(itm.`qty`) AS sumPackQty
-						FROM `prepare_detail` dtl
-						INNER JOIN prepare hdr ON hdr.ppNo=dtl.ppNo 
-						LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-						LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  
-						LEFT JOIN product prd ON prd.id=itm.prodCodeId 
-						WHERE 1
-						AND dtl.`ppNo`=:ppNo 
-						GROUP BY prd.`code`, itm.`issueDate`, itm.`grade`, itm.`qty`, itm.`gradeTypeId`
-												
-						UNION 
+						$sql="";
+						switch($custSlocCode){
+							case 'E' :
+								$sql = "
+								SELECT prd.code as prodCode, sh.sendDate as `issueDate`, itm.`grade`, itm.`qty` as meter 
+								, itm.gradeTypeId, pgt.name as gradeTypeName 
+								,IFNULL((SELECT SUM(pickDtl.qty) 
+										FROM picking_detail pickDtl 
+										WHERE pickDtl.pickNo=hdr.pickNo
+										AND pickDtl.prodId=itm.prodCodeId 
+										AND pickDtl.issueDate=sh.sendDate 
+										AND pickDtl.grade=itm.grade 
+										AND pickDtl.meter=itm.qty	
+										AND pickDtl.gradeTypeId=itm.gradeTypeId	
+								),0) AS sumPickQty 
+								, SUM(itm.`qty`) AS sumPackQty
+								FROM `prepare_detail` dtl
+								INNER JOIN prepare hdr ON hdr.ppNo=dtl.ppNo 
+								LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+								LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  
+								LEFT JOIN send_detail sd ON sd.prodItemId=dtl.prodItemId 
+								LEFT JOIN send sh ON sh.sdNo=sd.sdNo AND sh.toCode='E' 
+								LEFT JOIN product prd ON prd.id=itm.prodCodeId 
+								WHERE 1
+								AND dtl.`ppNo`=:ppNo 
+								GROUP BY prd.`code`, sh.sendDate, itm.`grade`, itm.`qty`, itm.`gradeTypeId`
+														
+								UNION 
+								
+								SELECT * FROM (
+									SELECT prd.code as prodCode, pick.`issueDate`, pick.`grade`, pick.`meter`
+									, pick.gradeTypeId, pgt.name as gradeTypeName 
+									, IFNULL(SUM(pick.qty),0) as sumPickQty
+									, IFNULL((SELECT SUM(itm.qty) 
+											FROM prepare_detail ppDtl 
+											INNER JOIN product_item itm ON itm.prodItemId=ppDtl.prodItemId 
+											INNER JOIN send_detail sd ON sd.prodItemId=ppDtl.prodItemId 
+											INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.toCode='E' 
+											WHERE 1=1 
+											AND ppDtl.ppNo=:ppNo3 
+											AND pick.prodId=itm.prodCodeId 
+											AND pick.issueDate=sh.sendDate 
+											AND pick.grade=itm.grade 
+											AND pick.meter=itm.qty	
+											AND pick.gradeTypeId=itm.gradeTypeId	
+									),0) as sumPackQty 
+									FROM picking_detail pick
+									LEFT JOIN product prd ON prd.id=pick.prodId  
+									LEFT JOIN product_item_grade_type pgt ON pgt.id=pick.gradeTypeId
+									WHERE pick.pickNo=(SELECT pickNo FROM prepare WHERE ppNo=:ppNo2)	
+									GROUP BY pick.prodId, pick.`issueDate`, pick.`grade`, pick.`meter`, pick.`gradeTypeId`							
+									) as tmp 	
+								";
+								break;
+							default :
+								$sql = "
+								SELECT prd.code as prodCode, itm.`issueDate`, itm.`grade`, itm.`qty` as meter 
+								, itm.gradeTypeId, pgt.name as gradeTypeName 
+								,IFNULL((SELECT SUM(pickDtl.qty) 
+										FROM picking_detail pickDtl 
+										WHERE pickDtl.pickNo=hdr.pickNo
+										AND pickDtl.prodId=itm.prodCodeId 
+										AND pickDtl.issueDate=itm.issueDate 
+										AND pickDtl.grade=itm.grade 
+										AND pickDtl.meter=itm.qty	
+										AND pickDtl.gradeTypeId=itm.gradeTypeId	
+								),0) AS sumPickQty 
+								, SUM(itm.`qty`) AS sumPackQty
+								FROM `prepare_detail` dtl
+								INNER JOIN prepare hdr ON hdr.ppNo=dtl.ppNo 
+								LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+								LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  
+								LEFT JOIN product prd ON prd.id=itm.prodCodeId 
+								WHERE 1
+								AND dtl.`ppNo`=:ppNo 
+								GROUP BY prd.`code`, itm.`issueDate`, itm.`grade`, itm.`qty`, itm.`gradeTypeId`
+														
+								UNION 
+								
+								SELECT * FROM (
+									SELECT prd.code as prodCode, pick.`issueDate`, pick.`grade`, pick.`meter`
+									, pick.gradeTypeId, pgt.name as gradeTypeName 
+									, IFNULL(SUM(pick.qty),0) as sumPickQty
+									, IFNULL((SELECT SUM(itm.qty) 
+											FROM prepare_detail ppDtl 
+											LEFT JOIN product_item itm ON itm.prodItemId=ppDtl.prodItemId 
+											WHERE 1=1 
+											AND ppDtl.ppNo=:ppNo3 
+											AND pick.prodId=itm.prodCodeId 
+											AND pick.issueDate=itm.issueDate 
+											AND pick.grade=itm.grade 
+											AND pick.meter=itm.qty	
+											AND pick.gradeTypeId=itm.gradeTypeId	
+									),0) as sumPackQty 
+									FROM picking_detail pick
+									LEFT JOIN product prd ON prd.id=pick.prodId  
+									LEFT JOIN product_item_grade_type pgt ON pgt.id=pick.gradeTypeId  
+									WHERE pick.pickNo=(SELECT pickNo FROM prepare WHERE ppNo=:ppNo2)	
+									GROUP BY pick.prodId, pick.`issueDate`, pick.`grade`, pick.`meter`, pick.`gradeTypeId`							
+									) as tmp 	
+								";
+								break;
+						}
 						
-						SELECT * FROM (
-							SELECT prd.code as prodCode, pick.`issueDate`, pick.`grade`, pick.`meter`
-							, pick.gradeTypeId, pgt.name as gradeTypeName 
-							, IFNULL(SUM(pick.qty),0) as sumPickQty
-							, IFNULL((SELECT SUM(itm.qty) 
-									FROM prepare_detail ppDtl 
-									LEFT JOIN product_item itm ON itm.prodItemId=ppDtl.prodItemId 
-									WHERE 1=1 
-									AND ppDtl.ppNo=:ppNo3 
-									AND pick.prodId=itm.prodCodeId 
-									AND pick.issueDate=itm.issueDate 
-									AND pick.grade=itm.grade 
-									AND pick.meter=itm.qty	
-									AND pick.gradeTypeId=itm.gradeTypeId	
-							),0) as sumPackQty 
-							FROM picking_detail pick
-							LEFT JOIN product prd ON prd.id=pick.prodId  
-							LEFT JOIN product_item_grade_type pgt ON pgt.id=pick.gradeTypeId  
-							WHERE pick.pickNo=(SELECT pickNo FROM prepare WHERE ppNo=:ppNo2)	
-							GROUP BY pick.prodId, pick.`issueDate`, pick.`grade`, pick.`meter`, pick.`gradeTypeId`							
-							) as tmp 	
-						";
 						$stmt = $pdo->prepare($sql);	
 						$stmt->bindParam(':ppNo', $hdr['ppNo']);
 						$stmt->bindParam(':ppNo2', $hdr['ppNo']);

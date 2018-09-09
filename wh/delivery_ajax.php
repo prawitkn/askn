@@ -57,6 +57,19 @@ if(!isset($_POST['action'])){
 
 				$pdo->beginTransaction();
 				
+				//Query 1: Check Status for not gen running No.
+				$sql = "SELECT ppNo FROM prepare WHERE ppNo=:ppNo AND statusCode='P' LIMIT 1";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':ppNo', $ppNo);
+				$stmt->execute();
+				$row_count = $stmt->rowCount();	
+				if($row_count != 1 ){		
+					//return JSON
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => false, 'message' => 'Prepare no. incorrect.'));
+					exit();
+				}	
+
 				$sql = "INSERT INTO `delivery_header`
 				(`doNo`, `soNo`, `ppNo`, `deliveryDate`, `custId`, `shipToId`, `smId`, `remark`, `statusCode`, `createTime`, `createById`) 
 				SELECT :doNo,oh.soNo,pp.ppNo,:deliveryDate,oh.custId,oh.shipToId,oh.smId,:remark,'B',now(),:s_userId 

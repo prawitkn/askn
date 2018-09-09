@@ -2,11 +2,12 @@
 
 include 'session.php';
 
-$soNo = $_POST['soNo'];
+
 
 //We will need to wrap our queries inside a TRY / CATCH block.
 //That way, we can rollback the transaction if a query fails and a PDO exception occurs.
 try{	
+	$soNo = $_POST['soNo'];
 
 	//Query 1: Check Status for not gen running No.
 	$sql = "SELECT * FROM sale_header WHERE soNo=:soNo AND statusCode='C' LIMIT 1";

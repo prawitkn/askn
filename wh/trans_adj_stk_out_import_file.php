@@ -53,12 +53,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <div class="row">
             	<div class="col-md-12">	
 					<form id="form1" action="<?=basename($_SERVER['PHP_SELF']);?>" method="post" enctype="multipart/form-data" class="form-inline" novalidate>	
-					 <div class="row">			
-						<div class="col-md-3">	
-							<label for="issueDate">Adjust Date</label><br/>
-					<input type="text" id="issueDate" name="issueDate" class="form-control datepicker" data-smk-msg="Require Order Date." required >
-						</div>
-						<!--col-md-->
+					 <div class="row">	
 						<div class="col-md-3">	
 							<label for="file">File</label><br/>							
 							<input type="file" name="file1" id="file1" accept=".txt" >
@@ -192,13 +187,17 @@ scratch. This page gets rid of all links and provides the needed markup only.
 									<h3>Matched All Barcode.</h3>
 								</div>
 								<!--col-md-12-->
+
+								
+
+
 								<div class="col-md-6 pull-right">
 									<form id="form2" action="<?=basename($_SERVER['PHP_SELF']);?>" method="post" enctype="multipart/form-data" class="form-inline" novalidate>	
-										<input type="hidden" name="update" value="1" />
+										<input type="hidden" name="mapping" value="1" />
 									 <div class="row pull-right">			
 										<div class="col-md-3">	
 											<label for="submit"></label>
-											<input type="submit" name="submit" class="form-control btn btn-danger" value="Update" />
+											<input type="submit" name="submit" class="form-control btn btn-primary" value="Mapping Product" />
 										</div>
 										<!--col-md-->
 									</div>
@@ -206,18 +205,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 									</form>
 									<!--from2-->
 
-									<form id="form3" action="<?=basename($_SERVER['PHP_SELF']);?>" method="post" enctype="multipart/form-data" class="form-inline" novalidate>	
-										<input type="hidden" name="revise" value="1" />
-									 <div class="row pull-right">			
-										<div class="col-md-3">	
-											<label for="submit"></label>
-											<input type="submit" name="submit" class="form-control btn btn-danger" value="Revise" />
-										</div>
-										<!--col-md-->
-									</div>
-									<!--row-->					
-									</form>
-									<!--from3-->
 									</div>
 									<!--col--md12-->
 
@@ -270,14 +257,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 
 
-
-
-
-
-
-
-
-			if( !empty($_POST['update']) ){
+			if( !empty($_POST['mapping']) ){
 
 					$pdo->beginTransaction();
 				try{
@@ -364,6 +344,131 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					$stmt->execute();	
 
 
+					//Commit the transaction.
+					$pdo->commit();
+					echo '<h1>Success!!</h1>';
+
+					$sql = "SELECT prd.code as prodCode, COUNT(tmp.prodItemId) as rowCount, SUM(tmp.qty) as sumQty 
+					FROM product_item_temp tmp 
+					LEFT JOIN product prd ON prd.id=tmp.prodCodeId 
+					GROUP BY prd.code 
+					";			
+					$stmt = $pdo->prepare($sql);
+					$stmt->execute();
+					?>
+
+
+					
+					<form id="form4" action="<?=basename($_SERVER['PHP_SELF']);?>" method="post" enctype="multipart/form-data" class="form-inline" novalidate>	
+						<input type="hidden" name="revise" value="1" />
+						<input type="hidden" name="docNo" value="<?=$docNo;?>" />
+						<input type="hidden" name="Sloc" value="<?=$Sloc;?>" />
+
+					 <div class="row pull-right">			
+						<div class="col-md-3">	
+							<label for="submit"></label>
+							<input type="submit" typename="submit" class="form-control btn btn-danger" value="Revise" />
+						</div>
+						<!--col-md-->
+					</div>
+					<!--row-->					
+					</form>
+					<!--from3-->
+
+
+					<form id="form3" action="<?=basename($_SERVER['PHP_SELF']);?>" method="post" enctype="multipart/form-data" class="form-inline" novalidate>	
+						<input type="hidden" name="update" value="1" />
+						<input type="hidden" name="docNo" value="<?=$docNo;?>" />
+						<input type="hidden" name="Sloc" value="<?=$Sloc;?>" />
+
+					 <div class="row pull-right">			
+						<div class="col-md-3">	
+							<label for="submit"></label>
+							<input type="submit" name="submit" class="form-control btn btn-danger" value="Update" />
+						</div>
+						<!--col-md-->
+					</div>
+					<!--row-->					
+					</form>
+					<!--from2-->
+				<?php
+					echo '<table class="table table-hover">
+						<thead>
+							<tr>
+							<td>No.</td>
+							<td>Product Code</td>
+							<td>Qty</td>
+							<td>Length/Box/KG</td>
+							</tr>							
+						</thead>
+						<tbody>';
+					$rowNo=1;
+					while ( $row=$stmt->fetch() ) {
+						echo '<tr>';
+						echo '<td>'.$rowNo.'</td>';
+						echo '<td>'.$row['prodCode'].'</td>';	
+						echo '<td>'.$row['rowCount'].'</td>';
+						echo '<td>'.$row['sumQty'].'</td>';
+						echo '</tr>';
+
+						$rowNo+=1;
+					}		
+					echo '	</tbody>
+					</table>';	
+
+
+					$sql = "SELECT tmp.*, prd.code as prodCode 
+					FROM product_item_temp tmp 
+					LEFT JOIN product prd ON prd.id=tmp.prodCodeId 
+					";			
+					$stmt = $pdo->prepare($sql);
+					$stmt->execute();
+
+					echo '<table class="table table-hover">
+						<thead>
+							<tr>
+							<td>No.</td>
+							<td>Barcode</td>
+							<td>Product Code</td>
+							</tr>							
+						</thead>
+						<tbody>';
+					$rowNo=1;
+					while ( $row=$stmt->fetch() ) {
+						echo '<tr>';
+						echo '<td>'.$rowNo.'</td>';
+						echo '<td>'.$row['barcode'].'</td>';
+						echo '<td>'.$row['prodCode'].'</td>';	
+						echo '</tr>';
+
+						$rowNo+=1;
+					}		
+					echo '	</tbody>
+					</table>';	
+				} catch(Exception $e) {
+					//Rollback the transaction.
+					$pdo->rollBack();
+
+					print_r($e->getMessage());
+				}	//end try
+			}//end if post update
+
+
+
+
+
+
+
+			if( !empty($_POST['update']) ){
+
+					
+				try{
+
+					$docNo=$_POST['docNo'];
+					$Sloc=$_POST['Sloc'];
+
+					$pdo->beginTransaction();		
+
 					$sql = "INSERT INTO send (`sdNo`, `refNo`, `sendDate`, `fromCode`, `toCode`, `revCount`, `rcNo`, `remark`, `statusCode`, `createTime`, `createById`, `confirmTime`, `confirmById`, `approveTime`, `approveById`)
 					VALUES ('$docNo', '',  NOW(), '$Sloc', 'A', 0, 'SYS', 'Adjust Out', 'P',NOW(), 0, NOW(), 0, NOW(), 0) 
 					";			
@@ -377,6 +482,18 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					";			
 					$stmt = $pdo->prepare($sql);
 					$stmt->execute();
+
+
+					$sql = "UPDATE receive_detail rd
+					INNER JOIN send_detail sd ON sd.prodItemId=rd.prodItemId 
+					INNER JOIN send sh ON sh.sdNo=sd.sdNo 
+                    INNER JOIN receive rh ON rh.rcNo=rd.rcNo AND rh.toCode=sh.fromCode
+					SET rd.statusCode='X' 
+					WHERE sh.sdNo='$docNo' 
+					";			
+					$stmt = $pdo->prepare($sql);
+					$stmt->execute();
+
 
 					//insert shelf 
 					$sql = "DELETE wmi
@@ -424,82 +541,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				}	//end try
 			}//end if post update
 			
-
-
-			if( !empty($_POST['revise']) ){
-
-				try{
-					$pdo->beginTransaction();
-
-					$sql = "SELECT DISTINCT 'SA'+RIGHT(CONVERT(VARCHAR(10),IssueDate,112),6)+FromCode as DocNo, ToCode as Sloc FROM ZO_adjust ";
-					$msResult = sqlsrv_query($ssConn, $sql);
-					$msRow = sqlsrv_fetch_array($msResult, SQLSRV_FETCH_ASSOC);
-					$docNo=$msRow['DocNo'];
-					$Sloc=$msRow['Sloc'];
-
-					//Query 5: UPDATE STK BAl toCode
-					$sql = "		
-					UPDATE stk_bal sb,
-					( SELECT itm.prodCodeId, SUM(itm.qty)  as sumQty
-						   FROM product_item_temp itm
-						   GROUP BY itm.prodCodeId) as s
-					SET sb.balance=sb.balance+s.sumQty 
-					WHERE sb.prodId=s.prodCodeId
-					AND sb.sloc='$Sloc' 
-					";
-					$stmt = $pdo->prepare($sql);
-					$stmt->execute();
-						
-					//Query 6: INSERT STK BAl toCode
-					$sql = "INSERT INTO stk_bal (prodId, sloc, balance) 
-					SELECT itm.prodCodeId, '$Sloc', SUM(itm.qty) 
-					FROM product_item_temp itm 
-					WHERE itm.prodCodeId NOT IN (SELECT sb2.prodId FROM stk_bal sb2 WHERE sb2.sloc='$Sloc')
-					GROUP BY itm.prodCodeId
-					";
-					$stmt = $pdo->prepare($sql);
-					$stmt->execute();
-
-					//insert shelf 
-					$sql = "UPDATE dtl
-					FROM receive_detail dtl
-					INNER JOIN product_item_temp itm ON itm.prodItemId=dtl.prodItemId 
-					SET dtl.statusCode='A' 
-					";			
-					$stmt = $pdo->prepare($sql);
-					$stmt->execute();	
-
-
-					//insert receive_detail 
-					$sql = "DELETE dtl
-					FROM send_detail dtl
-					WHERE dtl.sdNo='$docNo' 
-					";			
-					$stmt = $pdo->prepare($sql);
-					$stmt->execute();	
-
-					//insert receive 
-					$sql = "DELETE hdr
-					FROM send hdr
-					WHERE hdr.sdNo='$docNo' 
-					";			
-					$stmt = $pdo->prepare($sql);
-					$stmt->execute();	
-
-
-					//Commit the transaction.
-					$pdo->commit();
-					echo '<h1>Success!!</h1>';
-				} catch(Exception $e) {
-					//Rollback the transaction.
-					$pdo->rollBack();
-
-					print_r($e->getMessage());
-				}	//end try
-			}//end if post update
-
-
-
 			?>	
 
 

@@ -71,29 +71,54 @@ if(!isset($_POST['action'])){
 
 
 
-
+				$sql="";
+				switch($s_userGroupCode){
+					case 'admin' :
+					$sql = "SELECT hdr.sendId, dtl.`productItemId`, itm.`barcode`, itm.`issueDate`
+					, itm.`machineId`, itm.`seqNo`, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`
+					, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId`					
+					, itm.prodCodeId as prodId, prd.code as prodCode
+					, '' as sentNo
+					, IFNULL((SELECT 1 FROM send sHdr
+												INNER JOIN send_detail sDtl ON sDtl.sdNo=sHdr.sdNo
+												WHERE sHdr.sdNo=:sdNo  AND sDtl.prodItemId=itm.prodItemId LIMIT 1),0) as isSelected 
+					,CASE itm.grade
+						WHEN 0 THEN 'A' 
+						WHEN 1 THEN 'B' 	
+						WHEN 2 THEN 'N' 	
+						ELSE 'N/A'
+					END AS gradeName 
+					FROM send_mssql hdr  
+					INNER JOIN send_detail_mssql dtl ON dtl.sendId=hdr.sendId 
+					LEFT JOIN product_item itm ON itm.prodItemId=dtl.productItemId 
+					LEFT JOIN product prd ON prd.id=itm.prodCodeId
+					WHERE 1=1 "; 
+					break;
+					default : 
+					$sql = "SELECT hdr.sendId, dtl.`productItemId`, itm.`barcode`, itm.`issueDate`
+					, itm.`machineId`, itm.`seqNo`, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`
+					, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId`					
+					, itm.prodCodeId as prodId, prd.code as prodCode
+					, IFNULL((SELECT sHdr.sdNo FROM send sHdr
+												INNER JOIN send_detail sDtl ON sDtl.sdNo=sHdr.sdNo
+												WHERE sHdr.statusCode IN ('C','P') AND sDtl.prodItemId=itm.prodItemId LIMIT 1),'') as sentNo
+					, IFNULL((SELECT 1 FROM send sHdr
+												INNER JOIN send_detail sDtl ON sDtl.sdNo=sHdr.sdNo
+												WHERE sHdr.sdNo=:sdNo  AND sDtl.prodItemId=itm.prodItemId LIMIT 1),0) as isSelected 
+					,CASE itm.grade
+						WHEN 0 THEN 'A' 
+						WHEN 1 THEN 'B' 	
+						WHEN 2 THEN 'N' 	
+						ELSE 'N/A'
+					END AS gradeName 
+					FROM send_mssql hdr  
+					INNER JOIN send_detail_mssql dtl ON dtl.sendId=hdr.sendId 
+					LEFT JOIN product_item itm ON itm.prodItemId=dtl.productItemId 
+					LEFT JOIN product prd ON prd.id=itm.prodCodeId
+					WHERE 1=1 ";
+				}
 				
-				$sql = "SELECT hdr.sendId, dtl.`productItemId`, itm.`barcode`, itm.`issueDate`
-				, itm.`machineId`, itm.`seqNo`, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`
-				, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId`					
-				, itm.prodCodeId as prodId, prd.code as prodCode
-				, IFNULL((SELECT sHdr.sdNo FROM send sHdr
-											INNER JOIN send_detail sDtl ON sDtl.sdNo=sHdr.sdNo
-											WHERE sHdr.statusCode IN ('C','P') AND sDtl.prodItemId=itm.prodItemId LIMIT 1),'') as sentNo
-				, IFNULL((SELECT 1 FROM send sHdr
-											INNER JOIN send_detail sDtl ON sDtl.sdNo=sHdr.sdNo
-											WHERE sHdr.sdNo=:sdNo  AND sDtl.prodItemId=itm.prodItemId LIMIT 1),0) as isSelected 
-				,CASE itm.grade
-					WHEN 0 THEN 'A' 
-					WHEN 1 THEN 'B' 	
-					WHEN 2 THEN 'N' 	
-					ELSE 'N/A'
-				END AS gradeName 
-				FROM send_mssql hdr  
-				INNER JOIN send_detail_mssql dtl ON dtl.sendId=hdr.sendId 
-				LEFT JOIN product_item itm ON itm.prodItemId=dtl.productItemId 
-				LEFT JOIN product prd ON prd.id=itm.prodCodeId
-				WHERE 1=1 ";
+				
 				
 				
 				/*$sql = "SELECT hdr.sendId, dtl.`productItemId`, itm.`barcode`, itm.`issueDate`
@@ -557,6 +582,31 @@ if(!isset($_POST['action'])){
 				$next_no = '00000'.(string)$cur_no;
 				$noNext = $prefix . substr($next_no, -5);
 				
+				//Set Unavailable.
+				$sql = "UPDATE receive_detail rd
+				INNER JOIN receive rh ON rh.rcNo=rd.rcNo 
+				INNER JOIN send_detail sd ON sd.prodItemId=rd.prodItemId
+				INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.fromCode=rh.toCode AND sh.sdNo=:sdNo 
+				SET rd.statusCode='X' 
+				";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':sdNo', $sdNo);
+				$stmt->execute();
+
+				//Delete mapping Shelf.
+				$sql = "DELETE smi
+				FROM wh_shelf_map_item smi 
+				INNER JOIN receive_detail rd ON rd.id=smi.recvProdId
+                INNER JOIN receive rh ON rh.rcNo=rd.rcNo 
+				INNER JOIN send_detail sd ON sd.prodItemId=rd.prodItemId
+				INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.fromCode=rh.toCode AND sh.sdNo=:sdNo 
+				";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':sdNo', $sdNo);
+				$stmt->execute();
+
+
+
 				//Query 1: UPDATE DATA
 				$sql = "UPDATE send SET statusCode='P'
 				, sdNo=:noNext  
@@ -570,7 +620,8 @@ if(!isset($_POST['action'])){
 				$stmt->bindParam(':approveById', $s_userId);
 				$stmt->bindParam(':sdNo', $sdNo);
 				$stmt->execute();
-					
+				
+
 				//Query 3: UPDATE DATA
 				$sql = "UPDATE send_detail SET sdNo=? WHERE sdNo=? ";
 				$stmt = $pdo->prepare($sql);
@@ -581,8 +632,12 @@ if(!isset($_POST['action'])){
 				$stmt = $pdo->prepare($sql);		
 				$stmt->execute(array($cur_no, $year, $name, $prefix));	
 				
-				
-				
+				//Delete scanned
+				$sql = "DELETE FROM send_scan WHERE refId=:refId 
+						";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':refId', $sdNo);
+				$stmt->execute();				
 				
 				//Query 5: UPDATE STK BAl sloc from 
 				$sql = "		
@@ -738,6 +793,30 @@ if(!isset($_POST['action'])){
 				$next_no = '00000'.(string)$cur_no;
 				$noNext = $prefix . substr($next_no, -5);
 				
+				//Set Unavailable.
+				$sql = "UPDATE receive_detail rd
+				INNER JOIN receive rh ON rh.rcNo=rd.rcNo 
+				INNER JOIN send_detail sd ON sd.prodItemId=rd.prodItemId
+				INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.fromCode=rh.toCode AND sh.sdNo=:sdNo 
+				SET rd.statusCode='X' 
+				";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':sdNo', $sdNo);
+				$stmt->execute();
+
+				//Delete mapping Shelf.
+				$sql = "DELETE smi
+				FROM wh_shelf_map_item smi 
+				INNER JOIN receive_detail rd ON rd.id=smi.recvProdId
+                INNER JOIN receive rh ON rh.rcNo=rd.rcNo 
+				INNER JOIN send_detail sd ON sd.prodItemId=rd.prodItemId
+				INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.fromCode=rh.toCode AND sh.sdNo=:sdNo 
+				";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':sdNo', $sdNo);
+				$stmt->execute();
+
+
 				//Query 1: UPDATE DATA
 				$sql = "UPDATE send SET statusCode='P'
 				, sdNo=:noNext  
@@ -755,7 +834,7 @@ if(!isset($_POST['action'])){
 				//Query 3: UPDATE DATA
 				$sql = "UPDATE send_detail SET sdNo=? WHERE sdNo=? ";
 				$stmt = $pdo->prepare($sql);
-				$stmt->execute(array($noNext,$sdNo));
+				$stmt->execute(array($noNext,$sdNo));				
 				
 				//Query 4:  UPDATE doc running.
 				$sql = "UPDATE doc_running SET cur_no=? WHERE year=? and name=? and prefix=? ";

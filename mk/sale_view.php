@@ -343,6 +343,11 @@ $rootPage="sale";
 						</button>
 						
 					<?php }else{ //.else isClose ?>
+						<button type="button" id="btn_reopen_closed_so" class="btn btn-warning pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='Y')?'':'disabled'); ?>>
+						<i class="glyphicon glyphicon-refresh">
+						</i> Re-Open Closed Sales Order.
+						</button>
+
 						<button type="button" id="btn_close_so" class="btn btn-danger pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='N')?'':'disabled'); ?>>
 						<i class="glyphicon glyphicon-ok-sign">
 						</i> Close Sales Order
@@ -681,6 +686,41 @@ $('#btn_close_so').click (function(e) {
 	$.smkConfirm({text:'Are you sure to Close ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
 			url: '<?=$rootPage;?>_close_ajax.php',
+			data: params,
+			dataType: 'json'
+		}).done(function(data) {
+			if (data.success){  
+				$.smkAlert({
+					text: data.message,
+					type: 'success',
+					position:'top-center'
+				});
+				window.location.href = "<?=$rootPage;?>_view.php?soNo=" + data.soNo;
+			}else{
+				$.smkAlert({
+					text: data.message,
+					type: 'danger',
+					position:'top-center'
+				});
+			}
+			//e.preventDefault();		
+		}).error(function (response) {
+			alert(response.responseText);
+		});
+		//.post
+	}});
+	//smkConfirm
+});
+//.btn_click
+
+$('#btn_reopen_closed_so').click (function(e) {				 
+	var params = {					
+	soNo: '<?=$soNo;?>'			
+	};
+	//alert(params.hdrID);
+	$.smkConfirm({text:'Are you sure to re-open ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+		$.post({
+			url: '<?=$rootPage;?>_reopen_ajax.php',
 			data: params,
 			dataType: 'json'
 		}).done(function(data) {

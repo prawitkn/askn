@@ -47,6 +47,8 @@ class MYPDF extends TCPDF {
     }
 }
 
+date_default_timezone_set("Asia/Bangkok");
+
 // create new PDF document
 $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 

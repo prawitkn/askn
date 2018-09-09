@@ -13,8 +13,9 @@
   <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="plugins/ionicons-2.0.0/ionicons.min.css">
-  <!-- Ionicons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
+  <!-- Ionicons 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">-->
+ <link rel="stylesheet" href="plugins/fontAwesome/css/font-awesome.min.css">
   <!--<link rel="stylesheet" href="plugins/fontAwesome/font-awesome.min.css">-->
   <!-- Theme style -->
   <link rel="stylesheet" href="dist/css/AdminLTE.min.css">
@@ -38,9 +39,7 @@
   <![endif]-->
   
   <style>
-	body { font-family: Browallia New; font-size: 22px; }
 
-	 body .content-wrapper{font-size: 20px;}
 	@media (max-width: @screen-xs) {
 		body .content-wrapper{font-size: 12px;}
 	}
@@ -72,6 +71,61 @@
 	  display: inline;
 	}
 	</style>  
+<style>
+
+@import url(./plugins/fontAwesome/fonts/thsarabunnew.css);
+
+  @font-face {
+    font-family: 'THSarabunNew';
+    src: url('thsarabunnew-webfont.eot');
+    src: url('thsarabunnew-webfont.eot?#iefix') format('embedded-opentype'),
+         url('thsarabunnew-webfont.woff') format('woff'),
+         url('thsarabunnew-webfont.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'THSarabunNew';
+    src: url('thsarabunnew_bolditalic-webfont.eot');
+    src: url('thsarabunnew_bolditalic-webfont.eot?#iefix') format('embedded-opentype'),
+         url('thsarabunnew_bolditalic-webfont.woff') format('woff'),
+         url('thsarabunnew_bolditalic-webfont.ttf') format('truetype');
+    font-weight: bold;
+    font-style: italic;
+
+}
+
+@font-face {
+    font-family: 'THSarabunNew';
+    src: url('thsarabunnew_italic-webfont.eot');
+    src: url('thsarabunnew_italic-webfont.eot?#iefix') format('embedded-opentype'),
+         url('thsarabunnew_italic-webfont.woff') format('woff'),
+         url('thsarabunnew_italic-webfont.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+
+}
+
+@font-face {
+    font-family: 'THSarabunNew';
+    src: url('thsarabunnew_bold-webfont.eot');
+    src: url('thsarabunnew_bold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('thsarabunnew_bold-webfont.woff') format('woff'),
+         url('thsarabunnew_bold-webfont.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+
+}
+  
+body, h1, h2, h3, h4, h5, h6 {
+  font-family: 'THSarabunNew', sans-serif;
+  font-weight: bold;
+}
+</style>
+
+
 	<!-- fancybox CSS -->
   <link rel="stylesheet" type="text/css" href="plugins/fancybox-master/dist/jquery.fancybox.min.css">
 </head>

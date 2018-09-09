@@ -12,7 +12,7 @@ $rootPage = 'userGroup';
 
 //Check user roll.
 switch($s_userGroupCode){
-	case 'it' : 
+	case 'admin' : 
 		break;
 	default : 
 		header('Location: access_denied.php');
