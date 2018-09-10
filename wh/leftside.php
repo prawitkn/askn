@@ -43,10 +43,8 @@
 			<li><a href="userGroup.php"><i class="fa fa-list-ol"></i> <span>User Group</span></a></li>
 			<li><a href="userDept.php"><i class="fa fa-list-ol"></i> <span>User Prod. Dept.</span></a></li>
 		<?php } ?>
-		<?php switch($s_userGroupCode){ case 'it' : case 'whOff' : case 'whSup' : ?>
-			
-		<?php } ?>
-		<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'tech' : ?>
+
+		<?php if ( $s_userGroupCode == 'admin' || ( $s_userGroupCode == 'pdSup' && $s_userDeptCode == 'T' ) ) { ?>
 			<li><a href="product.php"><i class="fa fa-barcode"></i> <span>Product Data</span></a></li>
 			<li><a href="productionMappingProduct.php"><i class="fa fa-list-ol"></i> <span>Production Prod. Mapping</span></a></li>		
 		<?php } ?>

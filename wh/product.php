@@ -29,7 +29,7 @@ desired effect
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
   <!-- Main Header -->
-  <?php include 'header.php'; 	include 'inc_helper.php';  
+  <?php include 'header.php'; 	
   $rootPage="product";
   ?>  
   

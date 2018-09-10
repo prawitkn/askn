@@ -11,13 +11,21 @@ scratch. This page gets rid of all links and provides the needed markup only.
 $rootPage = 'productionMappingProduct';
 
 //Check user roll.
+$isAllow=false;
 switch($s_userGroupCode){
-	case 'it' : case 'admin' : case 'tech' :
+	case 'admin' : $isAllow=true; break;
+	case 'pdSup' : 
+		if ( $s_userDeptCode == 'T' ){
+			$isAllow=true;
+		}
 		break;
 	default : 
-		header('Location: access_denied.php');
-		exit();
-}
+}//.switch
+
+if ( !$isAllow ){
+	header('Location: access_denied.php');
+	exit();
+}//.if isallow
 
 $id=$_GET['id'];
 
