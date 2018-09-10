@@ -14,6 +14,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		switch($s_userGroupCode){ 
 			case 'whOff' :
 			case 'whSup' :
+			case 'whMgr' : 
 				header("Location: access_denied.php"); exit();
 				break;
 			default :	// it, admin 
@@ -41,10 +42,6 @@ $rootPage="rtrc";
 	//$sdNo = $hdr['sdNo'];
 	if($stmt->rowCount() >= 1){
 		switch($s_userGroupCode){ 
-			case 'whOff' :
-			case 'whSup' :
-				//if($hdr['toCode']!=$s_userDeptCode) { header("Location: access_denied.php"); exit();}			
-				break;
 			case 'pdOff' :
 			case 'pdSup' :
 				if($hdr['toCode']!=$s_userDeptCode) { header("Location: access_denied.php"); exit();}			

@@ -67,7 +67,11 @@ $tb="send";
 						break;
 					case 'whOff' :
 					case 'whSup' :
+					case 'whMgr' : 
 						$sql .= "AND hdr.fromCode in ('0','7','8','E') ";
+						break;
+					case 'pdMgr' : 
+						$sql .= "AND hdr.fromCode in ('4','5','6') "; 
 						break;
 					default :	// it, admin 
 				}	
@@ -90,7 +94,7 @@ $tb="send";
 				$row = $stmt->fetch();
 				$countTotal = $row['countTotal'];
 								
-				$rows=20;
+				$rows=100;
 				$page=0;
 				if( !empty($_GET["page"]) and isset($_GET["page"]) ) $page=$_GET["page"];
 				if($page<=0) $page=1;
@@ -137,7 +141,11 @@ $tb="send";
 						break;
 					case 'whOff' :
 					case 'whSup' :
+					case 'whMgr' : 
 						$sql .= "AND hdr.fromCode in ('0','7','8','E') ";
+						break;
+					case 'pdMgr' : 
+						$sql .= "AND hdr.fromCode in ('4','5','6') "; 
 						break;
 					default :	// it, admin 
 				}	

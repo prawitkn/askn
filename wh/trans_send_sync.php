@@ -110,11 +110,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						  AND hdr.[IssueDate] = '$sendDate'
 						  ";
 						  switch($s_userGroupCode){ 
-							case 'whOff' :  case 'whSup' : 
+							case 'whOff' :  case 'whSup' : case 'whMgr' :  
 									$sql .= "AND left(itm.[ItemCode],1) IN ('0','7','8','9','E') ";
 								break;
 							case 'pdOff' :  case 'pdSup' :
 									$sql .= "AND left(itm.[ItemCode],1) = '".$s_userDeptCode."' ";
+								break;
+							case 'pdMgr' : 
+									$sql .= "AND left(itm.[ItemCode],1) IN ('4','5','6') ";
 								break;
 							default : //case 'it' : case 'admin' : 
 						  }
@@ -176,11 +179,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 										  AND hdr.[IssueDate] = '$sendDate' )
 						  ";
 					  switch($s_userGroupCode){ 
-						case 'whOff' :  case 'whSup' : 
+						case 'whOff' :  case 'whSup' : case 'whMgr' :
 								$sql .= "AND left(itm.[ItemCode],1) IN ('0','7','8','9') ";
 							break;
 						case 'pdOff' :  case 'pdSup' :
 								$sql .= "AND left(itm.[ItemCode],1) = '".$s_userDeptCode."' ";
+							break;
+						case 'pdMgr' : 
+								$sql .= "AND left(itm.[ItemCode],1) IN ('4','5','6') ";
 							break;
 						default : //case 'it' : case 'admin' : 
 					  }
@@ -242,11 +248,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 										  AND hdr.[IssueDate] = '$sendDate' )
 						  ";
 					  switch($s_userGroupCode){ 
-						case 'whOff' :  case 'whSup' : 
+						case 'whOff' :  case 'whSup' :  case 'whMgr' : 
 								$sql .= "AND left(itm.[ItemCode],1) IN ('0','7','8','9') ";
 							break;
 						case 'pdOff' :  case 'pdSup' :
 								$sql .= "AND left(itm.[ItemCode],1) = '".$s_userDeptCode."' ";
+							break;
+						case 'pdMgr' : 
+								$sql .= "AND left(itm.[ItemCode],1) IN ('4','5','6') ";
 							break;
 						default : //case 'it' : case 'admin' : 
 					  }

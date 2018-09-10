@@ -17,6 +17,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		switch($s_userGroupCode){ 
 			case 'whOff' :
 			case 'whSup' :
+			case 'whMgr' : 
 				header("Location: access_denied.php"); exit();
 				break;
 			default :	// it, admin 
@@ -96,7 +97,7 @@ $rootPage="rtrc";
 				$row = $stmt->fetch();
 				$countTotal = $row['countTotal'];
 				
-				$rows=20;
+				$rows=100;
 				$page=0;
 				if( !empty($_GET["page"]) and isset($_GET["page"]) ) $page=$_GET["page"];
 				if($page<=0) $page=1;

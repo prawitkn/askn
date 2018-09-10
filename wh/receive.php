@@ -64,11 +64,15 @@ $rootPage="receive";
 				switch($s_userGroupCode){ 									
 					case 'whOff' :
 					case 'whSup' :
+					case 'whMgr' : 
 						$sql .= "AND hdr.toCode IN ('0','7','8','E') ";
 						break;
 					case 'pdOff' :
 					case 'pdSup' :
 						$sql .= "AND hdr.toCode=:s_userDeptCode ";
+						break;
+					case 'pdMgr' : 
+						$sql .= "AND hdr.toCode in ('4','5','6') "; 
 						break;
 					default :	// it, admin 
 				}	
@@ -138,11 +142,15 @@ $rootPage="receive";
 				switch($s_userGroupCode){ 													
 					case 'whOff' :
 					case 'whSup' :
+					case 'whMgr' : 
 						$sql .= "AND hdr.toCode IN ('0','7','8','E') ";
 						break;
 					case 'pdOff' :
 					case 'pdSup' :
 						$sql .= "AND hdr.toCode=:s_userDeptCode ";
+						break;
+					case 'pdMgr' : 
+						$sql .= "AND hdr.toCode in ('4','5','6') "; 
 						break;
 					default :	// it, admin 
 				}	

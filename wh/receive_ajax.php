@@ -287,7 +287,7 @@ if(!isset($_POST['action'])){
 		case 'approve' :
 			//Check user roll.
 			switch($s_userGroupCode){
-				case 'it' : case 'admin' : case 'whSup' : case 'pdSup' : 
+				case 'admin' : case 'whSup' : case 'pdSup' : case 'whMgr' : case 'pdMgr' : 
 					break;
 				default : 
 					//return JSON
@@ -422,7 +422,7 @@ if(!isset($_POST['action'])){
 		case 'remove' :
 			//Check user roll.
 			switch($s_userGroupCode){
-				case 'admin' : case 'whSup' : case 'pdSup' : 
+				case 'admin' : case 'whSup' : case 'pdSup' : case 'whMgr' : case 'pdMgr' : 
 					break;
 				default : 
 					//return JSON

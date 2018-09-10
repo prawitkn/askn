@@ -69,11 +69,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 										AND rcNo IS NULL						
 										";
 							switch($s_userGroupCode){
-								case 'whOff' : case 'whSup' :
+								case 'whOff' : case 'whSup' : case 'whMgr' :
 									$sql .= " AND toCode IN ('0','7','8','E') ";
 									break;
 								case 'pdOff' :  case 'pdSup' : 
 									$sql .= " AND toCode=:toCode ";
+									break;
+								case 'pdMgr' : $sql .= " AND toCode IN ('4','5','6') ";
 									break;
 								default : // it, admin
 							}
@@ -105,11 +107,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 										AND rcNo IS NULL						
 										";
 							switch($s_userGroupCode){
-								case 'whOff' : case 'whSup' :
+								case 'whOff' : case 'whSup' : case 'whMgr' :
 									$sql .= " AND fromCode IN ('0','7','8','E') ";
 									break;
 								case 'pdOff' :  case 'pdSup' : 
 									$sql .= " AND fromCode=:fromCode ";
+									break;
+								case 'pdMgr' : $sql .= " AND fromCode IN ('4','5','6') ";
 									break;
 								default : // it, admin
 							}
@@ -142,11 +146,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 										WHERE statusCode='P'					
 										";
 							switch($s_userGroupCode){
-								case 'whOff' : case 'whSup' :
+								case 'whOff' : case 'whSup' : case 'whMgr' : 
 									$sql .= " AND toCode IN ('0','7','8','E') ";
 									break;
 								case 'pdOff' :  case 'pdSup' : 
 									$sql .= " AND toCode=:toCode ";
+									break;
+								case 'pdMgr' : $sql .= " AND toCode IN ('4','5','6') ";
 									break;
 								default : // it, admin
 							}
@@ -177,11 +183,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 										WHERE statusCode='P'					
 										";
 							switch($s_userGroupCode){
-								case 'whOff' : case 'whSup' :
+								case 'whOff' : case 'whSup' : case 'whMgr' :
 									$sql .= " AND fromCode IN ('0','7','8','E') ";
 									break;
 								case 'pdOff' :  case 'pdSup' : 
 									$sql .= " AND fromCode=:fromCode ";
+									break;
+								case 'pdMgr' : $sql .= " AND fromCode IN ('4','5','6') ";
 									break;
 								default : // it, admin
 							}
@@ -340,11 +348,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							AND a.rcNo IS NULL 
 							";
 					switch($s_userGroupCode){
-						case 'whOff' : case 'whSup' :
+						case 'whOff' : case 'whSup' : case 'whMgr' : 
 							$sql .="AND a.toCode IN ('0','7','8','E') ";
 							break;
 						case 'pdOff' : case 'pdSup' :
 							$sql .="AND a.toCode=:toCode ";
+							break;
+						case 'pdMgr' : 
+							$sql .= "AND a.toCode IN ('4','5','6') "; 
 							break;
 						default : // it, admin
 					}	
@@ -428,11 +439,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							AND a.rcNo='' 
 							";
 					switch($s_userGroupCode){
-						case 'whOff' : case 'whSup' :
+						case 'whOff' : case 'whSup' : case 'whMgr' : 
 							$sql .="AND a.toCode IN ('0','7','8','E') ";
 							break;
 						case 'pdOff' : case 'pdSup' :
 							$sql .="AND a.toCode=:toCode ";
+							break;
+						case 'pdMgr' : 
+							$sql .= "AND a.toCode IN ('4','5','6') "; 
 							break;
 						default : // it, admin
 					}	
@@ -517,11 +531,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							AND a.statusCode='P' 
 							";
 					switch($s_userGroupCode){
-						case 'whOff' : case 'whSup' :
+						case 'whOff' : case 'whSup' : case 'whMgr' : 
 							$sql .="AND a.fromCode IN ('0','7','8','E') ";
 							break;
 						case 'pdOff' : case 'pdSup' :
 							$sql .="AND a.fromCode=:fromCode ";
+							break;
+						case 'pdMgr' : 
+							$sql .= "AND a.fromCode IN ('4','5','6') "; 
 							break;
 						default : // it, admin
 					}	
@@ -605,11 +622,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							AND a.statusCode='P' 
 							";
 					switch($s_userGroupCode){
-						case 'whOff' : case 'whSup' :
+						case 'whOff' : case 'whSup' : case 'whMgr' : 
 							$sql .="AND a.toCode IN ('0','7','8','E') ";
 							break;
 						case 'pdOff' : case 'pdSup' :
 							$sql .="AND a.toCode=:toCode ";
+							break;
+						case 'pdMgr' : 
+							$sql .="AND a.toCode IN ('4','5','6') ";
 							break;
 						default : // it, admin
 					}	
@@ -694,10 +714,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				<?php	
 					$sql="";
 					switch($s_userGroupCode){
-						case 'it' :
 						case 'admin' :
 						case 'whOff' :
 						case 'whSup' :
+						case 'whMgr' :
+						case 'pdMgr' :
 							$sql = "SELECT DISTINCT hdr.soNo, hdr.deliveryDate FROM sale_header hdr 
 							INNER JOIN sale_detail dtl on dtl.soNo=hdr.soNo
 							WHERE hdr.isClose='N'  
@@ -792,10 +813,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <!-- /.box -->
 		  
 		  <?php switch($s_userGroupCode){
-				case 'it' :
 				case 'admin' :
 				case 'whOff' :
-				case 'whSup' : ?>
+				case 'whSup' :
+				case 'whMgr' : ?>
 			  <!-- Prepare List -->
 			  <div class="box box-success">
 				<div class="box-header with-border">

@@ -211,7 +211,7 @@ $sdNo = $hdr['sdNo'];
 
 		<?php } ?>
 
-		<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whSup' :  case 'pdSup' :  ?>
+		<?php switch($s_userGroupCode){ case 'admin' : case 'whSup' :  case 'pdSup' : case 'whMgr' : case 'pdMgr' :  ?>
 	          <?php if($hdr['statusCode']=='C'){ ?>         
 			  <button type="button" id="btn_approve_special" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['rcNo']==''?'':'disabled'); ?> >
 				<i class="glyphicon glyphicon-star"></i> Approve (Special)
@@ -233,7 +233,7 @@ $sdNo = $hdr['sdNo'];
 	
 		
 		  
-		  <?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whSup' :  case 'pdSup' :   case 'pdOff' :  ?>
+		  <?php switch($s_userGroupCode){ case 'admin' : case 'whSup' :  case 'pdSup' :   case 'pdOff' : case 'whMgr' : case 'pdMgr' : ?>
           <button type="button" id="btn_approve" class="btn btn-success pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='C'?'':'disabled'); ?> >
 		 <i class="glyphicon glyphicon-check">
 			</i> Approve

@@ -17,10 +17,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	$tb="send";	
 
 	$sdNo=$fromCode=$toCode=$refCode='';
-	switch($s_userGroupCode){ 					
-		case 'whOff' :
-		case 'whSup' :
-			break;
+	switch($s_userGroupCode){ 	
 		case 'pdOff' :
 		case 'pdSup' :
 			$fromCode=$s_userDeptCode;			

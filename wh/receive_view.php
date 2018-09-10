@@ -233,14 +233,14 @@ $rcNo = $hdr['rcNo'];
     <div class="col-md-12">
 		<?php if($hdr['statusCode']=='P'){ ?>
           <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?rcNo=<?=$hdr['rcNo'];?>" class="btn btn-primary"><i class="glyphicon glyphicon-print"></i> Print</a>
-		  <?php switch($s_userGroupCode){ case 'admin' : case 'whSup' : ?>
+		  <?php switch($s_userGroupCode){ case 'admin' : case 'whSup' : case 'whMgr' : ?>
 				<a href="<?=$rootPage;?>_set_shelf.php?rcNo=<?=$hdr['rcNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-grid"></i> Shelf</a>
 			<?php break; default : } ?>
 		<?php } ?>
 	
 		
 		  
-		  <?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whSup' :  case 'pdSup' : ?>
+		  <?php switch($s_userGroupCode){ case 'admin' : case 'whSup' :  case 'pdSup' : case 'whMgr' : case 'pdMgr' : ?>
           <button type="button" id="btn_approve" class="btn btn-success pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='C'?'':'disabled'); ?> >
 		 <i class="glyphicon glyphicon-check">
 			</i> Approve

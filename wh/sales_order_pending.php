@@ -47,7 +47,6 @@ desired effect
   <!-- Main Header -->
   <?php include 'header.php'; 
   
-	include 'inc_helper.php'; 
   ?>  
   
   <!-- Left side column. contains the logo and sidebar -->
@@ -82,10 +81,11 @@ desired effect
           <?php
 				$sql="";
 				switch($s_userGroupCode){
-					case 'it' :
 					case 'admin' :
 					case 'whOff' :
 					case 'whSup' :
+					case 'whMgr' : 
+					case 'pdMgr' : 
 						$sql = "SELECT  count(DISTINCT hdr.soNo, hdr.deliveryDate ) as countTotal
 						FROM sale_header hdr 
 						INNER JOIN sale_detail dtl on dtl.soNo=hdr.soNo
@@ -224,10 +224,11 @@ desired effect
 					<?php
 						$sql="";
 						switch($s_userGroupCode){
-							case 'it' :
 							case 'admin' :
 							case 'whOff' :
 							case 'whSup' :
+							case 'whMgr' : 
+							case 'pdMgr' : 
 								$sql = "SELECT DISTINCT hdr.soNo, hdr.deliveryDate 
 								FROM sale_header hdr 
 								INNER JOIN sale_detail dtl on dtl.soNo=hdr.soNo
