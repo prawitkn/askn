@@ -595,7 +595,7 @@
 				}
 				break;
 
-			case 'revisexxx' :
+			case 'revise' :
 				try{	
 					$soNo = $_POST['soNo'];
 					$reason = $_POST['reason'];
@@ -623,35 +623,31 @@
 					
 					 
 					//Log Header
-					$sql = "INSERT INTO sale_rev_hdr  (`soNo`, `poNo`, `piNo`, `saleDate`, `custId`, `shipToId`, `smId`, `revCount`, `deliveryDate`
-					, `shippingMarksId`, `shipByLcl`, `shipByFcl`, `shipByRem`, `deliveryRem`, `shippingTypeId`, `shippingRemark`, `shippingMark`
-					, `sentDate`, `sentById`, `suppTypeFact`, `suppTypeImp`, `prodTypeOld`, `prodTypeNew`, `custTypeOld`, `custTypeNew`, `prodStkInStk`
-					, `prodStkOrder`, `prodStkOther`, `prodStkRem`, `packTypeAk`, `packTypeNone`, `packTypeOther`, `packTypeRem`
-					, `priceOnOrder`, `priceOnOther`, `priceOnRem`, `remCoa`, `remPalletBand`, `remFumigate`, `remark`
-					, `plac2deliCode`, `plac2deliCodeSendRem`, `plac2deliCodeLogiRem`, `payTypeCode`, `payTypeCreditDays`, `isClose`, `statusCode`
-					, `createTime`, `createById`, `updateTime`, `updateById`, `confirmTime`, `confirmById`, `approveTime`, `approveById`
-					, `logRemark`, `logTime`, `logById`) 
+					$sql = "INSERT INTO sale_rev_hdr  (`soNo`, `poNo`, `piNo`, `saleDate`, `custId`, `shipToId`, `smId`, `revCount`
+					, `deliveryDate`, `suppTypeId`, `stkTypeId`, `packageTypeId`, `priceTypeId`, `deliveryTypeId`, `shippingMarksId`
+					, `deliveryRem`, `containerLoadId`, `creditTypeId`, `shippingMark`, `remark`, `payTypeCreditDays`
+					, `isClose`, `statusCode`, `createTime`, `createById`, `updateTime`, `updateById`, `confirmTime`, `confirmById`
+					, `approveTime`, `approveById`, `logRemark`, `logTime`, `logById`) 
 					SELECT *,:logRemark, NOW(), :s_userId FROM sale_header hdr 
 					WHERE hdr.soNo=:soNo 
 					";
-				    $stmt = $pdo->prepare($sql);
+					$stmt = $pdo->prepare($sql);
 					$stmt->bindParam(':logRemark', $reason);
-				    $stmt->bindParam(':soNo', $soNo);
+					$stmt->bindParam(':soNo', $soNo);
 					$stmt->bindParam(':s_userId', $s_userId);
-				    $stmt->execute();
+					$stmt->execute();
 					$logId = $pdo->lastInsertId();
 					
 					//Log Detail
-					$sql = "INSERT INTO sale_rev_dtl (`id`, `prodId`, `deliveryDate`, `qty`, `rollLengthId`, `remark`, `salesPrice`
-					, `total`, `discAmount`, `discPercent`, `discPerAmount`, `salesPerUnit`, `netTotal`
-					, `createTime`, `soNo`, `logHdrId`)
+					$sql = "INSERT INTO sale_rev_dtl (`id`, `prodId`, `deliveryDate`, `qty`, `rollLengthId`, `remark`, `createTime`, `soNo`
+					, `logHdrId`)
 					SELECT *,:logId FROM sale_detail dtl
 					WHERE dtl.soNo=:soNo 
 					";
-				    $stmt = $pdo->prepare($sql);
-				    $stmt->bindParam(':logId', $logId);
+					$stmt = $pdo->prepare($sql);
+					$stmt->bindParam(':logId', $logId);
 					$stmt->bindParam(':soNo', $soNo);	
-				    $stmt->execute();	
+					$stmt->execute();	
 					
 					//Query 1: UPDATE DATA
 					$sql = "UPDATE sale_header SET statusCode='B'
@@ -659,9 +655,9 @@
 					WHERE soNo=:soNo
 					AND statusCode='P' 
 					";
-				    $stmt = $pdo->prepare($sql);
+					$stmt = $pdo->prepare($sql);
 					$stmt->bindParam(':soNo', $soNo);
-				    $stmt->execute();
+					$stmt->execute();
 					
 
 					$sloc=0;
@@ -672,7 +668,6 @@
 							break;
 						default :
 					}
-					
 					//Query 5: UPDATE STK BAl	
 					$sql = "UPDATE stk_bal tmp
 					INNER JOIN (SELECT sd.prodId, -1*SUM(sd.qty) as sumQty
@@ -683,10 +678,10 @@
 					WHERE tmp.prodId=x.prodId
 					AND tmp.sloc=:sloc 		
 					";
-				    $stmt = $pdo->prepare($sql);
-				    $stmt->bindParam(':soNo', $soNo);
-				    $stmt->bindParam(':sloc', $sloc);
-				    $stmt->execute();
+					$stmt = $pdo->prepare($sql);
+					$stmt->bindParam(':soNo', $soNo);
+					$stmt->bindParam(':sloc', $sloc);
+					$stmt->execute();
 					
 					//Query 6: UPDATE STK BAl
 					$sql = "INSERT INTO stk_bal (prodId, sloc, sales) 
@@ -695,18 +690,17 @@
 							AND sd.prodId NOT IN (SELECT sb.prodId FROM stk_bal sb WHERE sb.sloc=:sloc2 )
 							GROUP BY sd.prodId
 							";
-				    $stmt = $pdo->prepare($sql);
-				    $stmt->bindParam(':soNo', $soNo);
-				    $stmt->bindParam(':sloc', $sloc);
-				    $stmt->bindParam(':sloc2', $sloc);
-				    $stmt->execute();
-				    //Query 5: UPDATE STK BAl
-				    
+					$stmt = $pdo->prepare($sql);
+					$stmt->bindParam(':soNo', $soNo);
+					$stmt->bindParam(':sloc', $sloc);
+					$stmt->bindParam(':sloc2', $sloc);
+					$stmt->execute();
+					//Query 5: UPDATE STK BAl
 					
 					//We've got this far without an exception, so commit the changes.
-				    $pdo->commit();
+					$pdo->commit();
 					
-				    //return JSON
+					//return JSON
 					header('Content-Type: application/json');
 					echo json_encode(array('success' => true, 'message' => 'Data revised', 'soNo' => $soNo));
 				} 

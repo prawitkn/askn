@@ -8,6 +8,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
 <?php include 'head.php'; 
+
+$rootPage="sale2Revised";
 ?>
 <div class="wrapper">
 
@@ -16,20 +18,17 @@ scratch. This page gets rid of all links and provides the needed markup only.
   
   <!-- Left side column. contains the logo and sidebar -->
    <?php include 'leftside.php'; ?>
-   <?php
-		$rootPage="sale2";
-   ?>
 
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
 	<section class="content-header">	  
 	  <h1><i class="glyphicon glyphicon-shopping-cart"></i>
-       Sales Order
-        <small>Sales Order management</small>
+       Sales Order Revised
+        <small>Sales Order Revised management</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Sales Order List</a></li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Sales Order Revised List</a></li>
       </ol>
     </section>
 
@@ -40,8 +39,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <div class="box box-primary">
         <div class="box-header with-border">
 			<div class="form-inline">
-				<label class="box-title">Sales Order List</label>
-				<a href="<?=$rootPage;?>_add.php?soNo=" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add Sales Order</a>
+				<label class="box-title">Sales Order Revised List</label>
 			</div>
 		
 		
@@ -49,6 +47,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
           <?php
+				if(!isset($_GET['soNo'])){
+					header("Location: access_denied.php"); exit();
+				}
+				$soNo=$_GET['soNo'];
+				
 				$sqlRole = "";
 				switch($s_userGroupCode){
 					case 'sales' : //$sqlRole = " and b.smId=$s_smId "; break;
@@ -65,11 +68,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				
                 $sql_so = "
 							SELECT COUNT(*) AS countTotal 
-							FROM `sale_header` a
+							FROM `sale_rev_hdr` a
 							left join customer b on a.custId=b.id
 							left join salesman c on a.smId=c.id
-							left join user d on a.createById=d.userId
+							left join user d on a.logById=d.userId
 							WHERE 1 
+							AND a.soNo='$soNo' 
 							".$sqlSearch." 
 							".$sqlCond." 
 							".$sqlRole." 
@@ -111,21 +115,23 @@ scratch. This page gets rid of all links and provides the needed markup only.
            <?php
                 $sql = "
 						SELECT a.`soNo`, a.`saleDate`, a.`custId`, a.`smId`, a.`createTime`, a.`createById`, a.isClose, a.statusCode , a.revCount
+						,a.logId ,a.logRemark
 						,b.code as custCode, b.name as custName, b.tel as custTel, b.fax as custFax
 						,c.name as smName
-						,d.userFullname as createByName
+						,d.userFullname as logByName
 						,(SELECT IFNULL(count(*),0) FROM sale_detail b WHERE b.soNo=a.soNo) as countItem
-						FROM `sale_header` a
+						FROM `sale_rev_hdr` a
 						left join customer b on a.custId=b.id
 						left join salesman c on a.smId=c.id
-						left join user d on a.createById=d.userId
+						left join user d on a.logById=d.userId
 						WHERE 1 
+						AND a.soNo='$soNo' 
 							".$sqlSearch." 
 							".$sqlCond." 
 							".$sqlRole." 
 						AND a.statusCode<>'X' 
 						
-						ORDER BY a.createTime DESC
+						ORDER BY a.revCount DESC 
 						LIMIT $start, $rows 
 				";
 				//echo $sql;
@@ -133,35 +139,24 @@ scratch. This page gets rid of all links and provides the needed markup only.
            ?> 
             
             <table class="table table-striped">
-                <tr>
+                <tr>					
+					<th>Revised No.</th>
                     <th>SO No.</th>
 					<th>SO DATE</th>
                     <th>Customer Name</th>
 					<th>Salesman Name</th>
-					<th>Closed</th>
-					<th>Status</th>
+					<th style="color: red;">Revised Remark</th>
 					<th>#</th>
                 </tr>
                 <?php while ($row = mysqli_fetch_assoc($result)) { 
-					$statusName = '<label class="label label-danger">Unknown</label>';
-					switch($row['statusCode']){
-						case 'A' : $statusName = '<label class="label label-danger">Incomplete</label>'; break;
-						case 'B' : $statusName = '<label class="label label-info">Begin</label>'; break;
-						case 'C' : $statusName = '<label class="label label-primary">Confirmed</label>'; break;
-						case 'P' : $statusName = '<label class="label label-success">Approved</label>'; break;
-						default : 						
-					}
-					$isCloseName = '<label class="label label-danger">No</label>';
-					switch($row['isClose']){
-						case 'Y' : $isCloseName = '<label class="label label-success">Yes</label>'; break;
-						default : 						
-					}
-					$revisedName = ($row['revCount']<>0?'<a href="'.$rootPage.'Revised.php?soNo='.$row['soNo'].'" /><small style="color: red;"> rev.'.$row['revCount'].'</small></a>':'');
 					?>
 					
                 <tr>
+					<td>
+                         <?= $row['revCount']; ?>
+                    </td>
                     <td>
-                         <?= $row['soNo'].$revisedName; ?>
+                         <?= $row['soNo']; ?>
                     </td>
                     <td>
                          <?= date('d M Y',strtotime($row['saleDate'])); ?>
@@ -172,30 +167,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<td>
                          <?= $row['smName']; ?>
                     </td>
+					
 					<td>
-                         <?= $isCloseName; ?>
+                         <?= $row['logRemark']; ?>
                     </td>
-					<td>
-                         <?= $statusName; ?>
-                    </td>		
 					<td>					
 						<a class="btn btn-default" name="btn_row_search" 
-							href="<?=$rootPage;?>_view.php?soNo=<?=$row['soNo'];?>" 
-							data-toggle="tooltip" title="View"><i class="glyphicon glyphicon-search"></i> View</a>						
-						
-					<?php
-						switch($row['statusCode']) {
-							case 'C' : case 'P' : ?>
-								<a class="btn btn-default" name="btn_row_edit" href="#" disabled=disabled ><i class="fa fa-edit"></i> Edit</a>
-
-						<?php 
-								break;
-							default :  ?>
-								<a class="btn btn-default" name="btn_row_edit" href="<?=$rootPage;?>_add.php?soNo=<?=$row['soNo'];?>" title="Edit Sales Order" ><i class="fa fa-edit"></i> Edit</a> 
-						<?php 
-								break;
-						} ?>
-												
+							href="<?=$rootPage;?>_view_pdf.php?logId=<?=$row['logId'];?>" 
+							data-toggle="tooltip" title="View"><i class="glyphicon glyphicon-search"></i> View</a>	
                     </td>
                 </tr>
                 <?php } ?>
