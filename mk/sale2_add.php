@@ -131,7 +131,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             <input type="text" name="poNo" id="poNo" class="form-control" data-smk-msg="Require PO No." value="<?=$hdr['poNo'];?>" required>
                         </div>		
 						<div class="col-md-3 form-group">
-							<label for="piNo">PI No.</label>
+							<label for="piNo">PI No./ใบรับการสั่งซื้อ</label>
 							<input type="text" name="piNo" id="piNo" class="form-control" value="<?=$hdr['piNo'];?>" >
 						</div>
 						<div class="col-md-3 form-group">
@@ -391,7 +391,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					</div>
 					<!--/.row-->
 					
-					<div class="row">					
+					<div class="row" style="display: none;">					
 						<div class="col-md-6 form-group">
 							  <label for="optTypeId">Optional</label>
 							<select id="optTypeId" name="optTypeId" class="form-control" >

@@ -110,8 +110,8 @@ class MYPDF extends TCPDF {
 		<tr>
 			<td colspan="2" ><span >ที่ส่งสินค้า (Ship to) : </span></td>
 			<td colspan="4"  style="border-bottom: 0.1em solid black;">'.$hdr['shipToName'].'</td>	
-			<td colspan="1" >&nbsp;PI No. : </td>
-			<td colspan="3"  style="border-bottom: 0.1em solid black;">'.$hdr['piNo'].'</td>
+			<td colspan="2" >&nbsp;PI No./ใบรับการสั่งซื้อ : </td>
+			<td colspan="2"  style="border-bottom: 0.1em solid black;">'.$hdr['piNo'].'</td>
 		</tr>
 		<tr>
 			<td colspan="6"  style="border-bottom: 0.1em solid black;">'.$hdr['shipToAddr1'].'</td>
