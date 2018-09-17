@@ -97,7 +97,7 @@
 		<?php switch($s_userGroupCode){ case 'admin' : case 'it' :  case 'sales' : case 'salesAdmin' : ?>
 			<!-- Optionally, you can add icons to the links -->
 			<li><a href="customer.php"><i class="glyphicon glyphicon-user"></i> <span>Customer Data</span></a></li>
-			<li><a href="shipto.php"><i class="glyphicon glyphicon-download-alt"></i> <span>Ship to Customer Data</span></a></li>
+			<!--<li><a href="shipto.php"><i class="glyphicon glyphicon-download-alt"></i> <span>Ship to Customer Data</span></a></li>-->
 			<li><a href="shipping_marks.php"><i class="fa fa-table"></i> <span>Shipping Marks Data</span></a></li>
 			<li><a href="product.php"><i class="fa fa-barcode"></i> <span>Product Data</span></a></li>
 
@@ -124,9 +124,9 @@
 		
 		<?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'salesAdmin' : case 'sales' : ?>
 			<li class="header">Transaction Menu</li>
-			<li><a href="sale.php"><i class="fa fa-cart-plus"></i> <span>Sales Order</span></a></li>	
-			<li><a href="sale2.php"><i class="fa fa-cart-plus"></i> <span>Sales Order [Beta]</span></a></li>		
-			<!--<li><a href="delivery.php"><i class="fa fa-truck"></i> <span>Delivery</span></a></li>
+			<li><a href="sale2.php"><i class="fa fa-cart-plus"></i> <span>Sales Order</span></a></li>	
+			<!--<li><a href="sale2.php"><i class="fa fa-cart-plus"></i> <span>Sales Order [Beta]</span></a></li>		
+			<li><a href="delivery.php"><i class="fa fa-truck"></i> <span>Delivery</span></a></li>
 			<li><a href="invoice.php"><i class="glyphicon glyphicon-usd"></i> <span>Invoice</span></a></li>
 			<li><a href="inv_ret.php"><i class="glyphicon glyphicon-repeat"></i> <span>Customer Return</span></a></li>-->
 		<?php break; default : } ?>

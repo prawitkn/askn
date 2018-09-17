@@ -143,7 +143,13 @@ if(!isset($_POST['action'])){
 				
 				if($sendDate<>"") $sql.="AND hdr.issueDate=:sendDate ";
 				if($issueDate<>"") $sql.="AND itm.issueDate=:issueDate ";
-				if($fromCode<>"") $sql.="AND hdr.fromCode=:fromCode ";
+				switch($fromCode){
+					case '0' : 						
+						$sql.="AND hdr.fromCode IN ('0','8','7','5') ";
+						break;
+					default : 
+						if($fromCode<>"") $sql.="AND hdr.fromCode=:fromCode ";
+				}
 				if($toCode<>"") $sql.="AND hdr.toCode=:toCode ";
 				if($prodId<>"") $sql.="AND itm.prodCodeId=:prodId ";
 				$sql.="ORDER BY hdr.sendId, itm.barcode "; 
@@ -152,7 +158,12 @@ if(!isset($_POST['action'])){
 				$stmt->bindParam(':sdNo', $sdNo );
 				if($sendDate<>"") $stmt->bindParam(':sendDate', $sendDate );
 				if($issueDate<>"") $stmt->bindParam(':issueDate', $issueDate );
-				if($fromCode<>"") $stmt->bindParam(':fromCode', $fromCode);
+				switch($fromCode){
+					case '0' : 						
+						break;
+					default : 						
+						if($fromCode<>"") $stmt->bindParam(':fromCode', $fromCode);
+				}
 				if($toCode<>"") $stmt->bindParam(':toCode', $toCode);
 				if($prodId<>"") $stmt->bindParam(':prodId', $prodId);
 				

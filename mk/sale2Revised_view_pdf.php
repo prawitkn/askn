@@ -83,7 +83,7 @@ class MYPDF extends TCPDF {
 		$html='<table width="100%"  >	
 		<tr>
 			<td colspan="3" style="border: o.1em solid black; text-align: center; font-size: large;">SALES ORDER FORM (ใบสั่งขาย)</td>
-			<td colspan="7" style="text-align: center; font-size: large; color: red" ></td>
+			<td colspan="7" style="text-align: center; font-size: large; color: red" >** CANCELED **</td>
 		</tr>
 		<tr>
 			<td colspan="2" >ชื่อลูกค้า (Customer Name) : </td>
@@ -110,8 +110,8 @@ class MYPDF extends TCPDF {
 		<tr>
 			<td colspan="2" ><span >ที่ส่งสินค้า (Ship to) : </span></td>
 			<td colspan="4"  style="border-bottom: 0.1em solid black;">'.$hdr['shipToName'].'</td>	
-			<td colspan="1" >&nbsp;PI No. : </td>
-			<td colspan="3"  style="border-bottom: 0.1em solid black;">'.$hdr['piNo'].'</td>
+			<td colspan="2" >&nbsp;PI No./ใบรับการสั่งซื้อ : </td>
+			<td colspan="2"  style="border-bottom: 0.1em solid black;">'.$hdr['piNo'].'</td>
 		</tr>
 		<tr>
 			<td colspan="6"  style="border-bottom: 0.1em solid black;">'.$hdr['shipToAddr1'].'</td>
@@ -299,7 +299,7 @@ if( isset($_GET['logId']) ){
 			$logId = $_GET['logId'];			
 						
 			$sql = "
-			SELECT a.`logId`, a.`logRemark`, a.`soNo`, a.`poNo`, a.`piNo`, a.`saleDate`, a.`custId`, a.`shipToId`, a.`smId`, a.`revCount`, a.`deliveryDate`, a.`suppTypeId`, a.`stkTypeId`, a.`packageTypeId`, a.`priceTypeId`, a.`deliveryTypeId`, a.`shippingMarksId`, a.`deliveryRem`, a.`containerLoadId`, a.`creditTypeId`, a.`shippingMark`, a.`remark`, a.`payTypeCreditDays`, a.`isClose`, a.`statusCode`, a.`createTime`, a.`createById`, a.`updateTime`, a.`updateById`, a.`confirmTime`, a.`confirmById`, a.`approveTime`, a.`approveById`
+			SELECT a.`logId`, a.`logRemark`, a.`soNo`, a.`poNo`, a.`piNo`, a.`saleDate`, a.`custId`, a.`shipToId`, a.`smId`, a.`revCount`, a.`deliveryDate`, a.`suppTypeId`, a.`stkTypeId`, a.`packageTypeId`, a.`priceTypeId`, a.`deliveryTypeId`, a.`shippingMarksId`, a.`deliveryRem`, a.`containerLoadId`, a.`creditTypeId`, a.`remark`, a.`payTypeCreditDays`, a.`isClose`, a.`statusCode`, a.`createTime`, a.`createById`, a.`updateTime`, a.`updateById`, a.`confirmTime`, a.`confirmById`, a.`approveTime`, a.`approveById`
 			, b.code as custCode, b.name as custName, b.addr1 as custAddr1, b.addr2 as custAddr2, b.addr3 as custAddr3, b.zipcode as custZipcode, b.tel as custTel, b.fax as custFax
 			, st.code as shipToCode, st.name as shipToName, st.addr1 as shipToAddr1, st.addr2 as shipToAddr2, st.addr3 as shipToAddr3, st.zipcode as shipToZipcode, st.tel as shipToTel, st.fax as shipToFax
 			, c.code as smCode, c.name as smName, c.surname as smSurname

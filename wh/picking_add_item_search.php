@@ -190,7 +190,7 @@ desired effect
 						AND hdr.statusCode='P' 	
 						AND dtl.statusCode='A' 
 						AND itm.prodCodeId=:id ";
-						switch($catCode){
+						/*switch($catCode){
 							case '70' : //Weaving
 								$sql.="AND DATEDIFF(NOW(), itm.issueDate) <= 365 ";
 								break;
@@ -198,7 +198,7 @@ desired effect
 								$sql.="AND DATEDIFF(NOW(), itm.issueDate) <= 90 ";
 								break;
 							default : //80					
-						}
+						}*/
 						
 						$sql.="
 						GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`, itm.`gradeTypeId`, isShelfed 			
@@ -235,7 +235,7 @@ desired effect
 						AND hdr.statusCode='P' 	
 						AND dtl.statusCode='A' 
 						AND itm.prodCodeId=:id ";
-						switch($catCode){
+						/*switch($catCode){
 							case '70' : //Weaving
 								$sql.="AND DATEDIFF(NOW(), s.sendDate) <= 365 ";
 								break;
@@ -243,7 +243,7 @@ desired effect
 								$sql.="AND DATEDIFF(NOW(), s.sendDate) <= 90 ";
 								break;
 							default : //80					
-						}
+						}*/
 						$sql.="
 						GROUP BY itm.`prodCodeId`, s.sendDate, itm.`grade`, prd.code , itm.`qty`, itm.`gradeTypeId`, isShelfed 			
 										
