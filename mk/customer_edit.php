@@ -243,11 +243,6 @@ include 'head.php';
 							<input type="hidden" name="itmId" id="itmId" value="" />
 
 							<div class="row">
-								<div class="form-group col-md-2">
-									<label for="itmCode">Ship To Code</label>                            
-									<input id="itmCode" type="text" class="form-control col-md-6" name="itmCode"  value=""  data-smk-msg="Require Code" required>							
-								</div>
-								<!--/.col-md-2-->
 
 								<div class="form-group col-md-3">
 									<label for="itmName">Ship To Name</label>                            
@@ -261,20 +256,20 @@ include 'head.php';
 							<div class="row">
 								<div class="form-group col-md-5">
 									<label for="itmAddr1">Ship To Address</label>                            
-									<input id="itmAddr1" type="text" class="form-control" name="itmAddr1" value="" data-smk-msg="Require Addrss" required>							
-									<input id="itmAddr2" type="text" class="form-control" name="itmAddr2" value="" data-smk-msg="" >							
-									<input id="itmAddr3" type="text" class="form-control" name="itmAddr3" value="" data-smk-msg="" >
+									<input id="itmAddr1" type="text" class="form-control" name="itmAddr1" value="" >							
+									<input id="itmAddr2" type="text" class="form-control" name="itmAddr2" value="" >							
+									<input id="itmAddr3" type="text" class="form-control" name="itmAddr3" value="" >
 
 									<div  class="row">
 										<div class="form-group col-md-6">
 											<label for="itmZipcode">Ship To Zipcode</label>                            
-											<input id="itmZipcode" type="text" class="form-control" name="itmZipcode" value="" data-smk-msg="Require Zipcode" required>
+											<input id="itmZipcode" type="text" class="form-control" name="itmZipcode" value="">
 										</div>
 										<!--/.col-->
 
 										<div class="form-group col-md-6">
 											<label for="itmCountryName">Ship To Country Name</label>                            
-											<input id="itmCountryName" type="text" class="form-control" name="itmCountryName" value="" data-smk-msg="Require Country Name" required>
+											<input id="itmCountryName" type="text" class="form-control" name="itmCountryName" value="" >
 										</div>
 										<!--/.col-->
 									</div>
@@ -285,7 +280,7 @@ include 'head.php';
 
 								<div class="form-group col-md-5">
 									<label for="itmContact">Ship To Contact Name</label>                            
-									<input id="itmContact" type="text" class="form-control" name="itmContact" value="" data-smk-msg="Require Contact Name" required>	
+									<input id="itmContact" type="text" class="form-control" name="itmContact" value="" >	
 
 									<label for="itmContactPosition">Contact Position</label>                            
 									<input id="itmContactPosition" type="text" class="form-control" name="itmContactPosition" value="" >
@@ -298,7 +293,7 @@ include 'head.php';
 									<div  class="row">
 										<div class="form-group col-md-6">
 											<label for="itmTel">Ship To Telephone</label>                            
-											<input id="itmTel" type="text" class="form-control" name="itmTel" value="" data-smk-msg="Require Telephone" required>
+											<input id="itmTel" type="text" class="form-control" name="itmTel" value="" >
 										</div>
 										<!--/.col-->
 
@@ -448,7 +443,7 @@ $(document).ready(function() {
 						});
 						$('#tbl_items tbody').fadeIn('slow');
 
-						$('#itmCode').focus().select();							
+						$('#itmName').focus().select();							
 					}//.switch
 			  }   
 			}).error(function (response) {
@@ -515,7 +510,7 @@ $(document).ready(function() {
 						$('#form2')[0].reset();
 						$('#form2 input[name=action]').val('shipToSave');
 						getShipToList();
-						$('#itmCode').focus();
+						$('#itmName').focus();
 					} else {
 						//alert('a');
 						$.smkAlert({
@@ -544,7 +539,6 @@ $(document).ready(function() {
 				var itm = $.parseJSON(data.data);
 				$('#custId').val(itm.custId);
 				$('#itmId').val(itm.id);
-				$('#itmCode').val(itm.code);
 				$('#itmName').val(itm.name);
 				$('#itmAddr1').val(itm.addr1); 
 				$('#itmAddr2').val(itm.addr2); 
@@ -579,7 +573,7 @@ $(document).ready(function() {
 		$('#form2')[0].reset();
 		$('#form2 input[name=action]').val('shipToSave');
 		getShipToList();
-		$('#itmCode').focus();
+		$('#itmName').focus();
 	});//.btn_click
 
 	//

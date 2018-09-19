@@ -625,7 +625,7 @@
 					//Log Header
 					$sql = "INSERT INTO sale_rev_hdr  (`soNo`, `poNo`, `piNo`, `saleDate`, `custId`, `shipToId`, `smId`, `revCount`
 					, `deliveryDate`, `suppTypeId`, `stkTypeId`, `packageTypeId`, `priceTypeId`, `deliveryTypeId`, `shippingMarksId`
-					, `deliveryRem`, `containerLoadId`, `creditTypeId`, `shippingMark`, `remark`, `payTypeCreditDays`
+					, `deliveryRem`, `containerLoadId`, `creditTypeId`, `remark`, `payTypeCreditDays`
 					, `isClose`, `statusCode`, `createTime`, `createById`, `updateTime`, `updateById`, `confirmTime`, `confirmById`
 					, `approveTime`, `approveById`, `logRemark`, `logTime`, `logById`) 
 					SELECT *,:logRemark, NOW(), :s_userId FROM sale_header hdr 

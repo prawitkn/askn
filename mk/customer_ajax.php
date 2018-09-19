@@ -339,7 +339,6 @@ function to_mysql_date($thai_date){
 				try{
 					$custId = $_POST['custId'];
 					$id = $_POST['itmId'];
-					$code = $_POST['itmCode'];
 					$name = $_POST['itmName'];
 					$addr1 = $_POST['itmAddr1'];
 					$addr2 = $_POST['itmAddr2'];
@@ -359,9 +358,9 @@ function to_mysql_date($thai_date){
 					
 					if($id==""){
 						//Check Duplicate shipto
-						 $sql = "SELECT * FROM `shipto` WHERE code=:code OR `name`=:name LIMIT 1 "; 
+						 $sql = "SELECT * FROM `shipto` WHERE `name`=:name LIMIT 1 "; 
 						 $stmt = $pdo->prepare($sql);
-						$stmt->bindParam(':code', $code); $stmt->bindParam(':name', $name); 
+						$stmt->bindParam(':name', $name); 
 						$stmt->execute();
 						if($stmt->rowCount()>=1){
 							header('Content-Type: application/json');
@@ -369,16 +368,15 @@ function to_mysql_date($thai_date){
 							exit;
 						}		
 						//INsert customer
-						$sql = "INSERT INTO `shipto`(`custId`, `code`, `name`, `addr1`, `addr2`, `addr3`, `zipcode`, `countryName`
+						$sql = "INSERT INTO `shipto`(`custId`, `name`, `addr1`, `addr2`, `addr3`, `zipcode`, `countryName`
 						, `contact`, `contactPosition`, `email`, `tel`, `fax`
 						, `statusCode`, `createTime`, `createById`) 
 						 VALUES 
-						(:custId, :code,:name,:addr1,:addr2,:addr3,:zipcode,:countryName
+						(:custId, :name,:addr1,:addr2,:addr3,:zipcode,:countryName
 						,:contact,:contactPosition,:email,:tel,:fax
 						,'A', now(), :createById)";
 						$stmt = $pdo->prepare($sql);
 						$stmt->bindParam(':custId', $custId); 
-						$stmt->bindParam(':code', $code); 
 						$stmt->bindParam(':name', $name); 
 						$stmt->bindParam(':addr1', $addr1); 
 						$stmt->bindParam(':addr2', $addr2); 
@@ -394,9 +392,8 @@ function to_mysql_date($thai_date){
 						$stmt->execute();
 					}else{
 						//Check Duplicate shipto
-						 $sql = "SELECT * FROM `shipto` WHERE (code=:code OR `name`=:name) AND id<>:id LIMIT 1 "; 
+						 $sql = "SELECT * FROM `shipto` WHERE (`name`=:name) AND id<>:id LIMIT 1 "; 
 						 $stmt = $pdo->prepare($sql);
-						$stmt->bindParam(':code', $code); 
 						$stmt->bindParam(':name', $name); 
 						$stmt->bindParam(':id', $id); 
 						$stmt->execute();
@@ -408,7 +405,7 @@ function to_mysql_date($thai_date){
 						}		
 
 						//update 
-						$sql = "UPDATE `shipto` SET  `code`=:code, `name`=:name 
+						$sql = "UPDATE `shipto` SET  `name`=:name 
 						, `addr1`=:addr1, `addr2`=:addr2, `addr3`=:addr3
 						, `zipcode`=:zipcode, `countryName`=:countryName
 						, `contact`=:contact, `contactPosition`=:contactPosition
@@ -419,7 +416,6 @@ function to_mysql_date($thai_date){
 					 
 						//$result = mysqli_query($link, $sql);
 						$stmt = $pdo->prepare($sql);
-						$stmt->bindParam(':code', $code); 
 						$stmt->bindParam(':name', $name); 
 						$stmt->bindParam(':addr1', $addr1); 
 						$stmt->bindParam(':addr2', $addr2); 
