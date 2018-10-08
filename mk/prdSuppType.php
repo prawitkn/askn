@@ -135,7 +135,6 @@ switch($s_userGroupCode){
                 <tr>
 					<th>Seq No.</th>
 					<th>ID</th>
-					<th>Code</th>
 					<th>Name</th>
                     <th>Status</th>
                     <th>#</th>
@@ -150,9 +149,6 @@ switch($s_userGroupCode){
                     </td>
 					 <td>
                          <?= $row['id']; ?>
-                    </td>
-                    <td>
-                         <?= $row['code']; ?>
                     </td>
                     <td>
                          <?= $row['name']; ?>

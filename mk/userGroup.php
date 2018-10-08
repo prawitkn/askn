@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <!--
 This is a starter template page. Use this page to start your new project from
@@ -6,6 +5,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
 <?php include 'head.php'; 
+
 $rootPage = 'userGroup';
 $tb = 'user_group';
 //Check user roll.
@@ -18,6 +18,12 @@ switch($s_userGroupCode){
 }
 ?>	<!-- head.php included session.php! -->
  
+</head>
+<body class="hold-transition skin-green sidebar-mini">
+
+
+	
+
     
     
 

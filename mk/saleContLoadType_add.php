@@ -8,7 +8,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
 <?php include 'head.php'; 
-$rootPage = 'prodCat';
+$rootPage = 'saleContLoadType';
+$tb = 'sale_container_load_type';
 
 //Check user roll.
 switch($s_userGroupCode){
@@ -32,15 +33,15 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-		<h1><i class="fa fa-industry"></i>
-       Product Category
-        <small>Product Category management</small>
+		<h1><i class="fa fa-ship"></i>
+       Container Load
+        <small>Container Load management</small>
       </h1>
 
       
       <ol class="breadcrumb">
-        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Product Category List</a></li>
-        <li><a href="#"><i class="glyphicon glyphicon-list"></i>Add Product Category</a></li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Container Load List</a></li>
+        <li><a href="#"><i class="glyphicon glyphicon-list"></i>Add Container Load</a></li>
       </ol>
     </section>
    
@@ -50,7 +51,7 @@ switch($s_userGroupCode){
       <!-- Your Page Content Here -->
     <div class="box box-primary">
         <div class="box-header with-border">
-        <h3 class="box-title">Add Product Category</h3>
+        <h3 class="box-title">Add Container Load</h3>
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
@@ -63,13 +64,13 @@ switch($s_userGroupCode){
 					<input type="hidden" name="action" value="add" />	
 						
 					<div class="col-md-6">					
-                        <div class="form-group">
+                       <!-- <div class="form-group">
                             <label for="code">Product Category Code</label>
                             <input id="code" type="text" class="form-control" name="code" data-smk-msg="Require user group code."required>
-                        </div>
+                        </div>-->
                         
                         <div class="form-group">
-                            <label for="name">Product Category Name</label>
+                            <label for="name">Container Load Name</label>
                             <input id="name" type="text" class="form-control" name="name" data-smk-msg="Require uer group name" required>
                         </div>
 						

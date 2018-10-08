@@ -5,10 +5,17 @@ scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
 <?php include 'head.php'; ?>  
+
+</head>
+<body class="hold-transition skin-green sidebar-mini">
+
+
+	
+
 <div class="wrapper">
   <!-- Main Header -->
   <?php include 'header.php'; ?>  
-  <?php include 'inc_helper.php'; 
+  <?php 
   $rootPage="product";
   ?>   
   

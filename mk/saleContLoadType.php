@@ -6,8 +6,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
 <?php include 'head.php'; 
-$rootPage = 'contLoad';
-$tb = 'container_load';
+$rootPage = 'saleContLoadType';
+$tb = 'sale_container_load_type';
 //Check user roll.
 switch($s_userGroupCode){
 	case 'admin' : case 'salesAdmin' : 
@@ -36,7 +36,7 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
 	<section class="content-header">
-		<h1><i class="fa fa-industrye"></i>
+		<h1><i class="fa fa-ship"></i>
        Container Load
         <small>Container Load management</small>
       </h1>
@@ -105,11 +105,11 @@ switch($s_userGroupCode){
            <?php
 				$sql = "
 				SELECT hdr.`id`, hdr.`code`, hdr.`name`, hdr.`statusCode`
-				, hdr.`createTime`, hdr.`createById`, hdr.`updateTime`, hdr.`updateById`, hdr.`deleteTime`, hdr.`deleteById`
+				, hdr.`createTime`, hdr.`createById`, hdr.`updateTime`, hdr.`updateById`
 				, uc.userFullname as createByName 
 				, uu.userFullname as updateByName 
 				FROM `".$tb."` hdr 
-				LEFT JOIN `user` uc on uc.userID=hdr.deleteById 
+				LEFT JOIN `user` uc on uc.userID=hdr.createById  
 				LEFT JOIN `user` uu on uu.userID=hdr.updateById 
 				WHERE 1=1 ";
 				if( $search_word<>"" ){ $sql .= "AND hdr.name like '%".$search_word."%'  "; }		

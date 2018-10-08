@@ -18,7 +18,14 @@ $rootPage="sale2";
 <!-- iCheck for checkboxes and radio inputs -->
 <link rel="stylesheet" href="plugins/iCheck/all.css">
 
-<body class="hold-transition skin-blue sidebar-mini">
+ 
+</head>
+<body class="hold-transition skin-green sidebar-mini">
+
+
+	
+  
+
 <div class="wrapper">
 
   <!-- Main Header -->
@@ -158,7 +165,7 @@ $rootPage="sale2";
 					LEFT JOIN product_roll_length rl ON rl.id=a.rollLengthId 
 					WHERE 1
 					AND a.`soNo`=:soNo 
-					ORDER BY a.id, a.createTime
+					ORDER BY a.createTime
 					";
 					$stmt = $pdo->prepare($sql);	
 					$stmt->bindParam(':soNo', $hdr['soNo']);

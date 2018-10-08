@@ -10,6 +10,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <?php 
 	include 'head.php'; 
 ?>    
+ 
+</head>
+<body class="hold-transition skin-green sidebar-mini">
+
+
+	
+  
 <div class="wrapper">
   <!-- Main Header -->
   <?php include 'header.php';   

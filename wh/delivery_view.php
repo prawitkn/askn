@@ -73,7 +73,13 @@ $stmt->execute();
 $rowCount=$stmt->rowCount();
 
 		?>
+ 
+</head>
+<body class="hold-transition skin-green sidebar-mini">
 
+
+	
+  
 <div class="wrapper">
 
   <!-- Main Header -->

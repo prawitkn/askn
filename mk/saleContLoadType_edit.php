@@ -18,8 +18,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
    <?php include 'leftside.php'; ?>
 
  <?php 
- $rootPage = 'prodCat';
- $tb='product_category';
+$rootPage = 'saleContLoadType';
+$tb = 'sale_container_load_type';
 
 //Check user roll.
 switch($s_userGroupCode){
@@ -32,11 +32,11 @@ switch($s_userGroupCode){
 $id=$_GET['id'];
 
 $sql = "SELECT hdr.`id`, hdr.`code`, hdr.`name`, hdr.`statusCode`
-, hdr.`createTime`, hdr.`createById`, hdr.`updateTime`, hdr.`updateById`, hdr.`deleteTime`, hdr.`deleteById`
+, hdr.`createTime`, hdr.`createById`, hdr.`updateTime`, hdr.`updateById`
 , uc.userFullname as createByName 
 , uu.userFullname as updateByName 
 FROM `".$tb."` hdr 
-LEFT JOIN `user` uc on uc.userID=hdr.deleteById 
+LEFT JOIN `user` uc on uc.userID=hdr.createById  
 LEFT JOIN `user` uu on uu.userID=hdr.updateById 
 WHERE 1=1 
 AND hdr.id=:id 
@@ -54,15 +54,15 @@ $row=$stmt->fetch();
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
    <section class="content-header">
-		<h1><i class="fa fa-industry"></i>
-       Product Category
-        <small>Product Category management</small>
+		<h1><i class="fa fa-ship"></i>
+       Container Load
+        <small>Container Load management</small>
       </h1>
 
       
       <ol class="breadcrumb">
-        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Product Category List</a></li>
-        <li><a href="#"><i class="glyphicon glyphicon-list"></i>Edit Product Category</a></li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Container Load List</a></li>
+        <li><a href="#"><i class="glyphicon glyphicon-list"></i>Edit Container Load</a></li>
       </ol>
     </section>
 
@@ -72,7 +72,7 @@ $row=$stmt->fetch();
       <!-- Your Page Content Here -->
     <div class="box box-primary">
         <div class="box-header with-border">
-        <h3 class="box-title">Edit Product Category</h3>
+        <h3 class="box-title">Edit Container Load</h3>
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
@@ -84,14 +84,10 @@ $row=$stmt->fetch();
                     <form id="form1" method="post" class="form" validate>
 					<input type="hidden" name="action" value="edit" />				
 					<div class="col-md-6">	
-						<input id="id" type="hidden" name="id" value="<?=$row['id'];?>" />				
-                        <div class="form-group">
-                            <label for="code">Product Category Code</label>
-                            <input id="code" type="text" class="form-control" name="code" value="<?=$row['code'];?>"  data-smk-msg="Require user group code."required>
-                        </div>
+						<input id="id" type="hidden" name="id" value="<?=$row['id'];?>" />	
                         
                         <div class="form-group">
-                            <label for="name">Product Category Name</label>
+                            <label for="name">Container Load Name</label>
                             <input id="name" type="text" class="form-control" name="name" value="<?=$row['name'];?>"  data-smk-msg="Require uer group name" required>
                         </div>
 						<div class="form-group">

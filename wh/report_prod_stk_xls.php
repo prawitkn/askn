@@ -45,14 +45,9 @@ if($countTotal>0){
 		
 	$objPHPExcel->setActiveSheetIndex(0)
 		->setCellValue('A2', 'Product Code')
-		->setCellValue('B2', 'SLOC')
+		->setCellValue('B2', 'Location')
 		->setCellValue('C2', 'Category')
-		->setCellValue('D2', 'Onway')
-		->setCellValue('E2', 'Send')
-		->setCellValue('F2', 'Delivery')
-		->setCellValue('G2', 'Balance')
-		->setCellValue('H2', 'Pick')
-		->setCellValue('I2', 'Remain (Balance-Pick)');
+		->setCellValue('D2', 'Balance');
 	
 		
 	$sql = "SELECT prd.`id`, prd.`code`, prd.`catCode`, prd.`name`, prd.`name2`, prd.`uomCode`, prd.`packUomCode`
@@ -77,12 +72,7 @@ if($countTotal>0){
 		->setCellValue('A'.$iRow, $row['code'])
 		->setCellValue('B'.$iRow, $row['sloc'])
 		->setCellValue('C'.$iRow, $row['catCode'])
-		->setCellValue('D'.$iRow, $row['onway'])
-		->setCellValue('E'.$iRow, $row['send'])
-		->setCellValue('F'.$iRow, $row['delivery'])
-		->setCellValue('G'.$iRow, $row['balance'])
-		->setCellValue('H'.$iRow, $row['pick'])
-		->setCellValue('I'.$iRow, $row['balance']-$row['pick']);
+		->setCellValue('D'.$iRow, $row['balance']);
 		$iRow+=1;
 	}
 }

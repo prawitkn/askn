@@ -43,7 +43,13 @@ $start=($page-1)*$rows;
 if($start<0) $start=0;
 
 ?>
+ 
+</head>
+<body class="hold-transition skin-green sidebar-mini">
 
+
+	
+  
 <div class="wrapper">
 
   <!-- Main Header -->

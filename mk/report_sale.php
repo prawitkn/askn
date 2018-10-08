@@ -177,7 +177,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					?>
 					<tr>
 						<td><?=$c_row;?></td>
-						<td><a href="sale_view.php?soNo=<?=$row['soNo'];?>"><?=$row['soNo'];?></a></td>
+						<td><a href="sale2_view.php?soNo=<?=$row['soNo'];?>"><?=$row['soNo'];?></a></td>
 						<td><?=$row['saleDate'];?></td>
 						<td><?=$row['custName'];?></td>
 						<td><?=$row['smName'];?></td>

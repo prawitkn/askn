@@ -37,7 +37,13 @@ $stmt->bindParam(':id', $id);
 $stmt->execute();	
 $row=$stmt->fetch();	
 ?>
+ 
+</head>
+<body class="hold-transition skin-green sidebar-mini">
 
+
+	
+  
 <div class="wrapper">
 
   <!-- Main Header -->

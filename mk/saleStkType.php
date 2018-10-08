@@ -109,7 +109,7 @@ switch($s_userGroupCode){
 			<!--/.row-->
            <?php
 				$sql = "
-				SELECT hdr.`id`, hdr.`seqNo`, hdr.`code`, hdr.`name`, hdr.`statusCode`
+				SELECT hdr.`id`, hdr.`seqNo`, hdr.`name`, hdr.`statusCode`
 				, hdr.`createTime`, hdr.`createById`, hdr.`updateTime`, hdr.`updateById`
 				, uc.userFullname as createByName 
 				, uu.userFullname as updateByName 
@@ -135,7 +135,6 @@ switch($s_userGroupCode){
                 <tr>
 					<th>Seq No.</th>
 					<th>ID</th>
-					<th>Code</th>
 					<th>Name</th>
                     <th>Status</th>
                     <th>#</th>
@@ -150,9 +149,6 @@ switch($s_userGroupCode){
                     </td>
 					 <td>
                          <?= $row['id']; ?>
-                    </td>
-                    <td>
-                         <?= $row['code']; ?>
                     </td>
                     <td>
                          <?= $row['name']; ?>

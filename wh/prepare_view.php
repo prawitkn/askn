@@ -41,7 +41,13 @@ $ppNo = $_GET['ppNo'];
 	$pickNo=$hdr['pickNo']; 
 	$custSlocCode=$hdr['custSlocCode'];
 ?>
+ 
+</head>
+<body class="hold-transition skin-green sidebar-mini">
 
+
+	
+  
 <div class="wrapper">
 
   <!-- Main Header -->

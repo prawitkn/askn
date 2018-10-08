@@ -11,7 +11,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 $rootPage = 'prepare';
 ?>
+ 
+</head>
+<body class="hold-transition skin-green sidebar-mini">
 
+
+	
+  
 <div class="wrapper">
 
   <!-- Main Header -->

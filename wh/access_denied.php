@@ -12,10 +12,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
 ?>
 <?php 
 	include 'head.php'; 
-	include 'inc_helper.php';
 
 ?>
 
+</head>
+<body class="hold-transition skin-green sidebar-mini">
+
+
+	
+
+	
 <div class="wrapper">
 
   <!-- Main Header -->

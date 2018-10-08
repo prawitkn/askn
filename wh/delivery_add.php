@@ -41,6 +41,12 @@ $doNo = $hdr['doNo'];
 $ppNo = $hdr['ppNo'];
 $soNo = $hdr['soNo'];
 ?>
+   
+</head>
+<body class="hold-transition skin-green sidebar-mini">
+
+
+	
     
 <div class="wrapper">
 

@@ -5,7 +5,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
 <?php include 'head.php'; ?>  
-<?php include 'inc_helper.php'; 
+<?php 
 
 $rootPage = "picking";
 
@@ -16,28 +16,13 @@ $custId=$_GET['custId'];
 $saleItemId=$_GET['saleItemId'];
 				
 ?>      
-   
-<!--
-BODY TAG OPTIONS:
-=================
-Apply one or more of the following classes to get the
-desired effect
-|---------------------------------------------------------|
-| SKINS         | skin-blue                               |
-|               | skin-black                              |
-|               | skin-purple                             |
-|               | skin-yellow                             |
-|               | skin-red                                |
-|               | skin-green                              |
-|---------------------------------------------------------|
-|LAYOUT OPTIONS | fixed                                   |
-|               | layout-boxed                            |
-|               | layout-top-nav                          |
-|               | sidebar-collapse                        |
-|               | sidebar-mini                            |
-|---------------------------------------------------------|
--->
-<body class="hold-transition skin-blue sidebar-mini">
+    
+</head>
+<body class="hold-transition skin-green sidebar-mini">
+
+
+	
+  
 <div class="wrapper">
   <!-- Main Header -->
   <?php include 'header.php'; ?>  
@@ -105,6 +90,7 @@ desired effect
 				$sql = "
 				SELECT itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, itm.`qty` as meters
 				, itm.`gradeTypeId`, pgt.name as `gradeTypeName` 
+				, itm.remarkWh 
 				, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total			
 				, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 						ON pickh.pickNo=pickd.pickNo
@@ -138,7 +124,7 @@ desired effect
 																	LIMIT 1) ";
 				
 				$sql.="
-				GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`, itm.`gradeTypeId`, isShelfed 			
+				GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`, itm.`gradeTypeId`, itm.remarkWh , isShelfed 			
 								
 				ORDER BY itm.`issueDate` ASC  
 				";
@@ -166,6 +152,7 @@ desired effect
 						$sql = "
 						SELECT itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, itm.`qty` as meters
 						, itm.`gradeTypeId`, pgt.name as `gradeTypeName` 
+						, itm.remarkWh 
 						, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total		
 						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 								ON pickh.pickNo=pickd.pickNo
@@ -190,7 +177,7 @@ desired effect
 						AND hdr.statusCode='P' 	
 						AND dtl.statusCode='A' 
 						AND itm.prodCodeId=:id ";
-						/*switch($catCode){
+						switch($catCode){
 							case '70' : //Weaving
 								$sql.="AND DATEDIFF(NOW(), itm.issueDate) <= 365 ";
 								break;
@@ -198,10 +185,9 @@ desired effect
 								$sql.="AND DATEDIFF(NOW(), itm.issueDate) <= 90 ";
 								break;
 							default : //80					
-						}*/
-						
+						}						
 						$sql.="
-						GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`, itm.`gradeTypeId`, isShelfed 			
+						GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`, itm.`gradeTypeId`, itm.remarkWh , isShelfed 			
 										
 						ORDER BY itm.`issueDate` ASC  
 						";
@@ -210,6 +196,7 @@ desired effect
 						$sql = "
 						SELECT itm.`prodCodeId`, s.sendDate as issueDate, itm.`grade`, itm.`qty` as meters
 						, itm.`gradeTypeId`, pgt.name as `gradeTypeName` 
+						, itm.remarkWh 
 						, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total			
 						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 								ON pickh.pickNo=pickd.pickNo
@@ -235,7 +222,7 @@ desired effect
 						AND hdr.statusCode='P' 	
 						AND dtl.statusCode='A' 
 						AND itm.prodCodeId=:id ";
-						/*switch($catCode){
+						switch($catCode){
 							case '70' : //Weaving
 								$sql.="AND DATEDIFF(NOW(), s.sendDate) <= 365 ";
 								break;
@@ -243,9 +230,9 @@ desired effect
 								$sql.="AND DATEDIFF(NOW(), s.sendDate) <= 90 ";
 								break;
 							default : //80					
-						}*/
+						}
 						$sql.="
-						GROUP BY itm.`prodCodeId`, s.sendDate, itm.`grade`, prd.code , itm.`qty`, itm.`gradeTypeId`, isShelfed 			
+						GROUP BY itm.`prodCodeId`, s.sendDate, itm.`grade`, prd.code , itm.`qty`, itm.`gradeTypeId`, itm.remarkWh , isShelfed 			
 										
 						ORDER BY s.sendDate ASC  
 						";
@@ -267,11 +254,12 @@ desired effect
                   <thead>
                   <tr>
 					<th>No.</th>
-                    <th>Product Code</th>
+					<th>Product Code</th>
 					<th>MFD.</th>
-					<th>Grade</th>					
-					<th>Grade Type</th>
 					<th>Meter</th>
+					<th>Grade</th>	
+					<th>Grade Type</th>				
+					<th>WH Remark</th>
                     <th>Qty</th>
 					<th>Total</th>
 					<th style="color: red;">Booked</th>
@@ -293,9 +281,10 @@ desired effect
 					<td><?= $row_no; ?></td>
 					<td><?= $row['prodCode']; ?></td>					
 					<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>
+					<td style="text-align: right;"><?= $row['meters']; ?></td>
 					<td><?= $gradeName; ?></td>
 					<td style="text-align: right;"><?= $row['gradeTypeName']; ?></td>
-					<td style="text-align: right;"><?= $row['meters']; ?></td>
+					<td style="text-align: right;"><?= $row['remarkWh']; ?></td>
 					<td style="text-align: right;"><?= $row['qty']; ?></td>
 					<td style="text-align: right;"><?= $row['total']; ?></td>
 					<td style="text-align: right; color: red;"><?= $row['bookedQty']; ?></td>
@@ -309,7 +298,8 @@ desired effect
 						<?php }else{ ?>
 						<input type="hidden" name="issueDate[]" value="<?=$row['issueDate'];?>" />
 						<input type="hidden" name="grade[]" value="<?=$row['grade'];?>" />
-						<input type="hidden" name="meter[]" value="<?=$row['meters'];?>" />						
+						<input type="hidden" name="meter[]" value="<?=$row['meters'];?>" />		
+						<input type="hidden" name="remarkWh[]" value="<?=$row['remarkWh'];?>" />					
 						<input type="hidden" name="gradeTypeId[]" value="<?=$row['gradeTypeId'];?>" />
 						<input type="hidden" name="balanceQty[]" value="<?=$row['total']-$row['bookedQty'];?>" />
 						<input type="textbox" name="pickQty[]" class="form-control" value="<?=$row['pickQty'];?>"  

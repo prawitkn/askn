@@ -53,6 +53,13 @@ if($stmt->rowCount()==0){
 $hdr = $stmt->fetch();			
 $rcNo = $hdr['rcNo'];
 ?>
+ 
+</head>
+<body class="hold-transition skin-green sidebar-mini">
+
+
+	
+  
 <div class="wrapper">
 
   <!-- Main Header -->

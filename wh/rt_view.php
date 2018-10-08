@@ -52,8 +52,14 @@ if($stmt->rowCount() >= 1){
 		default :	// it, admin 
 	}
 }
-
 ?>
+ 
+</head>
+<body class="hold-transition skin-green sidebar-mini">
+
+
+	
+  
 <div class="wrapper">
 
   <!-- Main Header -->

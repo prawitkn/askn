@@ -93,7 +93,7 @@ switch($s_userGroupCode){
 				<div class="col-md-6">					
 					<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
 						<div class="form-group">
-							<label for="search_word">Sale Price Type name search key word.</label>
+							<label for="search_word">Sale Delivery Type name search key word.</label>
 							<div class="input-group">
 								<input id="search_word" type="text" class="form-control" name="search_word" data-smk-msg="Require userFullname."required>
 								<span class="input-group-addon">
@@ -135,7 +135,6 @@ switch($s_userGroupCode){
                 <tr>
 					<th>Seq No.</th>
 					<th>ID</th>
-					<th>Code</th>
 					<th>Name</th>
                     <th>Status</th>
                     <th>#</th>
@@ -150,9 +149,6 @@ switch($s_userGroupCode){
                     </td>
 					 <td>
                          <?= $row['id']; ?>
-                    </td>
-                    <td>
-                         <?= $row['code']; ?>
                     </td>
                     <td>
                          <?= $row['name']; ?>

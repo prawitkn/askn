@@ -84,11 +84,8 @@ $row=$stmt->fetch();
                     <form id="form1" method="post" class="form" validate>
 					<input type="hidden" name="action" value="edit" />				
 					<div class="col-md-6">	
-						<input id="id" type="hidden" name="id" value="<?=$row['id'];?>" />				
-                        <div class="form-group">
-                            <label for="code">Product Supplier roup Code</label>
-                            <input id="code" type="text" class="form-control" name="code" value="<?=$row['code'];?>"  data-smk-msg="Require user group code."required>
-                        </div>
+						<input id="id" type="hidden" name="id" value="<?=$row['id'];?>" />		
+                      
                         
                         <div class="form-group">
                             <label for="name">Product Supplier Group Name</label>

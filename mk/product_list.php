@@ -166,10 +166,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					</div>
 					<!--col-md-->
 					<div class="col-md-9">
-						<label>Code : <a href="product_view_stk.php?id=<?=$row['id'];?>"></label><?=$row['code'];?></a></br>
-						<label>Name : </label> <?=$row['name'];?></br>
+						<label style="font-weight: bold;">Product Code : <a href="product_view_stk.php?id=<?=$row['id'];?>"></label> <?=$row['code'];?></a></br>
+						<label>Product Name : </label> <?=$row['name'];?></br>
 						<label>Description : </label> <?=$row['description'];?></br>
-						<label>Sales Price : </label> <label class="label label-primary"> <?=number_format($row['price'],2,'.',',');?></label></br>
 						<label>Units of Measurement (UOM) : </label> <?=$row['uomCode'];?></br>
 						<label>Source Type : </label> <?=$row['sourceTypeCode'];?></br>
 						<label>App ID : </label> <?=$row['appCode'];?></br>

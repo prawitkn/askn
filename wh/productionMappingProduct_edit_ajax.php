@@ -38,7 +38,7 @@
 	$sql = "UPDATE product_item itm 
 	SET itm.prodCodeId=:wmsProdId 
 	WHERE itm.prodId=:id 
-	AND itm.prodCodeId = 0 
+	AND (itm.prodCodeId = 0 OR itm.prodCodeId IS NULL) 
 	";	
 	$stmt = $pdo->prepare($sql);	
 	$stmt->bindParam(':wmsProdId', $wmsProdId);

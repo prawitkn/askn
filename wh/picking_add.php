@@ -29,6 +29,13 @@ $pickNo = $hdr['pickNo'];
 $soNo = $hdr['soNo'];
 $custId = $hdr['custId'];					
 ?>
+ 
+</head>
+<body class="hold-transition skin-green sidebar-mini">
+
+
+	
+  
 <div class="wrapper">
 
   <!-- Main Header -->

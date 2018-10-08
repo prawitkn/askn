@@ -22,11 +22,18 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	if($prodCode=="") $prodId="";
 ?>    
 
+ 
+</head>
+<body class="hold-transition skin-green sidebar-mini">
+
+
+	
+  
 <div class="wrapper">
   <!-- Main Header -->
   <?php include 'header.php'; 
   
-	//include 'inc_helper.php'; 
+	include 'inc_helper.php'; 
   ?>  
   
   <!-- Left side column. contains the logo and sidebar -->
@@ -67,7 +74,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				$sql.="
 				WHERE 1 ";
 				if($search_word<>""){ $sql = "and (prd.code like '%".$search_word."%' OR prd.name like '%".$search_word."%') "; }
-				if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
+				if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}else{ $sql .= " AND sb.sloc IN ('8','E') "; }
 				if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
 				if($prodId<>""){ $sql .= " AND prodId=$prodId ";	}	
 			
@@ -153,28 +160,28 @@ scratch. This page gets rid of all links and provides the needed markup only.
                   <tr>
 					<th>No.</th>
                     <th>Product Code</th>
-					<th>SLOC</th>
+					<th>Location</th>
 					<th>Category</th>
-					<th>Onway</th>
+					<!--<th>Onway</th>
 					<th>Send</th>
-					<th>Delivery</th>
+					<th>Delivery</th>-->
 					<th style="color: #00cc00;">Balance</th>					
-					<th>Pick</th>
-					<th style="color: #006600; background-color: #ccccff;">Net Balance</th>
+					<!--<th>Pick</th>
+					<th style="color: #006600; background-color: #ccccff;">Remain (Balance-Pick)</th>-->
                   </tr>
                   </thead>
                   <tbody>
 					<?php
 						$sql = "SELECT DISTINCT prd.*
 						,sb.sloc, sb.`open`, sb.`produce`, sb.`onway`, sb.`receive`, sb.`send`, sb.`sales`, sb.`delivery`, sb.`balance`
-						,(SELECT SUM(pDtl.qty) FROM picking pHdr, picking_detail pDtl WHERE pHdr.isFinish='N' AND pDtl.prodId=sb.prodId) as pick
+						,IFNULL((SELECT SUM(pDtl.qty) FROM picking pHdr, picking_detail pDtl WHERE pHdr.pickNo=pDtl.pickNo AND pHdr.isFinish='N' AND pHdr.statusCode<>'X' AND pDtl.prodId=sb.prodId),0) as pick 
 						FROM stk_bal sb 
 						INNER JOIN product prd on prd.id=sb.prodId  ";
 						if($prodCode<>""){ $sql .= " AND prd.code like '%".$prodCode."%' ";	}	
 						$sql.="
 						WHERE 1 ";
 						if($search_word<>""){ $sql = "and (prd.code like '%".$search_word."%' OR prd.name like '%".$search_word."%') "; }
-						if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
+						if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}else{ $sql .= " AND sb.sloc IN ('8','E') "; }
 						if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
 						if($prodId<>""){ $sql .= " AND prodId='$prodId' ";	}		
 						$sql.="ORDER BY prd.code  ";
@@ -196,15 +203,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					?>
                   <tr>
 					<td><?= $c_row; ?></td>
-                    <td><a href="product_view_stk.php?id=<?=$row['id'];?>" ><?= $row['code']; ?></a></td>
+                    <td><a href="product_view_stk.php?id=<?=$row['id'];?>&sloc=<?=$sloc;?>" ><?= $row['code']; ?></a></td>
 					<td><?= $row['sloc']; ?></td>
 					<td><?= $row['catCode']; ?></td>
-					<td style="text-align: right;"><?= number_format($row['onway'],0,'.',','); ?></td>
+					<!--<td style="text-align: right;"><?= number_format($row['onway'],0,'.',','); ?></td>
 					<td style="text-align: right;"><?= number_format($row['send'],0,'.',','); ?></td>
-					<td style="text-align: right;"><?= number_format($row['delivery'],0,'.',','); ?></td>
+					<td style="text-align: right;"><?= number_format($row['delivery'],0,'.',','); ?></td>-->
 					<td style="text-align: right; color: #00cc00;"><?= number_format($row['balance'],0,'.',','); ?></td>
-					<td style="text-align: right;"><?= number_format(-1*$row['pick'],0,'.',','); ?></td>
-					<td style="text-align: right; color: #006600; background-color: #ccccff;"><?= number_format($row['balance']-$row['pick'],0,'.',','); ?></td>
+					<!--<td style="text-align: right;"><?= number_format(-1*$row['pick'],0,'.',','); ?></td>
+					<td style="text-align: right; color: #006600; background-color: #ccccff;"><?= number_format($row['balance']-$row['pick'],0,'.',','); ?></td>-->
                 </tr>
                  <?php $c_row +=1; } ?>
                   </tbody>

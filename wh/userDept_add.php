@@ -19,7 +19,13 @@ switch($s_userGroupCode){
 		exit();
 }
 ?>
+ 
+</head>
+<body class="hold-transition skin-green sidebar-mini">
 
+
+	
+  
 <div class="wrapper">
 
   <!-- Main Header -->

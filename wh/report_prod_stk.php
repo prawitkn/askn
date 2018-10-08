@@ -22,27 +22,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	if($prodCode=="") $prodId="";
 ?>    
 
-<!--
-BODY TAG OPTIONS:
-=================
-Apply one or more of the following classes to get the
-desired effect
-|---------------------------------------------------------|
-| SKINS         | skin-blue                               |
-|               | skin-black                              |
-|               | skin-purple                             |
-|               | skin-yellow                             |
-|               | skin-red                                |
-|               | skin-green                              |
-|---------------------------------------------------------|
-|LAYOUT OPTIONS | fixed                                   |
-|               | layout-boxed                            |
-|               | layout-top-nav                          |
-|               | sidebar-collapse                        |
-|               | sidebar-mini                            |
-|---------------------------------------------------------|
--->
-<body class="hold-transition skin-blue sidebar-mini">
+ 
+</head>
+<body class="hold-transition skin-green sidebar-mini">
+
+
+	
+  
 <div class="wrapper">
   <!-- Main Header -->
   <?php include 'header.php'; 
@@ -174,14 +160,14 @@ desired effect
                   <tr>
 					<th>No.</th>
                     <th>Product Code</th>
-					<th>SLOC</th>
+					<th>Location</th>
 					<th>Category</th>
-					<th>Onway</th>
+					<!--<th>Onway</th>
 					<th>Send</th>
-					<th>Delivery</th>
+					<th>Delivery</th>-->
 					<th style="color: #00cc00;">Balance</th>					
-					<th>Pick</th>
-					<th style="color: #006600; background-color: #ccccff;">Remain (Balance-Pick)</th>
+					<!--<th>Pick</th>
+					<th style="color: #006600; background-color: #ccccff;">Remain (Balance-Pick)</th>-->
                   </tr>
                   </thead>
                   <tbody>
@@ -217,15 +203,15 @@ desired effect
 					?>
                   <tr>
 					<td><?= $c_row; ?></td>
-                    <td><a href="product_view_stk.php?id=<?=$row['id'];?>" ><?= $row['code']; ?></a></td>
+                    <td><a href="product_view_stk.php?id=<?=$row['id'];?>&sloc=<?=$sloc;?>" ><?= $row['code']; ?></a></td>
 					<td><?= $row['sloc']; ?></td>
 					<td><?= $row['catCode']; ?></td>
-					<td style="text-align: right;"><?= number_format($row['onway'],0,'.',','); ?></td>
+					<!--<td style="text-align: right;"><?= number_format($row['onway'],0,'.',','); ?></td>
 					<td style="text-align: right;"><?= number_format($row['send'],0,'.',','); ?></td>
-					<td style="text-align: right;"><?= number_format($row['delivery'],0,'.',','); ?></td>
+					<td style="text-align: right;"><?= number_format($row['delivery'],0,'.',','); ?></td>-->
 					<td style="text-align: right; color: #00cc00;"><?= number_format($row['balance'],0,'.',','); ?></td>
-					<td style="text-align: right;"><?= number_format(-1*$row['pick'],0,'.',','); ?></td>
-					<td style="text-align: right; color: #006600; background-color: #ccccff;"><?= number_format($row['balance']-$row['pick'],0,'.',','); ?></td>
+					<!--<td style="text-align: right;"><?= number_format(-1*$row['pick'],0,'.',','); ?></td>
+					<td style="text-align: right; color: #006600; background-color: #ccccff;"><?= number_format($row['balance']-$row['pick'],0,'.',','); ?></td>-->
                 </tr>
                  <?php $c_row +=1; } ?>
                   </tbody>

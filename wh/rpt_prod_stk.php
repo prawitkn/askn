@@ -175,7 +175,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			</div>-->
 			<div class="col-md-12">					
                     <form id="form1" action="<?=$url;?>" method="get" class="form-inline" novalidate>
-						<label>SLOC : </label>
+						<label>SLOC :fdsafd </label>
 					<select name="sloc" class="form-control">
 						<option value="" <?php echo ($sloc==""?'selected':''); ?> >--All--</option>
 						<?php
@@ -260,7 +260,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					?>
                   <tr>
 					<td><?= $c_row; ?></td>
-                    <td><a href="product_view_stk.php?id=<?=$row['id'];?>" ><?= $row['code']; ?></a></td>
+                    <td><a href="product_view_stk.php?id=<?=$row['id'];?>&sloc=<?=$sloc;?>" ><?= $row['code']; ?></a></td>
 					<td><?= $row['sloc']; ?></td>
 					<td><?= $row['catCode']; ?></td>
 					<td><?= $row['appCode']; ?></td>

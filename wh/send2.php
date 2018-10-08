@@ -16,7 +16,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 $rootPage="send2";
 $tb="send";
 ?>
+ 
+</head>
+<body class="hold-transition skin-green sidebar-mini">
 
+
+	
+  
 <div class="wrapper">
 
   <!-- Main Header -->

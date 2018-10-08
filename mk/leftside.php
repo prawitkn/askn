@@ -83,8 +83,9 @@
 			<li><a href="salePackType.php"><i class="fa fa-cube"></i> <span> Sale Package Type</span></a></li>
 			<li><a href="salePriceType.php"><i class="fa fa-money"></i> <span> Sale Price Type</span></a></li>
 			<li><a href="saleDeliveryType.php"><i class="fa fa-truck"></i> <span> Sale Delivery Type</span></a></li>
+			<li><a href="saleContLoadType.php"><i class="fa fa-ship"></i> <span> Sale Container Load Type</span></a></li>
 			<li><a href="saleCreditType.php"><i class="fa fa-credit-card"></i> <span> Sale Credit Type</span></a></li>
-			<li><a href="saleOptionType.php"><i class="fa fa-sticky-note"></i> <span> Sale Option</span></a></li>	
+			<!--<li><a href="saleOptionType.php"><i class="fa fa-sticky-note"></i> <span> Sale Option</span></a></li>	-->
 
 			<li class="header"> Master Menu</li>			
 			<!-- Optionally, you can add icons to the links -->

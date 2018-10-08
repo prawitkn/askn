@@ -27,6 +27,12 @@ $ppNo = $hdr['ppNo'];
 $pickNo = $hdr['pickNo'];
 
 ?>
+   
+</head>
+<body class="hold-transition skin-green sidebar-mini">
+
+
+	
     
 <div class="wrapper">
 

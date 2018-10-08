@@ -15,7 +15,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		$s_userID=$_SESSION['userID'];*/
 $rootPage="rt";
 ?>
+ 
+</head>
+<body class="hold-transition skin-green sidebar-mini">
 
+
+	
+  
 <div class="wrapper">
 
   <!-- Main Header -->

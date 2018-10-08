@@ -85,17 +85,10 @@ $row=$stmt->fetch();
 
 				<input type="hidden" name="id" value="<?=$row['id'];?>" />
 				<div class="row">
-					<div class="col-md-3">					
-	                    <div class="form-group">
-	                        <label for="code">Sale Package Credit Code</label>
-	                        <input id="code" type="text" class="form-control" name="code" value="<?=$row['code'];?>" data-smk-msg="Require user group code."required>
-	                    </div>
-					</div>
-					<!--/.col-md-->
 
 					<div class="col-md-6">
 						<div class="form-group">
-	                        <label for="name">Sale Package Credit Name</label>
+	                        <label for="name">Sale Credit Type Name</label>
 	                        <input id="name" type="text" class="form-control" name="name" value="<?=$row['name'];?>" data-smk-msg="Require uer group name" required>
 	                    </div>	
 	                    

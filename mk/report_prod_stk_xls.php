@@ -4,6 +4,8 @@ include 'inc_helper.php';
 
 require_once '../phpexcel/Classes/PHPExcel.php';
 
+date_default_timezone_set("Asia/Bangkok");
+
 // Create new PHPExcel object
 $objPHPExcel = new PHPExcel();
 
@@ -29,7 +31,7 @@ if($prodCode<>""){ $sql .= " AND prd.code like '%".$prodCode."%' ";	}
 $sql.="
 WHERE 1 ";
 if($search_word<>""){ $sql = "and (prd.code like '%".$search_word."%' OR prd.name like '%".$search_word."%') "; }
-if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
+if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}else{ $sql .= " AND sb.sloc IN ('8','E') "; }
 if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
 if($prodId<>""){ $sql .= " AND prodId=$prodId ";	}	
 
@@ -43,30 +45,25 @@ if($countTotal>0){
 		
 	$objPHPExcel->setActiveSheetIndex(0)
 		->setCellValue('A2', 'Product Code')
-		->setCellValue('B2', 'SLOC')
+		->setCellValue('B2', 'Location')
 		->setCellValue('C2', 'Category')
-		->setCellValue('D2', 'Onway')
-		->setCellValue('E2', 'Send')
-		->setCellValue('F2', 'Delivery')
-		->setCellValue('G2', 'Balance')
-		->setCellValue('H2', 'Pick')
-		->setCellValue('I2', 'Net Balance');
+		->setCellValue('D2', 'Balance');
 	
 		
 	$sql = "SELECT prd.`id`, prd.`code`, prd.`catCode`, prd.`name`, prd.`name2`, prd.`uomCode`, prd.`packUomCode`
 	, prd.`sourceTypeCode`, prd.`appCode`, prd.`description`, prd.`statusCode`
 	,sb.sloc, sb.`open`, sb.`produce`, sb.`onway`, sb.`receive`, sb.`send`, sb.`sales`, sb.`delivery`, sb.`balance`
-	,IFNULL((SELECT SUM(pDtl.qty) FROM picking pHdr, picking_detail pDtl WHERE pHdr.isFinish='N' AND pDtl.prodId=sb.prodId),0) as pick 
+	,IFNULL((SELECT SUM(pDtl.qty) FROM picking pHdr, picking_detail pDtl WHERE pHdr.pickNo=pDtl.pickNo AND pHdr.isFinish='N'  AND pHdr.statusCode<>'X' AND pDtl.prodId=sb.prodId),0) as pick 
 	FROM stk_bal sb 
 	INNER JOIN product prd on prd.id=sb.prodId  ";
 	if($prodCode<>""){ $sql .= " AND prd.code like '%".$prodCode."%' ";	}
 	$sql.="
 	WHERE 1 ";
 	if($search_word<>""){ $sql = "and (prd.code like '%".$search_word."%' OR prd.name like '%".$search_word."%') "; }
-	if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}
+	if($sloc<>""){ $sql .= " AND sb.sloc='$sloc' ";	}else{ $sql .= " AND sb.sloc IN ('8','E') "; }		
 	if($catCode<>""){ $sql .= " AND catCode='$catCode' ";	}	
 	if($prodId<>""){ $sql .= " AND prodId=$prodId ";	}	
-	$sql.="ORDER BY prd.code desc ";
+	$sql.="ORDER BY prd.code ";
 	$result = mysqli_query($link, $sql);    
 	
 	$iRow=3; while($row = mysqli_fetch_assoc($result) ){
@@ -75,12 +72,7 @@ if($countTotal>0){
 		->setCellValue('A'.$iRow, $row['code'])
 		->setCellValue('B'.$iRow, $row['sloc'])
 		->setCellValue('C'.$iRow, $row['catCode'])
-		->setCellValue('D'.$iRow, $row['onway'])
-		->setCellValue('E'.$iRow, $row['send'])
-		->setCellValue('F'.$iRow, $row['delivery'])
-		->setCellValue('G'.$iRow, $row['balance'])
-		->setCellValue('H'.$iRow, $row['pick'])
-		->setCellValue('I'.$iRow, $row['balance']-$row['pick']);
+		->setCellValue('D'.$iRow, $row['balance']);
 		$iRow+=1;
 	}
 }

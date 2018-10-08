@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <!--
 This is a starter template page. Use this page to start your new project from
@@ -36,7 +35,7 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
 	<section class="content-header">
-		<h1><i class="fa fa-industrye"></i>
+		<h1><i class="fa fa-industry"></i>
        Product Category
         <small>Product Category management</small>
       </h1>

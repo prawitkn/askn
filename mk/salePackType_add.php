@@ -63,13 +63,7 @@ switch($s_userGroupCode){
                 <form id="form1" action="userGroup_add_ajax.php" method="post" class="form" validate >
 				<input type="hidden" name="action" value="add" />	
 				<div class="row">
-					<div class="col-md-3">					
-	                    <div class="form-group">
-	                        <label for="code">Sale Package Type Code</label>
-	                        <input id="code" type="text" class="form-control" name="code" data-smk-msg="Require user group code."required>
-	                    </div>
-					</div>
-					<!--/.col-md-->
+					
 
 					<div class="col-md-6">
 						<div class="form-group">

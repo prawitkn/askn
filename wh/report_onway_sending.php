@@ -49,7 +49,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	//if($dateFrom<>""){ $dateFromYmd = date('Y-m-d', strtotime($dateFrom));	}
 	//if($dateTo<>""){ $dateToYmd =  date('Y-m-d', strtotime($dateTo));	}
 ?>    
+ 
+</head>
+<body class="hold-transition skin-green sidebar-mini">
 
+
+	
+  
 <div class="wrapper">
   <!-- Main Header -->
   <?php include 'header.php'; 
@@ -151,7 +157,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 						<label for="dateTo">Date To : </label>
 						<input type="text" id="dateTo" name="dateTo" value="" class="form-control datepicker" data-smk-msg="Require To Date." required >
-
+						<br/>
 						<label>From : </label>
 					<select name="fromCode" class="form-control">
 						<option value="" <?php echo ($fromCode==""?'selected':''); ?> >--All--</option>

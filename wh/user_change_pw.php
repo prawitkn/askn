@@ -1,32 +1,29 @@
+<?php
+	include 'inc_helper.php'; 
+?>
 <!DOCTYPE html>
 <!--
 This is a starter template page. Use this page to start your new project from
 scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
-<?php include 'head.php'; ?>
-
+<?php 
+	include 'head.php'; 
+?>
+ 
 </head>
 <body class="hold-transition skin-green sidebar-mini">
 
 
 	
-
+  
 <div class="wrapper">
 
   <!-- Main Header -->
-<?php include 'header.php'; 
-$rootPage = 'shelf_y';
-
-//Check user roll.
-switch($s_userGroupCode){
-	case 'it' : case 'admin' :
-		break;
-	default : 
-		header('Location: access_denied.php');
-		exit();
-}
-?>
+  <?php include 'header.php'; 
+	
+	$rootPage = 'user';
+	?>
   
   <!-- Left side column. contains the logo and sidebar -->
    <?php include 'leftside.php'; ?>
@@ -35,13 +32,13 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-      <h1><i class="glyphicon glyphicon-vertical"></i>
-       Shelf Row
-        <small>Shelf Row management</small>
+      <h1><i class="glyphicon glyphicon-user"></i>
+       User
+        <small>User management</small>
       </h1>
 	  <ol class="breadcrumb">
-        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Shelf Row List</a></li>
-		<li><a href="#"><i class="glyphicon glyphicon-edit"></i>Shelf Row</a></li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>User List</a></li>
+		<li><a href="#"><i class="glyphicon glyphicon-edit"></i>User</a></li>
       </ol>
     </section>
 
@@ -49,9 +46,9 @@ switch($s_userGroupCode){
     <section class="content">
 
       <!-- Your Page Content Here -->
-    <div class="box box-primary">
+	<div class="box box-primary">
         <div class="box-header with-border">
-        <h3 class="box-title">Add Shelf Row</h3>
+        <h3 class="box-title">Change Password</h3>
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
@@ -60,22 +57,19 @@ switch($s_userGroupCode){
         </div><!-- /.box-header -->
         <div class="box-body">            
             <div class="row">                
-                    <form id="form1" method="post" class="form" validate><!--enctype="multipart/form-data" -->
-					<input type="hidden" name="action" value="add" />			
+                    <form id="form1" method="post" class="form" validate>
 					<div class="col-md-6">	
-						<div class="form-group">
-                            <label for="code" >Code</label>
-                            <input type="text" id="code" name="code" class="form-control" data-smk-msg="Require code" required>
+						<input id="userId" type="hidden" name="userId" value="<?=$s_userId;?>" />
+						<input id="oldPassword" type="hidden" name="oldPassword" value="" />
+                        <div class="form-group">
+                            <label for="newPassword">New Password</label>
+                            <input id="newPassword" type="password" class="form-control" name="newPassword" >							
                         </div>
 						<div class="form-group">
-                            <label for="name" >name</label>
-                            <input type="text" id="name" name="name" class="form-control" data-smk-msg="Require name" required>
+                            <label for="confirmPassword">Confirm Password</label>
+                            <input id="confirmPassword" type="password" class="form-control" name="confirmPassword" >							
                         </div>
-						<button id="btn1" type="submit" class="btn btn-default">Submit</button>
-					</div>
-					<!--/.col-md-->
-					<div class="col-md-6">
-						                        
+                        <button id="btn_submit" type="submit" class="btn btn-default">Submit</button>
 					</div>
 					<!--/.col-md-->
                     </form>
@@ -83,28 +77,20 @@ switch($s_userGroupCode){
                 <!--/.row-->       
             </div>
 			<!--.body-->    
-  <div class="box-footer">
-  
-    <!--The footer of the box -->
-  </div><!-- box-footer -->
-</div><!-- /.box -->
+    </div>
+	<!-- /.box box-primary -->
+	
 
-<div id="spin"></div>
+	</section>
+	<!--sec.content-->
+	
+	</div>
+	<!--content-wrapper-->
 
-    </section>
-    <!-- /.content -->
-  </div>
-  <!-- /.content-wrapper -->
-
-  <!-- Main Footer -->
-  <?php include'footer.php'; ?>
-  
-  
 </div>
-<!-- ./wrapper -->
+<!--warpper-->
 
 <!-- REQUIRED JS SCRIPTS -->
-
 <!-- jQuery 2.2.3 -->
 <script src="plugins/jQuery/jquery-2.2.3.min.js"></script>
 <!-- Bootstrap 3.3.6 -->
@@ -117,38 +103,33 @@ switch($s_userGroupCode){
 <!-- Add Spinner feature -->
 <script src="bootstrap/js/spin.min.js"></script>
 
+
+
 <script> 
-  // to start and stop spiner.  
-$( document ).ajaxStart(function() {
-	$("#spin").show();
-}).ajaxStop(function() {
-	$("#spin").hide();
-});
-//   
-
 $(document).ready(function() {
-	$("#code").focus();
-
-	var spinner = new Spinner().spin();
-	$("#spin").append(spinner.el);
-	$("#spin").hide();
-//           
+//	$("#userFullname").focus();
+          
 	$('#form1').on("submit", function(e) {
-		if ($('#form1').smkValidate()) {
+		if($('#newPassword').val() != $('#confirmPassword').val()){
+			alert('New password not match confirm password');
+			return false;
+		}
+		if ($('#form1').smkValidate()) {			
 			$.ajax({
-			url: '<?=$rootPage;?>_ajax.php',
+			url: '<?=$rootPage;?>_change_pw_ajax.php',
 			type: 'POST',
 			data: new FormData( this ),
 			processData: false,
 			contentType: false,
 			dataType: 'json'
-			}).done(function (data) {
+			}).done(function (data) { //alert(data);
 				if (data.success){  
 					$.smkAlert({
 						text: data.message,
 						type: 'success',
 						position:'top-center'
 					});
+					window.location.href = "logout.php";
 				}else{
 					$.smkAlert({
 						text: data.message,
@@ -156,11 +137,10 @@ $(document).ready(function() {
 						position:'top-center'
 					});
 				}
-				$('#form1')[0].reset();
-				$("#code").focus(); 
-			})
-			.error(function (response) {
-				  alert(response.responseText);
+				alert('Success');
+				window.location.href = "<?=$rootPage;?>.php";
+			}).error(function (response) {
+				alert(response.responseText);
 			});  
 			//.ajax		
 			e.preventDefault();
@@ -173,12 +153,9 @@ $(document).ready(function() {
 //doc ready
 </script>
 
-<!-- Optionally, you can add Slimscroll and FastClick plugins.
-     Both of these plugins are recommended to enhance the
-     user experience. Slimscroll is required when using the
-     fixed layout. -->
-	  
-	 
-	
+
+
+
+
 </body>
 </html>

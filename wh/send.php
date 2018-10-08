@@ -17,6 +17,12 @@ $rootPage="send";
 $tb="send";
 ?>
 
+</head>
+<body class="hold-transition skin-green sidebar-mini">
+
+
+	
+
 <div class="wrapper">
 
   <!-- Main Header -->

@@ -63,11 +63,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						<input id="oldPassword" type="hidden" name="oldPassword" value="" />
                         <div class="form-group">
                             <label for="newPassword">New Password</label>
-                            <input id="newPassword" type="text" class="form-control" name="newPassword" >							
+                            <input id="newPassword" type="password" class="form-control" name="newPassword" >							
                         </div>
 						<div class="form-group">
                             <label for="confirmPassword">Confirm Password</label>
-                            <input id="confirmPassword" type="text" class="form-control" name="confirmPassword" >							
+                            <input id="confirmPassword" type="password" class="form-control" name="confirmPassword" >							
                         </div>
                         <button id="btn_submit" type="submit" class="btn btn-default">Submit</button>
 					</div>
@@ -122,7 +122,7 @@ $(document).ready(function() {
 			processData: false,
 			contentType: false,
 			dataType: 'json'
-			}).done(function (data) { alert(data);
+			}).done(function (data) { //alert(data);
 				if (data.success){  
 					$.smkAlert({
 						text: data.message,

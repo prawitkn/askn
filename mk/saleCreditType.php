@@ -51,8 +51,8 @@ switch($s_userGroupCode){
 <!-- To allow only admin to access the content -->      
     <div class="box box-primary">
         <div class="box-header with-border">
-		<label class="box-title">Sale Price Type List</label>
-			<a href="<?=$rootPage;?>_add.php?id=" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add Sale Price Type</a>
+		<label class="box-title">Sale Credit Type List</label>
+			<a href="<?=$rootPage;?>_add.php?id=" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add Sale Credit Type</a>
 		
 		
         <div class="box-tools pull-right">
@@ -93,7 +93,7 @@ switch($s_userGroupCode){
 				<div class="col-md-6">					
 					<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
 						<div class="form-group">
-							<label for="search_word">Sale Price Type name search key word.</label>
+							<label for="search_word">Sale Credit Type name search key word.</label>
 							<div class="input-group">
 								<input id="search_word" type="text" class="form-control" name="search_word" data-smk-msg="Require userFullname."required>
 								<span class="input-group-addon">
@@ -135,7 +135,6 @@ switch($s_userGroupCode){
                 <tr>
 					<th>Seq No.</th>
 					<th>ID</th>
-					<th>Code</th>
 					<th>Name</th>
                     <th>Status</th>
                     <th>#</th>
@@ -150,9 +149,6 @@ switch($s_userGroupCode){
                     </td>
 					 <td>
                          <?= $row['id']; ?>
-                    </td>
-                    <td>
-                         <?= $row['code']; ?>
                     </td>
                     <td>
                          <?= $row['name']; ?>

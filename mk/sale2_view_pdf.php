@@ -364,7 +364,7 @@ if( isset($_GET['soNo']) ){
 			LEFT JOIN product_roll_length rl ON rl.id=a.rollLengthId 
 			WHERE 1
 			AND a.`soNo`=:soNo 
-			ORDER BY a.createTime
+			ORDER BY a.id, a.createTime
 			";
 			$stmt = $pdo->prepare($sql);	
 			$stmt->bindParam(':soNo', $hdr['soNo']);

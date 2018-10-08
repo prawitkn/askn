@@ -67,12 +67,12 @@
 			<li><a href="trans_send_sync.php"><i class="glyphicon glyphicon-transfer"></i> <span>Sync Data</span></a></li>
 			<li><a href="send2.php"><i class="glyphicon glyphicon-arrow-up"></i> <span>Send</span></a></li>
 			<li><a href="receive.php"><i class="glyphicon glyphicon-arrow-down"></i> <span>Sending Receive</span></a></li>
-			<li><a href="send.php"><i class="glyphicon glyphicon-eject"></i> <span>Send (Ad hoc)</span></a></li>
+			<li><a href="send.php"><i class="glyphicon glyphicon-eject"></i> <span>Send (Warehouse)</span></a></li>
 			<li><a href="rt.php"><i class="glyphicon glyphicon-arrow-left"></i> <span>Return</span></a></li>
 			
 			<?php switch($s_userGroupCode){ case 'whOff' : case 'whSup' : case 'whMgr' : break; //Not Show ?>
 			<?php default : ?>				
-				<li><a href="rtrc.php"><i class="glyphicon glyphicon-retweet"></i> <span>Return Receive</span></a></li>
+				<!--<li><a href="rtrc.php"><i class="glyphicon glyphicon-retweet"></i> <span>Return Receive</span></a></li>-->
 			<?php } ?>		
 			
 			<!--<li><a href="wip.php"><i class="glyphicon glyphicon-hourglass"></i> <span>Work In Process</span></a></li-->
@@ -100,12 +100,15 @@
 			<!--<li><a href="report_send_by_prod.php"><i class="fa fa-list-alt"></i> <span>Sending by Prod. Report</span></a></li>-->
 			<li><a href="report_onway_sending.php"><i class="fa fa-list-alt"></i> <span>Unreceived Sending Report</span></a></li>
 			<li><a href="report_receiving.php"><i class="fa fa-list-alt"></i> <span>Receiving Report</span></a></li>
-			<?php switch($s_userGroupCode){ case 'admin' : case 'whOff' : case 'whSup' : ?>
+			<?php switch($s_userGroupCode){ case 'admin' : case 'whOff' : case 'whSup' : case 'pdSup' : case 'pdMgr' : case 'whMgr' : ?>
 			<li><a href="report_delivery2.php"><i class="fa fa-list-alt"></i> <span>Delivery Report</span></a></li>
 			<?php  } ?>	
 
 		<?php break; } ?>		
 
+		<li class="header">Setting Menu</li>		
+			<!-- Optionally, you can add icons to the links -->
+			<li><a href="user_change_pw.php"><i class="glyphicon glyphicon-wrench"></i> <span> Change Password</span></a></li>   
 
 		<?php switch($s_userGroupCode){ case 'admin' :  ?>	
 		<li class="header">Config Menu</li>		

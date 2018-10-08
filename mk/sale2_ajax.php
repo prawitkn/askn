@@ -222,7 +222,7 @@
 					LEFT JOIN product_roll_length rl ON rl.id=a.rollLengthId 
 					WHERE 1 
 					AND a.`soNo`=:soNo 
-					ORDER BY prodCode, a.createTime ASC";
+					ORDER BY a.id, prodCode, a.createTime ASC";
 					$stmt = $pdo->prepare($sql);
 					$stmt->bindParam(':soNo', $soNo);	
 					$stmt->execute();
@@ -254,7 +254,7 @@
 					LEFT JOIN product_roll_length rl ON rl.id=a.rollLengthId 
 					WHERE 1 
 					AND a.`id`=:id 
-					ORDER BY a.createTime ASC";
+					ORDER BY  a.id, a.createTime ASC";
 					$stmt = $pdo->prepare($sql);
 					$stmt->bindParam(':id', $id);	
 					$stmt->execute();

@@ -1,4 +1,4 @@
-<?php include 'inc_helper.php'; ?>      
+ 
 <!DOCTYPE html>
 <!--
 This is a starter template page. Use this page to start your new project from
@@ -7,7 +7,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <html>
 <?php include 'head.php'; ?>  
 
-<body class="hold-transition skin-blue sidebar-mini">
+</head>
+<body class="hold-transition skin-green sidebar-mini">
+
+
+	
+
 <div class="wrapper">
   <!-- Main Header -->
   <?php include 'header.php'; ?>  
@@ -33,6 +38,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		
 	<?php				
 		$id = $_GET['id'];
+		$sloc = ( isset($_GET['sloc']) ? $_GET['sloc'] : '' );
+
 		$sql = "SELECT `code`, `name`, `name2`, `photo`, `price`, `description`, `appCode`, `statusCode` 
 				FROM `product` 
 				WHERE 1
@@ -71,79 +78,63 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <!-- /.box-header -->
             <div class="box-body">
               <div class="row">
-				<div class="col-md-6">
-					<div class="col-md-6" style="text-align: center;">
+				<div class="col-md-3">
+					<div class="col-md-12" style="text-align: center;">
 						
 						<a href="../images/product/<?php echo (empty($row['photo'])? 'default.jpg' : $row['photo']) ?> " data-fancybox="images" data-caption="<?=$row['code'];?>">
 							<image src="../images/product/<?php echo (empty($row['photo'])? 'default.jpg' : $row['photo']) ?> " width="200" height="200" />
 						</a>
 					</div>				
-	                <div class="col-md-6">
+	                <div class="col-md-12">
 						<label>Product Name : </label>
 						<?= $row['name']; ?><br/>
 						<label>Description : </label>
-						<?= $row['description']; ?><br/>
-						
-						<?php				
-							$sql = "SELECT `prodId`, `open`, `receive`, `sales`, `delivery`, sum(`balance`) as balance, uomCode
-							FROM `stk_bal` 
-							INNER JOIN product on product.id=stk_bal.prodId
-							WHERE 1
-							AND prodId=:id 
-							";
-							if(ISSET($_GET['sloc'])){ $sql.="AND sloc=:sloc "; }else{ $sql.="AND sloc IN ('8','E') "; }
-							$sql.="GROUP BY `prodId`,  uomCode ";
-							$stmt = $pdo->prepare($sql);
-							$stmt->bindParam(':id', $id);
-							if(ISSET($_GET['sloc'])){ $stmt->bindParam(':sloc', $_GET['sloc']); }
-							$stmt->execute();
-							$row = $stmt->fetch();
-						?>
-						<label>Total Stock Balance</label>
-						<?php if($row['sales']>0) { ?>
-							<h3 style="color: blue;"><?php echo number_format($row['balance'],0,'.',',').' (-'.$row['sales'].') '.' '.$row['uomCode']; ?></h3> <br/>
-						<?php }else{ ?>
-						<h3 style="color: blue;"><?= number_format($row['balance'],0,'.',',').' '.$row['uomCode']; ?></h3> <br/>
-						<?php } ?>
-						
+						<?= $row['description']; ?><br/>						
 	                </div><!-- /.col-10 -->
 	         	</div>
 	         	<!--/.col-md-8-->
 
-				<div class="col-md-6">
+				<div class="col-md-9">
 					<h3>Avalible Stock by Length/Box/KG</h3>
 					<?php									
-						$sql = "SELECT hdr.toCode as sloc, itm.prodCodeId as prodId
-						, itm.qty, itm.grade, itm.gradeTypeId, pgt.name as gradeTypeName 
+						$sql = "select itm.prodCodeId as prodId, itm.qty, itm.grade, itm.gradeTypeId, itm.remarkWh 
+,rh.toCode as sloc 
+                        , pgt.name as gradeTypeName 
 						, sum(itm.qty) as sumQty
-						FROM  `receive_detail` dtl 
-						INNER JOIN receive hdr ON hdr.rcNo=dtl.rcNo
-						INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId AND itm.prodCodeId=:id 
-						LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId 
-						WHERE 1
-						AND dtl.statusCode='A' 
-						GROUP BY hdr.toCode, itm.prodCodeId , itm.qty, itm.grade, itm.gradeTypeId
+from product prd
+INNER JOIN product_item itm ON itm.prodCodeId=prd.id 
+INNER JOIN receive_detail rd ON rd.prodItemId=itm.prodItemId AND rd.statusCode='A' 
+INNER JOIN receive rh ON rh.rcNo=rd.rcNo ";
+	if ( $sloc=="" ) { $sql.= "AND rh.toCode IN ('8','E') "; }else{ $sql .= "AND rh.toCode=:sloc "; }
+$sql .= "LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId 
+WHERE prd.id=:id 
+GROUP BY itm.prodCodeId , itm.qty, itm.grade, itm.gradeTypeId, itm.remarkWh , rh.toCode
+ORDER BY rh.toCode, itm.gradeTypeId, itm.remarkWh
 						";
-						if(ISSET($_GET['sloc'])){ $sql.="AND hdr.toCode=:sloc "; }
 						$stmt = $pdo->prepare($sql);
 						$stmt->bindParam(':id', $id);
+						if ( $sloc=="" ){ 
+							//donothing 
+						}else{ 
+							$stmt->bindParam(':sloc', $sloc ); 
+						}
 						
-						if(ISSET($_GET['sloc'])){ $stmt->bindParam(':sloc', $_GET['sloc']); }
 						$stmt->execute();
 							?>
 			              <div class="table-responsive">
 			                <table class="table no-margin">
-			                  <thead>
-			                    <th style="text-align: center;">Location</th>
+			                  <thead>			                  	
+			                    <th style="text-align: right;">SLOC</th>
 			                    <th style="text-align: center;">Length/Pieces/KG</th>
 			                    <th style="text-align: right;">Grade</th>
 			                    <th style="text-align: right;">Grade Type</th>
+			                    <th style="text-align: right;">WH Remark</th>
 			                    <th style="text-align: right;">Qty</th>
 								<th style="text-align: right;">Qty Total</th>
 			                  </tr>
 			                  </thead>
 			                  <tbody>
-							  <?php $row_no = 1; while ($row = $stmt->fetch()) { 
+							  <?php $row_no = 1; $sumQtyTotal=0; while ($row = $stmt->fetch()) { 
 							  	$gradeName = '<b style="color: red;">N/A</b>'; 
 								switch($row['grade']){
 									case 0 : $gradeName = 'A'; break;
@@ -153,16 +144,23 @@ scratch. This page gets rid of all links and provides the needed markup only.
 										$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
 								} 
 								?>
-			                  <tr>
+			                  <tr>			                  	
 								<td style="text-align: center;"><?= $row['sloc']; ?></td>
-								<td style="text-align: center;"><?= number_format($row['qty'],0,'.',','); ?></td>
+								<td style="text-align: center;"><?= number_format($row['qty'],2,'.',','); ?></td>
 								<td style="text-align: center;"><?= $gradeName; ?></td>
 								<td style="text-align: center;"><?= $row['gradeTypeName']; ?></td>
-								<td style="text-align: right;"><?= number_format($row['sumQty']/$row['qty'],0,'.',','); ?></td>
-								<td style="text-align: right;"><?= number_format($row['sumQty'],0,'.',','); ?></td>
+								<td style="text-align: center;"><?= $row['remarkWh']; ?></td>
+								<td style="text-align: right;"><?= number_format($row['sumQty']/$row['qty'],2,'.',','); ?></td>
+								<td style="text-align: right;"><?= number_format($row['sumQty'],2,'.',','); ?></td>
 			                </tr>
-			                <?php $row_no+=1; } ?>
+			                <?php $row_no+=1; $sumQtyTotal+=$row['sumQty']; } ?>
 			                  </tbody>
+			                  <tfoot>
+			                  	<tr>
+			                  		<td colspan="6" style="text-align: center; font-weight: bold;">Total</td>
+			                  		<td style="text-align: right; font-weight: bold;"><?= number_format($sumQtyTotal,2,'.',','); ?></td>
+			                  	</tr>
+			                  </tfoot>
 			                </table>
 			              </div>
 			              <!-- /.table-responsive -->

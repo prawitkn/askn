@@ -85,14 +85,6 @@ $row=$stmt->fetch();
 						<input id="id" type="hidden" name="id" value="<?=$row['id'];?>" />		
 
 					<div class="row">
-						<div class="col-md-3">					
-		                    <div class="form-group">
-		                        <label for="code">Sale Price Type Code</label>
-		                        <input id="code" type="text" class="form-control" name="code" value="<?=$row['code'];?>"  data-smk-msg="Require user group code."required>
-		                    </div>
-						</div>
-						<!--/.col-md-->
-
 						<div class="col-md-6">
 							<div class="form-group">
 		                        <label for="name">Sale Price Type Name</label>

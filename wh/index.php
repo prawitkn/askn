@@ -29,7 +29,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	}
 	//$tomorrow=date('Y-m-d', strtotime("+1 day"));
 ?>
+ 
+</head>
+<body class="hold-transition skin-green sidebar-mini">
 
+
+	
+  
 
 <div class="wrapper">
 
@@ -302,7 +308,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				   <?php while ($row = $stmt->fetch()) { 
 					?>
                   <tr>
-                    <td><a href="sale_view.php?soNo=<?=$row['soNo'];?>"  target="_blank" ><?= $row['soNo']; ?></a></td>
+                    <td><a href="sale2_view.php?soNo=<?=$row['soNo'];?>"  target="_blank" ><?= $row['soNo']; ?></a></td>
 					<td><?= $row['saleDate']; ?></td>
 					<td><a href="deliver_add.php?doNo=&soNo=<?=$row['soNo'];?>" >...</a></td>
                 </tr>
@@ -792,7 +798,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						 <?= $row_code; ?>
 					</td>
 					<td>
-						 <a target="_blank" href="sale_view.php?soNo=<?= $row['soNo'];?>" ><?= $row['soNo']; ?></a>
+						 <a target="_blank" href="sale2_view.php?soNo=<?= $row['soNo'];?>" ><?= $row['soNo']; ?></a>
 					</td>
 					<td>
 						 <?= substr($row['deliveryDate'],0,10); ?>
@@ -863,7 +869,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							 <a target="_blank" href="prepare_view.php?ppNo=<?= $row['ppNo'];?>" ><?= $row['ppNo']; ?></a>
 						</td>
 						<td>
-							 <a target="_blank" href="sale_view.php?soNo=<?= $row['soNo'];?>" ><?= $row['soNo']; ?></a>
+							 <a target="_blank" href="sale2_view.php?soNo=<?= $row['soNo'];?>" ><?= $row['soNo']; ?></a>
 						</td>
 						<td>
 							<a href="delivery_add.php?ppNo=<?=$row['ppNo'];?>" class="btn btn-primary">
