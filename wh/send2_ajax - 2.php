@@ -103,10 +103,6 @@ if(!isset($_POST['action'])){
 					, IFNULL((SELECT sHdr.sdNo FROM send sHdr
 												INNER JOIN send_detail sDtl ON sDtl.sdNo=sHdr.sdNo
 												WHERE sHdr.statusCode IN ('C','P') AND sDtl.prodItemId=itm.prodItemId LIMIT 1),'') as sentNo
-					, IFNULL((SELECT sHdr.rcNo FROM receive sHdr
-												INNER JOIN receive_detail sDtl ON sDtl.rcNo=sHdr.rcNo
-												WHERE sHdr.statusCode = 'P' AND sDtl.prodItemId=itm.prodItemId 
-												AND sDtl.statusCode IN ('A','X') LIMIT 1),'') as recvNo
 					, IFNULL((SELECT 1 FROM send sHdr
 												INNER JOIN send_detail sDtl ON sDtl.sdNo=sHdr.sdNo
 												WHERE sHdr.sdNo=:sdNo  AND sDtl.prodItemId=itm.prodItemId LIMIT 1),0) as isSelected 

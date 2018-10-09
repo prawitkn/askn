@@ -13,18 +13,20 @@
 				$code = trim($_POST['code']);
 				$catCode = $_POST['catCode'];
 				$name = trim($_POST['name']);
-				$name2 = trim($_POST['name2']);
+				$name2 = ""; //trim($_POST['name2']);
 				$uomCode = trim($_POST['uomCode']);
 				$sourceTypeCode = $_POST['sourceTypeCode']; 
 				$appCode = $_POST['appCode'];
-				$price = $_POST['price'];
+				$price = 0; // $_POST['price'];
 				$appCode = $_POST['appCode'];
 				$description = $_POST['description'];	
 				$statusCode = (isset($_POST['statusCode'])? 'A' : 'I' );
 				
 				$curPhoto = $_POST['curPhoto'];
+				$curPdf = $_POST['curPdf'];
 					
 				$new_picture_name=$curPhoto;
+				$new_pdf_name=$curPdf;
 				 
 				 //Check Duplicate
 				 $sql = "SELECT * FROM `product` WHERE `code`=:code LIMIT 1 ";     
@@ -45,23 +47,33 @@
 					$path_upload = "../images/product/".$new_picture_name;
 					move_uploaded_file($_FILES['inputFile']['tmp_name'], $path_upload);        
 				}
+
+				if (is_uploaded_file($_FILES['inputFile2']['tmp_name'])){
+					// If the old picture already exists, delete it
+					//if (file_exists('../images/product/'.$curPhoto)) unlink('../images/product/'.$curPhoto);
+				
+					$new_pdf_name = 'prod_'.uniqid().".".pathinfo(basename($_FILES['inputFile2']['name']), PATHINFO_EXTENSION);
+					$path_upload = "../pdf/product/".$new_pdf_name;
+					move_uploaded_file($_FILES['inputFile2']['tmp_name'], $path_upload);        
+				}
 					
-				$sql = "INSERT INTO `product`(`code`, `catCode`, `name`, `name2`, `uomCode`
-				, `sourceTypeCode`, `appCode`, `photo`, `price`, `description`, `statusCode`, `createTime`, `createById`)  
+				$sql = "INSERT INTO `product`(`code`, `catCode`, `name`, `uomCode`
+				, `sourceTypeCode`, `appCode`, `photo`, `specFile`, `description`, `statusCode`, `createTime`, `createById`)  
 				VALUES (	
-				:code,:catCode,:name,:name2,:uomCode,:sourceTypeCode,:appCode,:photo,:price,:description
+				:code,:catCode,:name,:uomCode,:sourceTypeCode,:appCode,:photo,:specFile,:description
 				,:statusCode, now(), :s_userId  
 				)";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':code', $code); 
 				$stmt->bindParam(':catCode', $catCode); 
 				$stmt->bindParam(':name', $name); 
-				$stmt->bindParam(':name2', $name2); 
+				//$stmt->bindParam(':name2', $name2); 
 				$stmt->bindParam(':uomCode', $uomCode); 
 				$stmt->bindParam(':sourceTypeCode', $sourceTypeCode); 
 				$stmt->bindParam(':appCode', $appCode); 
 				$stmt->bindParam(':photo', $new_picture_name); 
-				$stmt->bindParam(':price', $price); 
+				$stmt->bindParam(':specFile', $new_pdf_name); 
+				//$stmt->bindParam(':price', $price); 
 				$stmt->bindParam(':description', $description); 
 				$stmt->bindParam(':statusCode', $statusCode); 
 				$stmt->bindParam(':s_userId', $s_userId);
@@ -84,19 +96,20 @@
 					$code = $_POST['code'];
 					$catCode = $_POST['catCode'];
 					$name = $_POST['name'];
-					$name2 = $_POST['name2'];
+					$name2 = ""; // $_POST['name2'];
 					$uomCode = $_POST['uomCode'];
 					$sourceTypeCode = $_POST['sourceTypeCode']; 
 					$appCode = $_POST['appCode'];
-					$price = $_POST['price'];
+					$price = 0; //$_POST['price'];
 					$appCode = $_POST['appCode'];
 					$description = $_POST['description'];	
 					$statusCode = (isset($_POST['statusCode'])? 'A' : 'I' );
 					
-					
 					$curPhoto = $_POST['curPhoto'];
+					$curPdf = $_POST['curPdf'];
 						
 					$new_picture_name=$curPhoto;
+					$new_pdf_name=$curPdf;
 					 
 					
 					/*$fileName = $_FILES['inputFile']['name'];
@@ -119,18 +132,28 @@
 						move_uploaded_file($_FILES['inputFile']['tmp_name'], $path_upload);        
 					}
 					
+
+					if (is_uploaded_file($_FILES['inputFile2']['tmp_name'])){
+						// If the old picture already exists, delete it
+						if (file_exists('../pdf/product/'.$curPdf)) unlink('../pdf/product/'.$curPdf);
+					
+						$new_pdf_name = 'prod_'.uniqid().".".pathinfo(basename($_FILES['inputFile2']['name']), PATHINFO_EXTENSION);
+						$path_upload = "../pdf/product/".$new_pdf_name;
+						move_uploaded_file($_FILES['inputFile2']['tmp_name'], $path_upload);        
+					}
+
+
 				//`id`, `code`, `catCode`, `name`, `name2`, `uomCode`, `ratioPack`, `packUomCode`
 				//, `sourceTypeCode`, `appCode`, `isFg`, `isWip`, `photo`, `price`, `description`, `statusCode`
 
 					$sql = "UPDATE `product` SET `code`=:code
 					, `catCode`=:catCode
 					, `name`=:name
-					, `name2`=:name2
 					, `uomCode`=:uomCode
 					, `sourceTypeCode`=:sourceTypeCode
 					, `appCode`=:appCode
 					, `photo`=:new_picture_name
-					, `price`=:price
+					, `specFile`=:new_pdf_name
 					, `description`=:description
 					, `statusCode`=:statusCode
 					WHERE id=:id
@@ -139,12 +162,11 @@
 					$stmt->bindParam(':code', $code);
 					$stmt->bindParam(':catCode', $catCode);
 					$stmt->bindParam(':name', $name);
-					$stmt->bindParam(':name2', $name2);
 					$stmt->bindParam(':uomCode', $uomCode);
 					$stmt->bindParam(':sourceTypeCode', $sourceTypeCode);
 					$stmt->bindParam(':appCode', $appCode);
 					$stmt->bindParam(':new_picture_name', $new_picture_name);
-					$stmt->bindParam(':price', $price);
+					$stmt->bindParam(':new_pdf_name', $new_pdf_name);
 					$stmt->bindParam(':description', $description);
 					$stmt->bindParam(':statusCode', $statusCode);
 					$stmt->bindParam(':id', $id);

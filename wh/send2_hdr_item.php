@@ -333,13 +333,19 @@ $(document).ready(function() {
 									$('#selItmId').append('<option value="'+value.sendId+'">'+value.sendId+'</option>');
 								}
 								prevSendId=value.sendId;								
-								
+
 								if(value.sentNo==""){
 									var isSelected=value.isSelected;
 									if(isSelected==1){ isSelected=' checked="checked" '; }
 									tmpNo=rowNo+':'+'<input type="checkbox" name="itmId[]" class="itmId" value="'+value.sendId+','+value.productItemId+'" '+isSelected+'  />';
 								}else{
-									tmpNo=rowNo+':'+'<label class="label label-danger" >'+value.sentNo+'</label>';
+									if(value.recvNo==""){
+										var isSelected=value.isSelected;
+										if(isSelected==1){ isSelected=' checked="checked" '; }
+										tmpNo=rowNo+':'+'<input type="checkbox" name="itmId[]" class="itmId" value="'+value.sendId+','+value.productItemId+'" '+isSelected+'  />';
+									}else{
+										tmpNo=rowNo+':'+'<label class="label label-danger" >'+value.sentNo+'</label>';
+									}									
 								} //alert(tmpNo);
 								$('#tbl_items tbody').append(
 								'<tr style="background-color: '+rowColor+'" >' +	

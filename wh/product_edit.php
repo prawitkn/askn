@@ -50,12 +50,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		
         <div class="box-body">
            <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-8">
                     <form id="form1" action="#" method="post" class="form" validate>
 						<input type="hidden" name="action" value="edit" />
 						<?php							
-							$sql = "SELECT  `id`, `code`, `catCode`, `name`, `name2`, `uomCode`, `ratioPack`, `packUomCode`
-							, `sourceTypeCode`, `appCode`, `isFg`, `isWip`, `photo`, `price`, `description`, `statusCode`
+							$sql = "SELECT  `id`, `code`, `catCode`, `name`, `uomCode`, `ratioPack`, `packUomCode`
+							, `sourceTypeCode`, `appCode`, `isFg`, `isWip`, `photo`, `specFile`, `description`, `statusCode`
 									FROM product a
 									WHERE 1
 									AND a.id=".$_GET['id']."
@@ -80,36 +80,22 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						<div class="row col-md-12">
 							<div class="form-group col-md-6">
                             <label for="code">Code</label>                            
-							<div class="input-group">
-								<input id="code" type="text" class="form-control" name="code" value="<?= $row['code']; ?>" data-smk-msg="Require Group" required>							
-							</div>
+							<input id="code" type="text" class="form-control" name="code" value="<?= $row['code']; ?>" data-smk-msg="Require Group" required>	
+                        	</div>
+
+                        	<div class="form-group col-md-6">
+                            <label for="name">Name</label>                            
+							<input id="name" type="text" class="form-control" name="name" value="<?= $row['name']; ?>" data-smk-msg="Require Name" required>	
                         	</div>
 						</div>
+
 						<div class="row col-md-12">
-							<div class="form-group col-md-6">
+							<div class="form-group col-md-4">
                             <label for="uomCode">UOM</label>                            
 							<input id="uomCode" type="text" class="form-control" name="uomCode" value="<?= $row['uomCode']; ?>" data-smk-msg="Require Zipcode" required>							
                         	</div>
-						</div>
-						<div class="row col-md-12">
-							<div class="form-group col-md-6">
-                            <label for="name">Name</label>                            
-							<div class="input-group">
-								<input id="name" type="text" class="form-control" name="name" value="<?= $row['name']; ?>" data-smk-msg="Require Name" required>							
-							</div>
-                        	</div>
-						</div>
-						<div class="row col-md-12">
-							<div class="form-group col-md-6">
-                            <label for="name2">Name (New)</label>                            
-							<div class="input-group">
-								<input id="name2" type="text" class="form-control" name="name2" value="<?= $row['name2']; ?>" data-smk-msg="Require Name New" required>							
-							</div>
-                        	</div>
-						</div>
-						
-						<div class="row col-md-12">
-							<div class="form-group col-md-6">
+
+                        	<div class="form-group col-md-4">
                             <label for="catCode">Category</label>                            							
 							<select name="catCode" class="form-control" >
 								<option value="" <?php echo ($catCode==""?'selected':''); ?> >--All--</option>
@@ -124,10 +110,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 								?>
 							</select>
 							</div>
-						</div>
-						
-						<div class="row col-md-12">
-							<div class="form-group col-md-6">
+
+							<div class="form-group col-md-4">
                             <label for="sourceTypeCode">Source Type Code</label>                            							
 							<select name="sourceTypeCode" class="form-control" >
 								<option value="" <?php echo ($sourceTypeCode==""?'selected':''); ?> >--All--</option>
@@ -143,23 +127,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							</select>
 							</div>
 						</div>
-						
+
 						<div class="row col-md-12">
 							<div class="form-group col-md-12">
                             <label for="description">Description</label>                            
-							<div class="input-group">
-								<input id="description" type="text" class="form-control" name="description" value="<?= $row['description']; ?>" data-smk-msg="Require Description" required>							
-							</div>
+							<input id="description" type="text" class="form-control" name="description" value="<?= $row['description']; ?>" data-smk-msg="Require Description" required>	
                         	</div>
 						</div>
-						<div class="row col-md-12">
-							<div class="form-group col-md-6">
-                            <label for="price">Price</label>                            
-							<div class="input-group">
-								<input id="price" type="text" class="form-control" name="price" value="<?= $row['price']; ?>" data-smk-msg="Require Price" value="0.00" required>							
-							</div>
-                        	</div>
-						</div>
+
+
 						<div class="row col-md-12">
 							<div class="form-group col-md-6">
                             <label for="appCode">App Code</label>   
@@ -176,24 +152,33 @@ scratch. This page gets rid of all links and provides the needed markup only.
 								?>
 							</select>
                         	</div>
-						</div>
-						<div class="row col-md-12">
-							<div class="form-group col-md-6">
+
+                        	<div class="form-group col-md-6">
                             <label for="statusCode">Status</label>
 							<div class="input-group">
 								<input id="statusCode" name="statusCode" type="checkbox" value="A" <?php if ($row['statusCode']=='A') echo 'checked'; ?> > Active
 							</div>							
 							</div>
 						</div>
+
 						<!--<a name="btn_submit" class="btn btn-default">Submit</a>--->
 						<button type="submit" name="btn_submit" class="btn btn-default" >Submit</button>
                     
                 </div>
 				
-				<div class="col-md-6">
+				<div class="col-md-4">
 					<input type="hidden" name="curPhoto" id="curPhoto" value="<?=$row['photo'];?>" />
 					<input type="file" name="inputFile" accept="image/*" multiple  onchange="showMyImage(this)" /> <br/>
 					<img id="thumbnil" style="width:50%; margin-top:10px;"  src="../images/product/<?php echo (empty($row['photo'])? 'default.jpg' : $row['photo']); ?>" alt="image"/>
+
+					<br/><br/>
+					ไฟล์ Product Specification : 
+					<input type="hidden" name="curPdf" id="curPdf" value="<?=$row['specFile'];?>" /><br/>
+					<?php if ($row['specFile']<>"") { ?>
+					<a href="../pdf/product/<?=$row['specFile'];?>" target="_blank" ><i class="fa fa-file"> </i>  Specification file</a>
+					<?php } ?>
+					<input type="file" name="inputFile2" accept="application/pdf,application/vnd.ms-excel" /> <br/>
+
 				</div>
                 </form>        
             </div>

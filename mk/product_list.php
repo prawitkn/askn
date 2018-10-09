@@ -172,6 +172,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						<label>Units of Measurement (UOM) : </label> <?=$row['uomCode'];?></br>
 						<label>Source Type : </label> <?=$row['sourceTypeCode'];?></br>
 						<label>App ID : </label> <?=$row['appCode'];?></br>
+						<?php if ( $row['specFile'] <> "" ) { ?>
+						<a href="../pdf/product/<?=$row['specFile'];?>" target="_blank"><i class="fa fa-file"></i>  Specification file</a>
+						<?php } ?> 
 					</div>
 					<!--col-md-->
 				</div></br>

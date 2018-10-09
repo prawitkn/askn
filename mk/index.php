@@ -61,14 +61,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <!-- Your Page Content Here -->
 	  
 	  <?php switch($s_userGroupCode){ 
-				case 'admin' : case 'it' : case 'tech' : 
+				case 'admin' : case 'it' : case 'tech' : case 'sales' : 
 					include 'index_1.php'; 
 					break;
 				case 'salesManager' : case 'salesAdmin' :
 					include 'index_2.php'; 
 					break;
-				case 'sales' :	include 'index_salesperson.php'; 
-					break;
+				//case 'sales' :	include 'index_salesperson.php'; 
+				//	break;
 				default : 
 			} 
 		?>
