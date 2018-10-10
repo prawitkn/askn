@@ -22,7 +22,7 @@ $ppNo = $_GET['ppNo'];
 	, st.code as shipToCode, st.name as shipToName 
 	, hdr.`createTime`, hdr.`createById`, hdr.`updateTime`, hdr.`updateById`
 	, hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById`
-						, uca.userFullname as createByName, ucf.userFullname as confirmByName, uap.userFullname as approveByName
+	, uca.userFullname as createByName, ucf.userFullname as confirmByName, uap.userFullname as approveByName
 	FROM prepare hdr
 	INNER JOIN picking pk on pk.pickNo=hdr.pickNo 
 	LEFT JOIN sale_header sh on sh.soNo=pk.soNo 
@@ -142,13 +142,14 @@ $ppNo = $_GET['ppNo'];
 								AND itm.qty=pickDtl.meter  		
 								AND itm.gradeTypeId=pickDtl.gradeTypeId  						
 								),0) AS inPick 
-						FROM `prepare_detail` dtl
-						INNER JOIN prepare hdr ON hdr.ppNo=dtl.ppNo 
-						LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-						LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  						
-						LEFT JOIN send_detail sd ON sd.prodItemId=itm.prodItemId 
-						LEFT JOIN send sh ON sh.sdNo=sd.sdNo AND sh.toCode='E' 
-						LEFT JOIN product prd ON prd.id=itm.prodCodeId 
+						FROM prepare hdr
+						INNER JOIN `prepare_detail` dtl ON hdr.ppNo=dtl.ppNo 
+						INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+						INNER JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  												
+						INNER JOIN receive_detail rd ON rd.prodItemId=itm.prodItemId AND rd.statusCode='A' 
+						INNER JOIN receive rh ON rh.rcNo=rd.rcNo 
+						INNER JOIN send sh ON sh.sdNo=rh.refNo AND sh.toCode='E' 
+						INNER JOIN product prd ON prd.id=itm.prodCodeId 
 						WHERE 1
 						AND dtl.`ppNo`=:ppNo 
 						
@@ -168,7 +169,7 @@ $ppNo = $_GET['ppNo'];
 								AND itm.qty=pickDtl.meter  		
 								AND itm.gradeTypeId=pickDtl.gradeTypeId  						
 								),0) AS inPick 
-						FROM `prepare_detail` dtl
+						FROM `prepare_detail` dtl 
 						INNER JOIN prepare hdr ON hdr.ppNo=dtl.ppNo 
 						LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 						LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  
@@ -232,13 +233,14 @@ $ppNo = $_GET['ppNo'];
 										AND pickDtl.gradeTypeId=itm.gradeTypeId	
 								),0) AS sumPickQty 
 								, SUM(itm.`qty`) AS sumPackQty
-								FROM `prepare_detail` dtl
-								INNER JOIN prepare hdr ON hdr.ppNo=dtl.ppNo 
-								LEFT JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-								LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  
-								LEFT JOIN send_detail sd ON sd.prodItemId=dtl.prodItemId 
-								LEFT JOIN send sh ON sh.sdNo=sd.sdNo AND sh.toCode='E' 
-								LEFT JOIN product prd ON prd.id=itm.prodCodeId 
+								FROM prepare hdr
+								INNER JOIN `prepare_detail` dtl ON hdr.ppNo=dtl.ppNo 
+								INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+								INNER JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  										
+								INNER JOIN receive_detail rd ON rd.prodItemId=itm.prodItemId AND rd.statusCode='A' 
+								INNER JOIN receive rh ON rh.rcNo=rd.rcNo 
+								INNER JOIN send sh ON sh.sdNo=rh.refNo AND sh.toCode='E' 
+								INNER JOIN product prd ON prd.id=itm.prodCodeId 
 								WHERE 1
 								AND dtl.`ppNo`=:ppNo 
 								GROUP BY prd.`code`, sh.sendDate, itm.`grade`, itm.`qty`, itm.`gradeTypeId`
@@ -252,8 +254,9 @@ $ppNo = $_GET['ppNo'];
 									, IFNULL((SELECT SUM(itm.qty) 
 											FROM prepare_detail ppDtl 
 											INNER JOIN product_item itm ON itm.prodItemId=ppDtl.prodItemId 
-											INNER JOIN send_detail sd ON sd.prodItemId=ppDtl.prodItemId 
-											INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.toCode='E' 
+											INNER JOIN receive_detail rd ON rd.prodItemId=itm.prodItemId AND rd.statusCode='A' 
+											INNER JOIN receive rh ON rh.rcNo=rd.rcNo 
+											INNER JOIN send sh ON sh.sdNo=rh.refNo AND sh.toCode='E' 
 											WHERE 1=1 
 											AND ppDtl.ppNo=:ppNo3 
 											AND pick.prodId=itm.prodCodeId 
