@@ -74,53 +74,53 @@ if(!isset($_POST['action'])){
 				$sql="";
 				switch($s_userGroupCode){
 					case 'admin' :
-					$sql = "SELECT hdr.sendId, dtl.`productItemId`, itm.`barcode`, itm.`issueDate`
-					, itm.`machineId`, itm.`seqNo`, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`
-					, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId`					
-					, itm.prodCodeId as prodId, prd.code as prodCode
-					, '' as sentNo
-					, IFNULL((SELECT 1 FROM send sHdr
-												INNER JOIN send_detail sDtl ON sDtl.sdNo=sHdr.sdNo
-												WHERE sHdr.sdNo=:sdNo  AND sDtl.prodItemId=itm.prodItemId LIMIT 1),0) as isSelected 
-					,CASE itm.grade
-						WHEN 0 THEN 'A' 
-						WHEN 1 THEN 'B' 	
-						WHEN 2 THEN 'N' 	
-						ELSE 'N/A'
-					END AS gradeName 
-					FROM send_mssql hdr  
-					INNER JOIN send_detail_mssql dtl ON dtl.sendId=hdr.sendId 
-					LEFT JOIN product_item itm ON itm.prodItemId=dtl.productItemId 
-					LEFT JOIN product prd ON prd.id=itm.prodCodeId
-					WHERE 1=1 "; 
+						$sql = "SELECT hdr.sendId, dtl.`productItemId`, itm.`barcode`, itm.`issueDate`
+						, itm.`machineId`, itm.`seqNo`, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`
+						, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId`					
+						, itm.prodCodeId as prodId, prd.code as prodCode
+						, '' as sentNo
+						, IFNULL((SELECT 1 FROM send sHdr
+													INNER JOIN send_detail sDtl ON sDtl.sdNo=sHdr.sdNo
+													WHERE sHdr.sdNo=:sdNo  AND sDtl.prodItemId=itm.prodItemId LIMIT 1),0) as isSelected 
+						,CASE itm.grade
+							WHEN 0 THEN 'A' 
+							WHEN 1 THEN 'B' 	
+							WHEN 2 THEN 'N' 	
+							ELSE 'N/A'
+						END AS gradeName 
+						FROM send_mssql hdr  
+						INNER JOIN send_detail_mssql dtl ON dtl.sendId=hdr.sendId 
+						LEFT JOIN product_item itm ON itm.prodItemId=dtl.productItemId 
+						LEFT JOIN product prd ON prd.id=itm.prodCodeId
+						WHERE 1=1 "; 
 					break;
 					
 					default : 
-					$sql = "SELECT hdr.sendId, dtl.`productItemId`, itm.`barcode`, itm.`issueDate`
-					, itm.`machineId`, itm.`seqNo`, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`
-					, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId`					
-					, itm.prodCodeId as prodId, prd.code as prodCode
-					, IFNULL((SELECT sHdr.sdNo FROM send sHdr
-												INNER JOIN send_detail sDtl ON sDtl.sdNo=sHdr.sdNo
-												WHERE sHdr.statusCode IN ('C','P') AND sDtl.prodItemId=itm.prodItemId LIMIT 1),'') as sentNo
-					, IFNULL((SELECT sHdr.rcNo FROM receive sHdr
-												INNER JOIN receive_detail sDtl ON sDtl.rcNo=sHdr.rcNo
-												WHERE sHdr.statusCode = 'P' AND sDtl.prodItemId=itm.prodItemId 
-												AND sDtl.statusCode IN ('A','X') LIMIT 1),'') as recvNo
-					, IFNULL((SELECT 1 FROM send sHdr
-												INNER JOIN send_detail sDtl ON sDtl.sdNo=sHdr.sdNo
-												WHERE sHdr.sdNo=:sdNo  AND sDtl.prodItemId=itm.prodItemId LIMIT 1),0) as isSelected 
-					,CASE itm.grade
-						WHEN 0 THEN 'A' 
-						WHEN 1 THEN 'B' 	
-						WHEN 2 THEN 'N' 	
-						ELSE 'N/A'
-					END AS gradeName 
-					FROM send_mssql hdr  
-					INNER JOIN send_detail_mssql dtl ON dtl.sendId=hdr.sendId 
-					LEFT JOIN product_item itm ON itm.prodItemId=dtl.productItemId 
-					LEFT JOIN product prd ON prd.id=itm.prodCodeId
-					WHERE 1=1 ";
+						$sql = "SELECT hdr.sendId, dtl.`productItemId`, itm.`barcode`, itm.`issueDate`
+						, itm.`machineId`, itm.`seqNo`, itm.`NW`, itm.`GW`, itm.`qty`, itm.`packQty`, itm.`grade`, itm.`gradeDate`
+						, itm.`refItemId`, itm.`itemStatus`, itm.`remark`, itm.`problemId`					
+						, itm.prodCodeId as prodId, prd.code as prodCode
+						, IFNULL((SELECT sHdr.sdNo FROM send sHdr
+													INNER JOIN send_detail sDtl ON sDtl.sdNo=sHdr.sdNo
+													WHERE sHdr.statusCode IN ('C','P') AND sDtl.prodItemId=itm.prodItemId LIMIT 1),'') as sentNo
+						, IFNULL((SELECT sHdr.rcNo FROM receive sHdr
+													INNER JOIN receive_detail sDtl ON sDtl.rcNo=sHdr.rcNo
+													WHERE sHdr.statusCode = 'P' AND sDtl.prodItemId=itm.prodItemId 
+													AND sDtl.statusCode IN ('A','X') LIMIT 1),'') as recvNo
+						, IFNULL((SELECT 1 FROM send sHdr
+													INNER JOIN send_detail sDtl ON sDtl.sdNo=sHdr.sdNo
+													WHERE sHdr.sdNo=:sdNo  AND sDtl.prodItemId=itm.prodItemId LIMIT 1),0) as isSelected 
+						,CASE itm.grade
+							WHEN 0 THEN 'A' 
+							WHEN 1 THEN 'B' 	
+							WHEN 2 THEN 'N' 	
+							ELSE 'N/A'
+						END AS gradeName 
+						FROM send_mssql hdr  
+						INNER JOIN send_detail_mssql dtl ON dtl.sendId=hdr.sendId 
+						LEFT JOIN product_item itm ON itm.prodItemId=dtl.productItemId 
+						LEFT JOIN product prd ON prd.id=itm.prodCodeId
+						WHERE 1=1 ";
 				}
 				
 				

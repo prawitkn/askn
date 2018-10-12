@@ -342,14 +342,15 @@ $(document).ready(function() {
 									if(value.recvNo==""){
 										var isSelected=value.isSelected;
 										if(isSelected==1){ isSelected=' checked="checked" '; }
-										tmpNo=rowNo+':'+'<input type="checkbox" name="itmId[]" class="itmId" value="'+value.sendId+','+value.productItemId+'" '+isSelected+'  />';
+										tmpNo=rowNo+':'+'<input type="checkbox" name="itmId[]" class="itmId" value="'+value.sendId+','+value.productItemId+'" '+isSelected+'  />'+'<label class="label label-danger" >'+value.sentNo+'</label>';
 									}else{
 										tmpNo=rowNo+':'+'<label class="label label-danger" >'+value.sentNo+'</label>';
 									}									
 								} //alert(tmpNo);
+								//tmpNo=tmpNo+value.sentNo+'x'+value.recvNo;
 								$('#tbl_items tbody').append(
 								'<tr style="background-color: '+rowColor+'" >' +	
-									'<td>'+ tmpNo +'</td>' + 
+									'<td>'+ tmpNo+'</td>' + 
 									'<td>'+ value.prodCode +'</td>' +
 									'<td>'+ value.barcode +'</td>' + 
 									'<td>'+ value.gradeName +'</td>' +
