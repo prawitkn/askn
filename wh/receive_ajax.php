@@ -147,6 +147,46 @@ if(!isset($_POST['action'])){
 				echo json_encode(array('success' => false, 'message' => $errors.$t));
 			}
 			break;
+
+		case 'item_update_grade' : 
+			try{									
+				$pdo->beginTransaction();
+				
+				$rcNo=$_POST['rcNo'];
+				
+				if(!empty($_POST['prodItemId']) and isset($_POST['prodItemId']) and !empty($_POST['gradeTypeId']) and isset($_POST['gradeTypeId']) and !empty($_POST['remarkWh']) and isset($_POST['remarkWh']))
+				{
+					//$arrProdItems=explode(',', $prodItems);
+					foreach($_POST['prodItemId'] as $index => $item )
+					{	
+						$sql = "UPDATE `product_item` SET gradeTypeId=:gradeTypeId
+						, remarkWh=:remarkWh 
+						WHERE prodItemId=:prodItemId 
+						";						
+						$stmt = $pdo->prepare($sql);	
+						$stmt->bindParam(':gradeTypeId', $_POST['gradeTypeId'][$index]);	
+						$stmt->bindParam(':remarkWh', $_POST['remarkWh'][$index]);	
+						$stmt->bindParam(':prodItemId', $item);		
+						$stmt->execute();			
+					}
+				}				
+				
+				$pdo->commit();
+				
+				header('Content-Type: application/json');
+				echo json_encode(array('success' => true, 'message' => 'Data Updated Complete.'));
+			} 
+			//Our catch block will handle any exceptions that are thrown.
+			catch(Exception $e){
+				//Rollback the transaction.
+				$pdo->rollBack();
+				//return JSON
+				header('Content-Type: application/json');
+				$errors = "Error on Data Update. Please try again. " . $e->getMessage();
+				echo json_encode(array('success' => false, 'message' => $errors.$t));
+			}
+			break;
+
 		case 'delete' :
 			try{
 				$rcNo = $_POST['rcNo'];	

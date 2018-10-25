@@ -44,7 +44,7 @@ $sdNo = $hdr['sdNo'];
 <link rel="stylesheet" href="plugins/iCheck/all.css">
  
 </head>
-<body class="hold-transition skin-green sidebar-mini">
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
 
 
 	
@@ -211,11 +211,9 @@ $sdNo = $hdr['sdNo'];
 		<?php if($hdr['statusCode']=='P'){ ?>
           <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?sdNo=<?=$sdNo;?>" class="btn btn-primary"><i class="glyphicon glyphicon-print"></i> Print</a>	
 
-	          <?php if($s_userGroupCode=='admin'){ ?>
-	         		 <a target="_blank" href="<?=$rootPage;?>_view_pdf_barcode.php?sdNo=<?=$sdNo;?>" class="btn btn-primary"><i class="glyphicon glyphicon-barcode"></i> Barcode</a>			  
-			<?php } ?>
-
 		<?php } ?>
+
+		<a target="_blank" href="<?=$rootPage;?>_view_pdf_barcode.php?sdNo=<?=$sdNo;?>" class="btn btn-primary"><i class="glyphicon glyphicon-barcode"></i> Barcode</a>	
 
 		<?php switch($s_userGroupCode){ case 'admin' : case 'whSup' :  case 'pdSup' : case 'whMgr' : case 'pdMgr' :  ?>
 	          <?php if($hdr['statusCode']=='C'){ ?>         

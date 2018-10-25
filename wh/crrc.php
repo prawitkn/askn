@@ -21,6 +21,14 @@ switch($s_userGroupCode){
 $rootPage="crrc";		
 ?>
 
+</head>
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
+
+
+
+
+
+
 <div class="wrapper">
 
   <!-- Main Header -->

@@ -1,16 +1,21 @@
-<?php
-	include 'inc_helper.php'; 
-?>
 <!DOCTYPE html>
 <!--
 This is a starter template page. Use this page to start your new project from
 scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
-<?php 
-	include 'head.php'; 
-	
-?>    
+<?php include 'head.php'; ?>  
+
+<!-- fancybox CSS -->
+<link rel="stylesheet" type="text/css" href="plugins/fancybox-master/dist/jquery.fancybox.min.css">
+
+</head>
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
+
+
+
+
+
 
 <div class="wrapper">
   <!-- Main Header -->
@@ -166,13 +171,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					</div>
 					<!--col-md-->
 					<div class="col-md-9">
-						<label>Code : <a href="product_view_stk.php?id=<?=$row['id'];?>"></label><?=$row['code'];?></a></br>
-						<label>Name : </label> <?=$row['name'];?></br>
+						<label style="font-weight: bold;">Product Code : <a href="product_view_stk.php?id=<?=$row['id'];?>"></label> <?=$row['code'];?></a></br>
+						<label>Product Name : </label> <?=$row['name'];?></br>
 						<label>Description : </label> <?=$row['description'];?></br>
-						<label>Sales Price : </label> <label class="label label-primary"> <?=number_format($row['price'],2,'.',',');?></label></br>
 						<label>Units of Measurement (UOM) : </label> <?=$row['uomCode'];?></br>
 						<label>Source Type : </label> <?=$row['sourceTypeCode'];?></br>
 						<label>App ID : </label> <?=$row['appCode'];?></br>
+						<?php if ( $row['specFile'] <> "" ) { ?>
+						<a href="../pdf/product/<?=$row['specFile'];?>" target="_blank"><i class="fa fa-file"></i>  Specification file</a>
+						<?php } ?> 
 					</div>
 					<!--col-md-->
 				</div></br>

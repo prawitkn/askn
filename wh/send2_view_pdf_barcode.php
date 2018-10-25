@@ -15,7 +15,7 @@ class MYPDF extends TCPDF {
 date_default_timezone_set("Asia/Bangkok");
 
 // create new PDF document
-$size = array(  100,  50);
+$size = array(  200,  100);
 $pdf = new MYPDF('L', 'mm', $size, true, 'UTF-8', false);
 
 // set document information
@@ -81,7 +81,7 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 	
 			$sql = "SELECT dtl.id, dtl.prodItemId 
 			, itm.prodCodeId, itm.barcode, itm.NW, itm.GW, itm.grade, itm.qty, itm.seqNo, itm.issueDate 
-			, prd.code as prodCode, prd.description
+			, prd.code as prodCode, prd.description, prd.uomCode 
 			FROM send_detail dtl 
 			LEFT JOIN product_item itm on itm.prodItemId=dtl.prodItemId 
 			LEFT JOIN product prd ON prd.id=itm.prodCodeId 						
@@ -105,49 +105,18 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 							default : $gradeName = '<b style="color: red;">N/A</b>'; 
 						} 
 						$lotNo=substr($itemCodeId,15,9);	
-						
-						$html ='
-							<table class="table table-striped no-margin" >
-									<thead>
-									<tr>
-										<td></td><td></td><td></td><td></td><td></td><td></td>
-									</tr>
-									</thead>
-								  <tbody>
-							'; 
-					$html .='<tr>
-						<td colspan="6">'.$row['barcode'].'</td>
-					</tr>
-					<tr>
-						<td colspan="2"> '.$row['prodCode'].'</td>
-						<td colspan="2">'.number_format($row['qty'],0,'.',',').'&nbsp;&nbsp;</td>
-						<td style="text-align: center;">'.$gradeName.'</td>
-						<td style="text-align: center;"></td>
-					</tr>
-					<tr>
-						<td style="center;">'.$row['NW'].'&nbsp;&nbsp;</td>
-						<td colspan="2" style="text-align: center;">'.$lotNo.'</td>
-						
-						<td colspan="2">'.$row['seqNo'].'</td>
-						<td></td>
-					</tr>';			
-						
-					
-					//Footer for write 
-					$html .='</tbody></table>';					
-					
+
+
 					$pdf->AddPage('L');
 
+					//$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
 
-
-					$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
-
-					// EAN 13
-					$style = array(
+					//style texst
+					$styleText = array(
 						'position' => '',
 						'align' => 'C',
 						'stretch' => false,
-						'fitwidth' => false,
+						'fitwidth' => true,
 						'cellfitalign' => '',
 						'border' => false,
 						'hpadding' => 'auto',
@@ -159,7 +128,103 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 						'fontsize' => 8,
 						'stretchtext' => 3
 					);
-					$pdf->write1DBarcode($itemCodeId, 'C39E', '', '', '', 20, 0.4, $style, 'N');
+
+					// EAN 13
+					$style = array(
+						'position' => '',
+						'align' => 'C',
+						'stretch' => false,
+						'fitwidth' => true,
+						'cellfitalign' => '',
+						'border' => false,
+						'hpadding' => 'auto',
+						'vpadding' => 'auto',
+						'fgcolor' => array(0,0,0),
+						'bgcolor' => false, //array(255,255,255),
+						'text' => true,
+						'font' => 'helvetica',
+						'fontsize' => 8,
+						'stretchtext' => 3
+					);
+				
+		            //Reset X,Y so wrapping cell wraps around the barcode's cell.
+		            //$pdf->SetXY($x,$y);
+		           // $pdf->Cell(105, 51, $itemCodeId, 1, 0, 'C', FALSE, '', 0, FALSE, 'C', 'B');
+					//$pdf->write1DBarcode($itemCodeId, 'C39E', '', '', '', 20, 0.4, $style, 'N');
+
+						$html ='
+							<table class="table table-striped no-margin" border="1" >
+									<thead>
+									<tr>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+									</tr>
+									</thead>
+								  <tbody>
+							'; 
+					$html .='<tr>
+						<td colspan="4" style="text-align: center;"><h1>'.$row['description'].'</h1></td>
+					</tr>
+					<tr>
+						<td style="text-align: center;"><h1>'.$row['prodCode'].'</h1></td>
+						<td style="text-align: center;"></td>
+						<td style="text-align: center;"></td>
+						<td style="text-align: center;"><h1>'.number_format($row['qty'],0,'.',',').'</h1></td>
+					</tr>
+					<tr>
+						<td style="text-align: center;"><h1>'.$row['NW'].'</h1></td>
+						<td style="text-align: center;"></td>
+						<td style="text-align: center;"><h1>'.$gradeName.'</h1></td>
+						<td style="text-align: center;"></td>
+					</tr>
+					<tr>
+						<td style="text-align: center;"><h1>'.$lotNo.'</h1></td>
+						<td style="text-align: center;" colspan="2">'.$itemCodeId.'</td>
+						<td style="text-align: center;"></td>						
+					</tr>';			
+						
+					//Footer for write 
+					//$html .='</tbody></table>';					
+					$x=$y=0;
+
+					//$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
+					#writeHTMLCell(w, h, x, y, html = '', border = 0, ln = 0, fill = 0, reseth = true, align = '', autopadding = true)
+
+					//Cell( $w, $h = 0, $txt = '', $border = 0, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M' )
+
+					$y+=15;
+					$pdf->writeHTMLCell(200, 30, $x, $y, '<h1 style="text-align: center;">'.$row['description'].'</h1>', $border = 0, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M' );
+					$y+=15;
+					$pdf->writeHTMLCell(50, 15, $x, $y, '<h1 style="text-align: center;">'.$row['prodCode'].'</h1>', $border = 0, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M' ); 
+					$x+=50;				
+					$pdf->writeHTMLCell(50, 15, $x, $y, '' , $border = 0, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M' ); 
+					$x+=50;
+					$pdf->writeHTMLCell(50, 15, $x, $y, '' , $border = 0, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M' ); 
+					$x+=50;
+					$pdf->writeHTMLCell(50, 15, $x, $y, '<h1 style="text-align: center;">'.$row['qty'].' '.$row['uomCode'].'</h1>', $border = 0, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M'); 
+					$x=0;
+
+
+					$y+=15;
+					$pdf->writeHTMLCell(50, 15, $x, $y, '<h1 style="text-align: center;">'.$row['NW'].' kg.</h1>',  $border = 0, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M'); 
+					$x+=50;				
+					$pdf->writeHTMLCell(50, 15, $x, $y, '' , $border = 0, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M'); 
+					$x+=50;
+					$pdf->writeHTMLCell(50, 15, $x, $y, '<h1 style="text-align: center;">'.$gradeName.'</h1>' , $border = 0, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M'); 
+					$x+=50;
+					$pdf->writeHTMLCell(50, 15, $x, $y, '', $border = 0, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M'); 
+					$x=0;
+					$y+=15;
+					$pdf->writeHTMLCell(50, 15, $x, $y, '<h1 style="text-align: center;">'.$lotNo.'</h1>', $border = 0, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M'); $x+=50;				
+					$pdf->write1DBarcode($itemCodeId, 'C128B', '', $y, $x+50, 15, 100, $style, 'M'); $x+=100;
+					$pdf->writeHTMLCell(50, 15, $x, $y, '', $border = 0, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M'); $x=0;
+
+
+					//$x = $pdf->GetX();
+           			// $y = $pdf->GetY();
+					 //
 					
 
 					$html='';

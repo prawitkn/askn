@@ -11,12 +11,12 @@
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
   <!-- Bootstrap 3.3.6 -->
   <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
-  <!-- Font Awesome -->
+  <!-- Ionicons  -->
   <link rel="stylesheet" href="plugins/ionicons-2.0.0/ionicons.min.css">
-  <!-- Ionicons 
+  <!-- Font Awesome
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">-->
- <link rel="stylesheet" href="plugins/fontAwesome/css/font-awesome.min.css">
-  <!--<link rel="stylesheet" href="plugins/fontAwesome/font-awesome.min.css">-->
+  <link rel="stylesheet" href="plugins/font-awesome-4.5.0/css/font-awesome.min.css">
+  
   <!-- Theme style -->
   <link rel="stylesheet" href="dist/css/AdminLTE.min.css">
   <!-- AdminLTE Skins. We have chosen the skin-blue for this starter
@@ -73,51 +73,7 @@
 	</style>  
 <style>
 
-@import url(./plugins/fontAwesome/fonts/thsarabunnew.css);
-
-  @font-face {
-    font-family: 'THSarabunNew';
-    src: url('thsarabunnew-webfont.eot');
-    src: url('thsarabunnew-webfont.eot?#iefix') format('embedded-opentype'),
-         url('thsarabunnew-webfont.woff') format('woff'),
-         url('thsarabunnew-webfont.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-
-}
-
-@font-face {
-    font-family: 'THSarabunNew';
-    src: url('thsarabunnew_bolditalic-webfont.eot');
-    src: url('thsarabunnew_bolditalic-webfont.eot?#iefix') format('embedded-opentype'),
-         url('thsarabunnew_bolditalic-webfont.woff') format('woff'),
-         url('thsarabunnew_bolditalic-webfont.ttf') format('truetype');
-    font-weight: bold;
-    font-style: italic;
-
-}
-
-@font-face {
-    font-family: 'THSarabunNew';
-    src: url('thsarabunnew_italic-webfont.eot');
-    src: url('thsarabunnew_italic-webfont.eot?#iefix') format('embedded-opentype'),
-         url('thsarabunnew_italic-webfont.woff') format('woff'),
-         url('thsarabunnew_italic-webfont.ttf') format('truetype');
-    font-weight: normal;
-    font-style: italic;
-
-}
-
-@font-face {
-    font-family: 'THSarabunNew';
-    src: url('thsarabunnew_bold-webfont.eot');
-    src: url('thsarabunnew_bold-webfont.eot?#iefix') format('embedded-opentype'),
-         url('thsarabunnew_bold-webfont.woff') format('woff'),
-         url('thsarabunnew_bold-webfont.ttf') format('truetype');
-    font-weight: bold;
-    font-style: normal;
-
-}
+@import url(./fonts/thsarabunnew.css);
   
 body, h1, h2, h3, h4, h5, h6 {
   font-family: 'THSarabunNew', sans-serif;
@@ -126,7 +82,3 @@ body, h1, h2, h3, h4, h5, h6 {
 </style>
 
 
-	<!-- fancybox CSS -->
-  <link rel="stylesheet" type="text/css" href="plugins/fancybox-master/dist/jquery.fancybox.min.css">
-</head>
-<body class="hold-transition skin-blue sidebar-mini">

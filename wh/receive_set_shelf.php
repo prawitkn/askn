@@ -50,7 +50,7 @@ $rcNo = $hdr['rcNo'];
 <link rel="stylesheet" href="plugins/iCheck/all.css">
  
 </head>
-<body class="hold-transition skin-green sidebar-mini">
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
 
 
 	

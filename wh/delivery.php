@@ -45,7 +45,7 @@ if($start<0) $start=0;
 ?>
  
 </head>
-<body class="hold-transition skin-green sidebar-mini">
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
 
 
 	

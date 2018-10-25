@@ -17,7 +17,13 @@ switch($s_userGroupCode){
 		exit();
 }
 ?>	<!-- head.php included session.php! -->
- 
+  
+</head>
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
+
+
+	
+  
     
     
 

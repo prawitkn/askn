@@ -20,6 +20,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		default :
 	}
 ?>
+ 
+</head>
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
+
+
+	
+  
+
 
 <div class="wrapper">
 <!-- Select2 -->
@@ -37,7 +45,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
    $soNo = (isset($_GET['soNo'])?$_GET['soNo']:'');
 
 	$sql = "
-	SELECT a.`soNo`, a.`poNo`, a.`piNo`, a.`saleDate`, a.`custId`, a.`shipToId`, a.`smId`, a.`revCount`, a.`deliveryDate`, a.`suppTypeId`, a.`stkTypeId`, a.`packageTypeId`, a.`priceTypeId`, a.`deliveryTypeId`, a.`deliveryRem`, a.`containerLoadId`, a.`creditTypeId`, a.`remark`, a.`payTypeCreditDays`, a.`isClose`, a.`statusCode`, a.`createTime`, a.`createById`, a.`updateTime`, a.`updateById`, a.`confirmTime`, a.`confirmById`, a.`approveTime`, a.`approveById`
+	SELECT a.`soNo`, a.`poNo`, a.`piNo`, a.`saleDate`, a.`custId`, a.`shipToId`, a.`smId`, a.`revCount`, a.`deliveryDate`, a.`suppTypeId`, a.`stkTypeId`, a.`packageTypeId`, a.`priceTypeId`, a.`deliveryTypeId`, a.`deliveryRem`, a.`containerLoadId`, a.`creditTypeId`, a.`remark`, a.`payTypeCreditDays`, a.`isClose`, a.`shippingMarksId`, a.`statusCode`, a.`createTime`, a.`createById`, a.`updateTime`, a.`updateById`, a.`confirmTime`, a.`confirmById`, a.`approveTime`, a.`approveById`
 	, b.code as custCode, b.name as custName, b.addr1 as custAddr1, b.addr2 as custAddr2, b.addr3 as custAddr3, b.zipcode as custZipcode, b.tel as custTel, b.fax as custFax
 	, st.code as shipToCode, st.name as shipToName, st.addr1 as shipToAddr1, st.addr2 as shipToAddr2, st.addr3 as shipToAddr3, st.zipcode as shipToZipcode, st.tel as shipToTel, st.fax as shipToFax
 	, c.code as smCode, c.name as smName, c.surname as smSurname
@@ -104,10 +112,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				
 					
 				<ul class="nav nav-pills">
-					<li class="nav-item active"><a class="nav-link" data-toggle="pill" href="#home" >Header <i class="fa fa-caret-right"></i></a></li>
+					<li class="nav-item <?php if($soNo=="") echo ' active '; ?>"><a class="nav-link" data-toggle="pill" href="#home" >Header <i class="fa fa-caret-right"></i></a></li>
 					<li class="nav-item"><a class="nav-link" data-toggle="pill" href="#menu1" >Header Option <i class="fa fa-caret-right"></i></a></li>
 					<?php if( $soNo<>"" ){ ?>
-					<li class="nav-item"><a class="nav-link" data-toggle="pill" href="#menu2">Item <i class="fa fa-caret-right"></i></a></li>
+					<li class="nav-item <?php if($soNo<>"") echo ' active '; ?>"><a class="nav-link" data-toggle="pill" href="#menu2">Item <i class="fa fa-caret-right"></i></a></li>
 				<?php } ?>
 				</ul>
 
@@ -117,7 +125,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<input type="hidden" name="soNo" id="soNo" value="<?=$_GET['soNo'];?>" />
 
 			  <div class="tab-content">
-				<div id="home" class="tab-pane fade in active">
+				<div id="home" class="tab-pane fade in  <?php if($soNo=="") echo ' active '; ?>">
 				  <?php 
 					?>
 				  <div class="row col-md-12">
@@ -162,7 +170,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 								$sql_sm.="ORDER BY hdr.name ASC ";
 								$result_sm = mysqli_query($link, $sql_sm);
 								while($row = mysqli_fetch_assoc($result_sm)){
-									$selected = ($hdr['custId']==$row['id']?' selected ':'');
+									$selected = ($hdr['custId']==$row['id']?' selected="selected" ':'');
 									echo '<option value="'.$row['id'].'" '.$selected.' >'.$row['name'].' [ '.$row['code'].']</option>';
 								}
 								?>
@@ -176,7 +184,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 								$sql_sm = "SELECT id, `code`,  `name`,  `addr1`,  `addr2`,  `addr3`,  `zipcode` FROM `shipto` WHERE `statusCode`='A' ";
 								$result_sm = mysqli_query($link, $sql_sm);
 								while($row = mysqli_fetch_assoc($result_sm)){
-									$selected = ($hdr['shipToId']==$row['id']?' selected ':'');
+									$selected = ($hdr['shipToId']==$row['id']?' selected="selected" ':'');
 									echo '<option value="'.$row['id'].'" '.$selected.' >'.$row['code'].' : '.$row['name'].'</option>';
 								}
 								?>
@@ -206,7 +214,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 								$sql_sm = "SELECT id, `code`,  `name`, `surname`, `mobileNo`, `email` FROM `salesman` WHERE `statusCode`='A' ";
 								$result_sm = mysqli_query($link, $sql_sm);
 								while($row = mysqli_fetch_assoc($result_sm)){
-									$selected = ($hdr['smId']==$row['id']?' selected ':'');
+									$selected = ($hdr['smId']==$row['id']?' selected="selected" ':'');
 									echo '<option value="'.$row['id'].'" '.$selected.' >'.$row['code'].' : '.$row['name'].' '.$row['surname'].'</option>';
 								}
 								?>
@@ -217,7 +225,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						</div>
 					</div>
 					<!--/.row-->
-						
+					
+					<a href="#" name="btn_home_next" id="btn_home_next" class="btn btn-primary pull-right"><i class="fa fa-caret-right"></i> Next</a>
 					</div>
 					<!--/.col-md-12-->
 				</div>
@@ -236,7 +245,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							$sql_sm = "SELECT id,  `name` FROM `sale_supp_type` WHERE `statusCode`='A' ORDER BY seqNo ";
 							$result_sm = mysqli_query($link, $sql_sm);
 							while($row = mysqli_fetch_assoc($result_sm)){
-								$selected = "";// ($hdr['containerLoadId']==$row['id']?' selected ':'');
+								$selected = ($hdr['suppTypeId']==$row['id']?' selected="selected" ':'');
 								echo '<option value="'.$row['id'].'" '.$selected.' >'.$row['name'].'</option>';
 							}
 							?>
@@ -252,7 +261,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							$sql_sm = "SELECT id,  `name` FROM `sale_stk_type` WHERE `statusCode`='A'  ORDER BY seqNo  ";
 							$result_sm = mysqli_query($link, $sql_sm);
 							while($row = mysqli_fetch_assoc($result_sm)){
-								$selected = "";// ($hdr['containerLoadId']==$row['id']?' selected ':'');
+								$selected = ($hdr['stkTypeId']==$row['id']?' selected="selected" ':'');
 								echo '<option value="'.$row['id'].'" '.$selected.' >'.$row['name'].'</option>';
 							}
 							?>
@@ -272,7 +281,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 								$sql_sm = "SELECT id,  `name` FROM `sale_package_type` WHERE `statusCode`='A'  ORDER BY seqNo  ";
 								$result_sm = mysqli_query($link, $sql_sm);
 								while($row = mysqli_fetch_assoc($result_sm)){
-									$selected = "";// ($hdr['containerLoadId']==$row['id']?' selected ':'');
+									$selected = ($hdr['packageTypeId']==$row['id']?' selected="selected" ':'');
 									echo '<option value="'.$row['id'].'" '.$selected.' >'.$row['name'].'</option>';
 								}
 								?>
@@ -287,7 +296,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 								$sql_sm = "SELECT id,  `name` FROM `sale_price_type` WHERE `statusCode`='A' ";
 								$result_sm = mysqli_query($link, $sql_sm);
 								while($row = mysqli_fetch_assoc($result_sm)){
-									$selected = "";// ($hdr['containerLoadId']==$row['id']?' selected ':'');
+									$selected = ($hdr['priceTypeId']==$row['id']?' selected="selected" ':'');
 									echo '<option value="'.$row['id'].'" '.$selected.' >'.$row['name'].'</option>';
 								}
 								?>
@@ -305,7 +314,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 								$sql_sm = "SELECT id,  `name` FROM `sale_delivery_type` WHERE `statusCode`='A' ";
 								$result_sm = mysqli_query($link, $sql_sm);
 								while($row = mysqli_fetch_assoc($result_sm)){
-									$selected = "";// ($hdr['containerLoadId']==$row['id']?' selected ':'');
+									$selected = ($hdr['deliveryTypeId']==$row['id']?' selected="selected" ':'');
 									echo '<option value="'.$row['id'].'" '.$selected.' >'.$row['name'].'</option>';
 								}
 								?>
@@ -332,7 +341,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 									$sql_sm = "SELECT id,  `name` FROM `sale_credit_type` WHERE `statusCode`='A' ";
 									$result_sm = mysqli_query($link, $sql_sm);
 									while($row = mysqli_fetch_assoc($result_sm)){
-										$selected = "";// ($hdr['containerLoadId']==$row['id']?' selected ':'');
+										$selected = ($hdr['creditTypeId']==$row['id']?' selected="selected" ':'');
 										echo '<option value="'.$row['id'].'" '.$selected.' >'.$row['name'].'</option>';
 									}
 									?>
@@ -365,7 +374,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 								$sql_sm = "SELECT id,  `name` FROM `sale_container_load_type` WHERE `statusCode`='A' ";
 								$result_sm = mysqli_query($link, $sql_sm);
 								while($row = mysqli_fetch_assoc($result_sm)){
-									$selected = "";// ($hdr['containerLoadId']==$row['id']?' selected ':'');
+									$selected = ($hdr['containerLoadId']==$row['id']?' selected="selected" ':'');
 									echo '<option value="'.$row['id'].'" '.$selected.' >'.$row['name'].'</option>';
 								}
 								?>
@@ -381,12 +390,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
 								$sql_sm = "SELECT id, `code`,  `name`,  `typeCode`, `filePath` FROM `shipping_marks` WHERE `statusCode`='A' ";
 								$result_sm = mysqli_query($link, $sql_sm);
 								while($row = mysqli_fetch_assoc($result_sm)){
-									$selected = ($hdr['shippingMarksId']==$row['id']?' selected ':'');
+									$selected = ($hdr['shippingMarksId']==$row['id']?' selected="selected" ':'');
 									echo '<option value="'.$row['id'].'" data-typeCode="'.$row['typeCode'].'" data-filePath="'.$row['filePath'].'" '.$selected.' >'.$row['code'].' : '.$row['name'].'</option>';
 								}
 								?>
 							</select> 
-							<img src="" id="shippingMarksImg" />
+							<?php if($hdr['shippingMarksFilePath']==""){ 							
+								echo '<img src="" id="shippingMarksImg" />';
+							}else{
+								echo '<img src="images/shippingMarks/'.$hdr['shippingMarksFilePath'].'" id="shippingMarksImg" />';
+							}?>	
 						</div>
 					</div>
 					<!--/.row-->
@@ -400,7 +413,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 								$sql_sm = "SELECT id,  `name` FROM `sale_option_type` WHERE `statusCode`='A' ";
 								$result_sm = mysqli_query($link, $sql_sm);
 								while($row = mysqli_fetch_assoc($result_sm)){
-									$selected = "";// ($hdr['containerLoadId']==$row['id']?' selected ':'');
+									$selected = ($hdr['optTypeId']==$row['id']?' selected="selected" ':'');
 									echo '<option value="'.$row['id'].'" '.$selected.' >'.$row['name'].'</option>';
 								}
 								?>
@@ -414,7 +427,17 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<!-- col-md-6 --> 
 					
 										  			
-					
+						
+						<div class="col-md-12">
+							
+
+							<?php if ( $soNo=="" ) {	?>		
+							<a class="btn btn-primary pull-right" name="btn_create" title="Create"><i class="fa fa-save"></i> Create SO</a>	
+							<?php }else{ ?>
+								<a href="#" name="btn_menu1_next" id="btn_menu1_next" class="btn btn-primary pull-right"><i class="fa fa-caret-right"></i> Next</a>
+							<?php } ?>
+						</div>
+						<!--col-md-12-->
 					</div>
 					<!--/.row-->
 		</form>
@@ -437,7 +460,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 
 	<?php if( $soNo <> "" ) { ?>
-		<div id="menu2" class="tab tab-pane">
+		<div id="menu2" class="tab tab-pane <?php if($soNo<>"") echo ' active '; ?>">
 			<form id="form2" name="form2" action="#" method="post" class="form" novalidate>				
 			<input type="hidden" name="action" value="itemAdd" />
 
@@ -480,7 +503,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 				<div class="col-md-2 form-group">
 					<label for="remark">Item Delivery Date : </label>
-					  <input id="deliveryDate" type="text" class="form-control datepicker" name="deliveryDate" data-smk-msg="Require Order Date." required>
+					  <input id="deliveryDateItem" type="text" class="form-control datepicker" name="deliveryDateItem" data-smk-msg="Require Order Date." required>
 				  </div>
 				  <!--/.col-md-4-->
 
@@ -520,10 +543,40 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			</div>
 			<!--/.table-responsive-->
   		</div>
+
+
+  		<div class="col-md-12">
+		<?php
+			if ( $soNo=="" ) {	?>						
+				
+		<?php }else{ ?>
+				<a class="btn btn-primary pull-right" name="btn_verify" id="btn_verify" title="Confirm">
+					<i class="fa fa-check"></i> Confirm SO
+				</a>	
+
+				<a class="btn btn-danger pull-right" name="btn_delete" id="btn_delete" title="Delete"  style="margin-right: 5px;" 
+					<?php switch($hdr['statusCode']) {
+						case 'P' : case 'X' :
+							break;
+						default : 
+							if ( $hdr['revCount']==0 ) {
+								echo '';
+							}else{
+								echo ' disabled '; 
+							}
+					}//end switch ?>
+					>
+					<i class="fa fa-trash"></i> Delete SO</a>	
+				
+		<?php } ?>
+		</div>
+		<!--col-md-12-->
+
   </div>
 
 	</form>
 	<!--/.form2-->		
+
 
 </div>
 <!--/.tab-pane-->
@@ -532,30 +585,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	
 
 					
-	<div class="col-md-12">
-		<?php
-		if ( $soNo=="" ) {	?>						
-			<a class="btn btn-primary pull-right" name="btn_create" title="Create"><i class="fa fa-save"></i> Create SO</a>	
-	<?php }else{ ?>
-			<a class="btn btn-primary pull-right" name="btn_verify" id="btn_verify" title="Confirm">
-				<i class="fa fa-check"></i> Confirm SO
-			</a>	
-
-			<a class="btn btn-danger pull-right" name="btn_delete" id="btn_delete" title="Delete"  style="margin-right: 5px;" >
-				<?php switch($hdr['statusCode']) {
-					case 'P' : case 'X' :
-						break;
-					default : 
-						if ( $hdr['revCount']==0 ) {
-							echo '';
-						}else{
-							echo ' disabled '; 
-						}
-				}//end switch ?>
-				<i class="fa fa-trash"></i> Delete SO</a>	
-			
-	<?php } ?>
-	</div>
+	
 
 
     </div>
@@ -916,6 +946,7 @@ $("#spin").hide();
 	function formItemClear(){
 		$('#form2')[0].reset();
 		$('#refItmId').val('');
+		$('#deliveryDateItem').val($('#deliveryDate').val());
 		getList();
 		$('#prodCode').focus();
 	}
@@ -1143,15 +1174,15 @@ $("#spin").hide();
 	 });
 
 	 $('#btn_verify').click (function(e) {				 
-		var params = {			
-		action: 'confirm',	
-		soNo: $('#soNo').val()				
-		};
+		//var params = {			
+		//action: 'confirm',	
+		//soNo: $('#soNo').val()				
+		//};
 		//alert(params.hdrID);
 		$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 			$.post({
 				url: '<?=$rootPage;?>_ajax.php',
-				data: params,
+				data: $("#form1").serialize(),
 				dataType: 'json'
 			}).done(function(data) {
 				if (data.success){  
@@ -1159,8 +1190,10 @@ $("#spin").hide();
 						text: data.message,
 						type: 'success',
 						position:'top-center'
-					});		
-					window.location.href = '<?=$rootPage;?>_view.php?soNo='+params.soNo;
+					});	
+					//alert(params.soNo);
+					//alert(data.soNo);
+					window.location.href = '<?=$rootPage;?>_view.php?soNo='+data.soNo;
 				}else{
 					$.smkAlert({
 						text: data.message,
@@ -1210,6 +1243,15 @@ $("#spin").hide();
 	});
 	//.btn_click
 
+	$('#btn_home_next').click (function(e) {	
+		$('.nav-pills a[href="#menu1"]').tab('show');
+	});
+	//.btn_tab_next
+
+	$('#btn_menu1_next').click (function(e) {	
+		$('.nav-pills a[href="#menu2"]').tab('show');
+	});
+	//.btn_tab_next
 });
         
         
@@ -1248,6 +1290,15 @@ $("#spin").hide();
 			realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
 			$('#deliveryDate').datepicker('setDate', realDate);
 		<?php }else{ ?> $('#deliveryDate').datepicker('setDate', '0'); <?php } ?>
+		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
+
+		//กำหนดเป็น วันที่จากฐานข้อมูล		
+		<?php if($hdr['deliveryDate']<>"") { ?>
+			var queryDate = '<?=$hdr['deliveryDate'];?>',
+			dateParts = queryDate.match(/(\d+)/g)
+			realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
+			$('#deliveryDateItem').datepicker('setDate', realDate);
+		<?php }else{ ?> $('#deliveryDateItem').datepicker('setDate', '0'); <?php } ?>
 		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
 		
 		$([document.documentElement, document.body]).animate({

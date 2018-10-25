@@ -21,7 +21,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	$prodId = (isset($_GET['prodId']) ?$_GET['prodId']:'');
 	if($prodCode=="") $prodId="";
 ?>    
+ 
+</head>
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
 
+
+	
+  
 <div class="wrapper">
   <!-- Main Header -->
   <?php include 'header.php'; 

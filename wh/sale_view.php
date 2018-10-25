@@ -18,7 +18,13 @@ $rootPage="sale";
 <!-- iCheck for checkboxes and radio inputs -->
 <link rel="stylesheet" href="plugins/iCheck/all.css">
 
-<body class="hold-transition skin-blue sidebar-mini">
+</head>
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
+
+
+
+
+
 <div class="wrapper">
 
   <!-- Main Header -->

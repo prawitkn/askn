@@ -18,7 +18,7 @@ $saleItemId=$_GET['saleItemId'];
 ?>      
     
 </head>
-<body class="hold-transition skin-green sidebar-mini">
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
 
 
 	
@@ -50,7 +50,20 @@ $saleItemId=$_GET['saleItemId'];
     <section class="content">
 	
       <!-- Your Page Content Here -->
-	  
+	  <?php
+	  $sql="SELECT name FROM customer_location_type WHERE code=:code ";
+		$stmt = $pdo->prepare($sql);
+		$stmt->bindParam(':code', $locationCode);
+		$stmt->execute();
+		$slocName=$stmt->fetch()['name'];
+
+		$sql="SELECT code FROM product WHERE id=:id ";
+		$stmt = $pdo->prepare($sql);
+		$stmt->bindParam(':id', $id);
+		$stmt->execute();
+		$prodCode=$stmt->fetch()['code'];	
+		  ?>
+
 	
 	
 	<!-- Main row -->
@@ -60,7 +73,7 @@ $saleItemId=$_GET['saleItemId'];
 			<!-- TABLE: LATEST ORDERS -->
           <div class="box box-primary">
             <div class="box-header with-border">
-              <h3 class="box-title">Available Item Stock [<?=$locationCode;?>]</h3>
+              <h3 class="box-title">Available Item Stock : <span style="color: blue; font-weight: bold;"><?=$prodCode;?></span> <span style="color: red; font-weight: bold;">[<?=$slocName;?>]</span></h3>
 
               <div class="box-tools pull-right">
                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
@@ -254,7 +267,7 @@ $saleItemId=$_GET['saleItemId'];
                   <thead>
                   <tr>
 					<th>No.</th>
-					<th>Product Code</th>
+					<!--<th>Product Code</th>-->
 					<th>MFD.</th>
 					<th>Meter</th>
 					<th>Grade</th>	
@@ -279,7 +292,7 @@ $saleItemId=$_GET['saleItemId'];
 				?>
                   <tr>
 					<td><?= $row_no; ?></td>
-					<td><?= $row['prodCode']; ?></td>					
+					<!--<td><?= $row['prodCode']; ?></td>-->				
 					<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>
 					<td style="text-align: right;"><?= $row['meters']; ?></td>
 					<td><?= $gradeName; ?></td>
@@ -302,7 +315,7 @@ $saleItemId=$_GET['saleItemId'];
 						<input type="hidden" name="remarkWh[]" value="<?=$row['remarkWh'];?>" />					
 						<input type="hidden" name="gradeTypeId[]" value="<?=$row['gradeTypeId'];?>" />
 						<input type="hidden" name="balanceQty[]" value="<?=$row['total']-$row['bookedQty'];?>" />
-						<input type="textbox" name="pickQty[]" class="form-control" value="<?=$row['pickQty'];?>"  
+						<input type="textbox" name="pickQty[]" class="form-control" style="width: 100px; text-align: right;" value="<?=$row['pickQty'];?>"  
 						data-isShelfed="1" 
 						onkeypress="return numbersOnly(this, event);" 
 						onpaste="return false;"

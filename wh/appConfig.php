@@ -1,0 +1,4 @@
+<?php
+	
+	$skinColorName=" skin-green ";
+	

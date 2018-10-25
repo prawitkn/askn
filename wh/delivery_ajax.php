@@ -286,7 +286,7 @@ if(!isset($_POST['action'])){
 				
 			    //return JSON
 				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data approved', 'doNo' => $doNo));	
+				echo json_encode(array('success' => true, 'message' => 'Data Confirmed', 'doNo' => $doNo));	
 			} 
 			//Our catch block will handle any exceptions that are thrown.
 			catch(Exception $e){
@@ -328,7 +328,7 @@ if(!isset($_POST['action'])){
 				
 			    //return JSON
 				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data approved', 'doNo' => $doNo));	
+				echo json_encode(array('success' => true, 'message' => 'Data rejected', 'doNo' => $doNo));	
 			} 
 			//Our catch block will handle any exceptions that are thrown.
 			catch(Exception $e){
@@ -342,7 +342,7 @@ if(!isset($_POST['action'])){
 			//Check user roll.
 			switch($s_userGroupCode){
 				case 'it' : case 'admin' : case 'whSup' : 
-					break;
+					break; 
 				default : 
 					//return JSON
 					header('Content-Type: application/json');
@@ -352,8 +352,8 @@ if(!isset($_POST['action'])){
 
 			try{
 			    $doNo = $_POST['doNo'];	
-				$soNo = $_POST['soNo'];
-				$isClose = $_POST['isClose'];	
+				$soNo = $_POST['soNo']; 
+				//$isClose = $_POST['isClose'];	
 				
 				//We start our transaction.
 				$pdo->beginTransaction();
@@ -461,12 +461,32 @@ if(!isset($_POST['action'])){
 				$stmt = $pdo->prepare($sql);		
 				$stmt->execute(array($cur_no, $year, $name));
 				
-				//Close Sales Order.
-				if($isClose=='Yes'){
+				$isAutoClose=false;
+				//Cloase SO if all product order qty <= sent qty (all DO) 
+				$sql = "SELECT COUNT(*) as countTotal FROM (
+				    SELECT sd.prodId
+				    , sum(sd.qty) as sumOrderQty 
+				    ,IFNULL((SELECT sum(dd.qty) FROM delivery_header dh 
+				            LEFT JOIN delivery_prod dd ON dd.doNo=dh.doNo 
+				            WHERE dh.soNo=sh.soNo 
+				            AND dd.prodId=sd.prodId 
+				            GROUP BY dd.prodId),0) as sumSentQty 
+				    FROM sale_header sh 
+				    INNER JOIN sale_detail sd ON sd.soNo=sh.soNo 
+				    WHERE sh.soNo=:soNo  
+				    GROUP BY sd.prodId
+				    ) AS tmp
+				WHERE tmp.sumOrderQty>tmp.sumSentQty";
+				$stmt = $pdo->prepare($sql);		
+				$stmt->bindParam(':soNo', $soNo);
+				$stmt->execute();				
+				if( $stmt->fetch()['countTotal'] == 0 ){
 					$sql = "UPDATE sale_header SET isClose='Y' WHERE soNo=:soNo ";
 					$stmt = $pdo->prepare($sql);		
 					$stmt->bindParam(':soNo', $soNo);
 					$stmt->execute();
+
+					$isAutoClose=true;
 				}
 				
 				//Query 5: UPDATE STK BAl
@@ -500,7 +520,7 @@ if(!isset($_POST['action'])){
 				
 			    //return JSON
 				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data approved', 'doNo' => $nextNo));	
+				echo json_encode(array('success' => true, 'message' => 'Data approved', 'doNo' => $nextNo, 'isAutoClose' => $isAutoClose ));	
 			} 
 			//Our catch block will handle any exceptions that are thrown.
 			catch(Exception $e){

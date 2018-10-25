@@ -123,6 +123,7 @@ if(!isset($_POST['action'])){
 						$issueDate=$_POST['issueDate'][$index];
 						$grade=$_POST['grade'][$index];
 						$gradeTypeId=$_POST['gradeTypeId'][$index];
+						$remarkWh=$_POST['remarkWh'][$index];
 						$meter=$_POST['meter'][$index];
 						$pickQty=$_POST['pickQty'][$index];
 						$balanceQty=$_POST['balanceQty'][$index];
@@ -178,16 +179,17 @@ if(!isset($_POST['action'])){
 								exit();
 							}
 							$sql = "INSERT INTO `picking_detail` 
-							(`pickNo`,`saleItemId`, `prodId`, `issueDate`, `grade`, `gradeTypeId`, `meter`, `qty`) 
+							(`pickNo`,`saleItemId`, `prodId`, `issueDate`, `grade`, `gradeTypeId`, `remarkWh`, `meter`, `qty`) 
 							VALUES
-							(:pickNo,:saleItemId, :prodId,:issueDate,:grade,:gradeTypeId,:meter,:pickQty)";
+							(:pickNo,:saleItemId, :prodId,:issueDate,:grade,:gradeTypeId,:remarkWh, :meter,:pickQty)";
 							$stmt = $pdo->prepare($sql);
 							$stmt->bindParam(':pickNo', $pickNo);	
 							$stmt->bindParam(':saleItemId', $saleItemId);	
 							$stmt->bindParam(':prodId', $prodId);	
 							$stmt->bindParam(':issueDate', $_POST['issueDate'][$index]);	
 							$stmt->bindParam(':grade', $_POST['grade'][$index]);	
-							$stmt->bindParam(':gradeTypeId', $_POST['gradeTypeId'][$index]);	
+							$stmt->bindParam(':gradeTypeId', $_POST['gradeTypeId'][$index]);
+							$stmt->bindParam(':remarkWh', $_POST['remarkWh'][$index]);
 							$stmt->bindParam(':meter', $_POST['meter'][$index]);	
 							$stmt->bindParam(':pickQty', $_POST['pickQty'][$index]);	
 							$stmt->execute();

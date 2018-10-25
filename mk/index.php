@@ -9,6 +9,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <html>
 <?php include 'head.php'; ?>
 
+
+</head>
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
+	
 <?php 	
 	//$year = date('Y');
 	//$month = "0";//date('m');

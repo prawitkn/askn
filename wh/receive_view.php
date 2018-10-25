@@ -48,7 +48,7 @@ $rcNo = $hdr['rcNo'];
 <link rel="stylesheet" href="plugins/iCheck/all.css">
  
 </head>
-<body class="hold-transition skin-green sidebar-mini">
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
 
 
 	
@@ -240,7 +240,9 @@ $rcNo = $hdr['rcNo'];
 		<?php if($hdr['statusCode']=='P'){ ?>
           <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?rcNo=<?=$hdr['rcNo'];?>" class="btn btn-primary"><i class="glyphicon glyphicon-print"></i> Print</a>
 		  <?php switch($s_userGroupCode){ case 'admin' : case 'whSup' : case 'whMgr' : ?>
-				<a href="<?=$rootPage;?>_set_shelf.php?rcNo=<?=$hdr['rcNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-grid"></i> Shelf</a>
+				<a href="<?=$rootPage;?>_set_shelf.php?rcNo=<?=$hdr['rcNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-object-align-bottom"></i> Shelf</a>
+
+				<a target="" href="<?=$rootPage;?>_edit.php?rcNo=<?=$hdr['rcNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-edit"></i> Edit Item Grade Type</a>
 			<?php break; default : } ?>
 		<?php } ?>
 	

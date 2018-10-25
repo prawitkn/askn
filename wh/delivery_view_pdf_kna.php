@@ -43,41 +43,48 @@ class MYPDF extends TCPDF {
 		
 		$this->SetFont('THSarabun', 'B', 12, '', true);
 		
-		$this->setCellHeightRatio(1);
+		$this->setCellHeightRatio(0.8);
 		
-		$html='<table width="100%"  >		
-		<tr>
-			<td rowspan="3" ><img src="../asset/img/logo-ak_60x60.jpg" /></td>
-			<td colspan="5"><span style="font-size: 120%;" >บริษัท เอเซีย กังนัม จำกัด</span></td>
-			<td></td>
-			<td colspan="3" ></td>
-		</tr>
-		<tr>
-			<td colspan="5"><span style="font-size: 120%;" >ASIA KANGNAM  COMPANY LIMITED</span></td>
-			<td></td>
-			<td colspan="3" ></td>
-		</tr>
-		<tr>
-			<td colspan="5"><span style="font-size: 60%;" >69/1 ม.6 ต.ท่าข้าม อ.บางปะกง จ.ฉะเชิงเทรา 24130  โทร 0 – 3857 – 3635 แฟ็กซ์ 0 – 3857 – 3634</span></td>
-			<td colspan="2"></td>
-			<td colspan="2"></td>
-		</tr>
-		<tr>
-			<td style="text-align: center;"><span style="font-size: 60%;" >www.askn.com</span></td>
-			<td colspan="5"><span style="font-size: 60%;" >69/1 Moo 6, Thakam, Bangpakong, Chachoengsao 24130 Thailand Tel: 66 – 3857 – 3635 Fax: 66 – 3857 – 3634</span></td>
-			<td colspan="2"></td>
-			<td colspan="2"></td>
-		</tr>
+		$html='<table width="100%" >
+			<tr>
+				<td style="width: 200px;">
+					
+				</td>
+				<td style="width: 80px; height: 30px;">
+					<img src="../asset/img/logo-ak_60x60.jpg" />
+				</td>
+				<td style="width: 300px;"><br/><br/>
+					<span style="font-size: 200%;" >บริษัท เอเซีย กังนัม จำกัด</span><br/>
+					<span style="font-size: 120%;" >ASIA KANGNAM  COMPANY LIMITED</span>
+				</td>
+				<td style="width: 100px;">FM-WL-004</td>
+			</tr>
+			<tr>
+				<td style="width: 200px;">
+					
+				</td>
+				<td style="width: 80px;">
+					สำนักงานใหญ่ :
+				</td>
+				<td style="width: 300px;">
+					<span style="font-size: 90%;" >69/1 ม.6 ต.ท่าข้าม อ.บางปะกง จ.ฉะเชิงเทรา 24130</span><br/>
+					<span style="font-size: 90%;" >69/1 Moo 6, Thakam, Bangpakong, Chachoengsao 24130 Thailand</span><br/>
+					<span style="font-size: 90%;" >Tel: +66 38573635 Fax: +66 38573634</span><br/>
+					<span style="font-size: 90%;" >www.askn.co.th E-mail : info@askn.co.th</span><br/>
+					<span style="font-size: 120%;" >ใบส่งสินค้า (DELIVERY ORDER)</span>
+				</td>
+				<td style="width: 100px;">
+					<br/><br/>
+					No. <br/>
+					<br/><br/>
+					วันที่ '.date('d M Y',strtotime( $hdr['deliveryDate'] )).'
+				</td>
+			</tr>
 		</table>
 		';
+		
 
 		$html.='<table width="100%"  >	
-		<tr>
-			<td colspan="3" ></td>
-			<td colspan="3" style="border: o.1em solid black; text-align: center; font-size: large;" >ใบส่งสินค้า (DELIVERY ORDER)</td>
-			<td colspan="2" style="font-size: 95%;" >&nbsp;วันที่ (Date) : </td>
-			<td colspan="2"  style="border-bottom: 0.1em solid black;">'.date('d M Y',strtotime( $hdr['deliveryDate'] )).'</td>
-		</tr>
 		<tr>
 			<td colspan="1" >ชื่อลูกค้า : </td>
 			<td colspan="4"  style="border-bottom: 0.1em solid black;"> '.$hdr['custName'].'</td>			
@@ -95,15 +102,12 @@ class MYPDF extends TCPDF {
 			<td colspan="1"  style="border-bottom: 0.1em solid black;" > '.$hdr['smCode'].'</td>		
 		</tr>
 		<tr>
-			<td colspan="10"  style="border-bottom: 0.1em solid black;">'.$hdr['shipToAddr1'].' '.$hdr['shipToAddr2'].'</td>
+			<td colspan="10"  style="border-bottom: 0.1em solid black;">'.$hdr['shipToAddr1'].' '.$hdr['shipToAddr2'].' '.$hdr['shipToAddr3'].' '.$hdr['shipToZipcode'].'</td>
 		</tr>
-		<tr>
-			<td colspan="10"  style="border-bottom: 0.1em solid black;">'.$hdr['shipToAddr3'].$hdr['shipToZipcode'].'</td>
-		</tr>	
-		</table>
+		</table><br/>
 		';
 		$this->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
-		$this->setCellHeightRatio(1.25);
+		$this->setCellHeightRatio(1);
 	}
 	
 	public function foot($hdr, $html){
@@ -259,9 +263,10 @@ if( isset($_GET['doNo']) ){
 					<table class="table table-striped no-margin" style="width:100%; table-layout: fixed;"  >
 						<thead>	
 							<tr>
-								<th style="font-weight: bold; text-align: center; width: 60px; border: 0.1em solid black;">ลำดับที่</th>										
-								<th style="font-weight: bold; text-align: center; width: 400px; border: 0.1em solid black;">รายการสินค้า</th>							
-								<th style="font-weight: bold; text-align: center; width: 60px; border: 0.1em solid black;">จำนวน</th>								
+								<th style="font-weight: bold; text-align: center; width: 50px; border: 0.1em solid black;">ลำดับที่</th>										
+								<th style="font-weight: bold; text-align: center; width: 300px; border: 0.1em solid black;">รายการสินค้า</th>	
+								<th style="font-weight: bold; text-align: center; width: 100px; border: 0.1em solid black;">จำนวนตามใบสั่งข่าย</th>							
+								<th style="font-weight: bold; text-align: center; width: 100px; border: 0.1em solid black;">จำนวนส่งจริง</th>								
 								<th style="font-weight: bold; text-align: center; border: 0.1em solid black;">หมายเหตุ</th>
 							</tr>
 						</thead>
@@ -271,12 +276,14 @@ if( isset($_GET['doNo']) ){
 		//endif iRow==0 
 		$html .='<tr>	
 					<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 60px;
-								border: 0.1em solid black; text-align: right; width: 60px;">'.$row_no.'</td>						
+								border: 0.1em solid black; text-align: right; width: 50px;">'.$row_no.'</td>						
 					<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-								border: 0.1em solid black; padding: 10px; width: 400px;"> 
+								border: 0.1em solid black; padding: 10px; width: 300px;"> 
 								 KNA '.$row['prodCode'].'</td>
 					<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
-								border: 0.1em solid black; text-align: right; width: 60px;">'.number_format($row['qty'],0,'.',',').'</td>
+								border: 0.1em solid black; text-align: right; width: 100px;">'.number_format($row['sumSalesQty'],2,'.',',').' '.$row['uomCode'].'</td>
+					<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
+								border: 0.1em solid black; text-align: right; width: 100px;">'.number_format($row['qty'],2,'.',',').' '.$row['uomCode'].'</td>
 
 					<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
 								border: 0.1em solid black;">'.$row['remark'].'</td>		
@@ -296,9 +303,10 @@ if( isset($_GET['doNo']) ){
 	if($iRow<>8){
 		for($iRowRemain=$iRow; $iRowRemain<=7; $iRowRemain++){
 			$html .='<tr>
-					<td style="font-weight: bold; text-align: center; width: 60px;border: 0.1em solid black;"></td>
-					<td style="font-weight: bold; text-align: center; width: 400px;border: 0.1em solid black;"></td>
-					<td style="font-weight: bold; text-align: center; width: 60px;border: 0.1em solid black;"></td>								
+					<td style="font-weight: bold; text-align: center; width: 50px;border: 0.1em solid black;"></td>
+					<td style="font-weight: bold; text-align: center; width: 300px;border: 0.1em solid black;"></td>
+					<td style="font-weight: bold; text-align: center; width: 100px;border: 0.1em solid black;"></td>
+					<td style="font-weight: bold; text-align: center; width: 100px;border: 0.1em solid black;"></td>
 					<td style="font-weight: bold; text-align: center; border: 0.1em solid black;"></td>			
 				</tr>';	
 		}

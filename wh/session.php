@@ -5,6 +5,7 @@
         header("Location: login.php");
     }
     
+    include 'appConfig.php';	
 	include '../db/db.php';
 		
 	if(!isset($_COOKIE["loginWh"])){

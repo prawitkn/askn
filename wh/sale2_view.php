@@ -14,18 +14,16 @@ $rootPage="sale2";
 
 
 ?>
-    
 <!-- iCheck for checkboxes and radio inputs -->
 <link rel="stylesheet" href="plugins/iCheck/all.css">
-
  
 </head>
-<body class="hold-transition skin-green sidebar-mini">
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
 
 
 	
-  
-
+	
+	
 <div class="wrapper">
 
   <!-- Main Header -->
@@ -45,7 +43,7 @@ $rootPage="sale2";
       </h1>
       <ol class="breadcrumb">
         <li><a <?php switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' : case 'sales' : ?> href="<?=$rootPage;?>.php" <?php break; default : } //end switch roll. ?> ><i class="fa fa-list"></i>Sales List</a></li>
-		<li><a <?php switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' : case 'sales' : ?> href="<?=$rootPage;?>_item.php?soNo=<?=$soNo;?>" <?php break; default : } //end switch roll. ?> ><i class="fa fa-edit"></i>SO No.<?=$soNo;?></a></li>
+		<li><a <?php switch($s_userGroupCode){ case 'admin' : case 'salesAdmin' : case 'sales' : ?> href="<?=$rootPage;?>_add.php?soNo=<?=$soNo;?>" <?php break; default : } //end switch roll. ?> ><i class="fa fa-edit"></i>SO No.<?=$soNo;?></a></li>
       </ol>
     </section>
 
@@ -165,7 +163,7 @@ $rootPage="sale2";
 					LEFT JOIN product_roll_length rl ON rl.id=a.rollLengthId 
 					WHERE 1
 					AND a.`soNo`=:soNo 
-					ORDER BY a.createTime
+					ORDER BY a.id, a.createTime
 					";
 					$stmt = $pdo->prepare($sql);	
 					$stmt->bindParam(':soNo', $hdr['soNo']);
@@ -314,9 +312,9 @@ $rootPage="sale2";
 					<label class=""><?php echo $hdr['createByName']; ?></label></br>
 					<label class=""><?php echo date('d M Y H:m',strtotime( $hdr['createTime'] )); ?></label></br>
 					<label class=""><?php echo $hdr['confirmByName']; ?></label></br>
-					<label class=""><?php echo date('d M Y H:m',strtotime( $hdr['confirmTime'] )); ?></label></br>
+					<label class=""><?php if($hdr['confirmTime']<>"0000-00-00 00:00:00") echo date('d M Y H:m',strtotime( $hdr['confirmTime'] )); ?></label></br>
 					<label class=""><?php echo $hdr['approveByName']; ?></label></br>
-					<label class=""><?php echo date('d M Y H:m',strtotime( $hdr['approveTime'] )); ?></label>	
+					<label class=""><?php  if($hdr['confirmTime']<>"0000-00-00 00:00:00") echo date('d M Y H:m',strtotime( $hdr['approveTime'] )); ?></label>	
 				</div>				
 			</div>			
 		</div>

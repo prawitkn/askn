@@ -56,7 +56,9 @@
 		<?php } ?>
 			
 
-
+		<li class="header">Master Data</li>
+			<li><a href="product_list.php"><i class="fa fa-barcode"></i> <span>Product List</span></a></li>
+		
 
 
 

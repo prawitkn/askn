@@ -152,6 +152,10 @@
 			<li><a href="report_prod_stk_n_pending.php"><i class="fa fa-list-alt"></i> <span>Stock n Pending Report</span></a></li>
 		<?php break; default : } ?>
 		
+		<?php switch($s_userGroupCode){  case 'it' :  case 'admin' : case 'salesAdmin' : ?>			
+				<li><a href="report_delivery2.php"><i class="fa fa-truck"></i> <span> Delivery Report </span></a></li>
+			<?php break; default : } ?>
+		
 		<?php switch($s_userGroupCode){ case 'admin' : ?>	
 			<!--<li><a href="#"><i class="fa fa-bars"></i> <span>Visit Customer </span></a></li>
 			<li><a href="#"><i class="fa fa-bars"></i> <span>New Product Development</span></a></li>

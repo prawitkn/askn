@@ -42,7 +42,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 ?>
   
 </head>
-<body class="hold-transition skin-green sidebar-mini">
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
 
 
 	
@@ -285,10 +285,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				</table>
 				</div>
 				<!--/.table-responsive-->
+
+				<!--<button type="button" id="btn_remark_update" class="btn btn-default" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='P'?'':' disabled '); ?> >
+				<i class="glyphicon glyphicon-edit"></i> Update Grade Type & Remark for All Item.
+			  </button> -->
+
+
 				
-				<button type="button" id="btn_verify" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
+				<!--<button type="button" id="btn_verify" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
 				<i class="glyphicon glyphicon-ok"></i> Confirm
-			  </button>   
+			  </button>-->
 			  
 			  <button type="button" id="btn_item_update" class="btn btn-warning pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
 				<i class="glyphicon glyphicon-ok"></i> Update and Confirm

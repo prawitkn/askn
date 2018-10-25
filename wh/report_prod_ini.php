@@ -20,27 +20,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	
 ?>    
 
-<!--
-BODY TAG OPTIONS:
-=================
-Apply one or more of the following classes to get the
-desired effect
-|---------------------------------------------------------|
-| SKINS         | skin-blue                               |
-|               | skin-black                              |
-|               | skin-purple                             |
-|               | skin-yellow                             |
-|               | skin-red                                |
-|               | skin-green                              |
-|---------------------------------------------------------|
-|LAYOUT OPTIONS | fixed                                   |
-|               | layout-boxed                            |
-|               | layout-top-nav                          |
-|               | sidebar-collapse                        |
-|               | sidebar-mini                            |
-|---------------------------------------------------------|
--->
-<body class="hold-transition skin-blue sidebar-mini">
+</head>
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
+
+
+
+
+
 <div class="wrapper">
   <!-- Main Header -->
   <?php include 'header.php'; 

@@ -10,6 +10,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <?php 
 	include 'head.php'; 
 ?>    
+ 
+</head>
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
+
+
+	
+  
+
+
 <div class="wrapper">
   <!-- Main Header -->
   <?php include 'header.php';   
@@ -129,15 +138,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 $sql = "SELECT hdr.soNo, hdr.deliveryDate
 				, dtl.prodId, prd.code as prodCode
 				, sum(dtl.qty) as sumQty
-				, (SELECT IFNULL(sum(doDtl.qty),0) FROM delivery_header doHdr
+				, (SELECT IFNULL(sum(itm.qty),0) FROM delivery_header doHdr
 					INNER JOIN delivery_detail doDtl ON doDtl.doNo=doHdr.doNo
 					INNER JOIN product_item itm ON itm.prodItemId=doDtl.prodItemId 
 					WHERE 1=1
 					AND doHdr.soNo=hdr.soNo
-					AND itm.prodId=dtl.prodId) as sumSentDtl
+					AND itm.prodCodeId=dtl.prodId) as sumSentDtl
 				FROM `sale_header` hdr
 				INNER JOIN sale_detail dtl ON dtl.soNo=hdr.soNo
-				LEFT JOIN product prd ON prd.id=dtl.prodId ";				
+				INNER JOIN product prd ON prd.id=dtl.prodId ";				
 				
 				$sql .= "WHERE 1 
 				AND hdr.statusCode='P' 
@@ -175,7 +184,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<tr>
 						<td><?=$c_row;?></td>
 						<td><?=$row['prodCode'];?></td>
-						<td><a href="sale_view.php?soNo=<?=$row['soNo'];?>"><?=$row['soNo'];?></a></td>
+						<td><a href="sale2_view.php?soNo=<?=$row['soNo'];?>"><?=$row['soNo'];?></a></td>
 						<td><?= date('d M Y', strtotime($row['deliveryDate'])); ?></td>
 						<td style="text-align: right;"><?=number_format($row['sumQty'],0,'.',',');?></td>
 						<td style="text-align: right;"><?=number_format($row['sumSentDtl'],0,'.',',');?></td>

@@ -5,6 +5,7 @@
         header("Location: login.php");
     }
 	
+	include 'appConfig.php';	
 	include '../db/db.php';	
     
 	//ALTER TABLE `wh_user` ADD `loginStatus` INT NOT NULL DEFAULT '0' AFTER `statusCode`, ADD `lastLoginTime` DATETIME NOT NULL AFTER `loginStatus`;

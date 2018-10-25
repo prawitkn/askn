@@ -75,6 +75,7 @@
 						$stmt->execute();
 					}else{
 						$sql = "UPDATE `sale_header` SET `poNo`=:poNo, `piNo`=:piNo, `saleDate`=:saleDate, `custId`=:custId, `shipToId`=:shipToId, `smId`=:smId, `deliveryDate`=:deliveryDate, `suppTypeId`=:suppTypeId, `stkTypeId`=:stkTypeId, `packageTypeId`=:packageTypeId, `priceTypeId`=:priceTypeId, `deliveryTypeId`=:deliveryTypeId, `shippingMarksId`=:shippingMarksId, `containerLoadId`=:containerLoadId, `creditTypeId`=:creditTypeId, `remark`=:remark, `payTypeCreditDays`=:payTypeCreditDays
+						,`statusCode`='C'
 						, `updateTime`=NOW(), `updateById`=:updateById ";
 						$sql .= "WHERE `soNo`=:soNo 
 						";
@@ -124,7 +125,7 @@
 				try{
 	
 				    $soNo = $_POST['soNo'];			    
-					$deliveryDate = $_POST['deliveryDate'];
+					$deliveryDate = $_POST['deliveryDateItem'];
 				    $prodId = $_POST['prodId'];
 					$qty = $_POST['qty'];
 					$rollLengthId = (isset($_POST['rollLengthId'])? $_POST['rollLengthId'] : '' );
@@ -313,7 +314,7 @@
 					
 				    //return JSON
 					header('Content-Type: application/json');
-					echo json_encode(array('success' => true, 'message' => 'Data Confirmed'));
+					echo json_encode(array('success' => true, 'message' => 'Data Confirmed', 'soNo' => $soNo));
 				} 
 				//Our catch block will handle any exceptions that are thrown.
 				catch(Exception $e){

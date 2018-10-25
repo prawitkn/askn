@@ -17,7 +17,14 @@ switch($s_userGroupCode){
 		exit();
 }
 ?>
+ 
+</head>
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
 
+
+	
+	
+	
 <div class="wrapper">
 
   <!-- Main Header -->

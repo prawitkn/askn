@@ -40,7 +40,7 @@ $hdr = $stmt->fetch();
 <link rel="stylesheet" href="plugins/iCheck/all.css">
  
 </head>
-<body class="hold-transition skin-green sidebar-mini">
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
 
 
 	
@@ -126,7 +126,7 @@ $hdr = $stmt->fetch();
 				<div class="box-body">
 				   <?php
 						$sql = "
-						SELECT dtl.`id`, dtl.prodId, dtl.`issueDate`, dtl.`grade`, dtl.`meter`, dtl.`qty`, dtl.`pickNo` , dtl.`gradeTypeId`, pgt.`name` as gradeTypeName 
+						SELECT dtl.`id`, dtl.prodId, dtl.`issueDate`, dtl.`grade`, dtl.`meter`, dtl.`qty`, dtl.`pickNo` , dtl.`gradeTypeId`, dtl.`remarkWh`, pgt.`name` as gradeTypeName 
 						, prd.code as prodCode 
 						FROM `picking_detail` dtl 
 						LEFT JOIN product prd ON prd.id=dtl.prodId 
@@ -149,6 +149,7 @@ $hdr = $stmt->fetch();
 							<th>Issue Date</th>
 							<th>Grade</th>
 							<th>Grade Type</th>
+							<th>Remark WH</th>
 							<th>Meter</th>							
 							<th style="color:blue;">Qty</th>
 							<th>Total</th>
@@ -168,7 +169,7 @@ $hdr = $stmt->fetch();
 			SELECT DISTINCT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, ws.code as shelfCode, ws.name as shelfName
 			, prd.code as prodCode 
 			FROM `picking_detail` dtl 		
-			INNER JOIN product_item itm ON itm.prodCodeId=dtl.prodId AND itm.issueDate=dtl.issueDate AND itm.grade=dtl.grade 				
+			INNER JOIN product_item itm ON itm.prodCodeId=dtl.prodId AND itm.issueDate=dtl.issueDate AND itm.grade=dtl.grade AND itm.remarkWh=dtl.remarkWh  				
 			INNER JOIN receive_detail rDtl on  itm.prodItemId=rDtl.prodItemId 
 			INNER JOIN wh_shelf_map_item wmi on wmi.recvProdId=rDtl.id 
 			INNER JOIN wh_shelf ws ON wmi.shelfId=ws.id 
@@ -192,6 +193,7 @@ $hdr = $stmt->fetch();
 								<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>
 								<td><?= $gradeName; ?></td>
 								<td><?= $row['gradeTypeName']; ?></td>	
+								<td><?= $row['remarkWh']; ?></td>	
 								<td style="text-align: right;"><?= $row['meter']; ?></td>								
 								<td style="text-align: right; color:blue;"><?= number_format(($row['qty']/$row['meter']),2,'.',','); ?></td>
 								<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>

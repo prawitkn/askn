@@ -75,7 +75,7 @@ $rowCount=$stmt->rowCount();
 		?>
  
 </head>
-<body class="hold-transition skin-green sidebar-mini">
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
 
 
 	
@@ -165,7 +165,7 @@ $rowCount=$stmt->rowCount();
 							<th style="text-align: right;">Sent Qty</th>
 							<th style="text-align: right;">Delivery Qty</th>
 							<th>Remark</th>
-							<th style="text-align: right;">Remain Qty</th>
+							<!--<th style="text-align: right;">Remain Qty</th>-->
 						</tr>
 						<?php $remainTotal=0; $row_no=1; while ($row = $stmt->fetch()) {
 						$remarinQty=0;
@@ -184,12 +184,12 @@ $rowCount=$stmt->rowCount();
 							<td style="text-align: right;"><?= number_format($row['sumSentQty'],0,'.',',').'&nbsp;'.$row['uomCode']; ?></td>
 							<td style="text-align: right; color: blue; font-weight: bold;"><?= number_format($row['sumDeliveryQty'],0,'.',',').'&nbsp;'.$row['uomCode']; ?></td>
 							<td><?= $row['remark']; ?></td>
-							<td style="text-align: right; color: red;"><?= number_format($remarinQty,0,'.',',').'&nbsp;'.$row['uomCode']; ?></td>
+							<!--<td style="text-align: right; color: red;"><?= number_format($remarinQty,0,'.',',').'&nbsp;'.$row['uomCode']; ?></td>-->
 						</tr>
 						<?php $row_no+=1; } ?>
 					</table>
-					<!-- for automatic close SO No. -->
-					<input type="hidden" name="isClose" id="isClose" value="<?=($remainTotal<=0?'Yes':'No'); ?>" />
+					<!-- for automatic close SO No. 
+					<input type="hidden" name="isClose" id="isClose" value="<?=($remainTotal<=0?'Yes':'No'); ?>" />-->
 				</div><!-- /.box-body -->
 	</div><!-- /.row add items -->
 		
@@ -399,12 +399,12 @@ $('#btn_approve').click (function(e) {
 	var params = {			
 	action: 'approve',				
 	doNo: $('#doNo').val(),
-	soNo: $('#soNo').val(),
-	isClose: $('#isClose').val()
+	soNo: $('#soNo').val()//,
+	//isClose: $('#isClose').val()
 	};
-	<?php if($remainTotal==0){ ?>
-		alert('Sales Order No. <?=$hdr['soNo'];?> will Close automatically.');
-	<?php } ?>
+	<?php //if($remainTotal==0){ ?>
+		//alert('Sales Order No. <?=$hdr['soNo'];?> will Close automatically.');
+	<?php //} ?>
 	//alert(params.hdrID);
 	$.smkConfirm({text:'Are you sure to Approve ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 		$.post({
@@ -420,6 +420,9 @@ $('#btn_approve').click (function(e) {
 				});
 				$('#audioSuccess').get(0).play();
 				alert('Success.');
+				if( data.isAutoClose ) {
+					alert('SO No. <?=$hdr['soNo'];?> is CLOSED !!!');
+				}
 				window.location.href = "<?=$rootPage;?>_view.php?doNo=" + data.doNo;
 			}else{
 				$.smkAlert({

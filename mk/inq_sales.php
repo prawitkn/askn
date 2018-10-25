@@ -9,7 +9,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <html>
 <?php 
 	include 'head.php'; 
-?>    
+?>  
+ 
+</head>
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
+
+
+	
+   
 <div class="wrapper">
   <!-- Main Header -->
   <?php include 'header.php';   
@@ -119,7 +126,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						<label for="dateFrom">Date From : </label>
 						<input type="text" id="dateFrom" name="dateFrom" value="" class="form-control datepicker" data-smk-msg="Require From Date." required >
 						<label for="dateTo">Date To : </label>
-						<input type="text" id="dateTo" name="dateTo" value="" class="form-control datepicker" data-smk-msg="Require To Date." required >
+						<input type="text" id="dateTo" name="dateTo" value="" class="form-control datepicker" data-smk-msg="Require To Date." required ><br/>
 						<label>Customer : </label>
 					<select name="custId" class="form-control">
 						<option value="" <?php echo ($custId==""?'selected':''); ?> >--All--</option>
@@ -162,7 +169,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							echo '<option value="'.$row['id'].'" '.$selected.'>'.$row['code'].' : '.$row['name'].'</option>';
 						}
 						?>
-					</select>
+					</select><br/>
 					<label>Status : </label>
 					<select name="statusCode" class="form-control">
 						<option value="" <?php echo ($statusCode==""?'selected':''); ?> >--All--</option>

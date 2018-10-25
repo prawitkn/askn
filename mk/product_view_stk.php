@@ -7,8 +7,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <html>
 <?php include 'head.php'; ?>  
 
+	<!-- fancybox CSS -->
+	<link rel="stylesheet" type="text/css" href="plugins/fancybox-master/dist/jquery.fancybox.min.css">
+
 </head>
-<body class="hold-transition skin-green sidebar-mini">
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
 
 
 	
@@ -176,13 +179,32 @@ ORDER BY rh.toCode, itm.gradeTypeId, itm.remarkWh
         <!-- Left col -->
         <div class="col-md-12">
           <!-- TABLE: LATEST ORDERS -->
+          <div class="box box-primary">
+            <div class="box-header with-border">
+              <h3 class="box-title">Stock Balance VS Order Pendings</h3>
+
+              <div class="box-tools pull-right">
+                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                </button>
+                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+              </div>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+			 <div id="container" style="width:100%; height:400px;">
+                
+              </div> 
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
           		
 		
 		
           <!-- TABLE: LATEST ORDERS -->
           <div class="box box-primary">
             <div class="box-header with-border">
-              <h3 class="box-title">Latest Orders</h3>
+              <h3 class="box-title">Pending Orders</h3>
 
               <div class="box-tools pull-right">
                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
@@ -194,19 +216,43 @@ ORDER BY rh.toCode, itm.gradeTypeId, itm.remarkWh
             <div class="box-body">
 			
 			<?php	
+					$sql = "SELECT hdr.soNo, dtl.deliveryDate
+					, dtl.prodId, prd.code as prodCode
+					, sum(dtl.qty) as sumQty
+					, (SELECT IFNULL(sum(itm.qty),0) FROM delivery_header doHdr
+						INNER JOIN delivery_detail doDtl ON doDtl.doNo=doHdr.doNo
+						INNER JOIN product_item itm ON itm.prodItemId=doDtl.prodItemId 
+						WHERE 1=1
+						AND doHdr.soNo=hdr.soNo
+						AND itm.prodCodeId=dtl.prodId) as sumSentDtl
+					, cust.name as customerName 
+					FROM `sale_header` hdr
+					INNER JOIN sale_detail dtl ON dtl.soNo=hdr.soNo
+					INNER JOIN product prd ON prd.id=dtl.prodId 
+					INNER JOIN customer cust ON cust.id=hdr.custId
+					";				
+					if ($sloc<>"") $sql.="AND cust.locationCode=:sloc ";
 					
-					$sql = "SELECT sd.`prodId`, sd.`qty`, sd.`soNo` 
-					, prd.`code` as prodCode
-					FROM sale_detail sd 
-					INNER JOIN sale_header s on sd.soNo=s.soNo AND s.isClose='N' 
-					LEFT JOIN product prd ON prd.id=sd.prodId 
-					WHERE 1 
-					AND sd.prodId=:id 
-					LIMIT 10 
+					$sql .= "WHERE 1 
+					AND hdr.statusCode='P' 
+					AND hdr.isClose='N' 
 					";
-					$stmt = $pdo->prepare($sql);
+					if($id<>""){ $sql .= " AND dtl.prodId=:id ";	}						
+					$sql .= "
+					group by hdr.soNo, dtl.prodId, prd.code, dtl.deliveryDate ";
+					$sql.="
+					ORDER BY dtl.deliveryDate ASC 
+					";
+					//$sql .= "LIMIT $start, $rows ";
+					$stmt = $pdo->prepare($sql);	
 					$stmt->bindParam(':id', $id);
-					$stmt->execute();
+					switch ($sloc) {
+						case '8': $tmp="L"; $stmt->bindParam(':sloc', $tmp ); break;		
+						case 'E': $tmp="E"; $stmt->bindParam(':sloc', $tmp ); break;					
+						default: break;
+					}
+
+					$stmt->execute();       
 					
 				?>
               <div class="table-responsive">
@@ -214,16 +260,31 @@ ORDER BY rh.toCode, itm.gradeTypeId, itm.remarkWh
                   <thead>
                   <tr>
                     <th>Order No.</th>
+                    <th>Customer</th>
+                    <th>Delivery Date</th>
                     <th>Qty</th>
                   </tr>
                   </thead>
                   <tbody>
-				  <?php $row_no = 1; while ($row = $stmt->fetch()) { 
-					  
+				  <?php 
+				  	$tmpRemainQty=$sumQtyTotal;
+					$dateName = array();
+					$remainQty = array();
+			        $orderQty = array();
+
+        			$row_no = 1; while ($row = $stmt->fetch()) { 
+					 $pendingQty=$row['sumQty']-$row['sumSentDtl'];
+
+					 $dateName[] = date('d M Y', strtotime($row['deliveryDate']));
+					 $remainQty[] = $tmpRemainQty;
+					 $orderQty[] = $row['sumQty'];
+					 $tmpRemainQty-=$row['sumQty'];
 						?>
                   <tr>
-                    <td><a href="sale_view.php?soNo=<?=$row['soNo'];?>" target="_blank"><?= $row['soNo']; ?></a></td>
-					<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
+                    <td><a href="sale2_view.php?soNo=<?=$row['soNo'];?>" target="_blank"><?= $row['soNo']; ?></a></td>
+                    <td><?= $row['customerName']; ?></a></td>
+                    <td><?= date('d M Y', strtotime($row['deliveryDate'])); ?></a></td>
+					<td style="text-align: right;"><?= number_format($pendingQty,2,'.',','); ?></td>
                 </tr>
                 <?php $row_no+=1; } ?>
                   </tbody>
@@ -234,6 +295,14 @@ ORDER BY rh.toCode, itm.gradeTypeId, itm.remarkWh
             <!-- /.box-body -->
           </div>
           <!-- /.box -->
+
+
+
+           
+
+
+
+
 		  
         </div>
         <!-- /.col -->
@@ -273,7 +342,97 @@ ORDER BY rh.toCode, itm.gradeTypeId, itm.remarkWh
 <!-- Add fancybox JS 
 <script src="//code.jquery.com/jquery-3.2.1.min.js"></script>-->
 <script src="plugins/fancybox-master/dist/jquery.fancybox.min.js"></script>
- 
+
+<!-- Hightchart -->
+<script src="plugins/highcharts-5.0.12/code/highcharts.js"></script>
+<script src="plugins/highcharts-5.0.12/code/modules/exporting.js"></script>
+
+<script>
+$(function () { 
+  Highcharts.setOptions({
+    colors: ['red', 'green', '#DDDF00', '#24CBE5', '#64E572', '#FF9655', '#FFF263', '#6AF9C4']
+});
+
+    var myChart = Highcharts.chart('container', {
+        chart: {
+        type: 'line'
+    },
+    title: {
+        text: 'Stock Balance VS Order Pendings'
+    },
+    credits: {
+        enabled: false
+    },
+    subtitle: {
+        text: ''
+    },
+    xAxis: {
+        allowDecimals: false,
+        labels: {
+            formatter: function () {
+                return this.value; // clean, unformatted number for year
+            }
+        }
+    },
+    yAxis: {
+        title: {
+            text: 'Nuclear weapon states'
+        },
+        labels: {
+            formatter: function () {
+                return this.value / 1000 + 'k';
+            }
+        }
+    },
+    tooltip: {
+        pointFormat: 'Quantity <b>{point.y:,.0f}</b>'
+    },
+        xAxis: {
+            
+            //categories: ['Apples', 'Bananas', 'Oranges'],
+            categories: [<?php echo "'" . implode("','", $dateName) . "'"; ?>]
+                        //'prod5','prod6','prod7'
+        },
+        yAxis: {
+            title: {
+                text: ' Quantity'
+            }
+        },
+        series: [{
+            name: 'Order',
+            data: [<?php echo implode(",", $orderQty); ?>],
+            //data: [1, 0, 4]
+            dataLabels: {
+                enabled: true,
+                inside: false,
+                rotation: 0,
+                y: -50,
+                style: {
+                            fontWeight: 'bold'
+                        },
+                        format: 'Order {point.y:,.0f}'
+                    }
+       },{
+            name: 'Balance',
+            data: [<?php echo implode(",", $remainQty); ?>],
+            //data: [1, 0, 4]
+            dataLabels: {
+                enabled: true,
+                inside: false,
+                rotation: 0,
+                y: -50,
+                style: {
+                            fontWeight: 'bold'
+                        },
+                        format: 'Balance {point.y:,.0f} '
+                    }
+       }
+        ]
+    });
+  });
+</script>
+
+
 <script> 
   // to start and stop spiner.  
 $( document ).ajaxStart(function() {

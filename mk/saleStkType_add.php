@@ -19,7 +19,15 @@ switch($s_userGroupCode){
 		header('Location: access_denied.php');
 		exit();
 }
-?>
+?> 
+
+</head>
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
+
+
+	
+	
+	
 
 <div class="wrapper">
 

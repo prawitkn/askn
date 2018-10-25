@@ -11,7 +11,18 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		$s_userGroupCode = $row_user['userGroupCode'];
 		$s_userDeptCode = $row_user['userDeptCode'];
 		$s_userID=$_SESSION['userID'];*/
-	
+		
+	//Roll
+	switch($s_userGroupCode){
+		case 'admin' : case 'whOff' : case 'whSup' : case 'pdSup' : case 'pdMgr' : case 'whMgr' : case 'salesAdmin' : 
+			break;
+		default : 
+			header('Location: access_denied.php');
+			exit();
+	}
+
+
+
 	$rootPage="report_delivery2";
 	
 	$dateFrom=$dateTo="";
@@ -51,8 +62,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 ?>    
  
 </head>
-<body class="hold-transition skin-green sidebar-mini">
-
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
 
 	
   

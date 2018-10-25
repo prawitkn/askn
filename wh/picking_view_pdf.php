@@ -66,7 +66,7 @@ $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
 // set margins (left, top, right)
 //$pdf->SetMargins(24, 26, 30);	//หน้า ๓ บนถึงตูดเลขหน้า ๒ ตูดเลขหน้าถึงตูดบรรทัดแรก ๑.๕
-$pdf->SetMargins(20, 20, 10);	//หน้า ๓ บนถึงตูดเลขหน้า ๒ ตูดเลขหน้าถึงตูดบรรทัดแรก ๑.๕
+$pdf->SetMargins(5, 20, 10);	//หน้า ๓ บนถึงตูดเลขหน้า ๒ ตูดเลขหน้าถึงตูดบรรทัดแรก ๑.๕
 $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
 $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
 
@@ -128,14 +128,14 @@ $hdr = $stmt->fetch();
 
 			$sql = "
 			SELECT dtl.`id`, dtl.`prodId`, dtl.`issueDate`, dtl.`grade`,  dtl.`meter`, dtl.`qty`, dtl.`pickNo` 
-			, prd.code as prodCode  , dtl.`gradeTypeId`, pgt.`name` as gradeTypeName 
+			, prd.code as prodCode  , dtl.`gradeTypeId`, dtl.`remarkWh`, pgt.`name` as gradeTypeName 
 			FROM `picking_detail` dtl 	
 			LEFT JOIN product prd ON prd.id=dtl.prodId 
 			LEFT JOIN product_item_grade_type pgt ON pgt.id=dtl.gradeTypeId 
 			WHERE 1
 			AND dtl.`pickNo`=:pickNo 
 			
-			ORDER BY dtl.id
+			ORDER BY prd.code
 			";
 			$stmt = $pdo->prepare($sql);	
 			$stmt->bindParam(':pickNo', $hdr['pickNo']);
@@ -161,19 +161,22 @@ $hdr = $stmt->fetch();
 								  <tr>
 										<th style="font-weight: bold; text-align: center; width: 30px;" border="1">No.</th>
 										<th style="font-weight: bold; text-align: center; width: 150px;" border="1">Product Code</th>
+										<th style="font-weight: bold; text-align: center; width: 80px;" border="1">Issue Date</th>
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Grade</th>
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Grade Type</th>
-										<th style="font-weight: bold; text-align: center; width: 80px;" border="1">Issue Date</th>
+										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Remark WH</th>										
 										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Meter</th>
-										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Qty</th>
-										<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Total</th>
-										<th style="font-weight: bold; text-align: center; width: 150px;" border="1">Shelf</th>
+										<th style="font-weight: bold; text-align: center; width: 40px;" border="1">Total (Roll)</th>
+										<th style="font-weight: bold; text-align: center; width: 100px;" border="1">Total (M.)</th>
+										<th style="font-weight: bold; text-align: center; width: 100px;" border="1">Shelf</th>
 									</tr>
 								  </thead>
 								  <tbody>
 					'; 
 					
-					$row_no = 1; while ($row = $stmt->fetch()) { 
+					$row_no = 1; 
+					$prevProdId=""; $prevProdRollTotal=$prevProdMTotal=0;
+					while ($row = $stmt->fetch()) { 
 					$gradeName = '<b style="color: red;">N/A</b>'; 
 					switch($row['grade']){
 						case 0 : $gradeName = 'A'; break;
@@ -182,11 +185,12 @@ $hdr = $stmt->fetch();
 						default : 
 							$gradeName = '<b style="color: red;">N/a</b>'; 
 					}
+
 					$sql = "
 					SELECT DISTINCT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, ws.code as shelfCode, ws.name as shelfName
 					, prd.code as prodCode 
 					FROM `picking_detail` dtl 		
-					INNER JOIN product_item itm ON itm.prodCodeId=dtl.prodId AND itm.issueDate=dtl.issueDate AND itm.grade=dtl.grade 				
+					INNER JOIN product_item itm ON itm.prodCodeId=dtl.prodId AND itm.issueDate=dtl.issueDate AND itm.grade=dtl.grade AND itm.gradeTypeId=dtl.gradeTypeId AND itm.remarkWh=dtl.remarkWh  				
 					INNER JOIN receive_detail rDtl on  itm.prodItemId=rDtl.prodItemId 
 					INNER JOIN wh_shelf_map_item wmi on wmi.recvProdId=rDtl.id 
 					INNER JOIN wh_shelf ws ON wmi.shelfId=ws.id 
@@ -204,16 +208,31 @@ $hdr = $stmt->fetch();
 					$stmt2->bindParam(':prodId', $row['prodId']);
 					$stmt2->execute();
 					
+					if( $row_no<>1 AND $prevProdId<>$row['prodId'] ) {
+						$html .='<tr>
+							<td colspan="7" style="border: 0.1em solid black;" ></td>
+							<td style="border: 0.1em solid black; text-align: right; width: 40px; font-weight: bold;">'.number_format($prevProdRollTotal,0,'.',',').'&nbsp;&nbsp;</td>
+							<td style="border: 0.1em solid black; text-align: right; width: 100px;  font-weight: bold;">'.number_format($prevProdMTotal,2,'.',',').'&nbsp;&nbsp;</td>';
+							$html .='<td  style="border: 0.1em solid black; text-align: left; width: 100px;"> ';
+							$html .='</td>';
+							$html.='</tr>';	
+						$row_no=1;
+						$prevProdRollTotal=$prevProdMTotal=0;
+					}
+					
+
+
 					$html .='<tr>
 						<td style="border: 0.1em solid black; text-align: center; width: 30px;">'.$row_no.'</td>
 						<td style="border: 0.1em solid black; padding: 10px; width: 150px;"> '.$row['prodCode'].'</td>
+						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.date('d M Y',strtotime( $row['issueDate'] )).'</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$gradeName.'</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$row['gradeTypeName'].'</td>
-						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.date('d M Y',strtotime( $row['issueDate'] )).'</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['meter'],0,'.',',').'&nbsp;&nbsp;</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format(($row['qty']/$row['meter']),0,'.',',').'&nbsp;&nbsp;</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['qty'],0,'.',',').'&nbsp;&nbsp;</td>';
-						$html .='<td  style="border: 0.1em solid black; text-align: left; width: 150px;"> ';
+						<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$row['remarkWh'].'</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['meter'],2,'.',',').'&nbsp;&nbsp;</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 40px;">'.number_format(($row['qty']/$row['meter']),0,'.',',').'&nbsp;&nbsp;</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 100px;">'.number_format($row['qty'],2,'.',',').'&nbsp;&nbsp;</td>';
+						$html .='<td  style="border: 0.1em solid black; text-align: left; width: 100px;"> ';
 						$shelfCount=0; while ($row2 = $stmt2->fetch()) { 
 							if($row['prodId']==$row2['prodId'] AND $row['issueDate']==$row2['issueDate'] AND $row['grade']==$row2['grade']){
 								$html.= $row2['shelfCode'].', ';
@@ -224,9 +243,21 @@ $hdr = $stmt->fetch();
 						$html .='</td>';
 					$html.='</tr>';	
 
-					$row_no +=1; }
+					$row_no +=1; 
+					$prevProdId=$row['prodId'];
+					$prevProdRollTotal+=$row['qty']/$row['meter'];
+					$prevProdMTotal+=$row['qty'];
+					}
 					//<!--end while div-->	
 					
+					$html .='<tr>
+							<td colspan="7" style="border: 0.1em solid black;" ></td>
+							<td style="border: 0.1em solid black; text-align: right; width: 40px; font-weight: bold;">'.number_format($prevProdRollTotal,0,'.',',').'&nbsp;&nbsp;</td>
+							<td style="border: 0.1em solid black; text-align: right; width: 100px;  font-weight: bold;">'.number_format($prevProdMTotal,2,'.',',').'&nbsp;&nbsp;</td>';
+							$html .='<td  style="border: 0.1em solid black; text-align: left; width: 100px;"> ';
+							$html .='</td>';
+							$html.='</tr>';	
+
 					$html .='</tbody></table>';
 						
 					$pdf->AddPage('P');

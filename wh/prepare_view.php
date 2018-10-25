@@ -43,7 +43,7 @@ $ppNo = $_GET['ppNo'];
 ?>
  
 </head>
-<body class="hold-transition skin-green sidebar-mini">
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
 
 
 	
@@ -365,6 +365,41 @@ $ppNo = $_GET['ppNo'];
 						<?php $row_no+=1; $diffQty+=1; } //end if  ?>
 						<?php } //end loop ?>
 					</table>
+
+					<?php
+						$sql="SELECT pd.prodItemId, itm.barcode, itm.qty 
+						from prepare ph 
+						INNER JOIN prepare_detail pd ON ph.ppNo=pd.ppNo
+						INNER JOIN product_item itm ON itm.prodItemId=pd.prodItemId 
+						where ph.ppNo=:ppNo 
+						AND pd.prodItemId NOT IN (SELECT prodItemId FROM receive rh 
+						                          INNER JOIN receive_detail rd ON rd.rcNo=rh.rcNo 
+						                          WHERE rh.statusCode='P' AND rd.statusCode='A')
+						                          ";
+						
+						
+						$stmt = $pdo->prepare($sql);	
+						$stmt->bindParam(':ppNo', $hdr['ppNo']);
+						$stmt->execute();
+					
+						if( $stmt->rowCount() > 0 ){	
+				   ?>
+				   <h3 class="box-title" style="color: red;">Unreceived Item</h3>
+					<table class="table table-striped" style="color: red;">
+						<tr>
+							<th>No.</th>
+							<th>Barcode</th>
+							<th>Qty</th>
+						</tr>
+						<?php $row_no=1; while ( $row = $stmt->fetch() ) { ?>
+							<tr  style="color: red;" >
+								<td style="text-align: center;"><?= $row_no; ?></td>
+								<td><?= $row['barcode']; ?></td>
+								<td><?= $row['qty']; ?></td>
+							</tr>							
+						<?php $row_no+=1; } //end loop  ?>
+					</table>
+				<?php } // /.rowCount > 0 ?> 
 				</div>
 				<!-- /.box-body -->
 				
