@@ -101,7 +101,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
           <?php
-				 $sql = "SELECT prd.code, prd.description
+				 $sql = "SELECT prd.code, prd.description, itm.grade, sh.custId, cust.name 
 				FROM `delivery_header` hdr
 				INNER JOIN delivery_detail dtl on dtl.doNo=hdr.doNo
 	            INNER JOIN sale_header sh ON sh.soNo=hdr.soNo 
@@ -116,7 +116,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				if($prodCode<>""){ $sql .= " AND prd.code like :prodCode ";	}	
 				if($prodId<>""){ $sql .= " AND prd.id=:prodId ";	}	
 				$sql .= "AND hdr.statusCode='P' ";
-				$sql.="GROUP BY prd.code, prd.description ";
+				$sql.="GROUP BY prd.code, prd.description, itm.grade, sh.custId, cust.name ";
 
 				$stmt = $pdo->prepare($sql);
 				if($dateFromYmd<>""){ $stmt->bindParam(':dateFromYmd', $dateFromYmd );	}
@@ -204,11 +204,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<th>Grade</th>
 					<th>Box/Roll</th>
 					<th>Piece/Length/KG</th>
+					<th>Customer Name</th>
                   </tr>
                   </thead>
                   <tbody>
 					<?php
-						 $sql = "SELECT prd.code, prd.description, itm.grade, count(itm.prodItemId) as qty, sum(itm.qty) as totalQty 
+						 $sql = "SELECT prd.code, prd.description, itm.grade
+						 , sh.custId, cust.name as custName 
+						 , count(itm.prodItemId) as qty, sum(itm.qty) as totalQty 
 						FROM `delivery_header` hdr
 						INNER JOIN delivery_detail dtl on dtl.doNo=hdr.doNo
                         INNER JOIN sale_header sh ON sh.soNo=hdr.soNo 
@@ -224,8 +227,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						if($prodId<>""){ $sql .= " AND prd.id=:prodId ";	}	
 						$sql .= "AND hdr.statusCode='P' ";
 
-						$sql.="GROUP BY prd.code, prd.description ";
-						$sql.="ORDER BY prd.code ";
+						$sql.="GROUP BY prd.code, prd.description, itm.grade, sh.custId, cust.name ";
+						$sql.="ORDER BY prd.code, itm.grade, cust.name  ";
 						$sql.="LIMIT $start, $rows ";
 
 						$stmt = $pdo->prepare($sql);
@@ -261,6 +264,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<td><?= $gradeName; ?></td>
 					<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
 					<td style="text-align: right;"><?= number_format($row['totalQty'],2,'.',','); ?></td>
+					<td><?= $row['custName']; ?></td>
                 </tr>
                  <?php $c_row +=1; $sumQty+=$row['qty']; $sumTotalQty+=$row['totalQty']; } ?>
                   </tbody>
