@@ -93,7 +93,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<a name="btnSubmit" id="btnSubmit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-search"></i> Search</a>
 					</div>	
 				</div><!--row-->
+
 			<?php
+			if($prodId<>""){
+			
+
 				$id=(isset($_GET['prodId'])?$_GET['prodId']:0);
 				$sql = "
 				SELECT itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, itm.`qty`
@@ -166,6 +170,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 </table>
               </div>
               <!-- /.table-responsive -->
+          <?php } // if parameter ?>
+          
             </div>
             <!-- /.box-body -->
             <div class="box-footer clearfix">

@@ -85,6 +85,10 @@
 			<li><a href="shelf_mm.php"><i class="glyphicon glyphicon-object-align-bottom"></i> <span>Shelf Movement</span></a></li>
 			<!--<li><a href="crrc.php"><i class="glyphicon glyphicon-repeat"></i> <span>Customer Return Receive</span></a></li>-->
 			<?php break; default : } ?>	
+
+			<?php switch($s_userGroupCode){ case 'admin' : ?>
+			<li><a href="closingStk_list.php"><i class="fa fa-warning"></i> <span>Closing Stock</span></a></li>	
+			<?php break; default : } ?>	
 		<?php break; default : } ?>			
 		
 		<?php switch($s_userGroupCode){ case 'admin' : case 'whOff' : case 'whSup' : case 'whMgr' : ?> 

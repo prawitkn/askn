@@ -82,7 +82,7 @@ $row=$stmt->fetch();
         </div><!-- /.box-header -->
         <div class="box-body">            
             <div class="row">                
-                    <form id="form1" action="userGroup_add_ajax.php" method="post" class="form" validate >
+                    <form id="form1" action="#" method="post" class="form" validate >
 					<div class="col-md-6">					
                         <div class="form-group">
                             <input id="id" type="hidden" name="id" value="<?=$row['id'];?>" />				
@@ -312,8 +312,8 @@ $(document).ready(function() {
 						text: data.message,
 						type: 'success',
 						position:'top-center'
-					});
-					//window.location.href = "userGroup_add.php";
+					});					
+					//setTimeout(function(){history.back();}, 1000);
 				}else{
 					$.smkAlert({
 						text: data.message,
@@ -321,8 +321,6 @@ $(document).ready(function() {
 						position:'top-center'
 					});
 				}
-				$('#form1')[0].reset();
-				$("#name").focus(); 
 			});  
 			//.ajax		
 			e.preventDefault();

@@ -107,13 +107,13 @@ $saleItemId=$_GET['saleItemId'];
 				, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total			
 				, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 						ON pickh.pickNo=pickd.pickNo
-						WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty AND pickd.`gradeTypeId`= itm.`gradeTypeId`
+						WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty AND pickd.`gradeTypeId`= itm.`gradeTypeId` AND pickd.remarkWh=itm.remarkWh 
 						AND pickh.isFinish='N'
 						AND pickh.statusCode<>'X' 
 						AND pickh.pickNo<>:pickNo) as bookedQty
 				, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 						ON pickh.pickNo=pickd.pickNo
-						WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty  AND pickd.`gradeTypeId`= itm.`gradeTypeId`
+						WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty  AND pickd.`gradeTypeId`= itm.`gradeTypeId` AND pickd.remarkWh=itm.remarkWh 
 						AND pickh.pickNo=:pickNo2 ) as pickQty
 				,prd.id as prodId, prd.code as prodCode
 				, (SELECT COUNT(x.shelfId) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
@@ -169,13 +169,13 @@ $saleItemId=$_GET['saleItemId'];
 						, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total		
 						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 								ON pickh.pickNo=pickd.pickNo
-								WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty  AND pickd.`gradeTypeId`= itm.`gradeTypeId`
+								WHERE pickd.prodId=prd.id AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty  AND pickd.`gradeTypeId`= itm.`gradeTypeId` AND pickd.remarkWh=itm.remarkWh 
 								AND pickh.isFinish='N' 
 								AND pickh.statusCode<>'X' 
 								AND pickh.pickNo<>:pickNo) as bookedQty
 						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 								ON pickh.pickNo=pickd.pickNo
-								WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty  AND pickd.`gradeTypeId`= itm.`gradeTypeId`
+								WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=itm.issueDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty  AND pickd.`gradeTypeId`= itm.`gradeTypeId` AND pickd.remarkWh=itm.remarkWh 
 								AND pickh.pickNo=:pickNo2 ) as pickQty
 						,prd.id as prodId, prd.code as prodCode
 						, (SELECT COUNT(x.shelfId) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
@@ -192,7 +192,7 @@ $saleItemId=$_GET['saleItemId'];
 						AND itm.prodCodeId=:id ";
 						switch($catCode){
 							case '70' : //Weaving
-								$sql.="AND DATEDIFF(NOW(), itm.issueDate) <= 365 ";
+								//$sql.="AND DATEDIFF(NOW(), itm.issueDate) <= 365 ";
 								break;
 							case '72' : //Cutting
 								$sql.="AND DATEDIFF(NOW(), itm.issueDate) <= 90 ";
@@ -213,13 +213,13 @@ $saleItemId=$_GET['saleItemId'];
 						, COUNT(*) as qty, IFNULL(SUM(itm.`qty`),0) as total			
 						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 								ON pickh.pickNo=pickd.pickNo
-								WHERE pickd.prodId=itm.prodCodeId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty  AND pickd.`gradeTypeId`= itm.`gradeTypeId`
+								WHERE pickd.prodId=itm.prodCodeId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty  AND pickd.`gradeTypeId`= itm.`gradeTypeId` AND pickd.remarkWh=itm.remarkWh 
 								AND pickh.isFinish='N' 
 								AND pickh.statusCode<>'X'
 								AND pickh.pickNo<>:pickNo) as bookedQty
 						, (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
 								ON pickh.pickNo=pickd.pickNo
-								WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty  AND pickd.`gradeTypeId`= itm.`gradeTypeId`
+								WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=s.sendDate AND pickd.grade=itm.grade AND pickd.meter=itm.qty  AND pickd.`gradeTypeId`= itm.`gradeTypeId` AND pickd.remarkWh=itm.remarkWh 
 								AND pickh.pickNo=:pickNo2 ) as pickQty
 						,itm.prodCodeId as prodId, prd.code as prodCode
 						, (SELECT COUNT(x.shelfId) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
@@ -237,7 +237,7 @@ $saleItemId=$_GET['saleItemId'];
 						AND itm.prodCodeId=:id ";
 						switch($catCode){
 							case '70' : //Weaving
-								$sql.="AND DATEDIFF(NOW(), s.sendDate) <= 365 ";
+								//$sql.="AND DATEDIFF(NOW(), s.sendDate) <= 365 ";
 								break;
 							case '72' : //Cutting
 								$sql.="AND DATEDIFF(NOW(), s.sendDate) <= 90 ";

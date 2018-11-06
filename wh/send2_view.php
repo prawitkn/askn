@@ -192,14 +192,14 @@ $sdNo = $hdr['sdNo'];
 				Create By : <label class=""><?= $hdr['createByName']; ?></label></br>
 				Create Time : <label class=""><?= date('d M Y H:i',strtotime( $hdr['createTime'] )); ?></label></br>
 				Confirm By : <label class=""><?= $hdr['confirmByName']; ?></label></br>
-				Confirm Time : <label class=""><?= date('d M Y H:i',strtotime( $hdr['confirmTime'] )); ?></label>
+				Confirm Time : <label class=""><?php if($hdr['confirmTime']<>"0000-00-00 00:00:00") echo date('d M Y H:m',strtotime( $hdr['confirmTime'] )); ?></label>
 		</div>
 		<div class="col-md-4">
 					
 		</div>
 		<div class="col-md-6">
 			Approve By : <label class=""><?= $hdr['approveByName']; ?></label></br>
-			Approve Time : <label class=""><?= date('d M Y H:i',strtotime( $hdr['approveTime'] )); ?></label>	
+			Approve Time : <label class=""><?php if($hdr['approveTime']<>"0000-00-00 00:00:00") echo date('d M Y H:m',strtotime( $hdr['approveTime'] )); ?></label>	
 		</div>
 	</div>
 	<!-- /.row -->		

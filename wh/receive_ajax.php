@@ -359,6 +359,23 @@ if(!isset($_POST['action'])){
 				$toCode = $row['toCode'];
 				$sdNo = $row['sdNo'];
 				
+
+				//Query 1: Check Prev Cloosing Date
+				$hdrIssueTime = strtotime($hdr['receiveDate']);
+				$hdrIssueDate = date("Y-m-d", $hdrIssueTime);		
+				$sql = "SELECT `closingDate` FROM `stk_closing` WHERE statusCode='A' AND closingDate >= :closingDate LIMIT 1 ";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':closingDate', $hdrIssueDate);
+				$stmt->execute();
+				if($stmt->rowCount() == 1 ){
+					//return JSON 
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => false, 'message' => 'Incorrect Bill Date.'));
+					exit();
+				}
+				//End Closing Date
+
+
 				//Query 1: GET Next Doc No. RS-D-YY ; D=department no.
 				$year = date('Y'); $name = 'receive'; $prefix = 'RS'.date('y').$toCode; $cur_no=1;
 				$sql = "SELECT prefix, cur_no FROM doc_running WHERE year=? and name=? and prefix=? LIMIT 1";
@@ -500,6 +517,22 @@ if(!isset($_POST['action'])){
 				$fromCode = $hdr['fromCode'];
 				$toCode = $hdr['toCode'];
 							
+				
+				//Query 1: Check Prev Cloosing Date
+				$hdrIssueTime = strtotime($hdr['receiveDate']);
+				$hdrIssueDate = date("Y-m-d", $hdrIssueTime);		
+				$sql = "SELECT `closingDate` FROM `stk_closing` WHERE statusCode='A' AND closingDate >= :closingDate LIMIT 1 ";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':closingDate', $hdrIssueDate);
+				$stmt->execute();
+				if($stmt->rowCount() == 1 ){
+					//return JSON 
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => false, 'message' => 'Incorrect Bill Date.'));
+					exit();
+				}
+				//End Closing Date
+
 				
 				//Query 1: UPDATE DATA
 				$sql = "UPDATE receive SET statusCode='X'

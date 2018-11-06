@@ -198,11 +198,11 @@ $rowCount=$stmt->rowCount();
 			Create By : <b><?= $hdr['createByName']; ?></b></br>
 			Create Time : <?= date('d M Y h:i',strtotime( $hdr['createTime'] )); ?></br>
 			Confirm By : <b><?= $hdr['confirmByName']; ?></b></br>
-			Confirm Time : <?= date('d M Y h:i',strtotime( $hdr['confirmTime'] )); ?>	
+			Confirm Time : <?php if($hdr['confirmTime']<>"0000-00-00 00:00:00") echo date('d M Y H:m',strtotime( $hdr['confirmTime'] )); ?>
 		</div>
 		<div class="col-md-6">
 			Approve By : <b><?= $hdr['approveByName']; ?></b></br>
-			Approve Time : <?= date('d M Y h:i',strtotime( $hdr['approveTime'] )); ?>	
+			Approve Time : <?php if($hdr['approveTime']<>"0000-00-00 00:00:00") echo date('d M Y H:m',strtotime( $hdr['approveTime'] )); ?>
 		</div>	
 	</div>
 	<!-- /.row -->

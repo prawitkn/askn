@@ -359,7 +359,7 @@ if(!isset($_POST['action'])){
 				$pdo->beginTransaction();
 				
 				//Query 1: Check Status for not gen running No.
-				$sql = "SELECT do.doNo, pp.pickNo FROM delivery_header do
+				$sql = "SELECT do.doNo, pp.pickNo, do.deliveryDate FROM delivery_header do
 				INNER JOIN prepare pp ON pp.ppNo=do.ppNo 
 				WHERE do.doNo=:doNo AND do.statusCode='C' LIMIT 1";
 				$stmt = $pdo->prepare($sql);
@@ -375,6 +375,25 @@ if(!isset($_POST['action'])){
 				$row=$stmt->fetch();
 				$pickNo=$row['pickNo'];
 				
+
+				//Query 1: Check Prev Cloosing Date
+				$hdrIssueTime = strtotime($hdr['deliveryDate']);
+				$hdrIssueDate = date("Y-m-d", $hdrIssueTime);		
+				$sql = "SELECT `closingDate` FROM `stk_closing` WHERE statusCode='A' AND closingDate >= :closingDate LIMIT 1 ";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':closingDate', $hdrIssueDate);
+				$stmt->execute();
+				if($stmt->rowCount() == 1 ){
+					//return JSON 
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => false, 'message' => 'Incorrect Bill Date.'));
+					exit();
+				}
+				//End Closing Date
+
+
+
+
 				$sql = "SELECT ct.locationCode FROM sale_header sh
 				INNER JOIN customer ct ON ct.id=sh.custId 
 				WHERE sh.soNo=:soNo LIMIT 1";

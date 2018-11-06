@@ -285,6 +285,23 @@ if(!isset($_POST['action'])){
 				$fromCode = $hdr['fromCode'];
 				$toCode = $hdr['toCode'];
 				
+
+				//Query 1: Check Prev Cloosing Date
+				$hdrIssueTime = strtotime($hdr['returnDate']);
+				$hdrIssueDate = date("Y-m-d", $hdrIssueTime);		
+				$sql = "SELECT `closingDate` FROM `stk_closing` WHERE statusCode='A' AND closingDate >= :closingDate LIMIT 1 ";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':closingDate', $hdrIssueDate);
+				$stmt->execute();
+				if($stmt->rowCount() == 1 ){
+					//return JSON 
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => false, 'message' => 'Incorrect Bill Date.'));
+					exit();
+				}
+				//End Closing Date
+
+
 				//Query 1: GET Next Doc No.
 				$year = date('Y'); $name = 'return'; $prefix = 'RT'.date('y').$fromCode; $cur_no=1;
 				$sql = "SELECT prefix, cur_no FROM doc_running WHERE year=? and name=?  and prefix=?  LIMIT 1";
@@ -349,6 +366,23 @@ if(!isset($_POST['action'])){
 				$stmt->bindParam(':rtNo', $noNext);
 				$stmt->bindParam(':fromCode', $fromCode);
 				$stmt->execute();
+
+				$sql = "		
+				UPDATE stk_bal sb,
+				( SELECT itm.prodCodeId, sum(itm.qty)  as sumQty
+					   FROM send_detail dtl
+					   INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+					   WHERE sdNo=:sdNo GROUP BY itm.prodCodeId) as s
+				SET sb.send=sb.send+s.sumQty
+				, sb.balance=sb.balance-s.sumQty 
+				WHERE sb.prodId=s.prodCodeId
+				AND sb.sloc=:fromCode
+				";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':sdNo', $noNext);
+				$stmt->bindParam(':fromCode', $fromCode);
+				$stmt->execute();
+				
 					
 				//Query 6: INSERT STK BAl sloc from 
 				$sql = "INSERT INTO stk_bal (prodId, sloc, send, balance) 
@@ -473,7 +507,24 @@ if(!isset($_POST['action'])){
 				}			
 				$fromCode = $hdr['fromCode'];
 				$toCode = $hdr['toCode'];
-											
+					
+					
+				//Query 1: Check Prev Cloosing Date
+				$hdrIssueTime = strtotime($hdr['returnDate']);
+				$hdrIssueDate = date("Y-m-d", $hdrIssueTime);		
+				$sql = "SELECT `closingDate` FROM `stk_closing` WHERE statusCode='A' AND closingDate >= :closingDate LIMIT 1 ";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':closingDate', $hdrIssueDate);
+				$stmt->execute();
+				if($stmt->rowCount() == 1 ){
+					//return JSON 
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => false, 'message' => 'Incorrect Bill Date.'));
+					exit();
+				}
+				//End Closing Date
+
+
 				//Query 1: UPDATE DATA
 				$sql = "UPDATE rt SET statusCode='X'
 				, updateTime=now()
