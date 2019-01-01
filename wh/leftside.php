@@ -45,7 +45,8 @@
 		<?php } ?>
 
 		<?php if ( $s_userGroupCode == 'admin' || ( $s_userGroupCode == 'pdSup' && $s_userDeptCode == 'T' ) ) { ?>
-			<li><a href="product.php"><i class="fa fa-barcode"></i> <span>Product Data</span></a></li>
+			<li><a href="product.php"><i class="fa fa-barcode"></i> <span>Product Data</span></a></li>						
+			<li><a href="product_roll_length.php"><i class="fa fa-archive"></i> <span>Product Roll Length</span></a></li>
 			<li><a href="productionMappingProduct.php"><i class="fa fa-list-ol"></i> <span>Production Prod. Mapping</span></a></li>		
 		<?php } ?>
 		
@@ -96,6 +97,14 @@
 			<li><a href="picking_prod_search_shelf.php"><i class="glyphicon glyphicon-search"></i> <span>Picking Shelf</span></a></li>
 			<li><a href="report_itm_dtl_by_prd.php?sloc=8&prodCode=109"><i class="glyphicon glyphicon-search"></i> <span>Available Item Stock Info</span></a></li>
 			<li><a href="utility_search_barcode.php"><i class="glyphicon glyphicon-search"></i> <span>Barcode Info</span></a></li>
+
+		<?php break; case 'pdSup' : 
+				if ( $s_userDeptCode == 'T' ) { ?>
+			<li class="header">Tool Menu</li>
+			<li><a href="report_itm_dtl_by_prd.php?sloc=8&prodCode=109"><i class="glyphicon glyphicon-search"></i> <span>Available Item Stock Info</span></a></li>
+
+		<?php } ?>
+
 		<?php break;   default :  } ?>	
 
 		<?php switch($s_userGroupCode){  default :   ?>

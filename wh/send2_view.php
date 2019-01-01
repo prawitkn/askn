@@ -145,16 +145,16 @@ $sdNo = $hdr['sdNo'];
 						$stmt->bindParam(':sdNo', $hdr['sdNo']);
 						$stmt->execute();	
 				   ?>	
-					<table class="table table-striped">
+					<table class="table table-striped table-hover " style="table-layout: fixed;">
 						<tr>
-							<th>No.</th>
-							<th>Product Code</th>
-							<th>Barcode</th>
-							<th>Grade</th>
-							<th>Qty</th>
-							<th>Produce Date</th>
-							<th>Grade Type</th>
-							<th>Send Remark</th>
+							<th style="width: 50px; text-align: center;">No.</th>
+							<th style="width: 200px; text-align: center;">Product Code</th>
+							<th style="width: 300px; text-align: left;">Barcode</th>
+							<th style="width: 50px; text-align: center;">Grade</th>
+							<th style="width: 50px; text-align: right;">Qty</th>
+							<th style="width: 150px; text-align: center;">Produce Date</th>
+							<th style="width: 50px; text-align: center;">Grade Type</th>
+							<th style="width: 150px; text-align: left;">Send Remark</th>
 						</tr>
 						<?php $row_no=1; $sumQty=0; $sumGradeNotOk=0; while ($row = $stmt->fetch()) { $sumQty+=$row['qty']; 
 							$gradeName = '<b style="color: red;">N/A</b>'; 
@@ -214,6 +214,8 @@ $sdNo = $hdr['sdNo'];
 		<?php } ?>
 
 		<a target="_blank" href="<?=$rootPage;?>_view_pdf_barcode.php?sdNo=<?=$sdNo;?>" class="btn btn-primary"><i class="glyphicon glyphicon-barcode"></i> Barcode</a>	
+
+		<a target="_blank" href="<?=$rootPage;?>_view_pdf_qrcode.php?sdNo=<?=$sdNo;?>" class="btn btn-primary"><i class="glyphicon glyphicon-qrcode"></i> QR Code</a>	
 
 		<?php switch($s_userGroupCode){ case 'admin' : case 'whSup' :  case 'pdSup' : case 'whMgr' : case 'pdMgr' :  ?>
 	          <?php if($hdr['statusCode']=='C'){ ?>         

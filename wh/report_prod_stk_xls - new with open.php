@@ -103,8 +103,6 @@ $sql = "UPDATE tmpStock hdr
 	$stmt = $pdo->prepare($sql);		
 $stmt->execute();
 
-
-/*
 //Receive
 $sql = "UPDATE tmpStock hdr
  ,(SELECT itm.prodCodeId, th.toCode as fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
@@ -167,30 +165,9 @@ $sql = "UPDATE tmpStock hdr
 	$stmt = $pdo->prepare($sql);		
 $stmt->execute();
 
-
-
 //delete
 $sql = "UPDATE tmpStock 
 SET `balance`=`openAcc`+`openTrans`+`receive`-`sent`-`return`-`delivery`
-	";
-	$stmt = $pdo->prepare($sql);		
-$stmt->execute();
-
-*/
-
-
-
-
-//Receive
-$sql = "UPDATE tmpStock hdr
- ,(SELECT itm.prodCodeId, th.toCode as fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
-  				INNER JOIN receive_detail td ON td.prodItemId=itm.prodItemId AND td.statusCode='A'   
- 				INNER JOIN receive th ON th.rcNo=td.rcNo AND th.statusCode='P' 
- 					
-  				GROUP BY itm.prodCodeId, th.toCode
-  				) as tmp 
-  SET hdr.balance=tmp.sumQty 
-  WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.fromCode 
 	";
 	$stmt = $pdo->prepare($sql);		
 $stmt->execute();
@@ -234,9 +211,9 @@ if($countTotal>0){
 		->setCellValue('A2', 'Product ID')
 		->setCellValue('B2', 'Product Code')
 		->setCellValue('C2', 'Location')
-		->setCellValue('D2', 'Balance')
-		->setCellValue('E2', 'Onway');
-		//->setCellValue('D2', 'Available')
+		->setCellValue('D2', 'Available')
+		->setCellValue('E2', 'Balance')
+		->setCellValue('F2', 'Onway');
 
 	$iRow=3; while($row = $stmt->fetch() ){
 	// Add some data
@@ -244,9 +221,9 @@ if($countTotal>0){
 		->setCellValue('A'.$iRow, $row['prodId'])
 		->setCellValue('B'.$iRow, $row['prodCode'])
 		->setCellValue('C'.$iRow, $row['sloc'])
-		->setCellValue('D'.$iRow, $row['balance'])
-		->setCellValue('E'.$iRow, $row['onway']);
-		//		->setCellValue('D'.$iRow, $row['balance']-$row['book'] )
+		->setCellValue('D'.$iRow, $row['balance']-$row['book'] )
+		->setCellValue('E'.$iRow, $row['balance'])
+		->setCellValue('F'.$iRow, $row['onway']);
 		$iRow+=1;
 	}
 }

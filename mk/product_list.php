@@ -136,12 +136,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					</select>
 						<div class="form-group">
                             <label for="search_word">Product search key word.</label>
-							<div class="input-group">
-								<input id="search_word" type="text" class="form-control" name="search_word" data-smk-msg="Require userFullname."required>
-								<span class="input-group-addon">
-									<span class="glyphicon glyphicon-search"></span>
-								</span>
-							</div>
+							<input id="search_word" type="text" class="form-control" name="search_word" value="<?=$search_word;?>" data-smk-msg="Require userFullname." required>
                         </div>						
 						<input type="submit" class="btn btn-default" value="ค้นหา">
                     </form>

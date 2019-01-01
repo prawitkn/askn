@@ -58,26 +58,56 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				$dateFrom = str_replace('/', '-', $dateFrom);
 				$dateFromYmd=$dateToYmd="";
 				if($dateFrom<>""){ $dateFromYmd = date('Y-m-d', strtotime($dateFrom));	}
-											
-                $sql = "SELECT DISTINCT sh.soNO, sh.createTime 
-				FROM `sale_header` sh
-				INNER JOIN sale_detail sd ON sd.soNo=sh.soNo 
-				INNER JOIN customer ct on ct.id=sh.custId ";
-				$sql .= "LEFT JOIN salesman sm on sm.id=sh.smId 
-				WHERE 1 
-				AND sh.statusCode='P' 
-				AND sh.isClose<>'Y' ";
-				if($dateFromYmd<>""){ $sql .= " AND sd.deliveryDate='$dateFromYmd' ";	}				
-                //$result = mysqli_query($link, $sql);
-                //$countTotal = mysqli_fetch_assoc($result);
-				 //$countTotal = mysqli_row_count($result);
-				$stmt = $pdo->prepare($sql);	
-				//$stmt->bindParam(':soNo', $hdr['soNo']);
-				$stmt->execute();
-				//$row = $stmt->fetch();
+				
+				$sql = "
+					SELECT hdr.`soNo`, hdr.`approveTime`,
+					cust.name as custName,
+					prd.code as prodCode
+					 ,dtl.id as saleItemId, dtl.deliveryDate 
+					, sum(dtl.qty) as sumQty 
+					,IFNULL((SELECT sum(xd.qty) FROM picking xh 
+							LEFT JOIN picking_detail xd ON xd.pickNo=xh.pickNo 
+							WHERE xh.statusCode='P' 
+							AND xh.isFinish='N' 
+							AND xh.soNo=hdr.soNo 
+							AND xd.saleItemId=dtl.id
+							GROUP BY xd.saleItemId),0) as sumPickedQty  
+					,IFNULL((SELECT sum(xd.qty) FROM picking xh 
+							LEFT JOIN picking_detail xd ON xd.pickNo=xh.pickNo 
+							WHERE xh.statusCode='P' 
+							AND xh.isFinish='Y' 
+							AND xh.soNo=hdr.soNo 
+							AND xd.saleItemId=dtl.id
+							GROUP BY xd.saleItemId),0) as sumSentQty 
+					FROM `sale_header` hdr 
+					INNER JOIN sale_detail dtl on dtl.soNo=hdr.soNo AND dtl.deliveryDate='$dateFromYmd' 
+					INNER JOIN customer cust ON cust.id=hdr.custId 
+					INNER JOIN product prd ON prd.id=dtl.prodId ";
+					switch($s_userGroupCode){
+						case 'pdOff' : case 'pdSup' :
+							$sql .= " AND prd.catCode= CASE :toCode WHEN '4' THEN '70' WHEN '5' THEN '71' WHEN '6' THEN '72' END ";
+							break;
+						default : // it, admin
+					}
+					$sql.="
+					WHERE 1=1
+					AND hdr.statusCode='P' 
+					";		
+					//AND hdr.isClose='N' 
+					$sql.="GROUP BY hdr.`soNo`, hdr.`approveTime`, dtl.`id`, dtl.`deliveryDate`, cust.name,prd.code ";
+					$sql.="ORDER BY hdr.soNo, dtl.deliveryDate, prd.code";	
+					$stmt = $pdo->prepare($sql);
+					switch($s_userGroupCode){
+						case 'pdOff' : case 'pdSup' :
+							$stmt->bindParam(':toCode', $s_userDeptCode);
+							break;
+						default : // it, admin
+					}						
+					$stmt->execute();	
+            
 				$countTotal = $stmt->rowCount();
 				
-				$rows=20;
+				$rows=100;
 				$page=0;
 				if( !empty($_GET["page"]) and isset($_GET["page"]) ) $page=$_GET["page"];
 				if($page<=0) $page=1;
@@ -116,69 +146,100 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 </div>    
 			</div>
            <?php
-                $sql = "SELECT DISTINCT sh.`soNo`, sh.`poNo`, sh.`saleDate`, sh.`custId`
-				, ct.name as custName
-				, sh.`smId`
-				, sm.name as smName 
-				, sh.`statusCode`, sh.`isClose` 
-				, sd.deliveryDate 
-				FROM `sale_header` sh
-				INNER JOIN sale_detail sd ON sd.soNo=sh.soNo 
-				INNER JOIN customer ct on ct.id=sh.custId ";
-				$sql .= "LEFT JOIN salesman sm on sm.id=sh.smId 
-				WHERE 1 
-				AND sh.statusCode='P' 
-				AND sh.isClose<>'Y' ";
-				if($dateFromYmd<>""){ $sql .= " AND sd.deliveryDate='$dateFromYmd' ";	}
-				$sql .= "ORDER BY soNo desc
-				LIMIT $start, $rows 
-				";
-                $result = mysqli_query($link, $sql);                
+                $sql = "
+					SELECT hdr.`soNo`, hdr.`approveTime`,
+					cust.name as custName,
+					prd.code as prodCode
+					 ,dtl.id as saleItemId, dtl.deliveryDate 
+					, sum(dtl.qty) as sumQty 
+					,IFNULL((SELECT sum(xd.qty) FROM picking xh 
+							LEFT JOIN picking_detail xd ON xd.pickNo=xh.pickNo 
+							WHERE xh.statusCode='P' 
+							AND xh.isFinish='N' 
+							AND xh.soNo=hdr.soNo 
+							AND xd.saleItemId=dtl.id
+							GROUP BY xd.saleItemId),0) as sumPickedQty  
+					,IFNULL((SELECT sum(xd.qty) FROM picking xh 
+							LEFT JOIN picking_detail xd ON xd.pickNo=xh.pickNo 
+							WHERE xh.statusCode='P' 
+							AND xh.isFinish='Y' 
+							AND xh.soNo=hdr.soNo 
+							AND xd.saleItemId=dtl.id
+							GROUP BY xd.saleItemId),0) as sumSentQty 
+					FROM `sale_header` hdr 
+					INNER JOIN sale_detail dtl on dtl.soNo=hdr.soNo AND dtl.deliveryDate='$dateFromYmd' 
+					INNER JOIN customer cust ON cust.id=hdr.custId 
+					INNER JOIN product prd ON prd.id=dtl.prodId ";
+					switch($s_userGroupCode){
+						case 'pdOff' : case 'pdSup' :
+							$sql .= " AND prd.catCode= CASE :toCode WHEN '4' THEN '70' WHEN '5' THEN '71' WHEN '6' THEN '72' END ";
+							break;
+						default : // it, admin
+					}
+					$sql.="
+					WHERE 1=1
+					AND hdr.statusCode='P' 
+					";		
+					//AND hdr.isClose='N' 
+					$sql.="GROUP BY hdr.`soNo`, hdr.`approveTime`, dtl.`id`, dtl.`deliveryDate`, cust.name,prd.code ";
+					$sql.="ORDER BY hdr.soNo, dtl.deliveryDate, prd.code ";	
+					$sql.="LIMIT $start, $rows ";
+					$stmt = $pdo->prepare($sql);
+					switch($s_userGroupCode){
+						case 'pdOff' : case 'pdSup' :
+							$stmt->bindParam(':toCode', $s_userDeptCode);
+							break;
+						default : // it, admin
+					}						
+					$stmt->execute();	
+
            ?>             
 			
 				<div class="table-responsive">
-				<table class="table table-striped">
-				<thead>
-				<tr>
-					<th>No.</th>
-					<th>SO No.</th>
-					<th>Sales Date</th>
-					<th>Customer</th>
-					<th>Salesman</th>
-					<th>Status</th>
-					<th>Is Closed</th>
-					<th>#</th>
-				</tr>
-				</thead>
-				<tbody>
-                <?php $c_row=($start+1); while ($row = mysqli_fetch_assoc($result)) { 
-					$statusName = '<label class="label label-danger">Unknown</label>';
-					switch($row['statusCode']){
-						case 'B' : $statusName = '<label class="label label-info">Begin</label>'; break;
-						case 'C' : $statusName = '<label class="label label-primary">Confirmed</label>'; break;
-						case 'P' : $statusName = '<label class="label label-success">Approved</label>'; break;
-						default : 						
-					}
-					$isCloseName = '<label class="label label-danger">Unknown</label>';
-					switch($row['isClose']){
-						case 'N' : $isCloseName = '<label class="label label-warning">No</label>'; break;
-						case 'Y' : $isCloseName = '<label class="label label-success">Yes</label>'; break;
-						default : 						
-					}
-					?>
-					<tr>
-						<td><?=$c_row;?></td>
-						<td><a target="_blank" href="sale_view.php?soNo=<?=$row['soNo'];?>" ><?=$row['soNo'];?></a></td>
-						<td><?=$row['saleDate'];?></td>
-						<td><?=$row['custName'];?></td>
-						<td><?=$row['smName'];?></td>
-						<td><?=$statusName;?></td>
-						<td><?=$isCloseName;?></td>
-						<td>#</td>
-					</tr>
-                <?php $c_row +=1; } ?>
-				</tbody>
-				</table>
+					<table class="table no-margin" >
+						<thead>
+		                  <tr>
+		                    <th>SO No.</th>      
+							<th>Update Time</th>                 
+		                    <th>Customer</th>               
+		                    <th style="text-align: right;">Picked / Sent / Order</th>  
+		                  </tr>
+		                  </thead>
+		                  <tbody>
+						   <?php 
+						   if ( $stmt->rowCount()>0 ){
+						   $soPrev=""; $itemStr=""; while ($row = $stmt->fetch()) { 
+						   		$textColor='black';
+						   		if ( $row['sumQty'] > $row['sumSentQty'] ) $textColor='red'; 
+						   		if($soPrev<>$row['soNo']){ ?>
+						   			<tr style="height: 50%; font-weight: bold;">
+					                    <td><a href="sale2_view.php?soNo=<?=$row['soNo'];?>"  target="_blank" ><?= $row['soNo']; ?></a></td>
+					                    <td style="text-align: center;"><?= date('d/M,H:i', strtotime($row['approveTime']) ); ?></td>
+										<td colspan="2"><?= $row['custName']; ?></td>
+					                </tr>
+					                <tr style="font-size: small; height: 50%; color: <?=$textColor;?>;">	
+					                	<td></td>	                		
+										<td style="text-align: center;"><?= date('d/M', strtotime($row['deliveryDate']) ); ?></td>
+										<td><?= $row['prodCode']; ?></td>
+										<td style="text-align: right;"><?=number_format($row['sumPickedQty'],2,'.',','); ?> / <?=number_format($row['sumSentQty'],2,'.',','); ?> / <?=number_format($row['sumQty'],2,'.',','); ?></td>
+					                </tr>
+						   		<?php }else{ ?>
+						   			<tr style="font-size: small; height: 50%; color: <?=$textColor;?>;">		
+						   				<td></td>                		
+										<td style="text-align: center;"><?= date('d/M', strtotime($row['deliveryDate']) ); ?></td>
+										<td><?= $row['prodCode']; ?></td>
+										<td style="text-align: right;"><?=number_format($row['sumPickedQty'],2,'.',','); ?> / <?=number_format($row['sumSentQty'],2,'.',','); ?> / <?=number_format($row['sumQty'],2,'.',','); ?></td>
+					                </tr>
+						   		<?php } ?>                
+		                <?php  
+		                	$soPrev=$row['soNo'];
+		            	}  //end while
+		            }else{
+		            	echo '<tr><td colspan="6"> Not Found</td></tr>'; 
+		            }
+		            	?>
+		                  </tbody>
+		                </table>
 				</div>
 				<!--table-resposive-->
 		
@@ -186,7 +247,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			<?php $pagingString = "?dateFrom=".$dateFrom;
 			?>
 				
-			<a href="<?="rpt_so_by_deli_hdr_xls.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
+			<a target="_blank" href="<?="rpt_so_by_deli_hdr_xls.php".$pagingString;?>" class="btn btn-default pull-right" aria-label=".CSV"><span aria-hidden="true">
 				<i class="glyphicon glyphicon-save-file"></i> Excel</span></a>
 			
 			<nav>

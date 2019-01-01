@@ -100,10 +100,8 @@
 			<li><a href="customer.php"><i class="glyphicon glyphicon-user"></i> <span>Customer Data</span></a></li>
 			<!--<li><a href="shipto.php"><i class="glyphicon glyphicon-download-alt"></i> <span>Ship to Customer Data</span></a></li>-->
 			<li><a href="shipping_marks.php"><i class="fa fa-table"></i> <span>Shipping Marks Data</span></a></li>
-			<li><a href="product.php"><i class="fa fa-barcode"></i> <span>Product Data</span></a></li>
-
-			
-			<li><a href="product_roll_length.php"><i class="glyphicon glyphicon-compressed"></i> <span>Product Roll Length</span></a></li>
+			<!--<li><a href="product.php"><i class="fa fa-barcode"></i> <span>Product Data</span></a></li>			
+			<li><a href="product_roll_length.php"><i class="glyphicon glyphicon-compressed"></i> <span>Product Roll Length</span></a></li>-->
 			<li><a href="salesman.php"><i class="glyphicon glyphicon-briefcase"></i> <span>Salesman Data</span></a></li>
 		<?php } ?>
 			<?php switch($s_userGroupCode){ case 'admin' : case 'it' :  ?>
@@ -133,7 +131,7 @@
 		<?php break; default : } ?>
 		
 		<?php switch($s_userGroupCode){ case 'admin' : ?>
-			<li><a href="order_pending.php"><i class="fa fa-truck"></i> <span>Order Pending</span></a></li>
+			<!--<li><a href="order_pending.php"><i class="fa fa-truck"></i> <span>Order Pending</span></a></li>-->
 		<?php break; default : } ?>	
 
 		<li class="header">Search</li>

@@ -21,13 +21,20 @@ $rootPage = 'product_roll_length';
 $tb = 'product_roll_length';
 
 //Check user roll.
+$isRollOk=false;
 switch($s_userGroupCode){
-	case 'admin' : case 'salesAdmin' : 
+	case 'admin' : $isRollOk=true;
 		break;
-	default : 
-		header('Location: access_denied.php');
-		exit();
+	case 'pdSup' : 
+		if ( $s_userDeptCode == 'T' ) { $isRollOk=true; }
+	default :
 }
+if ( !$isRollOk ) {  
+	include 'access_denied2.php';
+	exit();
+}
+//End check user roll.
+
 ?>
   
   <!-- Left side column. contains the logo and sidebar -->
@@ -39,7 +46,7 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
 	<section class="content-header">
-		<h1><i class="glyphicon glyphicon-compressed"></i>
+		<h1><i class="fa fa-archive"></i>
        Product Roll Length
         <small>Product Roll Length management</small>
       </h1>
@@ -115,23 +122,24 @@ switch($s_userGroupCode){
 		</div>
 		<!-- /.box-body -->
 	  <div class="box-footer">
-		  
-		  
-		<!--The footer of the box -->
-	  </div><!-- box-footer -->
-	</div><!-- /.box box-primary -->
-		
+      
+      
+    <!--The footer of the box -->
+  </div><!-- box-footer -->
+</div>
+<!-- /.box box-primary -->
 
-
-<div id="spin"></div>
-
+	<div id="spin"></div>
     </section>
     <!-- /.content -->
   </div>
   <!-- /.content-wrapper -->
 
   <!-- Main Footer -->
-  <?php include'footer.php'; ?>
+  <?php include'footer.php'; ?>  
+  
+</div>
+<!-- ./wrapper -->
 
 
 
@@ -191,8 +199,6 @@ switch($s_userGroupCode){
 
   
   
-</div>
-<!-- ./wrapper -->
 
 <!-- REQUIRED JS SCRIPTS -->
 

@@ -43,9 +43,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <!-- Your Page Content Here -->
 	<?php
 		$barcode=(isset($_GET['barcode'])?$_GET['barcode']:'');
+		
 		$sql = "SELECT tmp.`prodItemId`,  `prodCodeId` as prodId, `barcode`, `issueDate`, `machineId`, `NW`, `GW`, `qty`, `packQty`, `grade`, `gradeDate`, `refItemId`, `itemStatus`, `remark`, `problemId`, `gradeTypeId`, `remarkWh`
 		,prd.code as prodCode, pigt.name as gradeTypeName
 		,IFNULL(s.code,'-') as shelfName 
+		,recv.statusCode as itemStatusCode 
 				FROM (SELECT *, REPLACE(`barcode`, '-', '') as barcodeId 
 						FROM product_item  
 						 
@@ -74,7 +76,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			<!-- TABLE: LATEST ORDERS -->
           <div class="box box-primary">
             <div class="box-header with-border">
-              <h3 class="box-title">Item Info</h3>
+              <h3 class="box-title">Item Info <span style="font-size:small; color: red;">[ Warehouse transaction only ]</span></h3>
 
               <div class="box-tools pull-right">
                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
@@ -106,6 +108,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				<div class="col-md-12">
 					<h3>Product Code : <b><?=$rpi['prodCode'];?></b>
 						/ Shelf : <b><?=$rpi['shelfName'];?></b> 
+						/ PRODID : <b><?=$rpi['prodItemId'];?></b> 
+						/ STATUS : <b><?=$rpi['itemStatusCode'];?></b>
 					</h3>
 				</div>
 			</div>
@@ -159,33 +163,50 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					INNER JOIN send_detail dtl ON hdr.sdNo=dtl.sdNo AND dtl.prodItemId=:prodItemId 
 					LEFT JOIN sloc fs ON fs.code=hdr.fromCode
 					LEFT JOIN sloc ts ON ts.code=hdr.toCode 
+					WHERE hdr.fromCode IN ('8','E','0') 
+					AND hdr.statusCode='P' 
+
 					UNION 
+
 					SELECT hdr.receiveDate as transDate, hdr.rcNo as docNo, hdr.fromCode, hdr.toCode
 					, fs.name as fromName, ts.name as toName 
 					FROM `receive` hdr
 					INNER JOIN receive_detail dtl ON hdr.rcNo=dtl.rcNo AND dtl.prodItemId=:prodItemId2 
 					LEFT JOIN sloc fs ON fs.code=hdr.fromCode
 					LEFT JOIN sloc ts ON ts.code=hdr.toCode 
+					WHERE hdr.toCode IN ('8','E','0') 
+					AND hdr.statusCode='P' 
+
 					UNION 
+
 					SELECT hdr.returnDate as transDate, hdr.rtNo as docNo, hdr.fromCode, hdr.toCode
 					, fs.name as fromName, ts.name as toName 
 					FROM `rt` hdr
 					INNER JOIN rt_detail dtl ON hdr.rtNo=dtl.rtNo AND dtl.prodItemId=:prodItemId3 
 					LEFT JOIN sloc fs ON fs.code=hdr.fromCode
 					LEFT JOIN sloc ts ON ts.code=hdr.toCode 
+					WHERE hdr.fromCode IN ('8','E','0') 
+					AND hdr.statusCode='P' 
+
 					UNION 
+
 					SELECT hdr.prepareDate as transDate, hdr.ppNo as docNo
 					, '' as fromCode, '' as toCode, '' as fromName, '' as toName 
 					FROM `prepare` hdr
 					INNER JOIN prepare_detail dtl ON hdr.ppNo=dtl.ppNo AND dtl.prodItemId=:prodItemId4
+					AND hdr.statusCode='P' 
+
 					UNION 
+
 					SELECT hdr.deliveryDate as transDate, hdr.doNo as docNo
 					, '' as fromCode, st.code as toCode, '' as fromName, st.name as toName 
 					FROM `delivery_header` hdr
 					INNER JOIN delivery_detail dtl ON hdr.doNo=dtl.doNo AND dtl.prodItemId=:prodItemId5 
 					INNER JOIN sale_header sh ON sh.soNo=hdr.soNo 
 					LEFT JOIN shipto st ON st.id=sh.shiptoId 	
-					) as tmp ORDER BY transDate DESC 				
+					AND hdr.statusCode='P' 
+					
+					) as tmp ORDER BY transDate ASC 				
 					";
 					$stmt = $pdo->prepare($sql);
 					$stmt->bindParam(':prodItemId', $prodItemId);

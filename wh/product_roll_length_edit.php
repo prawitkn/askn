@@ -21,13 +21,19 @@ $rootPage = 'product_roll_length';
 $tb = 'product_roll_length';
 
 //Check user roll.
+$isRollOk=false;
 switch($s_userGroupCode){
-	case 'admin' : case 'salesAdmin' :
+	case 'admin' : $isRollOk=true;
 		break;
-	default : 
-		header('Location: access_denied.php');
-		exit();
+	case 'pdSup' : 
+		if ( $s_userDeptCode == 'T' ) { $isRollOk=true; }
+	default :
 }
+if ( !$isRollOk ) {  
+	include 'access_denied2.php';
+	exit();
+}
+//End check user roll.
 
 ?>
   
@@ -49,7 +55,7 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
 	<section class="content-header">
-		<h1><i class="glyphicon glyphicon-compressed"></i>
+		<h1><i class="fa fa-archive"></i>
        Product Roll Length
         <small>Product Roll Length management</small>
       </h1>
@@ -78,12 +84,15 @@ switch($s_userGroupCode){
                     <form id="form1" method="post" class="form-inline" enctype="multipart/form-data" validate>
 					<input type="hidden" name="action" value="edit" />				
 					<input type="hidden" name="id" value="<?=$row['id'];?>" />	
-					<div class="col-md-6">
-						<div class="form-group row col-md-12">
+
+					<div class="col-md-8">
+						<div class="row col-md-12">
+							<div class="form-group">
 							<label for="prodCode">Product Code</label> 
 							<input type="hidden" name="prodId" id="prodId" class="form-control" value="<?=$row['prodId'];?>"   data-smk-msg="Require Product ID" required   />
 							<input type="text" name="prodCode" id="prodCode" class="form-control" value="<?=$row['prodCode'];?>"  data-smk-msg="Require Product" required  />
 							<a href="#" name="btnSdNo" class="btn btn-primary" ><i class="glyphicon glyphicon-search" ></i></a>	
+							</div>
 						</div>
 						<div class="form-group row col-md-12">
 							<div class="form-group col-md-12">
@@ -112,32 +121,33 @@ switch($s_userGroupCode){
 					
 				</div>
 				
-				<div class="col-md-6">
+				<div class="col-md-4">
 						
 				</div>
                     </form>
                 </div>
                 <!--/.row-->       
             </div>
-			<!--.body-->    
-    </div>
-	<!-- /.box box-primary -->
+			<!--.body-->   
   <div class="box-footer">
       
       
     <!--The footer of the box -->
   </div><!-- box-footer -->
-</div><!-- /.box -->
+</div>
+<!-- /.box box-primary -->
 
-<div id="spin"></div>
-
+	<div id="spin"></div>
     </section>
     <!-- /.content -->
   </div>
   <!-- /.content-wrapper -->
 
   <!-- Main Footer -->
-  <?php include'footer.php'; ?>
+  <?php include'footer.php'; ?>  
+  
+</div>
+<!-- ./wrapper -->
 
 
 
@@ -196,8 +206,6 @@ switch($s_userGroupCode){
 
   
   
-</div>
-<!-- ./wrapper -->
 
 <!-- REQUIRED JS SCRIPTS -->
 

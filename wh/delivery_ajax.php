@@ -372,8 +372,8 @@ if(!isset($_POST['action'])){
 					echo json_encode(array('success' => false, 'message' => 'Status incorrect.'));
 					exit();
 				}
-				$row=$stmt->fetch();
-				$pickNo=$row['pickNo'];
+				$hdr=$stmt->fetch();
+				$pickNo=$hdr['pickNo'];
 				
 
 				//Query 1: Check Prev Cloosing Date
@@ -439,7 +439,8 @@ if(!isset($_POST['action'])){
 			    $stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':doNo', $doNo);
 			    $stmt->execute();
-
+				
+				
 			    //Query 2: Delete from Shelf
 				$sql = "DELETE smi
 				FROM `wh_shelf_map_item` smi
@@ -507,7 +508,40 @@ if(!isset($_POST['action'])){
 
 					$isAutoClose=true;
 				}
-				
+				/*
+				$sql = "
+					SELECT sd.prodId
+					, sum(sd.qty) as sumOrderQty 
+					,IFNULL((SELECT sum(dd.qty) FROM delivery_header dh 
+							LEFT JOIN delivery_prod dd ON dd.doNo=dh.doNo 
+							WHERE dh.soNo=sh.soNo 
+							AND dd.prodId=sd.prodId 
+							GROUP BY dd.prodId),0) as sumSentQty 
+					FROM sale_header sh 
+					INNER JOIN sale_detail sd ON sd.soNo=sh.soNo 
+					WHERE sh.soNo=:soNo  
+					GROUP BY sd.prodId
+					";
+					$stmt = $pdo->prepare($sql);		
+					$stmt->bindParam(':soNo', $soNo);
+					$stmt->execute();
+
+					$diffCount=0; while($row = $stmt->fetch() ){
+						if ( $row['sumOrderQty'] > $row['sumSentQty'] ) {
+							$diffCount+=1;
+						}
+					}
+						
+					if( $diffCount == 0 ){
+						$sql = "UPDATE sale_header SET isClose='Y' WHERE soNo=:soNo ";
+						$stmt = $pdo->prepare($sql);		
+						$stmt->bindParam(':soNo', $soNo);
+						$stmt->execute();
+
+						$isAutoClose=true;
+					}
+				*/
+
 				//Query 5: UPDATE STK BAl
 				$sql = "UPDATE stk_bal sb
 				INNER JOIN delivery_prod dp ON dp.prodId=sb.prodId AND dp.doNo=:nextNo 

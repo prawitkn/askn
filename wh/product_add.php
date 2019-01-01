@@ -69,10 +69,23 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						
 						<div class="row col-md-12">
 							<div class="form-group col-md-4">
-                            <label for="uomCode">UOM</label>                            
-							<input id="uomCode" type="text" class="form-control" name="uomCode" value="" data-smk-msg="Require UOM" required>							
+	                            <label for="uomCode">UOM</label>                            
+								<input id="uomCode" type="text" class="form-control" name="uomCode" value="" data-smk-msg="Require UOM" required>						
                         	</div>
 
+                        	<div class="form-group col-md-4">
+	                            <label for="width">Width (MM.)</label>                            
+								<input id="width" type="text" class="form-control" name="width"  style="text-align: right;"  data-smk-msg="Require width" >						
+                        	</div>
+
+                        	<div class="form-group col-md-4">
+	                            <label for="weight">Weight (G/M<sup>2</sup>)</label>                            
+								<input id="weight" type="text" class="form-control" name="weight"  style="text-align: right;"  data-smk-msg="Require UOM" >						
+                        	</div>
+						</div>
+
+
+						<div class="row col-md-12">
 							<div class="form-group col-md-4">
                             <label for="catCode">Category</label>                            							
 							<select name="catCode" class="form-control" >
@@ -154,19 +167,19 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<input type="file" name="inputFile2" accept="application/pdf,application/vnd.ms-excel" /> <br/>
 				</div>
                 </form> 
+
                 </div>
-                        
-            </div>
-        </div><!-- /.box-body -->
+                <!--row-->                        
+          
+        </div>
+        <!-- /.box-body -->
   <div class="box-footer">
       
       
     <!--The footer of the box -->
   </div><!-- box-footer -->
-</div><!-- /.box -->
-
-
-
+</div>
+<!-- /.box box-primary -->
 
 	<div id="spin"></div>
     </section>
@@ -179,6 +192,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
   
 </div>
 <!-- ./wrapper -->
+
+
+
 
 <!-- jQuery 2.2.3 -->
 <script src="plugins/jQuery/jquery-2.2.3.min.js"></script>
@@ -233,8 +249,8 @@ $( document ).ajaxStart(function() {
 						position:'top-center'
 					});
 				}
-				$('#form1')[0].reset();
-				$("#title").focus(); 
+				//$('#form1')[0].reset();
+				//$("#title").focus(); 
 			})
 			.error(function (response) {
 				  alert(response.responseText);

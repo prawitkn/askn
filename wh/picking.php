@@ -82,7 +82,7 @@ switch($s_userGroupCode){
                 $result = mysqli_query($link, $sql);
                 $countTotal = mysqli_fetch_assoc($result);
 				
-				$rows=20;
+				$rows=100;
 				$page=0;
 				if( !empty($_GET["page"]) and isset($_GET["page"]) ) $page=$_GET["page"];
 				if($page<=0) $page=1;
@@ -124,7 +124,7 @@ switch($s_userGroupCode){
 					$search_word=$_GET['search_word'];
 					$sql .= "AND (hdr.pickNo like '%".$_GET['search_word']."%') ";
 				}
-				$sql .="ORDER BY hdr.createTime DESC
+				$sql .="ORDER BY FIELD(hdr.isFinish,'N','Y'), hdr.createTime DESC
 				LIMIT $start, $rows 
 				";
 				//echo $sql;
@@ -136,10 +136,17 @@ switch($s_userGroupCode){
                     <th>Pick No.</th>
 					<th>SO No.</th>
 					<th>Pick Date</th>
+					<th>Is Available</th>
 					<th>Status</th>
 					<th>#</th>
                 </tr>
                 <?php while ($row = mysqli_fetch_assoc($result)) {
+                	$isFinishName = '<label class="label label-danger">N/A</label>';
+					switch($row['isFinish']){
+						case 'N' : $isFinishName = '<label class="label label-info">Available</label>'; break;
+						case 'Y' : $isFinishName = '<label class="label label-danger">Sent</label>'; break;
+						default : 						
+					}
  
 					$statusName = '<label class="label label-danger">Unknown</label>';
 					switch($row['statusCode']){
@@ -159,6 +166,9 @@ switch($s_userGroupCode){
                     </td>
                     <td>
                          <?= date('d M Y',strtotime( $row['pickDate'] )); ?>
+                    </td>
+                    <td>
+                    	<?=$isFinishName;?>
                     </td>
 					<td>
                          <?= $statusName; ?>

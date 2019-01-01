@@ -340,7 +340,7 @@ $ppNo = $_GET['ppNo'];
 							<th>Grade Type</th>
 							<th>Meter</th>
 							<th>Picking Qty</th>
-							<th>Packing Qty</th>
+							<th>Picked Qty</th>
 						</tr>
 						<?php $diffQty=0; $row_no=1; while ($row = $stmt->fetch()) { 
 						$gradeName = '<b style="color: red;">N/A</b>'; 
@@ -382,6 +382,7 @@ $ppNo = $_GET['ppNo'];
 						$stmt->bindParam(':ppNo', $hdr['ppNo']);
 						$stmt->execute();
 					
+						$incativeItem=0; 
 						if( $stmt->rowCount() > 0 ){	
 				   ?>
 				   <h3 class="box-title" style="color: red;">Unreceived Item</h3>
@@ -397,7 +398,7 @@ $ppNo = $_GET['ppNo'];
 								<td><?= $row['barcode']; ?></td>
 								<td><?= $row['qty']; ?></td>
 							</tr>							
-						<?php $row_no+=1; } //end loop  ?>
+						<?php $row_no+=1; $incativeItem+=1; } //end loop  ?>
 					</table>
 				<?php } // /.rowCount > 0 ?> 
 				</div>
@@ -531,25 +532,32 @@ $('#btn_delete').click (function(e) {
 });
 //.btn_click
 
-$('#btn_verify').click (function(e) {				 
+$('#btn_verify').click (function(e) {
+	$wrongProduct = <?=$wrongProduct;?>;
+	if($wrongProduct>0){
+		//alert('Cannot Confirm because there is WRONG PRODUCT in packing list');
+		alert('ผิดพลาด : (1. Wrong Product) \nสินค้าบางรายการ ไม่ตรงตามรายการสินค้า ในใบรายการสั่งเตรียมสินค้า (Picking list)');
+		return false;
+	}
+	$diffQty = <?=$diffQty;?>;
+	if($diffQty>0){
+		//alert('Cannot Confirm because there is DIFF QUANTITY in packing list');
+		alert('ผิดพลาด : (2. Difference Quanity) \nสินค้าบางรายการ มีจำนวนรวม ไม่ตรงตามจำนวนรวม ในใบรายการสั่งเตรียมสินค้า (Picking list)');
+		return false;
+	}
+	$incativeQty = <?=$incativeItem;?>;
+	if($incativeQty>0){
+		//alert('Cannot Confirm because there is DIFF QUANTITY in packing list');
+		alert('ผิดพลาด : (3. Incorrect Item) \nสินค้าบางรายการ ไม่มีอยู่ในสต๊อก');
+		return false;
+	}
+					 
 	var params = {	
 	action: 'confirm',				
 	ppNo: $('#ppNo').val()				
 	};
 	//alert(params.hdrID);
-	$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
-		$wrongProduct = <?=$wrongProduct;?>;
-		$diffQty = <?=$diffQty;?>;
-		if($wrongProduct>0){
-			//alert('Cannot Confirm because there is WRONG PRODUCT in packing list');
-			alert('ผิดพลาด : ไม่สามารถยืนยันการทำงานได้ (1. Wrong Product) \nสินค้าบางรายการ ไม่ตรงตามรายการสินค้า ในใบรายการสั่งเตรียมสินค้า (Picking list)');
-			return false;
-		}
-		if($diffQty>0){
-			//alert('Cannot Confirm because there is DIFF QUANTITY in packing list');
-			alert('ผิดพลาด : ไม่สามารถยืนยันการทำงานได้ (2. Difference Quanity) \nสินค้าบางรายการ มีจำนวนรวม ไม่ตรงตามจำนวนรวม ในใบรายการสั่งเตรียมสินค้า (Picking list)');
-			return false;
-		}
+	$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){		
 		$.post({
 			url: '<?=$rootPage;?>_ajax.php',
 			data: params,
@@ -615,7 +623,26 @@ $('#btn_reject').click (function(e) {
 });
 //.btn_click
 
-$('#btn_approve').click (function(e) {				 
+$('#btn_approve').click (function(e) {
+	$wrongProduct = <?=$wrongProduct;?>;
+	if($wrongProduct>0){
+		//alert('Cannot Confirm because there is WRONG PRODUCT in packing list');
+		alert('ผิดพลาด : (1. Wrong Product) \nสินค้าบางรายการ ไม่ตรงตามรายการสินค้า ในใบรายการสั่งเตรียมสินค้า (Picking list)');
+		return false;
+	}
+	$diffQty = <?=$diffQty;?>;
+	if($diffQty>0){
+		//alert('Cannot Confirm because there is DIFF QUANTITY in packing list');
+		alert('ผิดพลาด : (2. Difference Quanity) \nสินค้าบางรายการ มีจำนวนรวม ไม่ตรงตามจำนวนรวม ในใบรายการสั่งเตรียมสินค้า (Picking list)');
+		return false;
+	}
+	$incativeQty = <?=$incativeItem;?>;
+	if($incativeQty>0){
+		//alert('Cannot Confirm because there is DIFF QUANTITY in packing list');
+		alert('ผิดพลาด : (3. Incorrect Item) \nสินค้าบางรายการ ไม่มีอยู่ในสต๊อก');
+		return false;
+	}
+
 	var params = {	
 	action: 'approve',				
 	ppNo: $('#ppNo').val()

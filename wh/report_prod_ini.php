@@ -17,6 +17,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	$search_word = (isset($_GET['search_word'])?$_GET['search_word']:'');
 	$sloc = (isset($_GET['sloc'])?$_GET['sloc']:'');
 	$catCode = (isset($_GET['catCode'])?$_GET['catCode']:'');
+
 	
 ?>    
 
@@ -139,7 +140,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
 									<span class="glyphicon glyphicon-search"></span>
 								</span>
 							</div>
-                        </div>						
+                        </div>	
+
+                        <label for="prodCode">Product Code : </label>
+						<input type="hidden" name="prodId" id="prodId" class="form-control" value=""  />
+						<input type="text" name="prodCode" id="prodCode" class="form-control" value="" placeholder="<?=$prodCode;?>"  />
+						<a href="#" name="btnSdNo" class="btn btn-default" ><i class="glyphicon glyphicon-search" ></i> </a>
+						
+
+
 						<input type="submit" class="btn btn-default" value="ค้นหา">
                     </form>
                 </div>   

@@ -107,7 +107,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 from product prd
 INNER JOIN product_item itm ON itm.prodCodeId=prd.id 
 INNER JOIN receive_detail rd ON rd.prodItemId=itm.prodItemId AND rd.statusCode='A' 
-INNER JOIN receive rh ON rh.rcNo=rd.rcNo ";
+INNER JOIN receive rh ON rh.rcNo=rd.rcNo AND rh.statusCode='P' ";
 	if ( $sloc=="" ) { $sql.= "AND rh.toCode IN ('8','E') "; }else{ $sql .= "AND rh.toCode=:sloc "; }
 $sql .= "LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId 
 WHERE prd.id=:id 
@@ -276,7 +276,7 @@ ORDER BY rh.toCode, itm.gradeTypeId, itm.remarkWh
 					 $pendingQty=$row['sumQty']-$row['sumSentDtl'];
 
 					 $dateName[] = date('d M Y', strtotime($row['deliveryDate']));
-					 $remainQty[] = $tmpRemainQty;
+					 $remainQty[] = ($tmpRemainQty-$row['sumQty']);
 					 $orderQty[] = $row['sumQty'];
 					 $tmpRemainQty-=$row['sumQty'];
 						?>

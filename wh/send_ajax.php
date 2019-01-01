@@ -58,7 +58,21 @@ if(!isset($_POST['action'])){
 				$barcode = $_POST['barcode'];
 				
 				$pdo->beginTransaction();
-					
+				
+				//For Re-scan 
+				$sql = "SELECT fromCode FROM send WHERE sdNo=:sdNo LIMIT 1";	
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':sdNo', $sdNo);
+				$stmt->execute();
+				$row_count = $stmt->rowCount();	
+				if($row_count != 1 ){		
+					//return JSON
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => false, 'message' => 'Incorrect Sending No.'));
+					exit();
+				}
+				$sender=$stmt->fetch()['fromCode'];
+
 				//Query 1: Check Status for not gen running No.
 				$sql = "SELECT prodItemId 
 						FROM (SELECT prodItemId, REPLACE(`barcode`, '-', '') as barcodeId 
@@ -80,6 +94,23 @@ if(!isset($_POST['action'])){
 				$row=$stmt->fetch();
 				$prodItemId = $row['prodItemId'];
 				
+				//For Check last storage location. 
+				$sql = "SELECT th.rcNo FROM receive th  
+				INNER JOIN receive_detail td ON th.rcNo=td.rcNo AND td.prodItemId=:prodItemId AND td.statusCode='A' 
+				WHERE th.toCode=:toCode 
+				LIMIT 1 ";
+				$stmt = $pdo->prepare($sql); 
+				$stmt->bindParam(':prodItemId', $row['prodItemId']);
+				$stmt->bindParam(':toCode', $sender);
+				$stmt->execute();
+				$row_count = $stmt->rowCount();	
+				if($row_count != 1 ){		
+					//return JSON
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => false, 'message' => 'Incorrect Storage Location.'));
+					exit();
+				}
+
 				//For Re-scan 
 				$sql = "SELECT refId FROM send_scan WHERE barcodeId=:barcode AND userId=:s_userId LIMIT 1";	
 				$stmt = $pdo->prepare($sql);

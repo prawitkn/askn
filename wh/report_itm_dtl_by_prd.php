@@ -61,8 +61,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
           <?php
-					
-				
                 $sql = "SELECT count(dtl.Id) as countTotal
 				FROM `receive` hdr 
 				INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  
@@ -97,7 +95,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				$start=($page-1)*$rows;
 				if($page==0) $start=0;
           ?>
-		  
           <span class="label label-primary">Total <?php echo $countTotal['countTotal']; ?> items</span>
         </div><!-- /.box-tools -->
         </div><!-- /.box-header -->
@@ -115,7 +112,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				<div class="tab-pane" id="divResult">b
 				</div>
 				</div>
-				
 			</div>-->
 			<div class="col-md-12">					
                     <form id="form1" action="#" method="get" class="form-inline"  style="background-color: gray; padding: 5px;"  novalidate>
@@ -216,7 +212,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				   ?>             
 					
 					
-						<?php $c_row=($start+1); while ($row = $stmt->fetch() ) { 
+						<?php $qtyTotal=0; $c_row=($start+1); while ($row = $stmt->fetch() ) { 
 							$gradeName = '<b style="color: red;">N/A</b>'; 
 							switch($row['grade']){
 								case 0 : $gradeName = 'A'; break;

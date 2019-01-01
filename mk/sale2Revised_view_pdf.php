@@ -392,7 +392,7 @@ if( isset($_GET['logId']) ){
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 150px;
 										border: 0.1em solid black; padding: 10px; width: 170px;"> '.$row['remark'].' '.($row['rollLengthId']<>'0'?'[RL:'.$row['rollLengthName'].']':'').'</td>
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 60px;
-										border: 0.1em solid black; text-align: right; width: 60px;">'.number_format($row['qty'],0,'.',',').'</td>						
+										border: 0.1em solid black; text-align: right; width: 60px;">'.number_format($row['qty'],2,'.',',').'</td>						
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 40px;
 										border: 0.1em solid black; text-align: right; width: 40px;">'.$row['prodUomCode'].'</td>						
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65px;

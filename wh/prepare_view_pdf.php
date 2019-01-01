@@ -203,7 +203,7 @@ if( isset($_GET['ppNo']) ){
 						<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$gradeName.'</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['NW'].'&nbsp;&nbsp;</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['GW'].'&nbsp;&nbsp;</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['qty'],0,'.',',').'&nbsp;&nbsp;</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($row['qty'],2,'.',',').'&nbsp;&nbsp;</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 80px;">'.date('d M Y',strtotime( $row['issueDate'] )).'</td>
 					</tr>';			
 												
@@ -217,7 +217,7 @@ if( isset($_GET['ppNo']) ){
 						<td style="border: 0.1em solid black; text-align: center; width: 50px;"></td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumNW,2,'.',',').'&nbsp;&nbsp;</td>
 						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumGW,2,'.',',').'&nbsp;&nbsp;</td>
-						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumQty,0,'.',',').'&nbsp;&nbsp;</td>
+						<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumQty,2,'.',',').'&nbsp;&nbsp;</td>
 						<td style="border: 0.1em solid black; text-align: center; width: 80px;"></td>
 					</tr>';
 					$html .='<tr>

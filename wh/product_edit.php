@@ -54,7 +54,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     <form id="form1" action="#" method="post" class="form" validate>
 						<input type="hidden" name="action" value="edit" />
 						<?php							
-							$sql = "SELECT  `id`, `code`, `catCode`, `name`, `uomCode`, `ratioPack`, `packUomCode`
+							$sql = "SELECT  `id`, `code`, `catCode`, `name`, `uomCode`, `width`, `weight`, `ratioPack`, `packUomCode`
 							, `sourceTypeCode`, `appCode`, `isFg`, `isWip`, `photo`, `specFile`, `description`, `statusCode`
 									FROM product a
 									WHERE 1
@@ -92,9 +92,21 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						<div class="row col-md-12">
 							<div class="form-group col-md-4">
                             <label for="uomCode">UOM</label>                            
-							<input id="uomCode" type="text" class="form-control" name="uomCode" value="<?= $row['uomCode']; ?>" data-smk-msg="Require Zipcode" required>							
+							<input id="uomCode" type="text" class="form-control" name="uomCode" value="<?= $row['uomCode']; ?>" data-smk-msg="Require UOM" required>							
                         	</div>
 
+                        	<div class="form-group col-md-4">
+	                            <label for="width">Width (MM.)</label>                            
+								<input id="width" type="text" class="form-control" name="width" value="<?= $row['width']; ?>" style="text-align: right;" data-smk-msg="Require Width" >						
+                        	</div>
+
+                        	<div class="form-group col-md-4">
+	                            <label for="weight">Weight (G/M<sup>2</sup>)</label>                            
+								<input id="weight" type="text" class="form-control" name="weight" value="<?= $row['weight']; ?>" style="text-align: right;" data-smk-msg="Require Weight" >						
+                        	</div>
+                        </div>
+
+                        <div class="row col-md-12">
                         	<div class="form-group col-md-4">
                             <label for="catCode">Category</label>                            							
 							<select name="catCode" class="form-control" >
@@ -176,6 +188,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<input type="hidden" name="curPdf" id="curPdf" value="<?=$row['specFile'];?>" /><br/>
 					<?php if ($row['specFile']<>"") { ?>
 					<a href="../pdf/product/<?=$row['specFile'];?>" target="_blank" ><i class="fa fa-file"> </i>  Specification file</a>
+					<a id="btn_spec_file_delete" class="btn btn-danger" href="#" data-id="<?=$row['id'];?>" ><i class="fa fa-trash"> </i>  Delete file</a>
 					<?php } ?>
 					<input type="file" name="inputFile2" accept="application/pdf,application/vnd.ms-excel" /> <br/>
 
@@ -255,8 +268,8 @@ $(document).ready(function() {
 							type: 'danger',
 						});
 					}
-					$('#form1')[0].reset();
-					$("#userFullname").focus(); 
+					//$('#form1')[0].reset();
+					//$("#userFullname").focus(); 
 				})
 				.error(function (response) {
 					  alert(response.responseText);
@@ -268,6 +281,40 @@ $(document).ready(function() {
 		e.preventDefault();
 	});
 	//form.submit
+
+	$('#btn_spec_file_delete').click (function(e) {	
+		//alert($(this).attr('data-id'));			 
+		var params = {		
+		action: 'specFileDelete',
+		id: $(this).attr('data-id')				
+		};
+		alert(params.id);
+		$.smkConfirm({text:'Are you sure to delete Specification file ?', accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function(data) {
+				if (data.success){  
+					alert(data.message);
+					//window.location.href = '<?=$rootPage;?>.php';
+					window.location.reload(); 
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
+				}
+				//e.preventDefault();		
+			}).error(function (response) {
+				alert(response.responseText);
+			});
+			//.post
+		}});
+		//smkConfirm
+	});
+	//.btn_click
 });
   </script>
   

@@ -134,7 +134,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							".$sqlRole." 
 						AND a.statusCode<>'X' 
 						
-						ORDER BY a.createTime DESC
+						ORDER BY  FIELD(a.statusCode,'B','C','P'), a.createTime DESC
 						LIMIT $start, $rows 
 				";
 				//echo $sql;

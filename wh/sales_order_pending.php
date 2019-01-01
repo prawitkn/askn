@@ -282,7 +282,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					?>
                   <tr>
 					<td><?= $c_row; ?></td>
-                    <td><a href="sale_view.php?soNo=<?=$row['soNo'];?>" ><?= $row['soNo']; ?></a></td>
+                    <td><a href="sale2_view.php?soNo=<?=$row['soNo'];?>" ><?= $row['soNo']; ?></a></td>
 					<td><?= date('d M Y',strtotime( $row['deliveryDate'] )); ?></td>
                 </tr>
                  <?php $c_row +=1; } ?>

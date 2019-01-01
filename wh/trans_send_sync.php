@@ -123,7 +123,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 									$sql .= "AND left(itm.[ItemCode],1) = '".$s_userDeptCode."' ";
 								break;
 							case 'pdMgr' : 
-									$sql .= "AND left(itm.[ItemCode],1) IN ('4','5','6') ";
+									$sql .= "AND left(itm.[ItemCode],1) IN ('3','4','5','6') ";
 								break;
 							default : //case 'it' : case 'admin' : 
 						  }
@@ -192,7 +192,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 								$sql .= "AND left(itm.[ItemCode],1) = '".$s_userDeptCode."' ";
 							break;
 						case 'pdMgr' : 
-								$sql .= "AND left(itm.[ItemCode],1) IN ('4','5','6') ";
+								$sql .= "AND left(itm.[ItemCode],1) IN ('3','4','5','6') ";
 							break;
 						default : //case 'it' : case 'admin' : 
 					  }
@@ -261,7 +261,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 								$sql .= "AND left(itm.[ItemCode],1) = '".$s_userDeptCode."' ";
 							break;
 						case 'pdMgr' : 
-								$sql .= "AND left(itm.[ItemCode],1) IN ('4','5','6') ";
+								$sql .= "AND left(itm.[ItemCode],1) IN ('3','4','5','6') ";
 							break;
 						default : //case 'it' : case 'admin' : 
 					  }

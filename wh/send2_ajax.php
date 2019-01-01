@@ -1030,7 +1030,18 @@ if(!isset($_POST['action'])){
 				}
 				//End Closing Date
 
-				
+				//Set Aavailable.
+				$sql = "UPDATE receive_detail rd
+				INNER JOIN receive rh ON rh.rcNo=rd.rcNo 
+				INNER JOIN send_detail sd ON sd.prodItemId=rd.prodItemId
+				INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.fromCode=rh.toCode AND sh.sdNo=:sdNo 
+				SET rd.statusCode='A' 
+				";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':sdNo', $sdNo);
+				$stmt->execute();
+
+
 				//Query 1: UPDATE DATA
 				$sql = "UPDATE send SET statusCode='X'
 				, updateTime=now()

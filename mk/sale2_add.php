@@ -149,6 +149,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					</div>
 					<div class="row">
 						<div class="col-md-6 form-group">
+
+
+							
+
 							<label for="custId" >Customer</label>
 							<select id="custId" name="custId" class="form-control" data-smk-msg="Require Customer." required>
 								<option value=""> -- Select -- </option>
@@ -398,7 +402,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							<?php if($hdr['shippingMarksFilePath']==""){ 							
 								echo '<img src="" id="shippingMarksImg" />';
 							}else{
-								echo '<img src="images/shippingMarks/'.$hdr['shippingMarksFilePath'].'" id="shippingMarksImg" />';
+								echo '<img src="../images/shippingMarks/'.$hdr['shippingMarksFilePath'].'" id="shippingMarksImg" />';
 							}?>	
 						</div>
 					</div>
@@ -885,8 +889,7 @@ $("#spin").hide();
 				});  
 		}/* e.keycode=13 */	
 	});
-	
-	
+		
 	
 
 	function getList(){		
@@ -912,25 +915,46 @@ $("#spin").hide();
 						//$('#tbl_items tbody').empty();
 						$('#tbl_items tbody').fadeOut('slow').empty();
 						$rowNo=1;
-						$.each($.parseJSON(data.data), function(key,value){
-							var tmpRemark=value.remark;
-							if(value.rollLengthName != ""){
-								tmpRemark=tmpRemark+' / RL:'+value.rollLengthName;
-							}
-							$('#tbl_items tbody').append(
-								'<tr>'+
-								'<td style="text-align: center;">'+$rowNo+'</td>'+
-								'<td style="text-align: left;">'+value.prodName+'</td>'+
-								'<td style="text-align: left;">'+value.prodCode+'</td>'+
-								'<td style="text-align: right;">'+value.qty+' '+value.uomCode+'</td>'+
-								'<td style="text-align: left;">'+tmpRemark+'</td>'+
-								'<td style="text-align: left;">'+value.deliveryDate+'</td>'+
-								'<td><a href="#" name="divShip" class="btn btn-default" data-ref-id="'+value.id+'" data-prod-id="'+value.prodId+'" ><i class="fa fa-cut"></i> Divided shipping</td>'+
-								'<td><a href="#" name="btnItmDelete" class="btn btn-danger" data-id="'+value.id+'"  ><i class="fa fa-trush"></i> Delete</a></td>'+
-								'</tr>');
-							$rowNo+=1;
-							//alert(value);
-						});
+						<?php if($hdr['statusCode']=='A' OR $hdr['statusCode']=='B') { ?>
+							  $.each($.parseJSON(data.data), function(key,value){
+								var tmpRemark=value.remark;
+								if(value.rollLengthName != ""){
+									tmpRemark=tmpRemark+' / RL:'+value.rollLengthName;
+								}	
+								$('#tbl_items tbody').append(
+									'<tr>'+
+									'<td style="text-align: center;">'+$rowNo+'</td>'+
+									'<td style="text-align: left;">'+value.prodName+'</td>'+
+									'<td style="text-align: left;">'+value.prodCode+'</td>'+
+									'<td style="text-align: right;">'+value.qty+' '+value.uomCode+'</td>'+
+									'<td style="text-align: left;">'+tmpRemark+'</td>'+
+									'<td style="text-align: left;">'+value.deliveryDate+'</td>'+
+									'<td><a href="#" name="divShip" class="btn btn-default" data-ref-id="'+value.id+'" data-prod-id="'+value.prodId+'" ><i class="fa fa-cut"></i>Edit/Divided shipping</td>'+
+									'<td><a href="#" name="btnItmDelete" class="btn btn-danger" data-id="'+value.id+'"  ><i class="fa fa-trush"></i> Delete</a></td>'+
+									'</tr>');
+								$rowNo+=1;
+								//alert(value);
+							});
+							<?php }else{ ?>
+								$.each($.parseJSON(data.data), function(key,value){
+									var tmpRemark=value.remark;
+									if(value.rollLengthName != ""){
+										tmpRemark=tmpRemark+' / RL:'+value.rollLengthName;
+									}	
+									$('#tbl_items tbody').append(
+										'<tr>'+
+										'<td style="text-align: center;">'+$rowNo+'</td>'+
+										'<td style="text-align: left;">'+value.prodName+'</td>'+
+										'<td style="text-align: left;">'+value.prodCode+'</td>'+
+										'<td style="text-align: right;">'+value.qty+' '+value.uomCode+'</td>'+
+										'<td style="text-align: left;">'+tmpRemark+'</td>'+
+										'<td style="text-align: left;">'+value.deliveryDate+'</td>'+
+										'</tr>');
+									$rowNo+=1;
+									//alert(value);
+								});
+							<?php } ?>	
+						
 						$('#tbl_items tbody').fadeIn('slow');
 
 						$('#prodCode').focus().select();							
@@ -1018,7 +1042,32 @@ $("#spin").hide();
 	
 
 	
-	$('a[name=btn_create]').click (function(e) { //alert('big');
+	$('a[name=btn_create]').click (function(e) { //alert('big
+		if ($('#poNo').val()==""){
+			$('.nav-pills a[href="#home"]').tab('show');
+			alert('PO No. is require.');
+			$('#poNo').select();
+			return false;
+		}
+		if ($('#custId').val()==""){
+			$('.nav-pills a[href="#home"]').tab('show');
+			alert('Customer is require.');
+			$('#custId').focus();
+			return false;
+		}
+		if ($('#shipToId').val()==""){
+			$('.nav-pills a[href="#home"]').tab('show');
+			alert('Ship To Customer is require.');
+			$('#shipToId').focus();
+			return false;
+		}
+		if ($('#smId').val()==""){
+			$('.nav-pills a[href="#home"]').tab('show');
+			alert('Salesman is require.');
+			$('#smId').focus();
+			return false;
+		}
+		
 		if ($('#form1').smkValidate()){
 			$.post("<?=$rootPage;?>_ajax.php", $("#form1").serialize() )
 				.done(function(data) {
@@ -1178,7 +1227,7 @@ $("#spin").hide();
 		//action: 'confirm',	
 		//soNo: $('#soNo').val()				
 		//};
-		//alert(params.hdrID);
+		//alert(params.hdrID);		
 		$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 			$.post({
 				url: '<?=$rootPage;?>_ajax.php',

@@ -19,8 +19,11 @@ $sql = "
 SELECT hdr.`pickNo`, hdr.`soNo`, hdr.`pickDate`, hdr.`isFinish`, hdr.`remark`, hdr.`statusCode`
 , hdr.`createTime`, hdr.`createById`, hdr.`updateTime`, hdr.`updateById`
 , hdr.`confirmTime`, hdr.`confirmById`, hdr.`approveTime`, hdr.`approveById`
+, sh.custId, cust.locationCode 
 					, uca.userFullname as createByName, ucf.userFullname as confirmByName, uap.userFullname as approveByName
 FROM picking hdr
+INNER JOIN sale_header sh ON sh.soNo=hdr.soNo 
+INNER JOIN customer cust ON cust.id=sh.custId 
 LEFT JOIN wh_user uca on uca.userId=hdr.createById					
 LEFT JOIN wh_user ucf on ucf.userId=hdr.confirmById
 LEFT JOIN wh_user uap on uap.userId=hdr.approveById
@@ -34,6 +37,7 @@ if($stmt->rowCount()==0){
 	header("Location: access_denied.php"); exit();
 }
 $hdr = $stmt->fetch();			
+
 ?>
 
 <!-- iCheck for checkboxes and radio inputs -->
@@ -125,6 +129,7 @@ $hdr = $stmt->fetch();
 				</div><!-- /.box-header -->
 				<div class="box-body">
 				   <?php
+				   		
 						$sql = "
 						SELECT dtl.`id`, dtl.prodId, dtl.`issueDate`, dtl.`grade`, dtl.`meter`, dtl.`qty`, dtl.`pickNo` , dtl.`gradeTypeId`, dtl.`remarkWh`, pgt.`name` as gradeTypeName 
 						, prd.code as prodCode 
@@ -135,7 +140,7 @@ $hdr = $stmt->fetch();
 						AND dtl.`pickNo`=:pickNo 
 						
 						ORDER BY prd.code 
-						";
+						"; 
 						$stmt = $pdo->prepare($sql);	
 						$stmt->bindParam(':pickNo', $hdr['pickNo']);
 						$stmt->execute();	
@@ -163,29 +168,70 @@ $hdr = $stmt->fetch();
 								case 2 : $gradeName = '<b style="color: red;">N</b>'; break;
 								default : 
 									$gradeName = '<b style="color: red;">N/a</b>';
-							}
-							
-			$sql = "
-			SELECT DISTINCT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, ws.code as shelfCode, ws.name as shelfName
-			, prd.code as prodCode 
-			FROM `picking_detail` dtl 		
-			INNER JOIN product_item itm ON itm.prodCodeId=dtl.prodId AND itm.issueDate=dtl.issueDate AND itm.grade=dtl.grade AND itm.remarkWh=dtl.remarkWh  				
-			INNER JOIN receive_detail rDtl on  itm.prodItemId=rDtl.prodItemId 
-			INNER JOIN wh_shelf_map_item wmi on wmi.recvProdId=rDtl.id 
-			INNER JOIN wh_shelf ws ON wmi.shelfId=ws.id 
-			LEFT JOIN product prd ON prd.id=itm.prodCodeId 
-			WHERE 1 
-            AND rDtl.statusCode='A'  
-			AND dtl.`pickNo`=:pickNo 
-			AND dtl.`prodId`=:prodId 
+							}						
+			$stmt2=null;
+			switch($hdr['locationCode']){
+	   			case 'L' : $sql = "
+					SELECT DISTINCT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, dtl.`remarkWh`, ws.code as shelfCode, ws.name as shelfName
+					, prd.code as prodCode 
+					FROM `picking_detail` dtl 		
+					INNER JOIN product_item itm ON itm.prodCodeId=dtl.prodId AND itm.issueDate=dtl.issueDate AND itm.grade=dtl.grade AND itm.remarkWh=dtl.remarkWh  				
+					INNER JOIN receive_detail rDtl on  itm.prodItemId=rDtl.prodItemId 
+					INNER JOIN wh_shelf_map_item wmi on wmi.recvProdId=rDtl.id 
+					INNER JOIN wh_shelf ws ON wmi.shelfId=ws.id 
+					LEFT JOIN product prd ON prd.id=itm.prodCodeId 
+					WHERE 1 
+		            AND rDtl.statusCode='A'  
+					AND dtl.`pickNo`=:pickNo 
+					AND dtl.`prodId`=:prodId 
 
-			ORDER BY dtl.id 
-			LIMIT 10 
-			";
-			$stmt2 = $pdo->prepare($sql);	
-			$stmt2->bindParam(':pickNo', $hdr['pickNo']);
-			$stmt2->bindParam(':prodId', $row['prodId']);
-			$stmt2->execute();
+					ORDER BY dtl.id 
+					LIMIT 10 
+					";
+					$stmt2 = $pdo->prepare($sql);	
+					$stmt2->bindParam(':pickNo', $hdr['pickNo']);
+					$stmt2->bindParam(':prodId', $row['prodId']);
+					$stmt2->execute();
+	   			break;
+
+	   			case 'E' : $sql = "
+					SELECT DISTINCT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, dtl.`remarkWh`, ws.code as shelfCode, ws.name as shelfName
+					, prd.code as prodCode 
+					FROM `picking_detail` dtl 		
+					INNER JOIN 
+						(SELECT itm.prodItemId, itm.prodCodeId, itm.grade, itm.remarkWh, sh.sendDate as issueDate 
+						FROM product_item itm
+						INNER JOIN send_detail sd ON sd.prodItemId=itm.prodItemId
+						INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.sendDate=:sendDate 
+						WHERE itm.prodCodeId=:prodId 
+						AND itm.prodItemId IN (SELECT xrdtl.prodItemId FROM wh_shelf_map_item x 
+												INNER JOIN receive_detail xrdtl ON xrdtl.id=x.recvProdId)
+						) as tmp ON tmp.grade=dtl.grade AND tmp.remarkWh=dtl.remarkWh 
+						AND tmp.prodCodeId=dtl.prodId AND tmp.issueDate=dtl.issueDate 
+
+					INNER JOIN receive_detail rDtl on  tmp.prodItemId=rDtl.prodItemId 
+					INNER JOIN wh_shelf_map_item wmi on wmi.recvProdId=rDtl.id 
+					INNER JOIN wh_shelf ws ON wmi.shelfId=ws.id 
+					LEFT JOIN product prd ON prd.id=tmp.prodCodeId 
+					WHERE 1 
+		            AND rDtl.statusCode='A'  
+					AND dtl.`pickNo`=:pickNo 
+
+					ORDER BY dtl.id 
+					LIMIT 10 
+					";
+					$stmt2 = $pdo->prepare($sql);	
+					$stmt2->bindParam(':pickNo', $hdr['pickNo']);
+					$stmt2->bindParam(':prodId', $row['prodId']);
+					$stmt2->bindParam(':sendDate', $row['issueDate']);
+					$stmt2->execute();
+	   			break;
+
+	   			default : $sql='';
+	   		}//end switch.
+
+			
+			
 						?>
 							<tr>
 								<td style="text-align: center;"><?= $row_no; ?></td>
@@ -199,7 +245,7 @@ $hdr = $stmt->fetch();
 								<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
 								<td colspan="3"><small>
 								<?php $shelfCount=0; while ($row2 = $stmt2->fetch()) { 
-									if($row['prodId']==$row2['prodId'] AND $row['issueDate']==$row2['issueDate'] AND $row['grade']==$row2['grade']){
+									if($row['prodId']==$row2['prodId'] AND $row['issueDate']==$row2['issueDate'] AND $row['grade']==$row2['grade'] AND $row['remarkWh']==$row2['remarkWh']){
 										echo $row2['shelfCode'].', ';
 										$shelfCount+=1;
 									} 

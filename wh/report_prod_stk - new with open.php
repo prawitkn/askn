@@ -145,7 +145,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
           	$stmt = $pdo->prepare($sql);		
 			$stmt->execute();
 
-			/*
 			//Receive
 			$sql = "UPDATE tmpStock hdr
 	         ,(SELECT itm.prodCodeId, th.toCode as fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
@@ -208,35 +207,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
           	";
           	$stmt = $pdo->prepare($sql);		
 			$stmt->execute();
-			*/
-
-
-
-
-
-			//Receive
-			$sql = "UPDATE tmpStock hdr
-	         ,(SELECT itm.prodCodeId, th.toCode as fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
-	          				INNER JOIN receive_detail td ON td.prodItemId=itm.prodItemId AND td.statusCode='A'   
-	         				INNER JOIN receive th ON th.rcNo=td.rcNo AND th.statusCode='P' 
-	         					
-	          				GROUP BY itm.prodCodeId, th.toCode
-	          				) as tmp 
-	          SET hdr.balance=tmp.sumQty 
-	          WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.fromCode 
-          	";
-          	$stmt = $pdo->prepare($sql);		
-			$stmt->execute();
-
-
 
 			//delete
-			/*$sql = "UPDATE tmpStock 
+			$sql = "UPDATE tmpStock 
 			SET `balance`=`openAcc`+`openTrans`+`receive`-`sent`-`return`-`delivery`
           	";
           	$stmt = $pdo->prepare($sql);		
 			$stmt->execute();
-			*/
 
 			//delete
 			$sql = "DELETE FROM tmpStock 
@@ -306,11 +283,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			<div class="col-md-12">					
                     <form id="form1" action="#" method="get" class="form-inline"  style="background-color: gray; padding: 5px;"  novalidate>
 
-                    	<label for="dateFrom">Date : </label>
+                    	<label for="dateFrom">Date From : </label>
 						<input type="text" id="dateFrom" name="dateFrom" value="" class="form-control datepicker" data-smk-msg="Require From Date." required >
 
-						<!--<label for="dateTo"> To : </label>
-						<input type="text" id="dateTo" name="dateTo" value="" class="form-control datepicker" data-smk-msg="Require To Date." required >-->
+						<label for="dateTo"> To : </label>
+						<input type="text" id="dateTo" name="dateTo" value="" class="form-control datepicker" data-smk-msg="Require To Date." required >
 						<br/>	
 
 						<label>Location : </label>
@@ -363,13 +340,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<th style="width: 50px; text-align: center;">No.</th>
                     <th style="width: 200px; text-align: center;">Product Code</th>
 					<th style="width: 50px; text-align: center;">Loc.</th>
-					<!--<th style="width: 100px; text-align: center; color: green;">Available</th>-->
+					<th style="width: 100px; text-align: center; color: green;">Available</th>
 					<th style="width: 100px; text-align: center; color: blue; ">Balance</th>
 					<th style="width: 100px; text-align: center; color: orange;">Onway</th>
-					<!--<th style="width: 100px; text-align: center;">Category</th>
+					<!--<th style="width: 100px; text-align: center;">Category</th>-->
 					<th style="width: 100px; text-align: center;">Open</th>
 					<th style="width: 100px; text-align: center;">IN</th>
-					<th style="width: 100px; text-align: center;">OUT</th>-->			
+					<th style="width: 100px; text-align: center;">OUT</th>			
 					<!--<th>Pick</th>
 					<th style="color: #006600; background-color: #ccccff;">Remain (Balance-Pick)</th>-->
                   </tr>
@@ -411,16 +388,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<td style="text-align: right;"><?= $c_row; ?></td>
                     <td style="width: 200px;"><a target="_blank" href="product_view_stk.php?id=<?=$row['prodId'];?>&sloc=<?=$sloc;?>" ><?= $row['prodCode']; ?></a></td>
 					<td style="text-align: center;"><?= $row['sloc']; ?></td>
-					<!--<td style="text-align: right; color: green;"><?= number_format($row['balance']-$row['book'],0,'.',','); ?></td>-->
+					<td style="text-align: right; color: green;"><?= number_format($row['balance']-$row['book'],0,'.',','); ?></td>
 					<td style="text-align: right; color: blue;"><a target="_blank" href="report_itm_dtl_by_prd.php?prodCode=<?=$row['prodCode'];?>&sloc=<?=$row['sloc'];?>" ><?= number_format($row['balance'],0,'.',','); ?></a></td>
 					<td style="text-align: right; color: orange;"><?= number_format($row['onway'],0,'.',','); ?></td>
-					<!--<td><?= $row['catCode']; ?></td>
+					<!--<td><?= $row['catCode']; ?></td>-->
 					<td style="text-align: right;"><?= number_format($row['openAcc']+$row['openTrans'],0,'.',','); ?></td>
 					<td style="text-align: right;"><?= number_format($row['receive'],0,'.',','); ?></td>
 					<td style="text-align: right;"><?= number_format($row['sent']+$row['return']+$row['delivery'],0,'.',','); ?></td>
 					<td>
 						<?php echo $row['sent'].' / '.$row['return'].' / '.$row['delivery']; ?>
-					</td>-->
+					</td>
 					
 					<!--<td style="text-align: right;"><?= number_format(-1*$row['pick'],0,'.',','); ?></td>
 					<td style="text-align: right; color: #006600; background-color: #ccccff;"><?= number_format($row['balance']-$row['pick'],0,'.',','); ?></td>-->

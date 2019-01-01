@@ -355,9 +355,9 @@ if(!isset($_POST['action'])){
 					echo json_encode(array('success' => false, 'message' => 'Status incorrect.'));
 					exit();
 				}
-				$row = $stmt->fetch();
-				$toCode = $row['toCode'];
-				$sdNo = $row['sdNo'];
+				$hdr = $stmt->fetch();
+				$toCode = $hdr['toCode'];
+				$sdNo = $hdr['sdNo'];
 				
 
 				//Query 1: Check Prev Cloosing Date

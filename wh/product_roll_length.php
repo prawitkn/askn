@@ -23,15 +23,21 @@ $rootPage = 'product_roll_length';
 $tb = 'product_roll_length';
 
 //Check user roll.
+$isRollOk=false;
 switch($s_userGroupCode){
-	case 'admin' : case 'salesAdmin' :
+	case 'admin' : $isRollOk=true;
 		break;
-	default : 
-		include 'access_denied2.php';
-		exit();
+	case 'pdSup' : 
+		if ( $s_userDeptCode == 'T' ) { $isRollOk=true; }
+	default :
 }
-  
-  ?>
+if ( !$isRollOk ) {  
+	include 'access_denied2.php';
+	exit();
+}
+//End check user roll.
+
+?>
   
   <!-- Left side column. contains the logo and sidebar -->
    <?php include 'leftside.php'; ?>
@@ -40,7 +46,7 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
 	<section class="content-header">
-		<h1><i class="glyphicon glyphicon-compressed"></i>
+		<h1><i class="fa fa-archive"></i>
        Product Roll Length
         <small>Product Roll Length management</small>
       </h1>

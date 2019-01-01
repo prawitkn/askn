@@ -194,7 +194,7 @@ $rootPage="sale2";
 							<td><?= $row['prodName']; ?></td>					
 							<td><?= $row['prodCode']; ?></td>					
 							<td><?= $row['remark'].' '.($row['rollLengthId']<>'0'?'[RL:'.$row['rollLengthName'].']':''); ?></td>		
-							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',',').' '.$row['prodUomCode']; ?></td>						
+							<td style="text-align: right;"><?= number_format($row['qty'],2,'.',',').' '.$row['prodUomCode']; ?></td>						
 							<td style="text-align: center;"><?= date('d M Y',strtotime( $row['deliveryDate'] )); ?></td>	
 							<td style="text-align: right; color: blue;"><?= number_format($row['sentQty'],0,'.',',').'&nbsp;'.$row['prodUomCode']; ?></td>
 						</tr>
@@ -235,7 +235,7 @@ $rootPage="sale2";
 		<div class="col-md-10">			
 			<?php if($hdr['shippingMarksFilePath']==""){
 			}else{
-				echo '<img src="images/shippingMarks/'.$hdr['shippingMarksFilePath'].'" id="shippingMarksImg" />';
+				echo '<img src="../images/shippingMarks/'.$hdr['shippingMarksFilePath'].'" id="shippingMarksImg" />';
 			}?>			
 		</div>
 	</div>

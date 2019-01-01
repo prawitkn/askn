@@ -846,13 +846,30 @@
 				try{   
 					$id = $_POST['id'];
 
+					//Query 1: Check Status for not gen running No.
+					$sql = "SELECT saleItemId FROM picking ph
+					INNER JOIN picking_detail pd ON pd.pickNo=ph.pickNo AND pd.saleItemId=:saleItemId 
+					WHERE ph.statusCode<>'X' 
+					LIMIT 1 
+					";
+					$stmt = $pdo->prepare($sql);
+					$stmt->bindParam(':saleItemId', $id);
+					$stmt->execute();
+					$row_count = $stmt->rowCount();
+					if($row_count == 1 ){
+						//return JSON
+						header('Content-Type: application/json');
+						echo json_encode(array('success' => false, 'message' => 'Fail! Can not delete used sales item ID.'));
+						exit();
+					}
+
 					$sql = "DELETE FROM sale_detail WHERE id=:id ";
 					$stmt = $pdo->prepare($sql);
 					$stmt->bindParam(':id', $id);	
 					$stmt->execute();
 					
 					header('Content-Type: application/json');
-					echo json_encode(array('success' => true, 'message' => 'Data deleted Complete.'));
+					echo json_encode(array('success' => true, 'message' => 'Data delfffseted Complete.'));
 				}catch(Exception $e){
 					header('Content-Type: application/json');
 					$errors = "Error on Data delete. Please try again. " . $e->getMessage();

@@ -15,6 +15,8 @@
 				$name = trim($_POST['name']);
 				$name2 = ""; //trim($_POST['name2']);
 				$uomCode = trim($_POST['uomCode']);
+				$width = trim($_POST['width']);
+				$weight = trim($_POST['weight']);
 				$sourceTypeCode = $_POST['sourceTypeCode']; 
 				$appCode = $_POST['appCode'];
 				$price = 0; // $_POST['price'];
@@ -57,10 +59,10 @@
 					move_uploaded_file($_FILES['inputFile2']['tmp_name'], $path_upload);        
 				}
 					
-				$sql = "INSERT INTO `product`(`code`, `catCode`, `name`, `uomCode`
+				$sql = "INSERT INTO `product`(`code`, `catCode`, `name`, `uomCode`, `width`, `weight`
 				, `sourceTypeCode`, `appCode`, `photo`, `specFile`, `description`, `statusCode`, `createTime`, `createById`)  
 				VALUES (	
-				:code,:catCode,:name,:uomCode,:sourceTypeCode,:appCode,:photo,:specFile,:description
+				:code,:catCode,:name,:uomCode,:width,:weight,:sourceTypeCode,:appCode,:photo,:specFile,:description
 				,:statusCode, now(), :s_userId  
 				)";
 				$stmt = $pdo->prepare($sql);
@@ -69,6 +71,8 @@
 				$stmt->bindParam(':name', $name); 
 				//$stmt->bindParam(':name2', $name2); 
 				$stmt->bindParam(':uomCode', $uomCode); 
+				$stmt->bindParam(':width', $width); 
+				$stmt->bindParam(':weight', $weight); 
 				$stmt->bindParam(':sourceTypeCode', $sourceTypeCode); 
 				$stmt->bindParam(':appCode', $appCode); 
 				$stmt->bindParam(':photo', $new_picture_name); 
@@ -98,6 +102,8 @@
 					$name = $_POST['name'];
 					$name2 = ""; // $_POST['name2'];
 					$uomCode = $_POST['uomCode'];
+					$width = trim($_POST['width']);
+					$weight = trim($_POST['weight']);
 					$sourceTypeCode = $_POST['sourceTypeCode']; 
 					$appCode = $_POST['appCode'];
 					$price = 0; //$_POST['price'];
@@ -150,6 +156,8 @@
 					, `catCode`=:catCode
 					, `name`=:name
 					, `uomCode`=:uomCode
+					, `width`=:width
+					, `weight`=:weight
 					, `sourceTypeCode`=:sourceTypeCode
 					, `appCode`=:appCode
 					, `photo`=:new_picture_name
@@ -163,6 +171,8 @@
 					$stmt->bindParam(':catCode', $catCode);
 					$stmt->bindParam(':name', $name);
 					$stmt->bindParam(':uomCode', $uomCode);
+					$stmt->bindParam(':width', $width);
+					$stmt->bindParam(':weight', $weight);
 					$stmt->bindParam(':sourceTypeCode', $sourceTypeCode);
 					$stmt->bindParam(':appCode', $appCode);
 					$stmt->bindParam(':new_picture_name', $new_picture_name);
@@ -242,6 +252,43 @@
 					//header("Location: product.php");
 					header('Content-Type: application/json');
 					echo json_encode(array('success' => true, 'message' => 'Data deleted'));
+					
+				}catch(Exception $e){
+					//Rollback the transaction.
+					$pdo->rollBack();
+					//return JSON
+					header('Content-Type: application/json');
+					$errors = "Error on Data Delete. Please try again. " . $e->getMessage();
+					echo json_encode(array('success' => false, 'message' => $errors));
+				}
+				break;
+			case 'specFileDelete' :
+				try{
+					$id = $_POST['id'];
+					
+					$pdo->beginTransaction();
+					
+					//delete image
+					$sql = "SELECT specFile FROM product WHERE id=:id ";
+					$stmt = $pdo->prepare($sql);
+					$stmt->bindParam(':id', $id);
+					$stmt->execute();
+					$row = $stmt->fetch();
+					
+					if($row['photo']<>""){
+						if (file_exists('../pdf/product/'.$row['specFile'])) unlink('../pdf/product/'.$row['specFile']);
+					}
+
+					$sql = "UPDATE  product SET specFile='' WHERE id=:id ";
+					$stmt = $pdo->prepare($sql);
+					$stmt->bindParam(':id', $id);
+					$stmt->execute();
+
+					$pdo->commit();	
+					
+					//header("Location: product.php");
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => true, 'message' => 'File deleted'));
 					
 				}catch(Exception $e){
 					//Rollback the transaction.

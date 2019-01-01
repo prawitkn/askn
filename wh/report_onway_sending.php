@@ -187,9 +187,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					</select>		
 					
 					<label for="prodCode">Product Code : </label>
-					<input type="hidden" name="prodId" id="prodId" class="form-control" value="<?=$prodId;?>"  />
-					<input type="text" name="prodCode" id="prodCode" class="form-control" value="<?=$prodCode;?>"  />
+					<input type="hidden" name="prodId" id="prodId" class="form-control" value=""  />
+					<input type="text" name="prodCode" id="prodCode" class="form-control" value="" placeholder="<?=$prodCode;?>"  />
 					<a href="#" name="btnSdNo" class="btn btn-default" ><i class="glyphicon glyphicon-search" ></i> </a>
+					
                     </form>
 
                     <a name="btnSubmit" id="btnSubmit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-search"></i> Search</a>
@@ -430,7 +431,7 @@ $(document).ready(function() {
 				'	<div class="btn-group">' +
 				'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
 				'	class="btn" title="เลือก"> ' +
-				'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
+				'	<i class="fa fa-circle-o"></i> เลือก</a> ' +
 				'	</div>' +
 				'</td>' + 
 				'<td style="display: none;">'+ value.prodId +'</td>' +
