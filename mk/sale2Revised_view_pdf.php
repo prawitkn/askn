@@ -43,7 +43,7 @@ class MYPDF extends TCPDF {
         // Page number
 		$tmp = date('Y-m-d H:i:s');
 		//$tmp = to_thai_short_date_fdt($tmp);
-		$this->Cell(0, 10,'FM-MS-003; rev.03', 0, false, 'L', 0, '', 0, false, 'T', 'M');
+		$this->Cell(0, 10,'FM-MS-003; rev.04', 0, false, 'L', 0, '', 0, false, 'T', 'M');
 		$this->Cell(0, 10,'Print : '. $tmp, 0, false, 'R', 0, '', 0, false, 'T', 'M');
     }
 	public function head($hdr){

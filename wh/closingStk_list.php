@@ -255,8 +255,8 @@ $(document).ready(function() {
 	$('a[name=btn_row_setActive]').click(function(){
 		var params = {
 			action: 'setActive',
-			Id: $(this).attr('data-Id'),
-			StatusId: $(this).attr('data-StatusId')			
+			id: $(this).attr('data-id'),
+			statusCode: $(this).attr('data-statusCode')			
 		};
 		$.smkConfirm({text:'Are you sure ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 			$.post({
@@ -290,7 +290,7 @@ $(document).ready(function() {
 	$('a[name=btn_row_remove]').click(function(){
 		var params = {
 			action: 'remove',
-			Id: $(this).attr('data-Id')
+			id: $(this).attr('data-id')
 		};
 		$.smkConfirm({text:'Are you sure to Remove ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 			$.post({
@@ -323,7 +323,7 @@ $(document).ready(function() {
 	$('a[name=btn_row_delete]').click(function(){
 		var params = {
 			action: 'delete',
-			Id: $(this).attr('data-Id')
+			id: $(this).attr('data-id')
 		};
 		$.smkConfirm({text:'Are you sure to Delete ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
 			$.post({
@@ -351,39 +351,7 @@ $(document).ready(function() {
 		}});
 		e.preventDefault();
 	});
-	//end btn_row_delete
-
-	$('a[name=btnSync]').click(function(){
-		var params = {
-			action: 'sync'
-		};
-		$.smkConfirm({text:'Are you sure to Sync ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
-			$.post({
-				url: '<?=$rootPage;?>_ajax.php',
-				data: params,
-				dataType: 'json'
-			}).done(function (data) {					
-				if (data.status === "success"){ 
-					$.smkAlert({
-						text: data.message,
-						type: data.status,
-						position:'top-center'
-					});
-					location.reload();
-				} else {
-					alert(data.message);
-					$.smkAlert({
-						text: data.message,
-						type: data.status
-					});
-				}
-			}).error(function (response) {
-				alert(response.responseText);
-			}); 
-		}});
-		e.preventDefault();
-	});
-	//end btn_row_delete
+	//end btn_row_delete	
 });
 </script>
 <!-- Optionally, you can add Slimscroll and FastClick plugins.

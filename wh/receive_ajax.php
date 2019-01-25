@@ -25,6 +25,21 @@ if(!isset($_POST['action'])){
 				
 				//We start our transaction.
 				$pdo->beginTransaction();
+
+				//Query 1: Check Prev Cloosing Date	
+				$sql = "SELECT `closingDate` FROM `stk_closing` WHERE statusCode='A' AND closingDate >= :closingDate LIMIT 1 ";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':closingDate', $receiveDate);
+				$stmt->execute();
+				if($stmt->rowCount() != 1 ){
+					//return JSON 
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => false, 'message' => 'Incorrect Bill Date.'));
+					exit();
+				}
+				//End Closing Date
+
+
 				
 				//Query 1: Check Status for not gen running No.
 				$sql = "SELECT sdNo FROM send WHERE sdNo=:sdNo AND statusCode='P' AND (rcNo IS NULL OR rcNo='')  LIMIT 1";
@@ -43,7 +58,7 @@ if(!isset($_POST['action'])){
 				$rcNo = 'RS-'.substr(str_shuffle(MD5(microtime())), 0, 7);
 				//Query 1: DELETE Detail
 				$sql = "INSERT INTO `receive`(`rcNo`, `receiveDate`, `refNo`, `type`, `fromCode`, `toCode`, `remark`, `sdNo`, `statusCode`, `createByID`) 
-				SELECT :rcNo,:receiveDate,sdNo, 'S',`fromCode`, `toCode`,:remark,`sdNo`, 'B',:s_userId  
+				SELECT :rcNo, :receiveDate, sdNo, 'S',`fromCode`, `toCode`, :remark, `sdNo`, 'B',:s_userId  
 				FROM send 
 				WHERE sdNo=:sdNo 
 				";
@@ -358,6 +373,19 @@ if(!isset($_POST['action'])){
 				$hdr = $stmt->fetch();
 				$toCode = $hdr['toCode'];
 				$sdNo = $hdr['sdNo'];
+
+				//Query 1: Check Status for not gen running No.
+				$sql = "SELECT rcNo FROM receive WHERE refNo=:refNo AND statusCode='P' LIMIT 1 ";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':refNo', $sdNo);
+				$stmt->execute();
+				$row_count = $stmt->rowCount();
+				if($row_count == 1 ){
+					//return JSON
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => false, 'message' => 'This Sending was received.'));
+					exit();
+				}
 				
 
 				//Query 1: Check Prev Cloosing Date
@@ -367,7 +395,7 @@ if(!isset($_POST['action'])){
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':closingDate', $hdrIssueDate);
 				$stmt->execute();
-				if($stmt->rowCount() == 1 ){
+				if($stmt->rowCount() != 1 ){
 					//return JSON 
 					header('Content-Type: application/json');
 					echo json_encode(array('success' => false, 'message' => 'Incorrect Bill Date.'));
@@ -404,7 +432,7 @@ if(!isset($_POST['action'])){
 				";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':noNext', $noNext);
-				$stmt->bindParam(':approveById', $s_userId);
+				$stmt->bindParam(':ById', $s_userId);
 				$stmt->bindParam(':rcNo', $rcNo);
 				$stmt->execute();
 					
@@ -464,7 +492,7 @@ if(!isset($_POST['action'])){
 				
 				//return JSON
 				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data approved', 'rcNo' => $noNext));	
+				echo json_encode(array('success' => true, 'message' => 'Data d', 'rcNo' => $noNext));	
 			} 
 			//Our catch block will handle any exceptions that are thrown.
 			catch(Exception $e){

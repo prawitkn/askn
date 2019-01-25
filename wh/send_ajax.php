@@ -25,6 +25,20 @@ if(!isset($_POST['action'])){
 				
 				$sendDate = str_replace('/', '-', $sendDate);
 				$sendDate = date("Y-m-d",strtotime($sendDate));
+
+				//Query 1: Check Prev Cloosing Date	
+				$sql = "SELECT `closingDate` FROM `stk_closing` WHERE statusCode='A' AND closingDate >= :closingDate LIMIT 1 ";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':closingDate', $sendDate);
+				$stmt->execute();
+				if($stmt->rowCount() == 1 ){
+					//return JSON 
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => false, 'message' => 'Incorrect Bill Date.'));
+					exit();
+				}
+				//End Closing Date
+
 				
 				$sql = "INSERT INTO `".$tb."`
 				(`sdNo`,`refNo`, `sendDate`, `fromCode`, `toCode`, `remark`, `statusCode`, `createTime`, `createById`) 

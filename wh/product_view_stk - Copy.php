@@ -127,13 +127,13 @@ ORDER BY rh.toCode, itm.gradeTypeId, itm.remarkWh
 			              <div class="table-responsive">
 			                <table class="table no-margin">
 			                  <thead>			                  	
-			                    <th style="text-align: center;">Location</th>
+			                    <th style="text-align: right;">SLOC</th>
 			                    <th style="text-align: center;">Length/Pieces/KG</th>
-			                    <th style="text-align: center;">Grade</th>
-			                    <th style="text-align: center;">Grade Type</th>
-			                    <th style="text-align: center;">WH Remark</th>
-			                    <th style="text-align: center;">Qty</th>
-								<th style="text-align: center;">Qty Total</th>
+			                    <th style="text-align: right;">Grade</th>
+			                    <th style="text-align: right;">Grade Type</th>
+			                    <th style="text-align: right;">WH Remark</th>
+			                    <th style="text-align: right;">Qty</th>
+								<th style="text-align: right;">Qty Total</th>
 			                  </tr>
 			                  </thead>
 			                  <tbody>
@@ -153,15 +153,15 @@ ORDER BY rh.toCode, itm.gradeTypeId, itm.remarkWh
 								<td style="text-align: center;"><?= $gradeName; ?></td>
 								<td style="text-align: center;"><?= $row['gradeTypeName']; ?></td>
 								<td style="text-align: center;"><?= $row['remarkWh']; ?></td>
-								<td style="text-align: center;"><?= number_format($row['sumQty']/$row['qty'],2,'.',','); ?></td>
-								<td style="text-align: center;"><?= number_format($row['sumQty'],2,'.',','); ?></td>
+								<td style="text-align: right;"><?= number_format($row['sumQty']/$row['qty'],2,'.',','); ?></td>
+								<td style="text-align: right;"><?= number_format($row['sumQty'],2,'.',','); ?></td>
 			                </tr>
 			                <?php $row_no+=1; $sumQtyTotal+=$row['sumQty']; } ?>
 			                  </tbody>
 			                  <tfoot>
 			                  	<tr>
 			                  		<td colspan="6" style="text-align: center; font-weight: bold;">Total</td>
-			                  		<td style="text-align: center; font-weight: bold;"><?= number_format($sumQtyTotal,2,'.',','); ?></td>
+			                  		<td style="text-align: right; font-weight: bold;"><?= number_format($sumQtyTotal,2,'.',','); ?></td>
 			                  	</tr>
 			                  </tfoot>
 			                </table>
@@ -216,36 +216,32 @@ ORDER BY rh.toCode, itm.gradeTypeId, itm.remarkWh
             <div class="box-body">
 			
 			<?php	
-					$sql = "
-					SELECT soNo, deliveryDate, prodId, prodCode
-					, sum(qty) as sumOrderQty, sum(sentQty) as sumSentQty 
-					, customerName 
-					FROM (
-						SELECT hdr.soNo, dtl.deliveryDate
-						, dtl.prodId, prd.code as prodCode
-						, dtl.id, dtl.qty
-						, (SELECT sum(xd.qty) FROM picking xh 
-							INNER JOIN picking_detail xd ON xd.pickNo=xh.pickNo 
-							WHERE xh.soNo=hdr.soNo AND xd.saleItemId=dtl.id
-							AND xh.isFinish='Y' AND xh.statusCode='P') as sentQty  
-						, cust.name as customerName 
-						FROM `sale_header` hdr
-						INNER JOIN sale_detail dtl ON dtl.soNo=hdr.soNo
-						INNER JOIN product prd ON prd.id=dtl.prodId 
-						INNER JOIN customer cust ON cust.id=hdr.custId
-						";				
-						if ($sloc<>"") $sql.="AND cust.locationCode=:sloc ";
-						
-						$sql .= "WHERE 1 
-						AND hdr.statusCode='P' 
-						AND hdr.isClose='N' 
-						";
-						if($id<>""){ $sql .= " AND dtl.prodId=:id ";	}		
-						$sql .= "
-					) as tmp ";
-					$sql.="GROUP BY soNo, deliveryDate, prodId, prodCode ";
+					$sql = "SELECT hdr.soNo, dtl.deliveryDate
+					, dtl.prodId, prd.code as prodCode
+					, sum(dtl.qty) as sumQty
+					, (SELECT IFNULL(sum(itm.qty),0) FROM delivery_header doHdr
+						INNER JOIN delivery_detail doDtl ON doDtl.doNo=doHdr.doNo
+						INNER JOIN product_item itm ON itm.prodItemId=doDtl.prodItemId 
+						WHERE 1=1
+						AND doHdr.soNo=hdr.soNo
+						AND itm.prodCodeId=dtl.prodId) as sumSentDtl
+					, cust.name as customerName 
+					FROM `sale_header` hdr
+					INNER JOIN sale_detail dtl ON dtl.soNo=hdr.soNo
+					INNER JOIN product prd ON prd.id=dtl.prodId 
+					INNER JOIN customer cust ON cust.id=hdr.custId
+					";				
+					if ($sloc<>"") $sql.="AND cust.locationCode=:sloc ";
+					
+					$sql .= "WHERE 1 
+					AND hdr.statusCode='P' 
+					AND hdr.isClose='N' 
+					";
+					if($id<>""){ $sql .= " AND dtl.prodId=:id ";	}						
+					$sql .= "
+					group by hdr.soNo, dtl.prodId, prd.code, dtl.deliveryDate ";
 					$sql.="
-					ORDER BY deliveryDate ASC 
+					ORDER BY dtl.deliveryDate ASC 
 					";
 					//$sql .= "LIMIT $start, $rows ";
 					$stmt = $pdo->prepare($sql);	
@@ -263,10 +259,10 @@ ORDER BY rh.toCode, itm.gradeTypeId, itm.remarkWh
                 <table class="table no-margin">
                   <thead>
                   <tr>
-                    <th style="text-align: center;">Order No.</th>
-                    <th style="text-align: center;">Customer</th>
-                    <th style="text-align: center;">Delivery Date</th>
-                    <th style="text-align: center;">Pending/Order</th>
+                    <th>Order No.</th>
+                    <th>Customer</th>
+                    <th>Delivery Date</th>
+                    <th>Qty</th>
                   </tr>
                   </thead>
                   <tbody>
@@ -277,18 +273,18 @@ ORDER BY rh.toCode, itm.gradeTypeId, itm.remarkWh
 			        $orderQty = array();
 
         			$row_no = 1; while ($row = $stmt->fetch()) { 
-					 $pendingQty=$row['sumOrderQty']-$row['sumSentQty'];
+					 $pendingQty=$row['sumQty']-$row['sumSentDtl'];
 
 					 $dateName[] = date('d M Y', strtotime($row['deliveryDate']));
-					 $remainQty[] = ($tmpRemainQty-$pendingQty);
-					 $orderQty[] = $pendingQty;
-					 $tmpRemainQty-=$pendingQty;
+					 $remainQty[] = ($tmpRemainQty-$row['sumQty']);
+					 $orderQty[] = $row['sumQty'];
+					 $tmpRemainQty-=$row['sumQty'];
 						?>
                   <tr>
-                    <td style="text-align: center;"><a href="sale2_view.php?soNo=<?=$row['soNo'];?>" target="_blank"><?= $row['soNo']; ?></a></td>
-                    <td style="text-align: center;"><?= $row['customerName']; ?></a></td>
-                    <td style="text-align: center;"><?= date('d M Y', strtotime($row['deliveryDate'])); ?></a></td>
-					<td style="text-align: center;"><?= number_format($pendingQty,2,'.',',').' / '.number_format($row['sumOrderQty'],2,'.',','); ?></td>
+                    <td><a href="sale2_view.php?soNo=<?=$row['soNo'];?>" target="_blank"><?= $row['soNo']; ?></a></td>
+                    <td><?= $row['customerName']; ?></a></td>
+                    <td><?= date('d M Y', strtotime($row['deliveryDate'])); ?></a></td>
+					<td style="text-align: right;"><?= number_format($pendingQty,2,'.',','); ?></td>
                 </tr>
                 <?php $row_no+=1; } ?>
                   </tbody>
@@ -380,7 +376,7 @@ $(function () {
     },
     yAxis: {
         title: {
-            text: 'Order Pending'
+            text: 'Nuclear weapon states'
         },
         labels: {
             formatter: function () {
@@ -399,7 +395,7 @@ $(function () {
         },
         yAxis: {
             title: {
-                text: 'Quantity'
+                text: ' Quantity'
             }
         },
         series: [{

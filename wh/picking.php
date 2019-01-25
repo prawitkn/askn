@@ -124,7 +124,8 @@ switch($s_userGroupCode){
 					$search_word=$_GET['search_word'];
 					$sql .= "AND (hdr.pickNo like '%".$_GET['search_word']."%') ";
 				}
-				$sql .="ORDER BY FIELD(hdr.isFinish,'N','Y'), hdr.createTime DESC
+				$sql .="ORDER BY FIELD(hdr.isFinish,'N','Y'), FIELD(hdr.statusCode,'B','C','P'), hdr.createTime DESC
+
 				LIMIT $start, $rows 
 				";
 				//echo $sql;

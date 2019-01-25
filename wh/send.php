@@ -158,8 +158,8 @@ $tb="send";
 				if(isset($_GET['search_word']) and $_GET['search_word']<>""){
 					$sql .= "AND hdr.sdNo like :search_word ";		
 				}
-				$sql .="			
-				ORDER BY hdr.createTime DESC
+				$sql .="		
+				ORDER BY  FIELD(hdr.statusCode,'B','C','P'), hdr.approveTime DESC
 				LIMIT $start, $rows 
 				";				
 				$stmt = $pdo->prepare($sql);

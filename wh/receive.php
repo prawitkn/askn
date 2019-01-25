@@ -163,7 +163,8 @@ $rootPage="receive";
 				if( $search_word<>"" ){
 					$sql .= "AND hdr.rcNo like :search_word OR hdr.sdNo like :search_word2 ";			
 				}
-				$sql .="ORDER BY hdr.createTime DESC ";
+				$sql .="ORDER BY  FIELD(hdr.statusCode,'B','C','P'), hdr.approveTime DESC ";
+
 				$sql .= "LIMIT $start, $rows ";
 				
 				$stmt = $pdo->prepare($sql);

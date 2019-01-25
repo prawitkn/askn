@@ -120,7 +120,7 @@ if($start<0) $start=0;
 					$search_word=$_GET['search_word'];
 					$sql .= "AND (a.doNo like '%".$_GET['search_word']."%') ";
 				}
-				$sql .="ORDER BY a.createTime DESC
+				$sql .="ORDER BY FIELD(a.statusCode,'B','C','P'), a.approveTime DESC
 				LIMIT $start, $rows 
 				";
 				//echo $sql;

@@ -23,6 +23,19 @@ if(!isset($_POST['action'])){
 				
 				$sendDate = str_replace('/', '-', $sendDate);
 				$sendDate = date("Y-m-d",strtotime($sendDate));
+
+				//Query 1: Check Prev Cloosing Date	
+				$sql = "SELECT `closingDate` FROM `stk_closing` WHERE statusCode='A' AND closingDate >= :closingDate LIMIT 1 ";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':closingDate', $sendDate);
+				$stmt->execute();
+				if($stmt->rowCount() == 1 ){
+					//return JSON 
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => false, 'message' => 'Incorrect Bill Date.'));
+					exit();
+				}
+				//End Closing Date
 				
 				$sql = "INSERT INTO `".$tb."`
 				(`sdNo`, `sendDate`, `fromCode`, `toCode`, `remark`, `statusCode`, `createTime`, `createByID`) 
@@ -396,13 +409,20 @@ if(!isset($_POST['action'])){
 					echo json_encode(array('success' => false, 'message' => 'Status incorrect.'));
 					exit();
 				}	
+
+				//Delete scanned
+				$sql = "DELETE FROM send_scan WHERE refId IN (SELECT id FROM send_detail WHERE sdNo=:sdNo )
+						";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':sdNo', $sdNo);
+				$stmt->execute();	
 					
 				//Query 1: DELETE Detail
 				$sql = "DELETE FROM `send_detail` WHERE sdNo=:sdNo";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':sdNo', $sdNo);	
 				$stmt->execute();
-				
+
 				//Query 2: DELETE Header
 				$sql = "DELETE FROM `send` WHERE sdNo=:sdNo";
 				$stmt = $pdo->prepare($sql);
@@ -565,7 +585,8 @@ if(!isset($_POST['action'])){
 				}
 				
 				//Query 1: Check Status for not gen running No.
-				$sql = "SELECT * FROM send WHERE sdNo=:sdNo AND statusCode='C' LIMIT 1";
+				$sql = "SELECT sdNo, fromCode, toCode, sendDate 
+				FROM send WHERE sdNo=:sdNo AND statusCode='C' LIMIT 1";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':sdNo', $sdNo);
 				$stmt->execute();
@@ -614,29 +635,66 @@ if(!isset($_POST['action'])){
 				$next_no = '00000'.(string)$cur_no;
 				$noNext = $prefix . substr($next_no, -5);
 				
+				$sql = "
+		          	CREATE TEMPORARY TABLE tmpSend (
+		          		`prodItemId` int(11) NOT NULL,
+				      	PRIMARY KEY (`prodItemId`)
+				    )";
+		          	$stmt = $pdo->prepare($sql);		
+					$stmt->execute();
+
+					$sql = "
+			          INSERT INTO tmpSend (prodItemId)
+			          SELECT prd.prodItemId 
+			          FROM send_detail prd 
+			          WHERE prd.sdNo=:sdNo ";
+		          	$stmt = $pdo->prepare($sql);		          	
+					$stmt->bindParam(':sdNo', $sdNo);		
+					$stmt->execute();	
+
 				//Set Unavailable.
 				$sql = "UPDATE receive_detail rd
+				INNER JOIN tmpSend ts ON ts.prodItemId=rd.prodItemId 
+				SET rd.statusCode='X' 
+				";
+				/*$sql = "UPDATE receive_detail rd 
 				INNER JOIN receive rh ON rh.rcNo=rd.rcNo 
 				INNER JOIN send_detail sd ON sd.prodItemId=rd.prodItemId
 				INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.fromCode=rh.toCode AND sh.sdNo=:sdNo 
 				SET rd.statusCode='X' 
-				";
+				";*/
 				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
+				//$stmt->bindParam(':sdNo', $sdNo);
 				$stmt->execute();
 
 				//Delete mapping Shelf.
-				$sql = "DELETE smi
+				/*$sql = "DELETE smi
 				FROM wh_shelf_map_item smi 
 				INNER JOIN receive_detail rd ON rd.id=smi.recvProdId
                 INNER JOIN receive rh ON rh.rcNo=rd.rcNo 
 				INNER JOIN send_detail sd ON sd.prodItemId=rd.prodItemId
 				INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.fromCode=rh.toCode AND sh.sdNo=:sdNo 
+				";*/
+				$sql = "DELETE smi
+				FROM wh_shelf_map_item smi 
+				INNER JOIN receive_detail rd ON rd.id=smi.recvProdId
+				INNER JOIN tmpSend ts ON ts.prodItemId=rd.prodItemId 
 				";
 				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $sdNo);
+				//$stmt->bindParam(':sdNo', $sdNo);
 				$stmt->execute();
 
+				//Delete scanned
+				$sql = "DELETE FROM send_scan WHERE refId IN (SELECT id FROM send_detail WHERE sdNo=:sdNo )
+						";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':sdNo', $sdNo);
+				$stmt->execute();	
+
+				//Query 3: UPDATE DATA
+				$sql = "UPDATE send_detail SET sdNo=? WHERE sdNo=? ";
+				$stmt = $pdo->prepare($sql);
+				$stmt->execute(array($noNext,$sdNo));
 
 
 				//Query 1: UPDATE DATA
@@ -654,10 +712,7 @@ if(!isset($_POST['action'])){
 				$stmt->execute();
 				
 
-				//Query 3: UPDATE DATA
-				$sql = "UPDATE send_detail SET sdNo=? WHERE sdNo=? ";
-				$stmt = $pdo->prepare($sql);
-				$stmt->execute(array($noNext,$sdNo));
+				
 				
 				//Query 4:  UPDATE doc running.
 				$sql = "UPDATE doc_running SET cur_no=? WHERE year=? and name=? and prefix=? ";
@@ -671,6 +726,8 @@ if(!isset($_POST['action'])){
 				$stmt->bindParam(':refId', $sdNo);
 				$stmt->execute();				
 				
+
+
 				//Query 5: UPDATE STK BAl sloc from 
 				$sql = "		
 				UPDATE stk_bal sb,
@@ -1014,21 +1071,25 @@ if(!isset($_POST['action'])){
 				$fromCode = $hdr['fromCode'];
 				$toCode = $hdr['toCode'];
 							
-				
-				//Query 1: Check Prev Cloosing Date
-				$hdrIssueTime = strtotime($hdr['sendDate']);
-				$hdrIssueDate = date("Y-m-d", $hdrIssueTime);		
-				$sql = "SELECT `closingDate` FROM `stk_closing` WHERE statusCode='A' AND closingDate >= :closingDate LIMIT 1 ";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':closingDate', $hdrIssueDate);
-				$stmt->execute();
-				if($stmt->rowCount() == 1 ){
-					//return JSON 
-					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Incorrect Bill Date.'));
-					exit();
-				}
-				//End Closing Date
+				switch($s_userGroupCode){
+					case 'admin' : 
+						break;
+					default : 
+						//Query 1: Check Prev Cloosing Date
+						$hdrIssueTime = strtotime($hdr['sendDate']);
+						$hdrIssueDate = date("Y-m-d", $hdrIssueTime);		
+						$sql = "SELECT `closingDate` FROM `stk_closing` WHERE statusCode='A' AND closingDate >= :closingDate LIMIT 1 ";
+						$stmt = $pdo->prepare($sql);
+						$stmt->bindParam(':closingDate', $hdrIssueDate);
+						$stmt->execute();
+						if($stmt->rowCount() == 1 ){
+							//return JSON 
+							header('Content-Type: application/json');
+							echo json_encode(array('success' => false, 'message' => 'Incorrect Bill Date.'));
+							exit();
+						}
+						//End Closing Date
+				}				
 
 				//Set Aavailable.
 				$sql = "UPDATE receive_detail rd
@@ -1053,7 +1114,17 @@ if(!isset($_POST['action'])){
 				$stmt->bindParam(':updateById', $s_userId);
 				$stmt->bindParam(':sdNo', $sdNo);
 				$stmt->execute();
-								
+
+				//Query delete wrong scan 
+				//Delete scanned
+				$sql = "DELETE FROM send_scan WHERE refId=:refId 
+						";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':refId', $sdNo);
+				$stmt->execute();		
+					
+
+				/*Unuse stk_bal year 2019 			
 				//Query 5: UPDATE STK BAl sloc from 
 				$sql = "		
 				UPDATE stk_bal sb,
@@ -1116,6 +1187,7 @@ if(!isset($_POST['action'])){
 				$stmt->bindParam(':toCode', $toCode);
 				$stmt->bindParam(':toCode2', $toCode);
 				$stmt->execute();
+				*/
 				
 				//We've got this far without an exception, so commit the changes.
 				$pdo->commit();
