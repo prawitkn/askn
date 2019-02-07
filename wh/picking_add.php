@@ -148,7 +148,7 @@ $custId = $hdr['custId'];
 			<form id="form2" action="<?=$rootPage;?>_add_item_submit_ajax.php" method="post" class="form" novalidate>
 				<input type="hidden" name="pickNo" id="pickNo" value="<?=$pickNo;?>" />
 				<?php
-					$sql = "SELECT od.`id`, od.`prodId`, od.deliveryDate, od.`qty`
+					$sql = "SELECT od.`id`, od.`prodId`, od.`deliveryDate`, od.`qty`
 					,prd.code as prodCode, prd.name as prodName 
 					, (SELECT IFNULL(SUM(dtl.qty),0) FROM picking_detail dtl WHERE dtl.pickNo=:pickNo AND dtl.saleItemId=od.id) as pickQty
 					, (SELECT IFNULL(SUM(dtl.qty),0) FROM picking hdr 
@@ -161,7 +161,7 @@ $custId = $hdr['custId'];
 					
 					GROUP BY od.id, od.prodId, od.deliveryDate 
 					
-					ORDER BY prd.name 
+					ORDER BY prd.`code`, od.`deliveryDate` 
 					";
 					$stmt = $pdo->prepare($sql);
 					$stmt->bindParam(':pickNo', $pickNo);	
@@ -198,11 +198,20 @@ $custId = $hdr['custId'];
 					</tr>
 					<?php $row_no=1; while ($row = $stmt->fetch()) { 
 					$qtyRem=$row['qty']-$row['pickedQty'];
+
+					$isWaitingDeliveryDate=false;
+					$deliveryDateStr="";
+					$dt = new DateTime($row['deliveryDate']); 
+					$deliveryDateStr = $dt->format('d M Y');
+					if ( $dt->format('Y-m-d') == '2099-12-31' ){
+						$deliveryDateStr="<span style='color: red;'>Waiting</span>";
+					}
+
 					?>
 					<tr>
 						<td><?= $row_no; ?></td>
 						<td><?= $row['prodCode']; ?></td>	
-						<td><?= date('d M Y',strtotime( $row['deliveryDate'] )); ?></td>	
+						<td><?= $deliveryDateStr; ?></td>	
 						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',',').'/'.number_format($qtyRem,0,'.',','); ?></td>
 						<td style="text-align: right;"><?= number_format($row['pickQty'],0,'.',','); ?></td>
 					<td>
@@ -243,7 +252,8 @@ $custId = $hdr['custId'];
 					<tr>
 						<td><?= $row_no; ?></td>
 						<td><?= $row['prodCode']; ?></td>	
-						<td><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>	
+						<td><?php $dt = new DateTime($row['issueDate']); 
+							echo $dt->format('d M Y'); ?></td>	
 						<td><?= $gradeName; ?></td>	
 						<td><?= $row['gradeTypeName']; ?></td>	
 						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>

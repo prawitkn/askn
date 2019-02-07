@@ -80,6 +80,13 @@ class MYPDF extends TCPDF {
 		$this->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
 		$this->setCellHeightRatio(1.50);
 		
+		$dt = new DateTime($hdr['saleDate']); 
+		$saleDate=$dt->format('d M Y');
+
+		$dt = new DateTime($hdr['deliveryDate']); 
+		$deliveryDate=$dt->format('d M Y');
+
+
 		$html='<table width="100%"  >	
 		<tr>
 			<td colspan="3" style="border: o.1em solid black; text-align: center; font-size: large;">SALES ORDER FORM (ใบสั่งขาย)</td>
@@ -95,7 +102,7 @@ class MYPDF extends TCPDF {
 			<td colspan="2" ><span >ที่อยู่ (Address) : </span></td>
 			<td colspan="4"  style="border-bottom: 0.1em solid black;">'.$hdr['custAddr1'].'</td>				
 			<td colspan="1" >&nbsp;วันที่ (Date) : </td>
-			<td colspan="3" style="border-bottom: 0.1em solid black;">'.date('d M Y',strtotime( $hdr['saleDate'] )).'</td>	
+			<td colspan="3" style="border-bottom: 0.1em solid black;">'.$saleDate.'</td>	
 		</tr>
 		<tr>
 			<td colspan="6"  style="border-bottom: 0.1em solid black;">'.$hdr['custAddr2'].'</td>
@@ -180,6 +187,9 @@ class MYPDF extends TCPDF {
 		';
 		$this->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
 		
+		$dt = new DateTime($hdr['createTime']); 
+		$createTime=$dt->format('d M Y');
+
 		$html='<table width="100%"  >
 		<tr>
 			<td></td>
@@ -211,7 +221,7 @@ class MYPDF extends TCPDF {
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="text-decoration: underline;">'.$hdr['deliveryTypeName'].'</span>
 			</td>
 			<td colspan="4" style="border-left: 0.1em solid black; border-right: 0.1em solid black;">
-				&nbsp;วันที่ (Date) : <span style="text-decoration: underline;">'.date('d M Y',strtotime( $hdr['createTime'] )).'</span>
+				&nbsp;วันที่ (Date) : <span style="text-decoration: underline;">'.$createTime.'</span>
 			</td>
 		</tr>
 		<tr>
@@ -363,6 +373,12 @@ if( isset($_GET['logId']) ){
 			//Loop all item
 			$iRow=0;
 			$row_no = 1;  while ($row = $stmt->fetch()) { 
+				$dt = new DateTime($row['deliveryDate']); 
+				$deliveryDateStr=$dt->format('d M Y');
+				if ( $dt->format('Y-m-d') == '2099-12-31' ){
+					$deliveryDateStr="<span style='color: red;'>Waiting</span>";
+				}
+
 				if($iRow==0){
 					
 					$pdf->head($hdr);
@@ -396,7 +412,7 @@ if( isset($_GET['logId']) ){
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 40px;
 										border: 0.1em solid black; text-align: right; width: 40px;">'.$row['prodUomCode'].'</td>						
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65px;
-										border: 0.1em solid black; padding: 10px; width: 80px;"> '.date('d M Y',strtotime( $row['deliveryDate'] )).'</td>
+										border: 0.1em solid black; padding: 10px; width: 80px;"> '.$deliveryDateStr.'</td>
 						</tr>';	
 				
 				//Loop item per page

@@ -79,7 +79,10 @@ if($start<0) $start=0;
         <div class="box-header with-border">
 		<div class="form-inline">
 			<label class="box-title">Delivery Order List</label>
+			<?php switch($s_userGroupCode){ case 'admin' : case 'whOff' : case 'whSup' : case 'pdOff' : case 'pdSup' : case 'pdMgr' : case 'whMgr' : ?>	
 			<a href="<?=$rootPage;?>_add.php?doNo=" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add Delivery Order</a>
+			<?php break; default : ?>	
+			<?php } ?>	
 		</div>
 		
         <div class="box-tools pull-right">

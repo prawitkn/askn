@@ -8,6 +8,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
 <?php include 'head.php'; 
+
+switch($s_userGroupCode){
+	case 'admin' : case 'whOff' : case 'whSup' : case 'whMgr' : 
+		break;
+	default : 
+		header('Location: access_denied.php');
+		exit();
+}
+
+
 $rootPage = 'delivery';
 $stmt="";
 if(isset($_GET['doNo'])){
@@ -40,6 +50,9 @@ $hdr = $stmt->fetch();
 $doNo = $hdr['doNo'];
 $ppNo = $hdr['ppNo'];
 $soNo = $hdr['soNo'];
+
+
+
 ?>
    
 </head>

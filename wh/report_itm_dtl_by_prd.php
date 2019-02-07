@@ -228,7 +228,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<td><?= date('d/M/Y', strtotime($row['issueDate'])); ?></td>
 					<td><?= $gradeName; ?></td>
 					<td><?= $row['gradeTypeName']; ?></td>
-					<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
+					<td style="text-align: right;"><?= number_format($row['qty'],2,'.',','); ?></td>
 					<td><?= $row['remarkWh']; ?></td>
 					<td><?= $row['shelfName']; ?></td>
 					<td><a target="_blank" href="receive_view.php?rcNo=<?=$row['rcNo'];?>"><?= $row['rcNo']; ?></a></td>

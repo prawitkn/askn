@@ -65,13 +65,18 @@
 
 
 
-		<?php switch($s_userGroupCode){ case 'admin' : case 'whOff' : case 'whSup' : case 'pdOff' : case 'pdSup' : case 'pdMgr' : case 'whMgr' : ?>
+		<?php switch($s_userGroupCode){ case 'admin' : case 'whOff' : case 'whSup' : case 'pdOff' : case 'pdSup' : case 'pdMgr' : case 'whMgr' : case 'acc' : ?>
 			<li class="header">Transaction Menu</li>
+
+			<?php switch($s_userGroupCode){ case 'admin' : case 'whOff' : case 'whSup' : case 'pdOff' : case 'pdSup' : case 'pdMgr' : case 'whMgr' : ?>			
 			<li><a href="trans_send_sync.php"><i class="glyphicon glyphicon-transfer"></i> <span>Sync Data</span></a></li>
 			<li><a href="send2.php"><i class="glyphicon glyphicon-arrow-up"></i> <span>Send</span></a></li>
 			<li><a href="receive.php"><i class="glyphicon glyphicon-arrow-down"></i> <span>Sending Receive</span></a></li>
 			<li><a href="send.php"><i class="glyphicon glyphicon-eject"></i> <span>Send (Warehouse)</span></a></li>
 			<li><a href="rt.php"><i class="glyphicon glyphicon-arrow-left"></i> <span>Return</span></a></li>
+			<?php break; default : ?>	
+			<?php } ?>	
+
 			
 			<?php switch($s_userGroupCode){ case 'whOff' : case 'whSup' : case 'whMgr' : break; //Not Show ?>
 			<?php default : ?>				
@@ -80,11 +85,14 @@
 			
 			<!--<li><a href="wip.php"><i class="glyphicon glyphicon-hourglass"></i> <span>Work In Process</span></a></li-->
 			<?php switch($s_userGroupCode){ case 'admin' : case 'whOff' : case 'whSup' : case 'whMgr' : ?>
-			<li><a href="picking.php"><i class="glyphicon glyphicon-shopping-cart"></i> <span>Picking</span></a></li>			
-			<li><a href="prepare.php"><i class="glyphicon glyphicon-th-large"></i> <span>Prepare</span></a></li>
-			<li><a href="delivery.php"><i class="glyphicon glyphicon-shopping-cart"></i> <span>Delivery</span></a></li>
 			<li><a href="shelf_mm.php"><i class="glyphicon glyphicon-object-align-bottom"></i> <span>Shelf Movement</span></a></li>
 			<!--<li><a href="crrc.php"><i class="glyphicon glyphicon-repeat"></i> <span>Customer Return Receive</span></a></li>-->
+			<li><a href="picking.php"><i class="glyphicon glyphicon-shopping-cart"></i> <span>Picking</span></a></li>			
+			<li><a href="prepare.php"><i class="glyphicon glyphicon-th-large"></i> <span>Prepare</span></a></li>
+			<?php break; default : } ?>	
+
+			<?php switch($s_userGroupCode){ case 'admin' : case 'whOff' : case 'whSup' : case 'whMgr' : case 'acc' : ?>
+			<li><a href="delivery.php"><i class="glyphicon glyphicon-shopping-cart"></i> <span>Delivery</span></a></li>			
 			<?php break; default : } ?>	
 
 			<?php switch($s_userGroupCode){ case 'admin' : ?>

@@ -13,20 +13,20 @@
 					$soNo = $_POST['soNo'];
 					$saleDate = $_POST['saleDate'];
 					$poNo = $_POST['poNo'];    
-					$piNo = $_POST['piNo'];
+					$piNo = $_POST['piNo']; 
 					$deliveryDate = $_POST['deliveryDate'];    
-					$smId = $_POST['smId'];
-					$custId = (isset($_POST['custId'])? $_POST['custId'] : 0 );
-					$shipToId = $_POST['shipToId'];
+					$smId = $_POST['smId']; 
+					$custId = (isset($_POST['custId'])? $_POST['custId'] : 0 ); 
+					$shipToId = $_POST['shipToId']; 
 
-					$suppTypeId = $_POST['suppTypeId'];
-					$stkTypeId = $_POST['stkTypeId'];
-					$packageTypeId = $_POST['packageTypeId'];
-					$priceTypeId = $_POST['priceTypeId'];
-					$deliveryTypeId = $_POST['deliveryTypeId'];
+					$suppTypeId = $_POST['suppTypeId']; 
+					$stkTypeId = $_POST['stkTypeId']; 
+					$packageTypeId = $_POST['packageTypeId']; 
+					$priceTypeId = $_POST['priceTypeId']; 
+					$deliveryTypeId = $_POST['deliveryTypeId']; 
 					
-					$containerLoadId = $_POST['containerLoadId']; 
-					$shippingMarksId = $_POST['shippingMarksId'];
+					$containerLoadId = $_POST['containerLoadId'];  
+					$shippingMarksId = $_POST['shippingMarksId']; 
 					$optTypeId = $_POST['optTypeId'];
 
 					$creditTypeId = $_POST['creditTypeId'];					
@@ -36,11 +36,15 @@
 										
 					$var = $saleDate;
 					$var = str_replace('/', '-', $var);
-					$saleDate = date("Y-m-d", strtotime($var));
-					
+					//$saleDate = date("Y-m-d", strtotime($var));
+					$saleDate = new DateTime($var);
+					$saleDate = $saleDate->format('Y-m-d'); 
+
 					$var = $deliveryDate;
-					$var = str_replace('/', '-', $var);
-					$deliveryDate = date("Y-m-d", strtotime($var));
+					$var = str_replace('/', '-', $var);					
+					//$deliveryDate = date("Y-m-d", strtotime($var));
+					$deliveryDate = new DateTime($var); 
+					$deliveryDate = $deliveryDate->format('Y-m-d'); 
 
 					//$pdo->beginTransaction();
 					
@@ -76,6 +80,7 @@
 					}else{
 						$sql = "UPDATE `sale_header` SET `poNo`=:poNo, `piNo`=:piNo, `saleDate`=:saleDate, `custId`=:custId, `shipToId`=:shipToId, `smId`=:smId, `deliveryDate`=:deliveryDate, `suppTypeId`=:suppTypeId, `stkTypeId`=:stkTypeId, `packageTypeId`=:packageTypeId, `priceTypeId`=:priceTypeId, `deliveryTypeId`=:deliveryTypeId, `shippingMarksId`=:shippingMarksId, `containerLoadId`=:containerLoadId, `creditTypeId`=:creditTypeId, `remark`=:remark, `payTypeCreditDays`=:payTypeCreditDays
 						,`statusCode`='C'
+						, confirmTime=now(), confirmById=:confirmById
 						, `updateTime`=NOW(), `updateById`=:updateById ";
 						$sql .= "WHERE `soNo`=:soNo 
 						";
@@ -99,6 +104,7 @@
 						$stmt->bindParam(':creditTypeId', $creditTypeId);
 						$stmt->bindParam(':remark', $remark);
 						$stmt->bindParam(':payTypeCreditDays', $payTypeCreditDays);
+						$stmt->bindParam(':confirmById', $s_userId);	
 						$stmt->bindParam(':updateById', $s_userId);		
 						
 						$stmt->execute();
@@ -135,13 +141,33 @@
 						
 					$var = $deliveryDate;
 					$var = str_replace('/', '-', $var);
-					$deliveryDate = date("Y-m-d", strtotime($var));
+					//$deliveryDate = date("Y-m-d", strtotime($var));
+					$deliveryDate = new DateTime($var); 
+					$deliveryDate = $deliveryDate->format('Y-m-d'); 
 					
 					$pdo->beginTransaction();		
 
 					$isInsertNewItem=true;
 
 					if( $refItmId <> "" ){
+						//Query 1: Check Status for not gen running No.
+						$sql = "SELECT saleItemId FROM picking ph
+						INNER JOIN picking_detail pd ON pd.pickNo=ph.pickNo AND pd.saleItemId=:saleItemId 
+						WHERE ph.statusCode<>'X' 
+						LIMIT 1 
+						";
+						$stmt = $pdo->prepare($sql);
+						$stmt->bindParam(':saleItemId', $refItmId);
+						$stmt->execute();
+						$row_count = $stmt->rowCount();
+						if($row_count == 1 ){
+							//return JSON
+							header('Content-Type: application/json');
+							echo json_encode(array('success' => false, 'message' => 'Fail! Can not change used sales item ID.'));
+							exit();
+						}
+
+						//Get data
 						$sql = "SELECT qty FROM `sale_detail` WHERE id=:id 
 						";
 						$stmt = $pdo->prepare($sql);
@@ -981,6 +1007,63 @@
 					echo json_encode(array('success' => false, 'message' => $errors));
 				}
 				break;
+
+			case 'updateDeliveryDateToItem' :
+				try{
+					//We start our transaction.
+					$pdo->beginTransaction();
+
+					$soNo = $_POST['soNo'];
+					$deliveryDate = $_POST['deliveryDate'];
+
+					$var = $deliveryDate;
+					$var = str_replace('/', '-', $var);					
+					//$deliveryDate = date("Y-m-d", strtotime($var));
+					$deliveryDate = new DateTime($var); 
+					$deliveryDate = $deliveryDate->format('Y-m-d'); 
+
+					//update header delivery.
+					$sql = "UPDATE `sale_header` SET `deliveryDate`=:deliveryDate
+					, `updateTime`=NOW(), `updateById`=:updateById ";
+					$sql .= "WHERE `soNo`=:soNo 
+					";
+
+					$stmt = $pdo->prepare($sql);
+					$stmt->bindParam(':soNo', $soNo);
+					$stmt->bindParam(':deliveryDate', $deliveryDate);
+					$stmt->bindParam(':updateById', $s_userId);						
+					$stmt->execute();
+
+					//update unsent item 
+					$sql = "UPDATE `sale_detail` dtl 
+					SET `deliveryDate`=:deliveryDate 
+					WHERE dtl.soNo=:soNo 
+					AND dtl.id NOT IN (SELECT saleItemId FROM picking ph 
+						INNER JOIN picking_detail pd ON pd.pickNo=ph.pickNo 
+					WHERE ph.statusCode<>'X' AND ph.soNo=:soNo2  ) ";
+					$stmt = $pdo->prepare($sql);
+					$stmt->bindParam(':deliveryDate', $deliveryDate);
+					$stmt->bindParam(':soNo', $soNo);
+					$stmt->bindParam(':soNo2', $soNo);					
+					$stmt->execute();
+
+
+					$pdo->commit();
+					
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => true, 'message' => 'Success.', 'soNo' => $soNo));
+				} 
+				//Our catch block will handle any exceptions that are thrown.
+				catch(Exception $e){
+					//Rollback the transaction.
+					$pdo->rollBack();
+					//return JSON
+					header('Content-Type: application/json');
+					$errors = "Error : " . $e->getMessage();
+					echo json_encode(array('success' => false, 'message' => $errors));
+				}	
+				break;
+				exit();
 
 			default : 
 				header('Content-Type: application/json');

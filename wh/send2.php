@@ -74,7 +74,7 @@ $tb="send";
 					case 'whOff' :
 					case 'whSup' :
 					case 'whMgr' : 
-						$sql .= "AND hdr.fromCode in ('0','7','8','E') ";
+						$sql .= "AND hdr.fromCode in ('0','1','7','8','E') ";
 						break;
 					case 'pdMgr' : 
 						$sql .= "AND hdr.fromCode in ('4','5','6') "; 
@@ -148,7 +148,7 @@ $tb="send";
 					case 'whOff' :
 					case 'whSup' :
 					case 'whMgr' : 
-						$sql .= "AND hdr.fromCode in ('0','7','8','E') ";
+						$sql .= "AND hdr.fromCode in ('0','1','7','8','E') ";
 						break;
 					case 'pdMgr' : 
 						$sql .= "AND hdr.fromCode in ('4','5','6') "; 

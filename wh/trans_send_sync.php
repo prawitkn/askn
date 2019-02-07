@@ -117,7 +117,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						  ";
 						  switch($s_userGroupCode){ 
 							case 'whOff' :  case 'whSup' : case 'whMgr' :  
-									$sql .= "AND left(itm.[ItemCode],1) IN ('0','7','8','9','E') ";
+									$sql .= "AND left(itm.[ItemCode],1) IN ('0','1','7','8','9','E') ";
 								break;
 							case 'pdOff' :  case 'pdSup' :
 									$sql .= "AND left(itm.[ItemCode],1) = '".$s_userDeptCode."' ";
@@ -186,7 +186,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						  ";
 					  switch($s_userGroupCode){ 
 						case 'whOff' :  case 'whSup' : case 'whMgr' :
-								$sql .= "AND left(itm.[ItemCode],1) IN ('0','7','8','9') ";
+								$sql .= "AND left(itm.[ItemCode],1) IN ('0','1','7','8','9') ";
 							break;
 						case 'pdOff' :  case 'pdSup' :
 								$sql .= "AND left(itm.[ItemCode],1) = '".$s_userDeptCode."' ";
@@ -255,7 +255,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						  ";
 					  switch($s_userGroupCode){ 
 						case 'whOff' :  case 'whSup' :  case 'whMgr' : 
-								$sql .= "AND left(itm.[ItemCode],1) IN ('0','7','8','9') ";
+								$sql .= "AND left(itm.[ItemCode],1) IN ('0','1','7','8','9') ";
 							break;
 						case 'pdOff' :  case 'pdSup' :
 								$sql .= "AND left(itm.[ItemCode],1) = '".$s_userDeptCode."' ";
@@ -305,6 +305,37 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						$stmt = $pdo->prepare($sql);
 						$stmt->execute();
 						//Update KG Product from NW to Qty
+
+						//Update KG Product from NW to Qty
+						$sql = "UPDATE product_item_temp tmp 
+						SET tmp.qty=tmp.NW 
+						WHERE tmp.qty=0 
+						";			
+						$stmt = $pdo->prepare($sql);
+						$stmt->execute();
+						//Update KG Product from NW to Qty
+
+						//Update Qty=NW If UOM = KG. / KG
+						$sql = "UPDATE product_item_temp SET qty=NW WHERE prodCodeId IN (SELECT id FROM `product` WHERE uomCode IN ('KG','KG.') )
+						";			
+						$stmt = $pdo->prepare($sql);
+						$stmt->execute();
+						//Update Qty=NW If UOM = KG. / KG
+
+						//Update Qty=1 If UOM = ROLL
+						$sql = "UPDATE product_item_temp SET qty=1 WHERE prodCodeId IN (SELECT id FROM `product` WHERE uomCode='ROLL')
+						";			
+						$stmt = $pdo->prepare($sql);
+						$stmt->execute();
+						//Update Qty=1 If UOM = ROLL
+
+						//P7577M-TN-B-01650 : 2000524
+						//Update Qty=NW If UOM = KG. / KG
+						$sql = "UPDATE product_item_temp SET qty=GW WHERE prodCodeId = 2000524 
+						";			
+						$stmt = $pdo->prepare($sql);
+						$stmt->execute();
+						//Update Qty=NW If UOM = KG. / KG
 
 
 						//PRODUCT ITEM (INSERT ONLY) 

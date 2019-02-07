@@ -133,7 +133,7 @@ $rootPage="sale2";
 						Order No : <br/>
 						<b><?= $hdr['soNo']; ?></b><br/>
 						Order Date : <br/>
-						<b><?= date('d M Y',strtotime( $hdr['saleDate'] )); ?></b><br/>
+						<b><?php $dt = new DateTime($hdr['saleDate']); echo $dt->format('d M Y');  ?></b><br/>
 						Product Group : <br/>
 						<b><?=$hdr['suppTypeName'];?></b>
 
@@ -188,15 +188,23 @@ $rootPage="sale2";
 							<th style="text-align: center; color: blue;">Sent Qty</th>
 						</tr></thead>
 						<tbody>
-						<?php $row_no=1; while ($row = $stmt->fetch()) { ?>
+						<?php $row_no=1; while ($row = $stmt->fetch()) { 
+							$isWaitingDeliveryDate=false;
+							$deliveryDateStr="";
+							$dt = new DateTime($row['deliveryDate']); 
+							$deliveryDateStr=$dt->format('d M Y');
+							if ( $dt->format('Y-m-d') == '2099-12-31' ){
+								$deliveryDateStr="<span style='color: red;'>Waiting</span>";
+							}
+						?>
 						<tr>
 							<td style="text-align: center;"><?= $row_no; ?></td>											
 							<td><?= $row['prodName']; ?></td>					
 							<td><?= $row['prodCode']; ?></td>					
 							<td><?= $row['remark'].' '.($row['rollLengthId']<>'0'?'[RL:'.$row['rollLengthName'].']':''); ?></td>		
-							<td style="text-align: right;"><?= number_format($row['qty'],0,'.',',').' '.$row['prodUomCode']; ?></td>						
-							<td style="text-align: center;"><?= date('d M Y',strtotime( $row['deliveryDate'] )); ?></td>	
-							<td style="text-align: right; color: blue;"><?= number_format($row['sentQty'],0,'.',',').'&nbsp;'.$row['prodUomCode']; ?></td>
+							<td style="text-align: right;"><?= number_format($row['qty'],2,'.',',').' '.$row['prodUomCode']; ?></td>						
+							<td style="text-align: center;"><?php echo $deliveryDateStr;  ?></td>	
+							<td style="text-align: right; color: blue;"><?= number_format($row['sentQty'],0,'.',',').'&nbsp;'.$row['prodUomCode']; ?></td> 
 						</tr>
 						<?php $row_no+=1; } ?>		
 						</tbody>				
@@ -235,7 +243,7 @@ $rootPage="sale2";
 		<div class="col-md-10">			
 			<?php if($hdr['shippingMarksFilePath']==""){
 			}else{
-				echo '<img src="images/shippingMarks/'.$hdr['shippingMarksFilePath'].'" id="shippingMarksImg" />';
+				echo '<img src="../images/shippingMarks/'.$hdr['shippingMarksFilePath'].'" id="shippingMarksImg" />';
 			}?>			
 		</div>
 	</div>
@@ -300,22 +308,38 @@ $rootPage="sale2";
 		</div>
 		<div class="col-md-5">
 			<div class="row">
-				<div class="col-md-4">
-					Create By : </br>
-					Create Time : </br>
-					Confirm By : </br>
-					Confirm Time : </br>
-					Approve By : </br>
-					Approve Time : 		
-				</div>
-				<div class="col-md-8">
-					<label class=""><?php echo $hdr['createByName']; ?></label></br>
-					<label class=""><?php echo date('d M Y H:m',strtotime( $hdr['createTime'] )); ?></label></br>
-					<label class=""><?php echo $hdr['confirmByName']; ?></label></br>
-					<label class=""><?php if($hdr['confirmTime']<>"0000-00-00 00:00:00") echo date('d M Y H:m',strtotime( $hdr['confirmTime'] )); ?></label></br>
-					<label class=""><?php echo $hdr['approveByName']; ?></label></br>
-					<label class=""><?php  if($hdr['confirmTime']<>"0000-00-00 00:00:00") echo date('d M Y H:m',strtotime( $hdr['approveTime'] )); ?></label>	
-				</div>				
+				<table>
+					<tr>
+						<td style="width: 40%;">Create By : </td>
+						<td style="width: 60%;"><?php echo $hdr['createByName']; ?></td>
+					</tr>
+					<tr>
+						<td style="width: 40%;">Create Time : </td>
+						<td style="width: 60%;"><?php 
+							if ( $hdr['createTime'] != 0  ) { $dt = new DateTime($hdr['createTime']); echo $dt->format('d M Y H:i'); 
+						} ?></td>
+					</tr>
+					<tr>
+						<td style="width: 40%;">Confirm By : </td>
+						<td style="width: 60%;"><?php echo $hdr['confirmByName']; ?></td>
+					</tr>
+					<tr>
+						<td style="width: 40%;">Confirm Time : </td>
+						<td style="width: 60%;"><?php 
+							if ( $hdr['confirmTime'] != 0  ) { $dt = new DateTime($hdr['confirmTime']); echo $dt->format('d M Y H:i'); 
+						} ?></td>
+					</tr>
+					<tr>
+						<td style="width: 40%;">Approve By : </td>
+						<td style="width: 60%;"><?php echo $hdr['approveByName']; ?></td>
+					</tr>
+					<tr>
+						<td style="width: 40%;">Approve Time : </td>
+						<td style="width: 60%;"><?php 
+							if ( $hdr['approveTime'] != 0  ) { $dt = new DateTime($hdr['approveTime']); echo $dt->format('d M Y H:i'); 
+						} ?></td>
+					</tr>
+				</table>			
 			</div>			
 		</div>
 	</div>
@@ -346,6 +370,11 @@ $rootPage="sale2";
 						<button type="button" id="btn_remove" class="btn btn-danger" style="margin-right: 5px;" <?php echo ($hdr['isClose']=='N'?'':'disabled'); ?> >
 						<i class="glyphicon glyphicon-remove"></i> Remove Approved SO
 						</button>
+
+						<button type="button" id="btn_close_so" class="btn btn-danger pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='N')?'':'disabled'); ?>>
+						<i class="glyphicon glyphicon-ok-sign">
+						</i> Close Sales Order
+						</button>
 						
 					<?php }else{ //.else isClose ?>
 						<button type="button" id="btn_reopen_closed_so" class="btn btn-warning pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='Y')?'':'disabled'); ?>>
@@ -353,10 +382,7 @@ $rootPage="sale2";
 						</i> Re-Open Closed Sales Order.
 						</button>
 
-						<button type="button" id="btn_close_so" class="btn btn-danger pull-right" <?php echo (($hdr['statusCode']=='P' AND $hdr['isClose']=='N')?'':'disabled'); ?>>
-						<i class="glyphicon glyphicon-ok-sign">
-						</i> Close Sales Order
-						</button>
+						
 						
 					<?php } //.if isClose ?>
 					

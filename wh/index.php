@@ -1,5 +1,6 @@
 <?php 
 	include 'inc_helper.php';
+	//include($_SERVER['DOCUMENT_ROOT']."inc_helper.php");
 ?>
 <!DOCTYPE html>
 <!--
@@ -9,7 +10,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <html>
 <?php 
 	include 'head.php'; 
+	//include($_SERVER['DOCUMENT_ROOT']."head.php");
 	
+	$yesterday=date('Y-m-d', strtotime("-1 day"));
 	$today=date('Y-m-d');
 	$nextDay=date('Y-m-d', strtotime("+1 day"));
 	$nextTwoDays=date('Y-m-d', strtotime("+2 day"));
@@ -229,7 +232,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <div class="col-md-8">				
 			<!-- Today LIST -->
 			<?php
-				
+				echo "<h1>aaaaaaaaaaaaaaaa9999</h1>";
 			?>
 						
 		<div class="box box-danger collapsed-box">
@@ -269,7 +272,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							AND xd.saleItemId=dtl.id
 							GROUP BY xd.saleItemId),0) as sumSentQty 
 					FROM `sale_header` hdr 
-					INNER JOIN sale_detail dtl on dtl.soNo=hdr.soNo AND dtl.deliveryDate BETWEEN DATE_SUB(NOW(), INTERVAL 7 DAY) AND '$today' 
+					INNER JOIN sale_detail dtl on dtl.soNo=hdr.soNo AND dtl.deliveryDate BETWEEN DATE_SUB(NOW(), INTERVAL 7 DAY) AND '$yesterday' 
 					INNER JOIN customer cust ON cust.id=hdr.custId 
 					INNER JOIN product prd ON prd.id=dtl.prodId ";
 					switch($s_userGroupCode){
@@ -682,99 +685,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           </div>
           <!-- /.box -->
 		  
-		  
-		  
-		  <!-- TABLE: LATEST ORDERS -->		  
-          <div class="box box-info">
-            <div class="box-header with-border">
-              <h3 class="box-title">Last Waiting For Return Receiving</h3>
-
-              <div class="box-tools pull-right">
-                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
-                </button>
-                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
-              </div>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-			<?php
-					$sql = "SELECT a.`rtNo`, a.`returnDate`, a.`fromCode`, a.`toCode`, a.`statusCode`, a.`createTime`
-							,fsl.name as fromSlocName
-							,tsl.name as toSlocName
-							FROM `rt` a 
-							LEFT JOIN `sloc` fsl on fsl.code=a.fromCode
-							LEFT JOIN `sloc` tsl on tsl.code=a.toCode
-							WHERE 1=1
-							AND a.statusCode='P' 
-							AND a.rcNo='' 
-							";
-					switch($s_userGroupCode){
-						case 'whOff' : case 'whSup' : case 'whMgr' : 
-							$sql .="AND a.toCode IN ('0','7','8','E') ";
-							break;
-						case 'pdOff' : case 'pdSup' :
-							$sql .="AND a.toCode=:toCode ";
-							break;
-						case 'pdMgr' : 
-							$sql .= "AND a.toCode IN ('4','5','6') "; 
-							break;
-						default : // it, admin
-					}	
-					$sql .="ORDER BY a.`createTime` DESC
-							LIMIT 10";
-					$stmt = $pdo->prepare($sql);
-					switch($s_userGroupCode){
-						case 'pdOff' : case 'pdSup' :
-							$stmt->bindParam(':toCode', $s_userDeptCode);
-							break;
-						default : // it, admin
-					}							
-					$stmt->execute();
-				?>
-              <div class="table-responsive">
-                <table class="table no-margin">
-                  <thead>
-                  <tr>
-                    <th>Return No.</th>
-					<th>Return Date</th>
-                    <th>From</th>
-					<th>To</th>
-                    <th>Create Time</th>
-					<th>#</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-				   <?php while ($row = $stmt->fetch()) { 
-					?>
-                  <tr>
-                    <td><a href="rt_view.php?rtNo=<?=$row['rtNo'];?>" target="_blank" ><?= $row['rtNo']; ?></a></td>
-					<td><?= $row['returnDate']; ?></td>
-					<td><?= $row['fromSlocName']; ?></td>
-					<td><?= $row['toSlocName']; ?></td>
-					<td><?= $row['createTime']; ?></td>
-					<td>
-						<a href="rtrc_add.php?refNo=<?=$row['rtNo'];?>" class="btn btn-primary">
-							<i class="glyphicon glyphicon-download-alt"></i>
-						</a>						
-					</td>
-                </tr>
-                <?php  } ?>
-                  </tbody>
-                </table>
-              </div>
-              <!-- /.table-responsive -->
-            </div>
-            <!-- /.box-body -->
-            <div class="box-footer clearfix">
-              <a href="rtrc_add.php" class="btn btn-sm btn-info btn-flat pull-left">Place New Return Receiving</a>
-              <a href="rtrc.php" class="btn btn-sm btn-default btn-flat pull-right">View All Return Receiving</a>
-            </div>
-            <!-- /.box-footer -->
-          </div>
-          <!-- /.box -->
-		  
-		  
-		  
+		  	  
 		  
 		  
           <!-- TABLE: LATEST ORDERS -->
@@ -989,6 +900,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						case 'whSup' :
 						case 'whMgr' :
 						case 'pdMgr' :
+						case 'acc' : 
 							$sql = "SELECT DISTINCT hdr.soNo, hdr.deliveryDate FROM sale_header hdr 
 							INNER JOIN sale_detail dtl on dtl.soNo=hdr.soNo
 							WHERE hdr.isClose='N'  
@@ -1056,7 +968,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				  </tr>
 				  </thead>
 				  <tbody>
-				  <?php $row_code = 1; while ($row = $stmt->fetch()) { ?>
+				  <?php $row_code = 1; while ($row = $stmt->fetch()) { 
+				  	$dt = new DateTime($row['deliveryDate']); 
+				  	$dtStr = $dt->format('d M Y');
+				  	?>
 				  <tr>
 					<td>
 						 <?= $row_code; ?>
@@ -1065,7 +980,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						 <a target="_blank" href="sale2_view.php?soNo=<?= $row['soNo'];?>" ><?= $row['soNo']; ?></a>
 					</td>
 					<td>
-						 <?= substr($row['deliveryDate'],0,10); ?>
+						 <?= $dtStr; ?>
 					</td>
 				</tr>
 				<?php $row_code+=1; } ?>
@@ -1086,7 +1001,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				case 'admin' :
 				case 'whOff' :
 				case 'whSup' :
-				case 'whMgr' : ?>
+				case 'whMgr' :
+				case 'acc' : ?>
 			  <!-- Prepare List -->
 			  <div class="box box-success">
 				<div class="box-header with-border">

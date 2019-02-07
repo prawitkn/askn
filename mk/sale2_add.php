@@ -143,7 +143,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							<input type="text" name="piNo" id="piNo" class="form-control" value="<?=$hdr['piNo'];?>" >
 						</div>
 						<div class="col-md-3 form-group">
-							<label for="deliveryDate">Delivery Date/Load Date</label>
+							<input type="checkbox" id="isWaitForDelivery" value="1" <?php echo ($row['statusCode']=='A'?' checked ':'');?> >
+							<label for="deliveryDate" style="font-size: small;">
+								<span style="text-decoration: underline; color: red;">Wait for</span> Delivery Date/Load Date</label>
 							<input type="text" id="deliveryDate" name="deliveryDate" class="form-control datepicker" data-smk-msg="Require Delivery Date / Load Date." required>
 						</div>	
 					</div>
@@ -229,8 +231,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						</div>
 					</div>
 					<!--/.row-->
-					
+
 					<a href="#" name="btn_home_next" id="btn_home_next" class="btn btn-primary pull-right"><i class="fa fa-caret-right"></i> Next</a>
+
+					<?php if ( $soNo <> "" ){ ?>
+						<a href="#" name="btn_update_delivery_date_hdr_to_itm" id="btn_update_delivery_date_hdr_to_itm" class="btn btn-warning pull-right"  style="margin-right: 5px;"><i class="fa fa-calendar"></i> Update Header Delivery Date to Pending Item</a>
+					<?php } ?>
 					</div>
 					<!--/.col-md-12-->
 				</div>
@@ -438,7 +444,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							<?php if ( $soNo=="" ) {	?>		
 							<a class="btn btn-primary pull-right" name="btn_create" title="Create"><i class="fa fa-save"></i> Create SO</a>	
 							<?php }else{ ?>
-								<a href="#" name="btn_menu1_next" id="btn_menu1_next" class="btn btn-primary pull-right"><i class="fa fa-caret-right"></i> Next</a>
+								<a href="#" name="btn_menu1_next" id="btn_menu1_next" class="btn btn-primary pull-right" ><i class="fa fa-caret-right"></i> Next</a>
 							<?php } ?>
 						</div>
 						<!--col-md-12-->
@@ -642,7 +648,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<td>Product Name</td>
 					<td style="display: none;">UOM</td>
 					<td>Product Category</td>
-					<td>App ID</td>
+					<td>MKT GROUP</td>
 					<td style="display: none;">Balance</td>
 					<td style="display: none;">Sales</td>
 				</tr>
@@ -1067,7 +1073,7 @@ $("#spin").hide();
 			$('#smId').focus();
 			return false;
 		}
-		
+		alert($('#deliveryDate').val());
 		if ($('#form1').smkValidate()){
 			$.post("<?=$rootPage;?>_ajax.php", $("#form1").serialize() )
 				.done(function(data) {
@@ -1301,6 +1307,60 @@ $("#spin").hide();
 		$('.nav-pills a[href="#menu2"]').tab('show');
 	});
 	//.btn_tab_next
+
+
+	
+	$("#isWaitForDelivery").on("click", function(){
+		var check;
+	    check = $("#isWaitForDelivery").is(":checked");
+	    if(check) {
+	    	var queryDate = '2099-12-31 00:00:00:000',
+			dateParts = queryDate.match(/(\d+)/g)
+			realDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
+	        $('#deliveryDate').datepicker('setDate', realDate);
+	    } else {
+	        $('#deliveryDate').datepicker('setDate', '0');
+	    }
+	});
+
+	$('#btn_update_delivery_date_hdr_to_itm').click (function(e) {				 
+		var params = {			
+		action: 'updateDeliveryDateToItem',	
+		soNo: $('#soNo').val(),
+		deliveryDate: $('#deliveryDate').val()				
+		};
+		//alert(params.hdrID);	
+		$.smkConfirm({text:'Are you sure to Update Delivery Date to All Pending Item Order ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params, //$("#form1").serialize(),
+				dataType: 'json'
+			}).done(function(data) {
+				if (data.success){  
+					$.smkAlert({
+						text: data.message,
+						type: 'success',
+						position:'top-center'
+					});	
+					//alert(params.soNo);
+					//alert(data.soNo);
+					window.location.href = '<?=$rootPage;?>_view.php?soNo='+data.soNo;
+				}else{
+					$.smkAlert({
+						text: data.message,
+						type: 'danger',
+						position:'top-center'
+					});
+				}
+				//e.preventDefault();		
+			}).error(function (response) {
+				alert(response.responseText);
+			});
+			//.post		
+		}});
+		//smkConfirm
+	});
+	//.btn_click 
 });
         
         
@@ -1318,6 +1378,8 @@ $("#spin").hide();
 			daysOfWeekHighlighted: "0,6",
 			autoclose: true,
 			format: 'dd/mm/yyyy',
+			minDate: '0',
+			yearRange: "2019:2099", // last hundred years
 			todayBtn: true,
 			language: 'en',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
 			thaiyear: false              //Set เป็นปี พ.ศ.
