@@ -83,9 +83,12 @@ $pdf->SetFont('helvetica', '', 8, '', true);
 			, itm.prodCodeId, itm.barcode, itm.NW, itm.GW, itm.grade, itm.qty, itm.seqNo, itm.issueDate 
 			, prd.code as prodCode, prd.name as prodName, prd.description, prd.uomCode 
 			, prd.catCode , prd.width, prd.weight  
+			, pcc.prodCode as qrProdCode, pcc.prodDesc as qrProdDesc
 			FROM send_detail dtl 
 			LEFT JOIN product_item itm on itm.prodItemId=dtl.prodItemId 
-			LEFT JOIN product prd ON prd.id=itm.prodCodeId 						
+			LEFT JOIN product prd ON prd.id=itm.prodCodeId 
+			LEFT JOIN wh_product_code_by_customer pcc ON pcc.prodId=itm.prodCodeId 
+				AND pcc.custId=1000347 AND pcc.statusCode='A' 					
 			WHERE sdNo=:sdNo  
 			ORDER BY dtl.refNo, itm.barcode
 			";			
@@ -97,18 +100,8 @@ $pdf->SetFont('helvetica', '', 8, '', true);
 					$html='';		
 					$row_no = 1; $rowPerPage=0; $sumQty=$sumNW=$sumGW=0; $itemCodeId="";  while ($row = $stmt->fetch()) {
 
-					$lotNo=substr($row['barcode'],20);	
-					$itemCodeId=str_replace('-','',$row['barcode']);
-					$gradeName = '<b style="color: red;">N/A</b>'; 
-						switch($row['grade']){
-							case 0 : $gradeName = 'A'; break;
-							case 1 : $statusName = '<b style="color: red;">B</b>';  break;
-							case 2 : $statusName = '<b style="color: red;">N</b>'; break;
-							default : $gradeName = '<b style="color: red;">N/A</b>'; 
-						} 
-						//$lotNo=substr($itemCodeId,15);	
-
-
+					$lotNo=substr($row['barcode'],20,10);	
+					$itemCodeId=str_replace('-','',$row['qrProdCode']);
 					$pdf->AddPage('L');
 
 					//$pdf->writeHTMLCell(0, 0, '', '', $html, 0, 1, 0, true, '', true);
@@ -142,56 +135,20 @@ $pdf->SetFont('helvetica', '', 8, '', true);
 
 
 					$x=2;
-					$yHeight=8;					
-					$pdf->writeHTMLCell(60, $yHeight, $x, $y, '<h3 style="text-align: left;">Product '.$row['prodCode'].'</h3>', $border = $isBorder, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M' ); 
-					$x+=60;	
+					$x+=5;
+					$yHeight=10;					
+					$pdf->writeHTMLCell(50, $yHeight, $x, $y, '<h3 style="text-align: left;">Item '.$itemCodeId.'</h3>', $border = $isBorder, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M' ); 
+					$x+=50;	
 
-					/*$length="-";
-					switch($row['catCode']){
-						case '70' : case '71' : $length=$row['qty'].' mm.'; break;
-						default : 
-					}
+					$pdf->writeHTMLCell(45, $yHeight, $x, $y, '<h3 style="text-align: left;">Lot '.$lotNo.'</h3>', $border = $isBorder, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M'); 
+					$x+=45;	
 
-					$pdf->writeHTMLCell(35, $yHeight, $x, $y, '<span style="text-align: right;">Width '.$length.'</span>' , $border = $isBorder, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M' ); 
-					$x+=45;*/
-					$pdf->writeHTMLCell(35, $yHeight, $x, $y, '<h3 style="text-align: left;">Width '.number_format($row['width'],0,'.',',').' mm.</h3>' , $border = $isBorder, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M' ); 
-					$x+=35;	
-					$y+=$yHeight;	// new line
-
-					$x=2;
-					$yHeight=8;
-					$pdf->writeHTMLCell(60, $yHeight, $x, $y, '<h3 style="text-align: left;">Quantity '.$row['qty'].' '.$row['uomCode'].'</h3>', $border = $isBorder, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M'); 
-					$x+=60;	
-							
-					$pdf->writeHTMLCell(35, $yHeight, $x, $y, '<h3 style="text-align: left;">N.W. '.$row['NW'].' KG.</h3>',  $border = $isBorder, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M'); 
-					$x+=35;	
-					$y+=$yHeight; // new line
-
-					/*$x=2;
-					$yHeight=8;		
-					$pdf->writeHTMLCell(45, $yHeight, $x, $y, '<h3 style="text-align: center;">'.number_format($row['weight'],0,'.',',').' g/m<sup>2</sup></h3>' , $border = $isBorder, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M'); 
-					$x+=45;
-
-					$pdf->writeHTMLCell(45, $yHeight, $x, $y, '<h3 style="text-align: center;">'.$gradeName.'</h3>' , $border = $isBorder, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M'); 
-					$x+=45;
-					$pdf->writeHTMLCell(45, $yHeight, $x, $y, '', $border = $isBorder, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M'); 
-					
-					$y+=$yHeight; // new line
-					*/
-
-
-					$x=2;
-					$yHeight=8;
-					$pdf->writeHTMLCell(60, $yHeight, $x, $y, '<h3 style="text-align: left;">Lot '.$lotNo.'</h3>', $border = $isBorder, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M'); 
-					$x+=60;	
-					/*$pdf->writeHTMLCell(5, $yHeight, $x, $y, '', $border = $isBorder, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M'); 
-					$x+=5;	*/
-					//$pdf->write1DBarcode($itemCodeId, 'C128', '', $y, 90, 12, 90, $style, 'M');
+					//$y+=$yHeight; // new line
 					$y+=3;//$yHeight; // new line
 
 
 					$x=2;
-					$yHeight=20;
+					$yHeight=10;
 
 					// set style for barcode
 					$style = array(
@@ -204,7 +161,8 @@ $pdf->SetFont('helvetica', '', 8, '', true);
 					    'module_height' => 1 // height of a single module in points
 					);
 					// QRCODE,L : QR-CODE Low error correction
-					$pdf->write2DBarcode($itemCodeId, 'QRCODE,L', $x+10, $y, 95, 30, $style, 'N');
+					$barcodeStr=$itemCodeId.',,'.$lotNo;
+					$pdf->write2DBarcode($barcodeStr, 'QRCODE,L', $x+10, $y, 95, 60, $style, 'N');
 					//$pdf->Text(20, 25, 'QRCODE L');
 
 					// QRCODE,M : QR-CODE Medium error correction
@@ -220,13 +178,7 @@ $pdf->SetFont('helvetica', '', 8, '', true);
 					//$pdf->Text(20, 205, 'QRCODE H');
 
 					$y+=$yHeight+10;	// new line
-
-					$x=2;
-					$yHeight=8;
-					$pdf->writeHTMLCell(95, $yHeight, $x, $y, '<h3 style="text-align: center;">'.$row['barcode'].'</h3>', $border = $isBorder, $ln = 0, $align = '', $fill = false, $link = '', $stretch = 0, $ignore_min_height = false, $calign = 'T', $valign = 'M'); 
-					//$x+=60;	
-
-									
+										
 
 					$html='';
 					$rowPerPage=0;
