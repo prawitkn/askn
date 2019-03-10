@@ -147,7 +147,7 @@ $ppNo = $_GET['ppNo'];
 						INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 						INNER JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  												
 						INNER JOIN receive_detail rd ON rd.prodItemId=itm.prodItemId AND rd.statusCode='A' 
-						INNER JOIN receive rh ON rh.rcNo=rd.rcNo 
+						INNER JOIN receive rh ON rh.rcNo=rd.rcNo AND rh.statusCode='P'
 						INNER JOIN send sh ON sh.sdNo=rh.refNo AND sh.toCode='E' 
 						INNER JOIN product prd ON prd.id=itm.prodCodeId 
 						WHERE 1
@@ -238,7 +238,7 @@ $ppNo = $_GET['ppNo'];
 								INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
 								INNER JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  										
 								INNER JOIN receive_detail rd ON rd.prodItemId=itm.prodItemId AND rd.statusCode='A' 
-								INNER JOIN receive rh ON rh.rcNo=rd.rcNo 
+								INNER JOIN receive rh ON rh.rcNo=rd.rcNo AND rh.statusCode='P'  
 								INNER JOIN send sh ON sh.sdNo=rh.refNo AND sh.toCode='E' 
 								INNER JOIN product prd ON prd.id=itm.prodCodeId 
 								WHERE 1
@@ -431,6 +431,10 @@ $ppNo = $_GET['ppNo'];
 			<?php if($hdr['statusCode']=='P'){ ?>
 			  <a target="_blank" href="<?=$rootPage;?>_view_pdf.php?ppNo=<?=$hdr['ppNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print</a>
 			<?php } ?>			
+
+			<a target="_blank" href="<?=$rootPage;?>_view_pdf_qrcode.php?ppNo=<?=$ppNo;?>" class="btn btn-primary"><i class="glyphicon glyphicon-qrcode"></i> QR Code</a>	
+
+
 			
 		  <?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whSup' : ?>
 			  <button type="button" id="btn_approve" class="btn btn-success pull-right" <?php echo ($hdr['statusCode']=='C'?'':'disabled'); ?>>

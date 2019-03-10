@@ -215,9 +215,12 @@ $custId = $hdr['custId'];
 						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',',').'/'.number_format($qtyRem,0,'.',','); ?></td>
 						<td style="text-align: right;"><?= number_format($row['pickQty'],0,'.',','); ?></td>
 					<td>
+						<?php if( $qtyRem > 0 ) { ?>
 						<a href="<?=$rootPage;?>_add_item_search.php?locCode=<?=$hdr['locationCode'];?>&pickNo=<?=$hdr['pickNo'];?>&doDtlId=<?=$row['id'];?>&saleItemId=<?=$row['id'];?>&id=<?=$row['prodId'];?>&custId=<?=$custId;?>" class="btn btn-primary">
 								<i class="glyphicon glyphicon-edit"></i> Add
-							</a>					
+							</a>	
+							
+						<?php } ?>				
 					</td>
 					</tr>
 					<?php $row_no+=1; } ?>
@@ -624,6 +627,7 @@ $("#spin").hide();
 		pickNo: $('#pickNo').val()				
 		};
 		//alert(params.hdrID);
+		
 		$.smkConfirm({text:'Are you sure to Confirm ?',accept:'Yes.', cancel:'Cancel'}, function (e){if(e){
 			$.post({
 				url: '<?=$rootPage;?>_ajax.php',

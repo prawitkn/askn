@@ -203,6 +203,47 @@
 						$stmt->bindParam(':hdrId', $id);
 						$stmt->execute();
 
+						//Clear Incompleted Receive
+						$sql = "DELETE FROM receive_detail
+						WHERE rcNo IN (SELECT rcNo FROM receive WHERE statusCode NOT IN ('P','X') AND `receiveDate`<='$dateFromYmd') 
+			          	";
+			          	$stmt = $pdo->prepare($sql);		
+						$stmt->execute();
+
+						//Clear Incompleted Receive
+						$sql = "DELETE FROM receive WHERE statusCode NOT IN ('P','X') AND `receiveDate`<='$dateFromYmd'
+			          	";
+			          	$stmt = $pdo->prepare($sql);		
+						$stmt->execute();
+
+						//Clear Incompleted send
+						$sql = "DELETE FROM send_detail
+						WHERE sdNo IN (SELECT sdNo FROM send WHERE statusCode NOT IN ('P','X') AND `sendDate`<='$dateFromYmd') 
+			          	";
+			          	$stmt = $pdo->prepare($sql);		
+						$stmt->execute();
+
+						//Clear Incompleted send
+						$sql = "DELETE FROM send WHERE statusCode NOT IN ('P','X') AND `sendDate`<='$dateFromYmd'
+			          	";
+			          	$stmt = $pdo->prepare($sql);		
+						$stmt->execute();
+
+						//Clear Incompleted delivery
+						$sql = "DELETE FROM delivery_detail
+						WHERE doNo IN (SELECT doNo FROM delivery_header WHERE statusCode NOT IN ('P','X') AND `deliveryDate`<='$dateFromYmd') 
+			          	";
+			          	$stmt = $pdo->prepare($sql);		
+						$stmt->execute();
+
+						//Clear Incompleted delivery
+						$sql = "DELETE FROM delivery_header WHERE statusCode NOT IN ('P','X') AND `deliveryDate`<='$dateFromYmd'
+			          	";
+			          	$stmt = $pdo->prepare($sql);		
+						$stmt->execute();
+
+
+
 						//We've got this far without an exception, so commit the changes.
 						$pdo->commit();	
 

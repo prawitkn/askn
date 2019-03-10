@@ -117,13 +117,12 @@ if($start<0) $start=0;
 				left join customer cm on cm.id=a.custId 
 				left join salesman sm on sm.id=a.smId
 				left join wh_user d on a.createById=d.userId
-				WHERE 1 
-				AND a.statusCode<>'X' ";
+				WHERE 1  ";
 				if(isset($_GET['search_word']) and isset($_GET['search_word'])){
 					$search_word=$_GET['search_word'];
 					$sql .= "AND (a.doNo like '%".$_GET['search_word']."%') ";
 				}
-				$sql .="ORDER BY FIELD(a.statusCode,'B','C','P'), a.approveTime DESC
+				$sql .="ORDER BY a.createTime DESC, FIELD(a.statusCode,'B','C','P','X'), a.approveTime DESC
 				LIMIT $start, $rows 
 				";
 				//echo $sql;
@@ -148,6 +147,7 @@ if($start<0) $start=0;
 						case 'B' : $statusName = '<label class="label label-info">Begin</label>'; break;
 						case 'C' : $statusName = '<label class="label label-primary">Confirmed</label>'; break;
 						case 'P' : $statusName = '<label class="label label-success">Approved</label>'; break;
+						case 'X' : $statusName = '<label class="label label-danger">Removed</label>'; break;
 						default : 						
 					}
 					?>

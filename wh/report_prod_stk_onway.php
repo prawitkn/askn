@@ -86,13 +86,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				$stmt = $pdo->prepare($sql);
 
 
-				switch($s_userGroupCode){ 	
-					case 'pdOff' :
-					case 'pdSup' :
-						$stmt->bindParam(':s_userDeptCode', $s_userDeptCode);
-						break;
-					default :	// it, admin 
-				}
+				
 				if( isset($_GET['search_word']) and $_GET['search_word']<>"" ){
 					$tmp='%'.$search_word.'%';
 					$stmt->bindParam(':search_word', $tmp);
@@ -221,13 +215,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						$sql.="LIMIT $start, $rows ";
 						$stmt = $pdo->prepare($sql);
 
-						switch($s_userGroupCode){ 	
-							case 'pdOff' :
-							case 'pdSup' :
-								$stmt->bindParam(':s_userDeptCode', $s_userDeptCode);
-								break;
-							default :	// it, admin 
-						}
+						
 						if( isset($_GET['search_word']) and $_GET['search_word']<>"" ){
 							$tmp='%'.$search_word.'%';
 							$stmt->bindParam(':search_word', $tmp);

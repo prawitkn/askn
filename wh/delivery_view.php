@@ -115,6 +115,7 @@ $rowCount=$stmt->rowCount();
 					case 'B' : $statusName = '<b style="color: blue;">Begin</b>'; break;
 					case 'C' : $statusName = '<b style="color: blue;">Confirmed</b>'; break;
 					case 'P' : $statusName = '<b style="color: green;">Approved</b>'; break;
+					case 'X' : $statusName = '<b style="color: red;">Removed</b>'; break;
 					default : 
 				} ?>
 				<h3 class="box-title" id="statusName">Status : <?= $statusName; ?></h3>
@@ -219,28 +220,54 @@ $rowCount=$stmt->rowCount();
 			  <a target="_blank" href="<?=$rootPage;?>_view_send_cust_pdf.php?doNo=<?=$hdr['doNo'];?>" class="btn btn-default"><i class="glyphicon glyphicon-print"></i> Print Sending to Customer</a>
 			<?php } ?>
 
+			<?php if($hdr['statusCode']=='P'){ ?>        
+			  <button type="button" id="btn_remove" class="btn btn-default" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='P'?'':'disabled'); ?> >
+			 <i class="glyphicon glyphicon-trash">
+				</i> Remove Approved
+			  </button>
+			<?php } ?>
+
+
+
 
 
 		  <?php switch($s_userGroupCode){ case 'it' : case 'admin' : case 'whSup' : ?>
+
+		  	<?php if($hdr['statusCode']=='C'){ ?>        
 			  <button type="button" id="btn_approve" class="btn btn-success pull-right" <?php echo ($hdr['statusCode']=='C'?'':'disabled'); ?>>
 			 <i class="glyphicon glyphicon-check">
 				</i> Approve
-			  </button>
-		  
+			  </button>		  
 		  
 		  <button type="button" id="btn_reject" class="btn btn-warning pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='C'?'':'disabled'); ?>>
 		  <i class="glyphicon glyphicon-remove">
 			</i> Reject
           </button>
+			<?php } ?>
+
+			  
 		  <?php break; default : } ?>
+ 
+
 		  
 		  
-          <button type="button" id="btn_verify" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
+		  
+          
+
+          <?php if($hdr['statusCode']=='B'){ ?>        
+			  <button type="button" id="btn_verify" class="btn btn-primary pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']=='B'?'':'disabled'); ?> >
             <i class="glyphicon glyphicon-ok"></i> Verify
-          </button>   
-			<button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']<>'P'?'':'disabled'); ?> >
+          </button>
+			<?php } ?>
+
+
+          <?php if($hdr['statusCode']=='B' OR $hdr['statusCode']=='C'){ ?>        
+			  <button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']<>'P'?'':'disabled'); ?> >
             <i class="glyphicon glyphicon-trash"></i> Delete
           </button>
+			<?php } ?>
+
+			
 	</div><!-- /.col-md-12 -->
   </div><!-- box-footer -->
 </div><!-- /.box -->
@@ -436,6 +463,43 @@ $('#btn_approve').click (function(e) {
 			alert(response.responseText);
 		});
 		//.post
+	}});
+	//smkConfirm
+});
+//.btn_click
+
+$('#btn_remove').click (function(e) {				 
+	var params = {
+	action: 'remove',					
+	doNo: $('#doNo').val()					
+	};
+	//alert(params.hdrID);
+	$.smkConfirm({text:'Are you sure to Remove Approved ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+		$.post({
+			url: '<?=$rootPage;?>_ajax.php',
+			data: params,
+			dataType: 'json'
+		}).done(function(data) {
+			if (data.success){  
+				$.smkAlert({
+					text: data.message,
+					type: 'success',
+					position:'top-center'
+				});		
+				alert(data.message);
+				window.location.href = '<?=$rootPage;?>.php';
+			}else{
+				$.smkAlert({
+					text: data.message,
+					type: 'danger',
+					position:'top-center'
+				});
+			}
+			//e.preventDefault();		
+		}).error(function (response) {
+			alert(response.responseText);
+		});
+		//.post		
 	}});
 	//smkConfirm
 });

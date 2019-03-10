@@ -236,7 +236,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				?>
                   <tr>
 					<td><?= $row_no; ?></td>
-					<td><?= date('d M Y',strtotime( $row['transDate'] )); ?></td>					
+					<td><?= date('d M Y H:i',strtotime( $row['transDate'] )); ?></td>					
 					<td><?= $row['docNo']; ?></td>
 					<td><?= $row['fromCode'].' - '.$row['fromName']; ?></td>
 					<td><?= $row['toCode'].' - '.$row['toName']; ?></td>

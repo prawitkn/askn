@@ -283,13 +283,18 @@ $soNo = $hdr['soNo'];
 				</div>
 				<!--/.table-responsive-->
 				<?php if($hdr['statusCode']=='B'){ ?>
-				<a id="btn_verify" href="#" class="btn btn-primary pull-right"><i class="glyphicon glyphicon-ok"></i> Submit</a>
-				<a id="btn_update_n_verify" href="#" class="btn btn-warning pull-right" style="margin-right: 5px;"><i class="glyphicon glyphicon-ok"></i> Update Item and Confirm</a>
+				<!-- <a id="btn_verify" href="#" class="btn btn-primary pull-right"><i class="glyphicon glyphicon-ok"></i> Submit</a> -->
+
+				<a id="btn_update_n_verify" href="#" class="btn btn-primary pull-right" style="margin-right: 5px;"><i class="glyphicon glyphicon-ok"></i> Update Items and Confirm</a>
+				
 				<?php } ?>
 
-				<button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']<>'P'?'':'disabled'); ?> >
-            <i class="glyphicon glyphicon-trash"></i> Delete
-          </button>
+				
+	          <?php if($hdr['statusCode']=='B' OR $hdr['statusCode']=='C'){ ?>        
+				  <button type="button" id="btn_delete" class="btn btn-danger pull-right" style="margin-right: 5px;" <?php echo ($hdr['statusCode']<>'P'?'':'disabled'); ?> >
+		            <i class="glyphicon glyphicon-trash"></i> Delete
+		          </button>
+				<?php } ?>
 				
 				</form>
 			</div>

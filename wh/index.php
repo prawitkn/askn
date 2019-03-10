@@ -231,10 +231,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <!-- Left col -->
         <div class="col-md-8">				
 			<!-- Today LIST -->
-			<?php
-				echo "<h1>aaaaaaaaaaaaaaaa9999</h1>";
-			?>
-						
+									
 		<div class="box box-danger collapsed-box">
 			<div class="box-header with-border">			  
 				<h3 class="box-title" style="color: red;"> Prev. Delivery Sales Order.</h3>			  

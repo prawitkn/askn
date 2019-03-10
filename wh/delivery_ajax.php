@@ -586,9 +586,158 @@ if(!isset($_POST['action'])){
 			}
 			break;
 		case 'remove' :
-			header('Content-Type: application/json');
-			$errors = "Do Nothing.";
-			echo json_encode(array('success' => false, 'message' => $errors));
+			//Check user roll.
+			switch($s_userGroupCode){
+				case 'admin' : case 'whSup' : case 'pdSup' : case 'whMgr' : case 'pdMgr' : 
+					break;
+				default : 
+					//return JSON
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => false, 'message' => 'Access Denied.'));
+					exit();
+			}
+
+			$doNo = $_POST['doNo'];
+
+			//We will need to wrap our queries inside a TRY / CATCH block.
+			//That way, we can rollback the transaction if a query fails and a PDO exception occurs.
+			try{
+				//Check is uniqe item for re-active to A
+				$sql = "SELECT prodItemId, COUNT(id)  FROM receive_detail WHERE prodItemId IN (SELECT prodItemId FROM `delivery_detail` WHERE doNo=:doNo)
+				GROUP BY prodItemId HAVING COUNT(id) > 1";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':doNo', $doNo);
+				$stmt->execute();
+				$row_count = $stmt->rowCount();	
+				if($row_count != 0 ){
+					//return JSON
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => false, 'message' => 'Some Item Duplicate Receiving. Contact Admin.'));
+					exit();
+				}
+
+				//We start our transaction.
+				$pdo->beginTransaction();
+				//Query 1: Check Status for not gen running No.
+				$sql = "SELECT * FROM delivery_header WHERE doNo=:doNo AND statusCode='P' LIMIT 1";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':doNo', $doNo);
+				$stmt->execute();
+				$row_count = $stmt->rowCount();	
+				if($row_count != 1 ){
+					//return JSON
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => false, 'message' => 'Status incorrect.'));
+					exit();
+				}				
+				$hdr = $stmt->fetch();
+
+				// if(trim($hdr['rcNo'])<>"" ){
+				// 	//return JSON
+				// 	header('Content-Type: application/json');
+				// 	echo json_encode(array('success' => false, 'message' => 'Sending has been received.'));
+				// 	exit();
+				// }			
+				// $fromCode = $hdr['fromCode'];
+				// $toCode = $hdr['toCode'];
+							
+				switch($s_userGroupCode){
+					case 'admin' : 
+						break;
+					default : 
+						//Query 1: Check Prev Cloosing Date
+						$hdrIssueTime = strtotime($hdr['deliveryDate']);
+						$hdrIssueDate = date("Y-m-d", $hdrIssueTime);		
+						$sql = "SELECT `closingDate` FROM `stk_closing` WHERE statusCode='A' AND closingDate >= :closingDate LIMIT 1 ";
+						$stmt = $pdo->prepare($sql);
+						$stmt->bindParam(':closingDate', $hdrIssueDate);
+						$stmt->execute();
+						if($stmt->rowCount() == 1 ){
+							//return JSON 
+							header('Content-Type: application/json');
+							echo json_encode(array('success' => false, 'message' => 'Incorrect Bill Date.'));
+							exit();
+						}
+						//End Closing Date
+				}				
+
+				//Remove Delivery
+				$sql = "UPDATE `delivery_header`
+				SET `statusCode`='X'
+				, `updateTime`=NOW()
+				, `updateById`=:userId 
+				WHERE `doNo` = :doNo 
+				";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':userId', $s_userId);
+				$stmt->bindParam(':doNo', $doNo);
+				$stmt->execute();
+
+				//Remove Prepare
+				$sql = "UPDATE `prepare`
+				SET `statusCode`='X'
+				, `updateTime`=NOW()
+				, `updateById`=:userId 
+				WHERE `ppNo` = (SELECT `ppNo`
+						FROM `delivery_header` WHERE `doNo`=:doNo)
+				";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':userId', $s_userId);
+				$stmt->bindParam(':doNo', $doNo);
+				$stmt->execute();
+
+				//Remove Picking
+				$sql = "UPDATE `picking`
+				SET `statusCode`='X'
+				, `updateTime`=NOW()
+				, `updateById`=:userId 
+				WHERE `pickNo` = (SELECT `pickNo` 
+					FROM `prepare` WHERE `ppNo` = (SELECT `ppNo`
+						FROM `delivery_header` WHERE `doNo`=:doNo)
+					)
+				";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':userId', $s_userId);
+				$stmt->bindParam(':doNo', $doNo);
+				$stmt->execute();
+
+				//Update Receive Items
+				$sql = "UPDATE receive_detail 
+				SET statusCode='A' 
+				WHERE prodItemId IN (SELECT prodItemId FROM `delivery_detail` WHERE doNo=:doNo)
+				";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':doNo', $doNo);
+				$stmt->execute();
+
+				//Re-Open if Closed Sales Order 
+				$sql = "UPDATE sale_header
+				SET isClose='N' 
+				WHERE soNo = :soNo 
+				AND isClose = 'Y' 
+				";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':soNo', $hdr['soNo']);
+				$stmt->execute();
+
+
+				
+				//We've got this far without an exception, so commit the changes.
+				$pdo->commit();
+				
+				//return JSON
+				header('Content-Type: application/json');
+				echo json_encode(array('success' => true, 'message' => 'Data Removed', 'doNo' => $doNo));	
+			} 
+			//Our catch block will handle any exceptions that are thrown.
+			catch(Exception $e){
+				//Rollback the transaction.
+				$pdo->rollBack();
+				//return JSON
+				header('Content-Type: application/json');
+				$errors = "Error on Data Remove. Please try again. " . $e->getMessage();
+				echo json_encode(array('success' => false, 'message' => $errors));
+			}
 			break;
 		default : 
 			header('Content-Type: application/json');

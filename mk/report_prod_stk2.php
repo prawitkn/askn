@@ -190,11 +190,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			$stmt->execute();
 
 			//return
-			$sql = "UPDATE tmpStock hdr
+			$sql = "UPDATE tmpStock hdr 
 	         ,(SELECT itm.prodCodeId, th.fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
 	          				INNER JOIN rt_detail td ON td.prodItemId=itm.prodItemId  
-	         				INNER JOIN rt th ON th.rtNo=td.rtNo AND th.statusCode='P' 
-	         					AND th.returnDate > '$dateFromYmd'
+	         				INNER JOIN rt th ON th.rtNo=td.rtNo AND th.statusCode='P' AND th.returnDate > '$lpcDate' AND th.returnDate <= '$dateFromYmd' 
 	          				GROUP BY itm.prodCodeId, th.fromCode
 	          				) as tmp 
 	          SET hdr.return=tmp.sumQty 
@@ -413,7 +412,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					</td>
 					<!--<td style="text-align: right; color: black;"><a target="_blank" href="report_itm_dtl_by_prd.php?prodCode=<?=$row['prodCode'];?>&sloc=<?=$row['sloc'];?>" ><?= number_format($row['balanceReCheck'],2,'.',','); ?></a></td>-->
 					<td style="text-align: right; color: orange;">
-						<a target="_blank" href="report_prod_stk_onway.php?prodId=<?=$row['prodId'];?>&sloc=<?=$row['sloc'];?>" /><?= number_format($row['onway'],2,'.',','); ?></a>			
+						<a target="_blank" href="report_prod_stk_onway.php?prodId=<?=$row['prodId'];?>&sloc=<?=$row['sloc'];?>" ><?= number_format($row['onway'],2,'.',','); ?></a>			
 					</td>
 					<!--<td><?= $row['catCode']; ?></td>-->
 					<td style="text-align: right; font-size: small;"><?= number_format($row['openAcc'],2,'.',','); ?></td>
@@ -442,7 +441,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                <div class="col-md-12">
 			<a target="_blank" href="<?=$rootPage;?>_xls.php<?=$condQuery;?>" class="btn btn-default pull-right"><i class="glyphicon glyphicon-print"></i> Export</a>
 
-			<a target="_blank" href="<?=$rootPage;?>_stmt_pdf.php<?=$condQuery;?>" class="btn btn-default pull-right"><i class="fa fa-pdf"></i> Stock movement report</a>
+			<a target="_blank" href="<?=$rootPage;?>_stmt_pdf.php<?=$condQuery;?>" class="btn btn-default pull-right"><i class="fa fa-file-pdf-o"></i> Stock movement report</a>
 			
 			<nav>
 			<ul class="pagination">				

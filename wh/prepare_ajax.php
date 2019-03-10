@@ -118,6 +118,7 @@ if(!isset($_POST['action'])){
 								 
 								 ) as tmp			
 						WHERE barcodeId=:barcode
+						AND prodItemId IN (SELECT prodItemid FROM receive_detail WHERE statusCode='A' )
 						LIMIT 1 ";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':barcode', $barcode);

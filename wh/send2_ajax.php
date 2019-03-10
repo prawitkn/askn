@@ -1092,14 +1092,21 @@ if(!isset($_POST['action'])){
 				}				
 
 				//Set Aavailable.
-				$sql = "UPDATE receive_detail rd
+				/*$sql = "UPDATE receive_detail rd
 				INNER JOIN receive rh ON rh.rcNo=rd.rcNo 
 				INNER JOIN send_detail sd ON sd.prodItemId=rd.prodItemId
 				INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.fromCode=rh.toCode AND sh.sdNo=:sdNo 
 				SET rd.statusCode='A' 
+				";*/
+				$sql = "UPDATE receive hdr
+				INNER JOIN receive_detail dtl ON hdr.rcNo=dtl.rcNo 
+				SET dtl.statusCode='A' 
+				WHERE hdr.toCode = (select fromCode from send where sdNo=:sdNo)
+				AND dtl.prodItemId IN (select prodItemId FROM send_detail WHERE sdNo=:sdNo2)
 				";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':sdNo', $sdNo);
+				$stmt->bindParam(':sdNo2', $sdNo);
 				$stmt->execute();
 
 

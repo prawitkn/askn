@@ -393,6 +393,11 @@ if( isset($_GET['soNo']) ){
 					$deliveryDateStr="<span style='color: red;'>Waiting</span>";
 				}
 
+				$qtyStyle="";
+				if($row['qty'] > 1000000){
+					$qtyStyle="font-size: small; ";
+				}
+
 				if($iRow==0){
 					
 					$pdf->head($hdr);
@@ -422,7 +427,7 @@ if( isset($_GET['soNo']) ){
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 150px;
 										border: 0.1em solid black; padding: 10px; width: 170px;"> '.$row['remark'].' '.($row['rollLengthId']<>'0'?'[RL:'.$row['rollLengthName'].']':'').'</td>
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 60px;
-										border: 0.1em solid black; text-align: right; width: 60px;">'.number_format($row['qty'],2,'.',',').'</td>						
+										border: 0.1em solid black; text-align: right; width: 60px; '.$qtyStyle.'">'.number_format($row['qty'],2,'.',',').'</td>						
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;  max-width: 40px;
 										border: 0.1em solid black; text-align: right; width: 40px;">'.$row['prodUomCode'].'</td>						
 							<td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65px;

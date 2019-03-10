@@ -391,13 +391,13 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 							<th style="width: 30px; text-align: center;">No.</th>
 		                    <th style="width: 200px; text-align: center;">Product Code</th>
 							<th style="width: 30px; text-align: center;">Loc.</th>
-							<th style="width: 80px; text-align: center; font-weight: bold; ">Balance</th>
 							<th style="width: 80px; text-align: center; ">Onway</th>
 							<th style="width: 50px; text-align: center;">Open</th>
 							<th style="width: 50px; text-align: center;">Recv.</th>
 							<th style="width: 50px; text-align: center;">Sent</th>
 							<th style="width: 50px; text-align: center;">Return</th>
 							<th style="width: 50px; text-align: center;">Delivery</th>	
+							<th style="width: 80px; text-align: center; font-weight: bold; ">Balance</th>
 		                  </tr>
 						  <tbody>
 					'; 
@@ -405,9 +405,7 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			$html .='<tr class="'.$bgColor.'">
 				<td style="width: 30px; text-align: center; font-weight: bold;">'.$row_no.'</td>
                     <td style="width: 200px; font-weight: bold;"> '.$row['prodCode'].($isNotEqual?' *** ':'').'</td>
-					<td style="width: 30px; text-align: center; font-weight: bold;">'.$row['sloc'].'</td>		
-					<td style="width: 80px; text-align: right; font-weight: bold;">'.number_format($row['balance'],2,'.',',').'				
-					</td>
+					<td style="width: 30px; text-align: center; font-weight: bold;">'.$row['sloc'].'</td>	
 					<td style="width: 80px; text-align: right; font-weight: bold;">
 						'. number_format($row['onway'],2,'.',',') .'			
 					</td>
@@ -415,7 +413,9 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 					<td style="width: 50px; text-align: right; font-size: small; font-weight: bold;">'. number_format($row['receive'],2,'.',',') .'</td>
 					<td style="width: 50px;text-align: right; font-size: small; font-weight: bold;">'. number_format($row['sent'],2,'.',',') .'</td>
 					<td style="width: 50px;text-align: right; font-size: small; font-weight: bold;">'. number_format($row['return'],2,'.',',') .'</td>
-					<td style="width: 50px;text-align: right; font-size: small; font-weight: bold;">'. number_format($row['delivery'],2,'.',',') .'</td>
+					<td style="width: 50px;text-align: right; font-size: small; font-weight: bold;">'. number_format($row['delivery'],2,'.',',') .'</td>	
+					<td style="width: 80px; text-align: right; font-weight: bold;">'.number_format($row['balance'],2,'.',',').'				
+					</td>
 			</tr>';			
 					
 
@@ -462,13 +462,13 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 							<th style="width: 30px; text-align: center;">No.</th>
 		                    <th style="width: 200px; text-align: center;">Product Code</th>
 							<th style="width: 30px; text-align: center;">Loc.</th>
-							<th style="width: 80px; text-align: center; font-weight: bold; ">Balance</th>
 							<th style="width: 80px; text-align: center; ">Onway</th>
 							<th style="width: 50px; text-align: center;">Open</th>
 							<th style="width: 50px; text-align: center;">Recv.</th>
 							<th style="width: 50px; text-align: center;">Sent</th>
 							<th style="width: 50px; text-align: center;">Return</th>
 							<th style="width: 50px; text-align: center;">Delivery</th>	
+							<th style="width: 80px; text-align: center; font-weight: bold; ">Balance</th>
 		                  </tr>
 						  <tbody>
 					'; 
@@ -477,13 +477,13 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 						<td style="width: 30px; text-align: center;"></td>
 	                    <td style="width: 200px; width: 200px;"> '.$row3['issueDate'].' / '.$row3['docNo'].'</td>
 						<td style="width: 30px; text-align: center;"></td>	
-						<td style="width: 80px; text-align: center; font-weight: bold;"></td>	
 						<td style="width: 80px; text-align: center;"></td>	
 						<td style="width: 50px; text-align: center;"></td>	
 						<td style="width: 50px; text-align: center;">'.number_format($row3['sumQty'],2,'.',',').'</td>	
 						<td style="width: 50px; text-align: center;"></td>
 						<td style="width: 50px; text-align: center;"></td>		
 						<td style="width: 50px; text-align: right;"></td>
+						<td style="width: 80px; text-align: center; font-weight: bold;"></td>	
 					</tr>';	
 					$rowPerPage+=1; }//while 2 
 
@@ -528,13 +528,13 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 							<th style="width: 30px; text-align: center;">No.</th>
 		                    <th style="width: 200px; text-align: center;">Product Code</th>
 							<th style="width: 30px; text-align: center;">Loc.</th>
-							<th style="width: 80px; text-align: center; font-weight: bold; ">Balance</th>
 							<th style="width: 80px; text-align: center; ">Onway</th>
 							<th style="width: 50px; text-align: center;">Open</th>
 							<th style="width: 50px; text-align: center;">Recv.</th>
 							<th style="width: 50px; text-align: center;">Sent</th>
 							<th style="width: 50px; text-align: center;">Return</th>
 							<th style="width: 50px; text-align: center;">Delivery</th>	
+							<th style="width: 80px; text-align: center; font-weight: bold; ">Balance</th>
 		                  </tr>
 						  <tbody>
 					'; 
@@ -543,13 +543,13 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 						<td style="width: 30px; text-align: center;"></td>
 	                    <td style="width: 200px; width: 200px;"> '.$row3['issueDate'].' / '.$row3['docNo'].'</td>
 						<td style="width: 30px; text-align: center;"></td>	
-						<td style="width: 80px; text-align: center; font-weight: bold;"></td>	
 						<td style="width: 80px; text-align: center;"></td>	
 						<td style="width: 50px; text-align: center;"></td>	
 						<td style="width: 50px; text-align: center;"></td>	
 						<td style="width: 50px; text-align: center;">'.number_format($row3['sumQty'],2,'.',',').'</td>
 						<td style="width: 50px; text-align: center;"></td>		
 						<td style="width: 50px; text-align: right;"></td>
+						<td style="width: 80px; text-align: center; font-weight: bold;"></td>	
 					</tr>';	
 					$rowPerPage+=1; }//while 2
 
@@ -598,13 +598,13 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 							<th style="width: 30px; text-align: center;">No.</th>
 		                    <th style="width: 200px; text-align: center;">Product Code</th>
 							<th style="width: 30px; text-align: center;">Loc.</th>
-							<th style="width: 80px; text-align: center; font-weight: bold; ">Balance</th>
 							<th style="width: 80px; text-align: center; ">Onway</th>
 							<th style="width: 50px; text-align: center;">Open</th>
 							<th style="width: 50px; text-align: center;">Recv.</th>
 							<th style="width: 50px; text-align: center;">Sent</th>
 							<th style="width: 50px; text-align: center;">Return</th>
 							<th style="width: 50px; text-align: center;">Delivery</th>	
+							<th style="width: 80px; text-align: center; font-weight: bold; ">Balance</th>
 		                  </tr>
 						  <tbody>
 					'; 
@@ -613,13 +613,13 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 						<td style="width: 30px; text-align: center;"></td>
 	                    <td style="width: 200px; width: 200px;"> '.$row3['issueDate'].' / '.$row3['docNo'].'</td>
 						<td style="width: 30px; text-align: center;"></td>	
-						<td style="width: 80px; text-align: center; font-weight: bold;"></td>	
 						<td style="width: 80px; text-align: center;"></td>	
 						<td style="width: 50px; text-align: center;"></td>	
 						<td style="width: 50px; text-align: center;"></td>	
 						<td style="width: 50px; text-align: center;"></td>
 						<td style="width: 50px; text-align: center;">'.number_format($row3['sumQty'],2,'.',',').'</td>		
 						<td style="width: 50px; text-align: right;"></td>
+						<td style="width: 80px; text-align: center; font-weight: bold;"></td>	
 					</tr>';	
 					$rowPerPage+=1; }//while 2
 
@@ -669,13 +669,13 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 							<th style="width: 30px; text-align: center;">No.</th>
 		                    <th style="width: 200px; text-align: center;">Product Code</th>
 							<th style="width: 30px; text-align: center;">Loc.</th>
-							<th style="width: 80px; text-align: center; font-weight: bold; ">Balance</th>
 							<th style="width: 80px; text-align: center; ">Onway</th>
 							<th style="width: 50px; text-align: center;">Open</th>
 							<th style="width: 50px; text-align: center;">Recv.</th>
 							<th style="width: 50px; text-align: center;">Sent</th>
 							<th style="width: 50px; text-align: center;">Return</th>
 							<th style="width: 50px; text-align: center;">Delivery</th>	
+							<th style="width: 80px; text-align: center; font-weight: bold; ">Balance</th>
 		                  </tr>
 						  <tbody>
 					'; 
@@ -684,7 +684,6 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 						<td style="width: 30px; text-align: center;"></td>
 	                    <td style="width: 200px; width: 200px;"> '.$row3['issueDate'].' / '.$row3['docNo'].'</td>
 						<td style="width: 30px; text-align: center;"></td>	
-						<td style="width: 80px; text-align: center; font-weight: bold;"></td>	
 						<td style="width: 80px; text-align: center;"></td>	
 						<td style="width: 50px; text-align: center;"></td>	
 						<td style="width: 50px; text-align: center;"></td>	
@@ -692,6 +691,7 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 						<td style="width: 50px; text-align: center;"></td>		
 						<td style="width: 50px; text-align: right;">'.number_format($row3['sumQty'],2,'.',',').'	
 						</td>
+						<td style="width: 80px; text-align: center; font-weight: bold;"></td>	
 					</tr>';	
 					$rowPerPage+=1; }//while 2
 

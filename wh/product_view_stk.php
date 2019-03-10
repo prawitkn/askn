@@ -279,7 +279,11 @@ ORDER BY rh.toCode, itm.gradeTypeId, itm.remarkWh
         			$row_no = 1; while ($row = $stmt->fetch()) { 
 					 $pendingQty=$row['sumOrderQty']-$row['sumSentQty'];
 
-					 $dateName[] = date('d M Y', strtotime($row['deliveryDate']));
+					$dateNameStr="";
+					$dt = new DateTime($row['deliveryDate']); 
+					$dateNameStr=$dt->format('d M Y');
+
+					 $dateName[] = $dateNameStr;
 					 $remainQty[] = ($tmpRemainQty-$pendingQty);
 					 $orderQty[] = $pendingQty;
 					 $tmpRemainQty-=$pendingQty;
@@ -287,7 +291,7 @@ ORDER BY rh.toCode, itm.gradeTypeId, itm.remarkWh
                   <tr>
                     <td style="text-align: center;"><a href="sale2_view.php?soNo=<?=$row['soNo'];?>" target="_blank"><?= $row['soNo']; ?></a></td>
                     <td style="text-align: center;"><?= $row['customerName']; ?></a></td>
-                    <td style="text-align: center;"><?= date('d M Y', strtotime($row['deliveryDate'])); ?></a></td>
+                    <td style="text-align: center;"><?= $dateNameStr; ?></a></td>
 					<td style="text-align: center;"><?= number_format($pendingQty,2,'.',',').' / '.number_format($row['sumOrderQty'],2,'.',','); ?></td>
                 </tr>
                 <?php $row_no+=1; } ?>
