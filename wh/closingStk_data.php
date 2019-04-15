@@ -5,10 +5,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
 <?php include 'head.php'; 
-$rootPage = 'userDept';
+
 //Check user roll.
 switch($s_userGroupCode){
-	case 'admin' : case 'whSup' : case 'whMgr' : 
+	case 'admin' : case 'whMgr' : 
 		break;
 	default : 
 		header('Location: access_denied.php');
@@ -50,10 +50,11 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-      <h1><i class="fa fa-users"></i>
+     <h1><i class="fa fa-warning"></i>
        Closing Stock
-        <small>Closing Stock management</small>
+        <small>Transaction management</small>
       </h1>
+
 	  <ol class="breadcrumb">
         <li><a href="<?=$rootPage;?>_list.php"><i class="fa fa-list"></i>Closing Stock List</a></li>
 		<li><a href="#"><i class="fa fa-edit"></i>Add new Closing Stock</a></li>
@@ -66,7 +67,7 @@ switch($s_userGroupCode){
       <!-- Your Page Content Here -->
     <div class="box box-primary">
         <div class="box-header with-border">
-		<label class="box-tittle" style="font-size: 20px;"><i class="fa fa-edit"></i> Add Closing Stock</label>
+		<label class="box-tittle" style="font-size: 20px;"> Add Closing Stock</label>
 
 		
         <div class="box-tools pull-right">
@@ -96,7 +97,10 @@ switch($s_userGroupCode){
 				<!--/.row-->   
 				
 				<div class="row">
-					<div class="col-md-6">    
+					<div class="col-md-6">   
+					<!--<a href="#" name="btnLockTransection" class="btn btn-default" ><i class="glyphicon glyphicon-play" ></i> </a>
+					-->
+
 					<button id="btnSubmit" type="submit" class="btn btn-defalut">Submit</button>
 					</div>
 				</div>
@@ -156,6 +160,15 @@ $(document).ready(function() {
 	$("#spin").append(spinner.el);
 	$("#spin").hide();
 //           
+	
+	$('#btnSubmit').click(function(){
+        if(prompt('Please print out CLOSING STOCK STATEMENT REPORT, then enter "HAS BEEN PRINTED OUT" for execute closing stock process.', '')==="HAS BEEN PRINTED OUT"){ 
+            return true;
+        }
+        alert('Process is canceled.');
+        return false;
+    });//$('#current_pwd').focusout(function(){
+
 	$('#form1').on("submit", function(e) {
 		if ($('#form1').smkValidate()) {
 			$.ajax({

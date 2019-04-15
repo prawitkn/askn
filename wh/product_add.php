@@ -129,7 +129,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 						<div class="row col-md-12">
 							<div class="form-group col-md-6">
-                            <label for="appCode">App Code</label>   
+                            <label for="appCode">MKT Group</label>   
 							<select name="appCode" class="form-control" >
 								<option value="" <?php echo ($appCode==""?'selected':''); ?> >--All--</option>
 								<?php

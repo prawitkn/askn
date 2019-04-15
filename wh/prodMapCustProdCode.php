@@ -5,7 +5,29 @@ This is a starter template page. Use this page to start your new project from
 scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
-<?php include 'head.php'; ?>	<!-- head.php included session.php! -->
+<?php include 'head.php'; 	
+	
+$rootPage = 'prodMapCustProdCode';
+
+//Check user roll.
+$isAllow=false;
+switch($s_userGroupCode){
+	case 'admin' : $isAllow=true; break;
+	case 'pdSup' : 
+		if ( $s_userDeptCode == 'T' ){
+			$isAllow=true;
+		}
+		break;
+	default : 
+}//.switch
+
+if ( !$isAllow ){
+	header('Location: access_denied.php');
+	exit();
+}//.if isallow
+	
+
+?>	<!-- head.php included session.php! -->
 
 </head>
 <body class="hold-transition <?=$skinColorName;?> sidebar-mini">
@@ -13,22 +35,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 	
 
+    
+    
+
 <div class="wrapper">
 
   <!-- Main Header -->
-  <?php 
-include 'header.php'; 
-$rootPage = 'shelf_x';
-//Check user roll.
-switch($s_userGroupCode){
-	case 'it' : case 'admin' :
-		break;
-	default : 
-		header('Location: access_denied.php');
-		exit();
-}
-  
-  ?>
+  <?php include 'header.php'; ?>
   
   <!-- Left side column. contains the logo and sidebar -->
    <?php include 'leftside.php'; ?>
@@ -37,12 +50,12 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
 	<section class="content-header">
-		<h1><i class="glyphicon glyphicon-vertical"></i>
-       Shelf Column
-        <small>Shelf Column management</small>
+		<h1><i class="fa fa-link"></i>
+       Customer's Product Code Mapping
+        <small>Customer's Product Code Mapping</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Shelf Column List</a></li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Customer's Product Code Mapping List</a></li>
       </ol>
     </section>
 
@@ -52,43 +65,45 @@ switch($s_userGroupCode){
 <!-- To allow only admin to access the content -->      
     <div class="box box-primary">
         <div class="box-header with-border">
-		<label class="box-title">Shelf Column List</label>
-			<a href="<?=$rootPage;?>_add.php?id=" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add Shelf Column</a>
+		<label class="box-title">Customer's Product Code Mapping List</label>
+			<a href="<?=$rootPage;?>_add.php" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add Customer's Product Code Mapping</a>
 		
 		
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
           <?php
-			$search_word="";
-			if(isset($_GET['search_word']) and isset($_GET['search_word'])){
-				$search_word=$_GET['search_word'];
-			}	
-			$sql = "
-			SELECT COUNT(*) AS countTotal 
-			FROM `wh_sloc_x`  
-			WHERE 1=1 ";
-			if(isset($_GET['search_word']) and isset($_GET['search_word'])){
-				$search_word=$_GET['search_word'];
-				$sql .= "and (code like '%".$_GET['search_word']."%' ) ";
-			}	
-			//$sql .= "ORDER BY code ASC ";
-			$stmt = $pdo->prepare($sql);	
-			$stmt->execute();	
-			$row=$stmt->fetch();
-			$countTotal = $row['countTotal'];
-			
-			$rows=20;
-			$page=0;
-			if( !empty($_GET["page"]) and isset($_GET["page"]) ) $page=$_GET["page"];
-			if($page<=0) $page=1;
-			$total_data=$countTotal;
-			$total_page=ceil($total_data/$rows);
-			if($page>=$total_page) $page=$total_page;
-			$start=($page-1)*$rows;		
-			if($start<0) $start=0;		
+                //$sql_user = "SELECT COUNT(*) AS COUNTUSER FROM wh_user";
+               // $result_user = mysqli_query($link, $sql_user);
+               // $count_user = mysqli_fetch_assoc($result_user);
+				
+				$search_word="";
+                $sql = "SELECT COUNT(*) as countTotal 
+				FROM `wh_product_code_by_customer` pbc
+				INNER JOIN product prd ON prd.id=pbc.prodId
+				LEFT JOIN customer cust ON cust.id=pbc.custId 
+				WHERE 1=1 ";
+				if(isset($_GET['search_word']) and isset($_GET['search_word'])){
+					$search_word=$_GET['search_word'];
+					$sql .= "and (prd.code like '%".$_GET['search_word']."%' OR cust.name like '%".$_GET['search_word']."%' ) ";
+				}
+				/*if( isset($_GET['isNotMap']) ){
+					$sql .= "and (hdr.wmsProdId='' OR hdr.wmsProdId IS NULL) ";
+				}*/
+                $result = mysqli_query($link, $sql);
+                $countTotal = mysqli_fetch_assoc($result);			
+				
+				$rows=100;
+				$page=0;
+				if( !empty($_GET["page"]) and isset($_GET["page"]) ) $page=$_GET["page"];
+				if($page<=0) $page=1;
+				$total_data=$countTotal['countTotal'];
+				$total_page=ceil($total_data/$rows);
+				if($page>=$total_page) $page=$total_page;
+				$start=($page-1)*$rows;
+				if($start<0) $start=0;
           ?>
-          <span class="label label-primary">Total <?php echo $countTotal; ?> items</span>
+          <span class="label label-primary">Total <?php echo $countTotal['countTotal']; ?> items</span>
         </div><!-- /.box-tools -->
         </div><!-- /.box-header -->
         <div class="box-body">
@@ -96,7 +111,7 @@ switch($s_userGroupCode){
 				<div class="col-md-6">					
 					<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
 						<div class="form-group">
-							<label for="search_word">Person Name search key word.</label>
+							<label for="search_word">Product Mapping Product search key word.</label>
 							<div class="input-group">
 								<input id="search_word" type="text" class="form-control" name="search_word" data-smk-msg="Require userFullname."required>
 								<span class="input-group-addon">
@@ -111,50 +126,60 @@ switch($s_userGroupCode){
 			</div>
 			<!--/.row-->
            <?php
-			$sql = "
-			SELECT `id`, `code`, `name`, `statusCode`
-			FROM `wh_sloc_x`  
-			WHERE 1=1 ";
-			if(isset($_GET['search_word']) and isset($_GET['search_word'])){
-				$search_word=$_GET['search_word'];
-				$sql .= "and (code like '%".$_GET['search_word']."%' ) ";
-			}	
-			$sql .= "ORDER BY code ASC ";
-			$sql.="LIMIT $start, $rows ";		
-			//$result = mysqli_query($link, $sql);
-			$stmt = $pdo->prepare($sql);	
-			$stmt->execute();	
+				$sql = "SELECT pbc.`id`, pbc.`custId`, pbc.`prodId`, pbc.`prodCode`, pbc.`prodDesc`, pbc.`statusCode`
+				,prd.code as akProdCode, cust.name as custName 
+				FROM `wh_product_code_by_customer` pbc
+				INNER JOIN product prd ON prd.id=pbc.prodId
+				LEFT JOIN customer cust ON cust.id=pbc.custId 
+				WHERE 1=1 ";
+				if(isset($_GET['search_word']) and isset($_GET['search_word'])){
+					$search_word=$_GET['search_word'];
+					$sql .= "and (prd.code like '%".$_GET['search_word']."%' OR cust.name like '%".$_GET['search_word']."%' ) ";
+				}
+				/*if( isset($_GET['isNotMap']) ){
+					$sql .= "and (hdr.wmsProdId='' OR hdr.wmsProdId IS NULL) ";
+				}*/
+				$sql .= "ORDER BY cust.name, prd.code ASC
+						LIMIT $start, $rows 
+				";	
+                //$result = mysqli_query($link, $sql);
+				$stmt = $pdo->prepare($sql);	
+				$stmt->execute();	
                 
            ?> 
-            <div class="table-responsive">
+            
             <table class="table table-striped">
                 <tr>
-					<th style="text-align: center;">No.</th>	
-					<th style="text-align: center;">Shelf Column Code</th>
-                    <th style="text-align: center;">Shelf Column Name</th>
-                    <th style="text-align: center;">Status</th>
-                    <th style="text-align: center;">Actions</th>
+					<th>No.</th>
+					<th>Customer Name</th>
+					<th>AK Product Code</th>
+					<th>Customer Product Code</th>	
+                    <th>Status</th>
+                    <th>Actions</th>
                 </tr>
                 <?php $c_row=($start+1); while ($row = $stmt->fetch()) { 
 					$statusName = '<label class="label label-info">Unknow</label>';
 						switch($row['statusCode']){
 							case 'A' : $statusName = '<label class="label label-success">Active</label>'; break;
-							case 'I' : $statusName = '<label class="label label-danger">Inactive</label>'; break;
+							case 'X' : $statusName = '<label class="label label-danger">Inactive</label>'; break;
 							default : 						
 						}
 						?>
                 <tr>
-					<td style="text-align: center;">
+					<td>
                          <?= $c_row; ?>
-                    </td>	
-                    <td style="text-align: center;">
-                         <?= $row['code']; ?>
+                    </td>			
+                    <td>
+                         <?= $row['custName']; ?>
                     </td>
-                    <td style="text-align: center;">
-                         <?= $row['name']; ?>
-                    </td>				
-                    <td style="text-align: center;">
-						 <?php
+					<td>
+                         <?= $row['akProdCode']; ?>
+                    </td>
+					<td>
+                         <?= $row['prodCode']; ?>
+                    </td>
+                    <td>
+                         <?php
 						 switch($row['statusCode']){ 	
 							case 'A' :
 								echo '<a class="btn btn-success" name="btn_row_setActive" data-statusCode="I" data-id="'.$row['id'].'" >Active</a>';
@@ -169,32 +194,34 @@ switch($s_userGroupCode){
 								echo '<label style="color: red;" >N/A</label>';
 						}
 						 ?>
-                    </td>					
-                    <td style="text-align: center;">
-                    	<?php
-						 switch($row['statusCode']){ 	
-							case 'A' :
-								echo '<a class="btn btn-primary" name="btn_row_edit" href="'.$rootPage.'_edit.php?act=edit&id='.$row['id'].'" >
-								<i class="glyphicon glyphicon-edit"></i> Edit</a>';
-								break;
-							case 'I' :
-								echo '<a class="btn btn-danger" name="btn_row_remove"  data-id="'.$row['id'].'" > 
-								<i class="glyphicon glyphicon-remove"></i> Remove</a>	';
-								break;
-							case 'X' : 
-								if($s_userGroupCode=="admin"){
-									echo '<a class="btn btn-danger" name="btn_row_delete"  data-id="'.$row['id'].'" > 
-								<i class="glyphicon glyphicon-trash"></i> Delete</a>';
-								}
-								break;
-							default :	
-								echo '';
-						} //end switch ?>
+                    </td>
+					<td>
+						
+						<?php if($row['statusCode']=='A'){ ?>
+							<a class="btn btn-primary" name="btn_row_edit" href="<?=$rootPage;?>_edit.php?act=edit&id=<?= $row['id']; ?>" >
+								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
+						<?php }else{ ?>	
+							<a class="btn btn-primary"  disabled  > 
+								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
+						<?php } ?>
+						
+						<?php if($row['statusCode']=='I'){ ?>
+							<a class="btn btn-danger" name="btn_row_remove"  data-id="<?=$row['id'];?>" > 
+								<i class="glyphicon glyphicon-remove"></i> Remove</a>	
+						<?php }else{ ?>	
+							<a class="btn btn-danger"  disabled  >
+								<i class="glyphicon glyphicon-remove"></i> Remove</a>	
+						<?php } ?>
+						
+						<?php if($row['statusCode']=='X' AND ($s_userGroupCode=='admin' OR $s_userGroupCode=='it' OR $s_userGroupCode=='prog')){ ?>
+							<a class="btn btn-danger" name="btn_row_delete"  data-id="<?=$row['id'];?>" > 
+								<i class="glyphicon glyphicon-trash"></i> Delete</a>	
+						<?php } ?>
                     </td>
                 </tr>
                 <?php $c_row+=1; } ?>
             </table>
-			</div>
+			
 				
 			<nav>
 			<ul class="pagination">
@@ -277,41 +304,7 @@ $(document).ready(function() {
 		e.preventDefault();
 	});
 	//end btn_row_setActive
-	
-	$('a[name=btn_row_remove]').click(function(){
-		var params = {
-			action: 'remove',
-			id: $(this).attr('data-id')
-		};
-		$.smkConfirm({text:'Are you sure to Remove ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
-			$.post({
-				url: '<?=$rootPage;?>_ajax.php',
-				data: params,
-				dataType: 'json'
-			}).done(function (data) {					
-				if (data.success){ 
-					$.smkAlert({
-						text: data.message,
-						type: 'success',
-						position:'top-center'
-					});
-					location.reload();
-				} else {
-					alert(data.message);
-					$.smkAlert({
-						text: data.message,
-						type: 'danger'//,
-					//                        position:'top-center'
-					});
-				}
-			}).error(function (response) {
-				alert(response.responseText);
-			}); 
-		}});
-		e.preventDefault();
-	});
-	//end btn_row_remove
-	
+
 	$('a[name=btn_row_delete]').click(function(){
 		var params = {
 			action: 'delete',
@@ -345,7 +338,45 @@ $(document).ready(function() {
 		e.preventDefault();
 	});
 	//end btn_row_delete
+
+	$('a[name=btn_row_remove]').click(function(){
+		var params = {
+			action: 'remove',
+			id: $(this).attr('data-id')
+		};
+		$.smkConfirm({text:'Are you sure to Remove ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function (data) {					
+				if (data.success){ 
+					$.smkAlert({
+						text: data.message,
+						type: 'success',
+						position:'top-center'
+					});
+					location.reload();
+				} else {
+					alert(data.message);
+					$.smkAlert({
+						text: data.message,
+						type: 'danger'//,
+					//                        position:'top-center'
+					});
+				}
+			}).error(function (response) {
+				alert(response.responseText);
+			}); 
+		}});
+		e.preventDefault();
+	});
+	//end btn_row_remove
 });
+  
+  
+
+
 </script>
 <!-- Optionally, you can add Slimscroll and FastClick plugins.
      Both of these plugins are recommended to enhance the

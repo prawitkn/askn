@@ -230,10 +230,17 @@ $saleItemId=$_GET['saleItemId'];
 							disabled
 							/>
 						<?php }else{ ?>
-						<input type="textbox" name="pickQty[]" class="form-control" value="<?=$row['pickQty'];?>"  
+						<!-- <input type="textbox" name="pickQty[]" class="form-control" value="<?=$row['pickQty'];?>"  
 						data-prodId="<?=$row['prodId'];?>" data-issueDate="<?=$row['issueDate'];?>" 
 						data-grade="<?=$row['grade'];?>"  data-isShelfed="1" 
 						onkeypress="return numbersOnly(this, event);" 
+						onpaste="return false;"
+						style="text-align: right;"
+						/> -->
+						<input type="textbox" name="pickQty[]" class="form-control" value="<?=$row['pickQty'];?>"  
+						data-prodId="<?=$row['prodId'];?>" data-issueDate="<?=$row['issueDate'];?>" 
+						data-grade="<?=$row['grade'];?>"  data-isShelfed="1" 
+						 
 						onpaste="return false;"
 						style="text-align: right;"
 						/>

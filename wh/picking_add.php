@@ -212,8 +212,8 @@ $custId = $hdr['custId'];
 						<td><?= $row_no; ?></td>
 						<td><?= $row['prodCode']; ?></td>	
 						<td><?= $deliveryDateStr; ?></td>	
-						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',',').'/'.number_format($qtyRem,0,'.',','); ?></td>
-						<td style="text-align: right;"><?= number_format($row['pickQty'],0,'.',','); ?></td>
+						<td style="text-align: right;"><?= number_format($row['qty'],2,'.',',').'/'.number_format($qtyRem,2,'.',','); ?></td>
+						<td style="text-align: right;"><?= number_format($row['pickQty'],2,'.',','); ?></td>
 					<td>
 						<?php if( $qtyRem > 0 ) { ?>
 						<a href="<?=$rootPage;?>_add_item_search.php?locCode=<?=$hdr['locationCode'];?>&pickNo=<?=$hdr['pickNo'];?>&doDtlId=<?=$row['id'];?>&saleItemId=<?=$row['id'];?>&id=<?=$row['prodId'];?>&custId=<?=$custId;?>" class="btn btn-primary">
@@ -259,7 +259,7 @@ $custId = $hdr['custId'];
 							echo $dt->format('d M Y'); ?></td>	
 						<td><?= $gradeName; ?></td>	
 						<td><?= $row['gradeTypeName']; ?></td>	
-						<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
+						<td style="text-align: right;"><?= number_format($row['qty'],2,'.',','); ?></td>
 					<td>										
 					<a class="btn btn-danger fa fa-trash" name="btn_row_delete" <?php echo ($hdr['statusCode']=='B'?' data-id="'.$row['id'].'" ':' disabled '); ?> > Delete</a>
 					</td>

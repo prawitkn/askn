@@ -144,6 +144,14 @@
 					//$deliveryDate = date("Y-m-d", strtotime($var));
 					$deliveryDate = new DateTime($var); 
 					$deliveryDate = $deliveryDate->format('Y-m-d'); 
+
+					//Check Qty.
+					if($qty<=0){					
+						header('Content-Type: application/json');
+						$errors = "Error : "."incorrect Quantity.";
+						echo json_encode(array('success' => false, 'message' => $errors));
+						exit();
+					}
 					
 					$pdo->beginTransaction();		
 
@@ -167,43 +175,25 @@
 							exit();
 						}
 
-						//Get data
-						$sql = "SELECT qty FROM `sale_detail` WHERE id=:id 
+						//Update delivery datte, rollLengId, remark 
+						$sql = "UPDATE `sale_detail` SET `qty`=:qty, `deliveryDate`=:deliveryDate, `rollLengthId`=:rollLengthId, `remark`=:remark WHERE id=:id 
 						";
 						$stmt = $pdo->prepare($sql);
+						$stmt->bindParam(':qty', $qty);
+						$stmt->bindParam(':deliveryDate', $deliveryDate);	
+						$stmt->bindParam(':rollLengthId', $rollLengthId);	
+						$stmt->bindParam(':remark', $itemRemark);	
 						$stmt->bindParam(':id', $refItmId);	
 						$stmt->execute();
-						$row=$stmt->fetch();
-						$oldQty=$row['qty'];
-						$newQty=$oldQty-$qty;
 
-						if($oldQty==$qty){
-							//Update delivery datte, rollLengId, remark 
-							$sql = "UPDATE `sale_detail` SET `deliveryDate`=:deliveryDate, `rollLengthId`=:rollLengthId, `remark`=:remark WHERE id=:id 
-							";
-							$stmt = $pdo->prepare($sql);
-							$stmt->bindParam(':deliveryDate', $deliveryDate);	
-							$stmt->bindParam(':rollLengthId', $rollLengthId);	
-							$stmt->bindParam(':remark', $itemRemark);	
-							$stmt->bindParam(':id', $refItmId);	
-							$stmt->execute();
+						$isInsertNewItem=false;
 
-							$isInsertNewItem=false;
-						}else{
-							if($newQty<=0){					
-								header('Content-Type: application/json');
-								$errors = "Error : "."incorrect Quantity.";
-								echo json_encode(array('success' => false, 'message' => $errors));
-								exit();
-							}
-							//Edit qty only
-							$sql = "UPDATE `sale_detail` SET qty=:qty WHERE id=:id 
-							";
-							$stmt = $pdo->prepare($sql);
-							$stmt->bindParam(':qty', $newQty);	
-							$stmt->bindParam(':id', $refItmId);	
-							$stmt->execute();
-						}						
+
+						$pdo->commit();
+
+						header('Content-Type: application/json');
+						echo json_encode(array('success' => true, 'message' => 'Data Updated Complete.'));
+						exit();
 					}
 
 					if($isInsertNewItem){
@@ -899,6 +889,69 @@
 				}catch(Exception $e){
 					header('Content-Type: application/json');
 					$errors = "Error on Data delete. Please try again. " . $e->getMessage();
+					echo json_encode(array('success' => false, 'message' => $errors));
+				}	
+				break;
+
+			case 'itemDivShip' :
+				try{   
+					$id = $_POST['id'];
+
+					$sql = "SELECT SUM(qty) as sumQty 
+					FROM picking hdr
+					INNER JOIN picking_detail dtl ON dtl.pickNo=hdr.pickNo AND dtl.saleItemId=:saleItemId 
+					WHERE hdr.statusCode='P' 
+					";
+					$stmt = $pdo->prepare($sql);
+					$stmt->bindParam(':saleItemId', $id);
+					$stmt->execute();					
+					$row=$stmt->fetch();
+					$sumQty=$row['sumQty'];
+					if($sumQty>0){
+						$sql = "SELECT `id`, `prodId`, `deliveryDate`, `qty`, `rollLengthId`, `remark`, `createTime`, `soNo`
+						FROM sale_detail dtl WHERE id=:id  
+						";
+						$stmt = $pdo->prepare($sql);
+						$stmt->bindParam(':id', $id);
+						$stmt->execute();					
+						$row=$stmt->fetch();
+						$pendingQty=$row['qty']-$sumQty;
+						if($pendingQty>0){
+							//insert pending qty.
+							$sql = "INSERT INTO `sale_detail`
+							(`prodId`, `deliveryDate`, `qty`, `rollLengthId`, `remark`, `createTime`, `soNo`) 
+							VALUES 
+							(:prodId, :deliveryDate, :qty,:rollLengthId,:remark, now(), :soNo)
+							";
+							$stmt = $pdo->prepare($sql);
+							$stmt->bindParam(':prodId', $row['prodId']);	
+							$stmt->bindParam(':deliveryDate', $row['deliveryDate']);	
+							$stmt->bindParam(':qty', $pendingQty);	
+							$stmt->bindParam(':rollLengthId', $row['rollLengthId']);	
+							$stmt->bindParam(':remark', $row['remark']);	
+							$stmt->bindParam(':soNo', $row['soNo']);	
+							$stmt->execute();
+							
+							//insert pending qty.
+							$sql = "UPDATE `sale_detail` SET `qty`=:qty WHERE id=:id 
+							";
+							$stmt = $pdo->prepare($sql);	
+							$stmt->bindParam(':qty', $sumQty);	
+							$stmt->bindParam(':id', $id);	
+							$stmt->execute();
+							
+							header('Content-Type: application/json');
+						echo json_encode(array('success' => true, 'message' => 'Data Devide  Shipping Complete.'));
+						}//if($pendingQty>0)
+					}else{
+						header('Content-Type: application/json');
+						echo json_encode(array('success' => false, 'message' => 'This item has not been picked.'));
+					}//if($sumQty>0)
+					
+					
+				}catch(Exception $e){
+					header('Content-Type: application/json');
+					$errors = "Error on Data Devide Shipping. Please try again. " . $e->getMessage();
 					echo json_encode(array('success' => false, 'message' => $errors));
 				}	
 				break;

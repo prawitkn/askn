@@ -141,12 +141,14 @@ if(!isset($_POST['action'])){
 							echo json_encode(array('success' => false, 'message' => $errors));
 							exit();
 						}
+						if($meter > 1){
 						if( ($pickQty % $meter) > 0 ){
 							header('Content-Type: application/json');
 							$errors="Pick quantity [ ".number_format($pickQty,0,'.',',')." ] with Meter [ ".number_format($meter,0,'.',',')." ] is incorrect.";
 							echo json_encode(array('success' => false, 'message' => $errors));
 							exit();
 						}
+					}
 						$sumPickQty+=$_POST['pickQty'][$index];
 					}											
 				}

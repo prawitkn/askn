@@ -34,14 +34,12 @@
 	$stmt->bindParam(':search_word', $search_word);
 	$stmt->execute();
 	
-	$rowCount=$stmt->rowCount();
-
 	$jsonData = array();
 	while ($array = $stmt->fetch()) {
 		$jsonData[] = $array;
 	}
  					   
-	echo json_encode(array('rowCount' => $rowCount, 'data' => json_encode($jsonData)));
+	echo json_encode($jsonData);
 	
 ?>
 

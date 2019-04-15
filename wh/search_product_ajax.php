@@ -5,7 +5,7 @@
 		$s_userGroupCode = $row_user['userGroupCode'];
 		$s_userDept = $row_user['userDept'];*/
 
-	$search_word = $_POST['search_word'];
+	$search_word = trim($_POST['search_word']);
 	$sql = "SELECT hdr.id as prodId, hdr.code as `prodCode`, hdr.catCode as `prodCatCode`, hdr.name as `prodName`, hdr.name2 as `prodName2`, hdr.uomCode as `prodUomCode`, hdr.`photo`, hdr.price as `prodPrice`
 	, hdr.description as `prodDesc`, hdr.appCode as `prodAppCode`, hdr.`statusCode` 
 	, cat.name as prodCatName, mk.name as prodAppName  

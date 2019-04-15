@@ -47,7 +47,9 @@
 		<?php if ( $s_userGroupCode == 'admin' || ( $s_userGroupCode == 'pdSup' && $s_userDeptCode == 'T' ) ) { ?>
 			<li><a href="product.php"><i class="fa fa-barcode"></i> <span>Product Data</span></a></li>						
 			<li><a href="product_roll_length.php"><i class="fa fa-archive"></i> <span>Product Roll Length</span></a></li>
-			<li><a href="productionMappingProduct.php"><i class="fa fa-list-ol"></i> <span>Production Prod. Mapping</span></a></li>		
+			<li><a href="productionMappingProduct.php"><i class="fa fa-link"></i> <span>Production Prod. Mapping</span></a></li>		
+
+			<li><a href="prodMapCustProdCode.php"><i class="fa fa-link"></i> <span>Customer's Product Code Mapping</span></a></li>		
 		<?php } ?>
 		
 		<?php switch($s_userGroupCode){ case 'admin' : ?>

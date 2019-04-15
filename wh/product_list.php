@@ -121,7 +121,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						}
 						?>
 					</select>				
-					<label>App ID : </label>
+					<label>MKT Group : </label>
 					<select name="appCode" class="form-control">
 						<option value="" <?php echo ($appCode==""?'selected':''); ?> >--All--</option>
 						<?php
@@ -175,7 +175,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						<label>Description : </label> <?=$row['description'];?></br>
 						<label>Units of Measurement (UOM) : </label> <?=$row['uomCode'];?></br>
 						<label>Source Type : </label> <?=$row['sourceTypeCode'];?></br>
-						<label>App ID : </label> <?=$row['appCode'];?></br>
+						<label>MKT Group : </label> <?=$row['appCode'];?></br>
 						<?php if ( $row['specFile'] <> "" ) { ?>
 						<a href="../pdf/product/<?=$row['specFile'];?>" target="_blank"><i class="fa fa-file"></i>  Specification file</a>
 						<?php } ?> 

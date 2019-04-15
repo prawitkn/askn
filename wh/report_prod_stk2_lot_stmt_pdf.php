@@ -372,9 +372,10 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 					<table class="table table-striped table-layout: fixed;" border="1"  >
 						  <tr>
 							<th style="width: 30px; text-align: center;">No.</th>
-		                    <th style="width: 200px; text-align: center;">Product Code</th>
+		                    <th style="width: 180px; text-align: center;">Product Code</th>
+							<th style="width: 50px; text-align: center;">Lot.</th>
 							<th style="width: 30px; text-align: center;">Loc.</th>
-							<th style="width: 80px; text-align: center; ">Onway</th>
+							<th style="width: 50px; text-align: center; ">Onway</th>
 							<th style="width: 50px; text-align: center;">Open</th>
 							<th style="width: 50px; text-align: center;">Recv.</th>
 							<th style="width: 50px; text-align: center;">Sent</th>
@@ -387,9 +388,10 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 				}						
 			$html .='<tr class="'.$bgColor.'">
 				<td style="width: 30px; text-align: center; font-weight: bold;">'.$row_no.'</td>
-                    <td style="width: 200px; font-weight: bold;"> '.$row['prodCode'].($isNotEqual?' *** ':'').'</td>
+                    <td style="width: 180px; font-weight: bold;"> '.$row['prodCode'].($isNotEqual?' *** ':'').'</td>
+					<td style="width: 50px; text-align: center; font-weight: bold;"></td>	
 					<td style="width: 30px; text-align: center; font-weight: bold;">'.$row['sloc'].'</td>	
-					<td style="width: 80px; text-align: right; font-weight: bold;">
+					<td style="width: 50px; text-align: right; font-weight: bold;">
 						'. number_format($row['onway'],2,'.',',') .'			
 					</td>
 					<td style="width: 50px;text-align: right; font-size: small; font-weight: bold;">'. number_format($row['openAcc'],2,'.',',') .'</td>
@@ -406,31 +408,36 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 
 				//Receive Doc No
 				$sql = "SELECT * 
-					FROM (	SELECT 'RC' as docType, th.rcNo as docNo, th.receiveDate as issueDate, SUM(itm.qty) as sumQty FROM product_item itm 
+					FROM (	SELECT 'RC' as docType, th.rcNo as docNo, th.receiveDate as issueDate, IF(th.`toCode`='E',sh.sendDate,itm.`issueDate`) as lotDate, SUM(itm.qty) as sumQty FROM product_item itm 
 	          				INNER JOIN receive_detail td ON td.prodItemId=itm.prodItemId 
 	         				INNER JOIN receive th ON th.rcNo=td.rcNo AND th.statusCode='P' AND th.toCode=:toCodeRc 
 	         					AND th.receiveDate > '$lpcDate' AND DATE(th.receiveDate) <= '$dateFromYmd'
+	         				INNER JOIN send sh ON th.rcNo=sh.rcNo 
 	         				WHERE itm.prodCodeId=:prodCodeIdRc 
+	         				GROUP BY  1, 2, 3, 4 
 	          			UNION 
-	          			SELECT 'SD' as docType, th.sdNo as docNo, th.sendDate as issueDate, SUM(itm.qty) as sumQty FROM product_item itm 
+	          			SELECT 'SD' as docType, th.sdNo as docNo, th.sendDate as issueDate, NULL as lotDate, SUM(itm.qty) as sumQty FROM product_item itm 
 	          				INNER JOIN send_detail td ON td.prodItemId=itm.prodItemId 
 	         				INNER JOIN send th ON th.sdNo=td.sdNo AND th.statusCode='P' AND th.fromCode=:fromCodeSd 
 	         					AND th.sendDate > '$lpcDate' AND DATE(th.sendDate) <= '$dateFromYmd'
 	         				WHERE itm.prodCodeId=:prodCodeIdSd
-	          			UNION 
-	          			SELECT 'RT' as docType, th.rtNo as docNo, th.returnDate as issueDate, SUM(itm.qty) as sumQty FROM product_item itm 
+	         				GROUP BY  1, 2, 3, 4 
+	          			UNION  
+	          			SELECT 'RT' as docType, th.rtNo as docNo, th.returnDate as issueDate, NULL as lotDate, SUM(itm.qty) as sumQty FROM product_item itm 
 	          				INNER JOIN rt_detail td ON td.prodItemId=itm.prodItemId 
 	         				INNER JOIN rt th ON th.rtNo=td.rtNo AND th.statusCode='P' AND th.fromCode=:fromCodeRt 
 	         					AND th.returnDate > '$lpcDate' AND DATE(th.returnDate) <= '$dateFromYmd'
 	         				WHERE itm.prodCodeId=:prodCodeIdRt 
+	         				GROUP BY 1, 2, 3, 4
 	          			UNION 
-	          			SELECT 'DO' as docType, th.doNo as docNo, th.deliveryDate as issueDate, SUM(itm.qty) as sumQty FROM product_item itm 
+	          			SELECT 'DO' as docType, th.doNo as docNo, th.deliveryDate as issueDate, NULL as lotDate, SUM(itm.qty) as sumQty FROM product_item itm 
 	          				INNER JOIN delivery_detail td ON td.prodItemId=itm.prodItemId 
 	         				INNER JOIN delivery_header th ON th.doNo=td.doNo AND th.statusCode='P' 
 	         					AND th.deliveryDate > '$lpcDate' AND DATE(th.deliveryDate) <= '$dateFromYmd'
 	         				INNER JOIN sale_header shd ON shd.soNo=th.soNo 
 	         				INNER JOIN customer cust ON cust.id=shd.custId AND CASE WHEN cust.locationCode = 'L' THEN '8' ELSE 'E' END =:fromCodeDo 
-	         				WHERE itm.prodCodeId=:prodCodeIdDo  
+	         				WHERE itm.prodCodeId=:prodCodeIdDo
+	         				GROUP BY 1, 2, 3, 4
 	          			) as tmp ";
 	          		$sql.="WHERE tmp.sumQty > 0 ";
 					$sql.="ORDER BY tmp.issueDate, FIELD(tmp.docType,'RC','SD','RT', 'DO') ";
@@ -471,9 +478,10 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 					<table class="table table-striped table-layout: fixed;" border="1"  >
 						  <tr>
 							<th style="width: 30px; text-align: center;">No.</th>
-		                    <th style="width: 200px; text-align: center;">Product Code</th>
+		                    <th style="width: 180px; text-align: center;">Product Code</th>
+							<th style="width: 50px; text-align: center;">Lot.</th>
 							<th style="width: 30px; text-align: center;">Loc.</th>
-							<th style="width: 80px; text-align: center; ">Onway</th>
+							<th style="width: 50px; text-align: center; ">Onway</th>
 							<th style="width: 50px; text-align: center;">Open</th>
 							<th style="width: 50px; text-align: center;">Recv.</th>
 							<th style="width: 50px; text-align: center;">Sent</th>
@@ -483,17 +491,18 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 		                  </tr>
 						  <tbody>
 					'; 
-						}		
+						}
 						$html .='<tr>
 						<td style="width: 30px; text-align: center;"></td>
-	                    <td style="width: 200px; width: 200px;"> '.$row3['issueDate'].' / '.$row3['docNo'].'</td>
+	                    <td style="width: 180px;"> '.$row3['issueDate'].' / '.$row3['docNo'].'</td>
+						<td style="width: 50px; text-align: center;">'.($row3['docType']=='RC'? date('d.m.y',strtotime( $row3['lotDate'] )) : '' ).'</td>	
 						<td style="width: 30px; text-align: center;"></td>	
-						<td style="width: 80px; text-align: center;"></td>	
-						<td style="width: 50px; text-align: center;"></td>
+						<td style="width: 50px; text-align: center;"></td>	
 						<td style="width: 50px; text-align: center;">'.($row3['docType']=='RC'? number_format($row3['sumQty'],2,'.',','):'') .'</td>	
 						<td style="width: 50px; text-align: center;">'.($row3['docType']=='SD'? number_format($row3['sumQty'],2,'.',','):'').'</td>	
 						<td style="width: 50px; text-align: center;">'.($row3['docType']=='RT'? number_format($row3['sumQty'],2,'.',','):'').'</td>
 						<td style="width: 50px; text-align: center;">'.($row3['docType']=='DO'? number_format($row3['sumQty'],2,'.',','):'').'</td>		
+						<td style="width: 50px; text-align: right;"></td>
 						<td style="width: 80px; text-align: center; font-weight: bold;"></td>	
 					</tr>';	
 					$rowPerPage+=1; }//while 2 

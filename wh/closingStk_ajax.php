@@ -14,7 +14,7 @@
 					$dateFromYmd=$closingDateYmd;
 
 					// Check duplication?
-					$sql = "SELECT `id`, `closingDate`, `createTime`, `createUserId`, `updateTime`, `updateUserId` FROM `stk_closing` WHERE closingDate=:closingDate LIMIT 1 ";
+					$sql = "SELECT `id`, `closingDate`, `createTime`, `createUserId`, `updateTime`, `updateUserId` FROM `stk_closing` WHERE statusCode='A' AND closingDate=:closingDate LIMIT 1 ";
 					$stmt = $pdo->prepare($sql);	
 					$stmt->bindParam(':closingDate', $closingDateYmd);
 					$stmt->execute();
@@ -55,23 +55,32 @@
 			          	$stmt = $pdo->prepare($sql);		
 						$stmt->execute();
 
+						//Last Prev Closing Date. = LPCD
+						$sql = "SELECT th.id, th.closingDate FROM stk_closing th WHERE th.statusCode='A' AND DATE(th.closingDate)<='$dateFromYmd' ORDER BY th.closingDate DESC LIMIT 1
+			          	";
+			          	$stmt = $pdo->prepare($sql);		
+						$stmt->execute();
+						$row = $stmt->fetch();
+						$lpcDate = $row['closingDate'];
+						$lpcdId = $row['id'];
+
 						//Open
-						$sql = "UPDATE tmpStock hdr
+						$sql = "UPDATE tmpStock hdr 
 				         ,(SELECT td.prodId, td.sloc, td.balance as sumQty FROM stk_closing_detail td 
-				          				WHERE td.hdrId=(SELECT th.id FROM stk_closing th 
-				          								WHERE th.statusCode='A' AND th.closingDate<='$dateFromYmd' LIMIT 1) 
+				          				WHERE td.hdrId=:lpcdId 
 				          				) as tmp 
 				          SET hdr.openAcc=tmp.sumQty 
 				          WHERE hdr.prodId=tmp.prodId AND hdr.sloc=tmp.sloc 
 			          	";
-			          	$stmt = $pdo->prepare($sql);		
+			          	$stmt = $pdo->prepare($sql);	
+						$stmt->bindParam(':lpcdId', $lpcdId);	
 						$stmt->execute();
 
 						//Onway
 						$sql = "UPDATE tmpStock hdr
 				         ,(SELECT itm.prodCodeId, sh.toCode, SUM(itm.qty) as sumQty FROM product_item itm 
 				          				INNER JOIN send_detail sd ON sd.prodItemId=itm.prodItemId  
-				         				INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.statusCode='P' AND sh.rcNo IS NULL 
+				         				INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.statusCode='P' AND sh.rcNo IS NULL AND  DATE(sh.sendDate) <= '$dateFromYmd'
 				          				GROUP BY itm.prodCodeId, sh.toCode
 				          				) as tmp 
 				          SET hdr.onway=tmp.sumQty 
@@ -79,15 +88,13 @@
 			          	";
 			          	$stmt = $pdo->prepare($sql);		
 						$stmt->execute();
-
-						/*
+						
 						//Receive
 						$sql = "UPDATE tmpStock hdr
 				         ,(SELECT itm.prodCodeId, th.toCode as fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
 				          				INNER JOIN receive_detail td ON td.prodItemId=itm.prodItemId  
 				         				INNER JOIN receive th ON th.rcNo=td.rcNo AND th.statusCode='P' 
-				         					AND th.receiveDate > (SELECT th.closingDate FROM stk_closing th 
-				          								WHERE th.statusCode='A' AND th.closingDate<='$dateFromYmd' LIMIT 1)
+				         					AND DATE(th.receiveDate) > '$lpcDate' AND DATE(th.receiveDate) <= '$dateFromYmd'
 				          				GROUP BY itm.prodCodeId, th.toCode
 				          				) as tmp 
 				          SET hdr.receive=tmp.sumQty 
@@ -102,8 +109,7 @@
 				         				FROM product_item itm 
 				          				INNER JOIN send_detail td ON td.prodItemId=itm.prodItemId  
 				         				INNER JOIN send th ON th.sdNo=td.sdNo AND th.statusCode='P' 
-				         					AND th.sendDate > (SELECT th.closingDate FROM stk_closing th 
-				          								WHERE th.statusCode='A' AND th.closingDate<='$dateFromYmd' LIMIT 1)
+				         					AND DATE(th.sendDate) > '$lpcDate' AND DATE(th.sendDate) <= '$dateFromYmd'
 				          				GROUP BY itm.prodCodeId, th.fromCode
 				          				) as tmp 
 				          SET hdr.sent=tmp.sumQty 
@@ -113,12 +119,10 @@
 						$stmt->execute();
 
 						//return
-						$sql = "UPDATE tmpStock hdr
+						$sql = "UPDATE tmpStock hdr 
 				         ,(SELECT itm.prodCodeId, th.fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
 				          				INNER JOIN rt_detail td ON td.prodItemId=itm.prodItemId  
-				         				INNER JOIN rt th ON th.rtNo=td.rtNo AND th.statusCode='P' 
-				         					AND th.returnDate > (SELECT th.closingDate FROM stk_closing th 
-				          								WHERE th.statusCode='A' AND th.closingDate<='$dateFromYmd' LIMIT 1)
+				         				INNER JOIN rt th ON th.rtNo=td.rtNo AND th.statusCode='P' AND DATE(th.returnDate) > '$lpcDate' AND DATE(th.returnDate) <= '$dateFromYmd' 
 				          				GROUP BY itm.prodCodeId, th.fromCode
 				          				) as tmp 
 				          SET hdr.return=tmp.sumQty 
@@ -129,11 +133,10 @@
 
 						//delivery
 						$sql = "UPDATE tmpStock hdr
-				         ,(SELECT itm.prodCodeId, cust.locationCode as fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
+				         ,(SELECT itm.prodCodeId, CASE WHEN cust.locationCode = 'L' THEN '8' ELSE 'E' END as fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
 				          				INNER JOIN delivery_detail td ON td.prodItemId=itm.prodItemId  
 				         				INNER JOIN delivery_header th ON th.doNo=td.doNo AND th.statusCode='P' 
-				         					AND th.deliveryDate > (SELECT th.closingDate FROM stk_closing th 
-				          								WHERE th.statusCode='A' AND th.closingDate<='$dateFromYmd' LIMIT 1)
+				         					AND DATE(th.deliveryDate) > '$lpcDate' AND DATE(th.deliveryDate) <= '$dateFromYmd'
 				         				INNER JOIN sale_header shd ON shd.soNo=th.soNo 
 				         				INNER JOIN customer cust ON cust.id=shd.custId 
 				          				GROUP BY itm.prodCodeId, cust.locationCode 
@@ -143,39 +146,17 @@
 			          	";
 			          	$stmt = $pdo->prepare($sql);		
 						$stmt->execute();
-						*/
-
-
-
-
-
-						//Receive
-						$sql = "UPDATE tmpStock hdr
-				         ,(SELECT itm.prodCodeId, th.toCode as fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
-				          				INNER JOIN receive_detail td ON td.prodItemId=itm.prodItemId AND td.statusCode='A'   
-				         				INNER JOIN receive th ON th.rcNo=td.rcNo AND th.statusCode='P' 
-				         					
-				          				GROUP BY itm.prodCodeId, th.toCode
-				          				) as tmp 
-				          SET hdr.balance=tmp.sumQty 
-				          WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.fromCode 
+						
+						//balance
+						$sql = "UPDATE tmpStock 
+						SET `balance`=`openAcc`+`receive`-`sent`-`return`-`delivery`
 			          	";
 			          	$stmt = $pdo->prepare($sql);		
 						$stmt->execute();
-
-
-
-						//delete
-						/*$sql = "UPDATE tmpStock 
-						SET `balance`=`openAcc`+`openTrans`+`receive`-`sent`-`return`-`delivery`
-			          	";
-			          	$stmt = $pdo->prepare($sql);		
-						$stmt->execute();
-						*/
-
+				
 						//delete
 						$sql = "DELETE FROM tmpStock 
-						WHERE `openAcc`=0 AND `openTrans`=0 AND `onway`=0
+						WHERE `openAcc`=0 AND `onway`=0
 						AND `receive`=0 AND `sent`=0 AND `return`=0 AND `delivery`=0 
 						AND `balance`=0 AND `book`=0 
 			          	";
@@ -205,39 +186,39 @@
 
 						//Clear Incompleted Receive
 						$sql = "DELETE FROM receive_detail
-						WHERE rcNo IN (SELECT rcNo FROM receive WHERE statusCode NOT IN ('P','X') AND `receiveDate`<='$dateFromYmd') 
+						WHERE rcNo IN (SELECT rcNo FROM receive WHERE statusCode NOT IN ('P','X') AND DATE(`receiveDate`) <='$dateFromYmd') 
 			          	";
 			          	$stmt = $pdo->prepare($sql);		
 						$stmt->execute();
 
 						//Clear Incompleted Receive
-						$sql = "DELETE FROM receive WHERE statusCode NOT IN ('P','X') AND `receiveDate`<='$dateFromYmd'
+						$sql = "DELETE FROM receive WHERE statusCode NOT IN ('P','X') AND DATE(`receiveDate`) <='$dateFromYmd'
 			          	";
 			          	$stmt = $pdo->prepare($sql);		
 						$stmt->execute();
 
 						//Clear Incompleted send
 						$sql = "DELETE FROM send_detail
-						WHERE sdNo IN (SELECT sdNo FROM send WHERE statusCode NOT IN ('P','X') AND `sendDate`<='$dateFromYmd') 
+						WHERE sdNo IN (SELECT sdNo FROM send WHERE statusCode NOT IN ('P','X') AND DATE(`sendDate`)<='$dateFromYmd') 
 			          	";
 			          	$stmt = $pdo->prepare($sql);		
 						$stmt->execute();
 
 						//Clear Incompleted send
-						$sql = "DELETE FROM send WHERE statusCode NOT IN ('P','X') AND `sendDate`<='$dateFromYmd'
+						$sql = "DELETE FROM send WHERE statusCode NOT IN ('P','X') AND DATE(`sendDate`)<='$dateFromYmd'
 			          	";
 			          	$stmt = $pdo->prepare($sql);		
 						$stmt->execute();
 
 						//Clear Incompleted delivery
 						$sql = "DELETE FROM delivery_detail
-						WHERE doNo IN (SELECT doNo FROM delivery_header WHERE statusCode NOT IN ('P','X') AND `deliveryDate`<='$dateFromYmd') 
+						WHERE doNo IN (SELECT doNo FROM delivery_header WHERE statusCode NOT IN ('P','X') AND DATE(`deliveryDate`)<='$dateFromYmd') 
 			          	";
 			          	$stmt = $pdo->prepare($sql);		
 						$stmt->execute();
 
 						//Clear Incompleted delivery
-						$sql = "DELETE FROM delivery_header WHERE statusCode NOT IN ('P','X') AND `deliveryDate`<='$dateFromYmd'
+						$sql = "DELETE FROM delivery_header WHERE statusCode NOT IN ('P','X') AND DATE(`deliveryDate`)<='$dateFromYmd'
 			          	";
 			          	$stmt = $pdo->prepare($sql);		
 						$stmt->execute();

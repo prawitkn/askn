@@ -242,7 +242,7 @@ $hdr = $stmt->fetch();
 								<td><?= $row['remarkWh']; ?></td>	
 								<td style="text-align: right;"><?= $row['meter']; ?></td>								
 								<td style="text-align: right; color:blue;"><?= number_format(($row['qty']/$row['meter']),2,'.',','); ?></td>
-								<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
+								<td style="text-align: right;"><?= number_format($row['qty'],2,'.',','); ?></td>
 								<td colspan="3"><small>
 								<?php $shelfCount=0; while ($row2 = $stmt2->fetch()) { 
 									if($row['prodId']==$row2['prodId'] AND $row['issueDate']==$row2['issueDate'] AND $row['grade']==$row2['grade'] AND $row['remarkWh']==$row2['remarkWh']){

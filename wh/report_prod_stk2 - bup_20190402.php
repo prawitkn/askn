@@ -13,8 +13,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		$s_userID=$_SESSION['userID'];*/
 	
 	$rootPage="report_prod_stk2";
-	$isSubmit=false;
-
+	
 	$dateFrom=$dateTo="";
 	$dateFromYmd=$dateToYmd="";
 	if(isset($_GET['dateFrom'])){ 
@@ -24,8 +23,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	    $dateM = $dateArr[1];
 	    $dateD = $dateArr[0];
 	    $dateFromYmd = $dateY . '-' . $dateM . '-' . $dateD;
-
-	    $isSubmit=true;
 	}else{
 		$dateFrom=date('d/m/Y');
 		$dateFromYmd=date('Y-m-d');
@@ -100,6 +97,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <!-- Here is a label for example -->
           <?php
 
+          	$pdo->beginTransaction();
+
           	$sql = "
           	CREATE TEMPORARY TABLE tmpStock (
           		`prodId` int(11) NOT NULL,
@@ -118,12 +117,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		    )";
           	$stmt = $pdo->prepare($sql);		
 			$stmt->execute();
-
-          	if(!$isSubmit){
-          		// Do nothing.
-          	}else{
-
-          	$pdo->beginTransaction();
 
 			$sql = "
 	          INSERT INTO tmpStock (prodId, prodCode, sloc)
@@ -165,7 +158,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			$sql = "UPDATE tmpStock hdr
 	         ,(SELECT itm.prodCodeId, sh.toCode, SUM(itm.qty) as sumQty FROM product_item itm 
 	          				INNER JOIN send_detail sd ON sd.prodItemId=itm.prodItemId  
-	         				INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.statusCode='P' AND sh.rcNo IS NULL AND DATE(sh.sendDate) <= '$dateFromYmd'
+	         				INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.statusCode='P' AND sh.rcNo IS NULL 
 	          				GROUP BY itm.prodCodeId, sh.toCode
 	          				) as tmp 
 	          SET hdr.onway=tmp.sumQty 
@@ -234,11 +227,31 @@ scratch. This page gets rid of all links and provides the needed markup only.
 			
 			//balance
 			$sql = "UPDATE tmpStock 
-			SET `balance`=`openAcc`+`receive`-`sent`-`return`-`delivery`
+			SET `balanceReCheck`=`openAcc`+`receive`-`sent`-`return`-`delivery`
           	";
           	$stmt = $pdo->prepare($sql);		
 			$stmt->execute();
-	
+
+
+			//Receive
+			$sql = "UPDATE tmpStock hdr
+	         ,(SELECT itm.prodCodeId, th.toCode as fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
+	          				INNER JOIN receive_detail td ON td.prodItemId=itm.prodItemId AND td.statusCode='A'   
+	         				INNER JOIN receive th ON th.rcNo=td.rcNo AND th.statusCode='P' 
+	         					AND DATE(th.receiveDate) <= '$dateFromYmd'
+	          				GROUP BY itm.prodCodeId, th.toCode
+	          				) as tmp 
+	          SET hdr.balance=tmp.sumQty 
+	          WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.fromCode 
+          	";
+          	$stmt = $pdo->prepare($sql);		
+			$stmt->execute();
+
+
+
+			
+			
+
 			//delete
 			$sql = "DELETE FROM tmpStock 
 			WHERE `openAcc`=0 AND `onway`=0
@@ -250,7 +263,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 			//We've got this far without an exception, so commit the changes.
 			$pdo->commit();	
-		}	// End Do submit.
+
 
 
 			$sql = "SELECT  
@@ -304,7 +317,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						<br/>	
 
 						<label>Location : </label>
-					<select id="sloc" name="sloc" class="form-control">
+					<select name="sloc" class="form-control">
 						<option value="" <?php echo ($sloc==""?'selected':''); ?> >--All--</option>
 						<?php
 						$sql = "SELECT `code`, `name` FROM sloc WHERE statusCode='A' AND code IN ('8','E') ORDER BY code ASC ";
@@ -318,7 +331,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					</select>	
 					
 						<label>Cat : </label>
-					<select id="catCode" name="catCode" class="form-control">
+					<select name="catCode" class="form-control">
 						<option value="" <?php echo ($catCode==""?'selected':''); ?> >--All--</option>
 						<?php
 						$sql = "SELECT `code`, `name` FROM product_category WHERE statusCode='A'	ORDER BY code ASC ";
@@ -352,9 +365,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
                   <tr class="header">
 					<th style="width: 30px; text-align: center;">No.</th>
                     <th style="width: 200px; text-align: center;">Product Code</th>
-					<th style="width: 40px; text-align: center;">Loc.</th>
+					<th style="width: 30px; text-align: center;">Loc.</th>
 					<!--<th style="width: 100px; text-align: center; color: green;">Available</th>-->
-					<th style="width: 80px; text-align: center; color: blue; ">Calc.Bal.</th>
+					<th style="width: 80px; text-align: center; color: blue; ">Balance</th>
 					<!--<th style="width: 100px; text-align: center; color: black; ">Bal Re-Check</th>-->
 					<th style="width: 100px; text-align: center; color: orange;">Onway</th>
 					<!--<th style="width: 100px; text-align: center;">Category</th>-->
@@ -362,7 +375,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<th style="width: 50px; text-align: center;">Recv.</th>
 					<th style="width: 50px; text-align: center;">Sent</th>
 					<th style="width: 50px; text-align: center;">Return</th>
-					<th style="width: 50px; text-align: center;">Delivery</th>			
+					<th style="width: 50px; text-align: center;">Delivery</th>	
+					<th style="width: 50px; text-align: center;">Calc.Bal.</th>			
 					<!--<th>Pick</th>
 					<th style="color: #006600; background-color: #ccccff;">Remain (Balance-Pick)</th>-->
                   </tr>
@@ -390,22 +404,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							//$img = 'dist/img/product/'.(empty($row['photo'])? 'default.jpg' : $row['photo']);
 		       			$isNotEqual=false;
 		       			$bgColor="";
-		       			if ( $row['balance']<0 ){
+		       			if ( $row['balance']<>$row['balanceReCheck'] ){
 		       				$isNotEqual=true;
 		       				$bgColor="bg-danger";
 		       			}
-
-		       			// Location Name.
-						  $locationName = '<b style="color: red;">N/A</b>'; 
-						switch($row['sloc']){
-							case 'E' : $locationName = 'Export'; break;
-							default : $locationName = 'Local'; 
-						} 
 					?>
                   <tr class="<?=$bgColor;?>">
 					<td style="text-align: right;"><?= $c_row; ?></td>
-                    <td style="width: 200px;"><a target="_blank" href="product_view_stk.php?id=<?=$row['prodId'];?>&sloc=" ><?= $row['prodCode']; ?></a></td>
-                    <td style="text-align: center;"><a target="_blank" href="product_view_stk.php?id=<?=$row['prodId'];?>&sloc=<?=$row['sloc'];?>" ><?= $locationName; ?></a></td>
+                    <td style="width: 200px;"><a target="_blank" href="product_view_stk.php?id=<?=$row['prodId'];?>&sloc=<?=$sloc;?>" ><?= $row['prodCode']; ?></a></td>
+					<td style="text-align: center;"><?= $row['sloc']; ?></td>
 					<!--<td style="text-align: right; color: green;"><?= number_format($row['balance']-$row['book'],0,'.',','); ?></td>-->
 					<td style="text-align: right; color: blue;"><a target="_blank" href="report_itm_dtl_by_prd.php?prodCode=<?=$row['prodCode'];?>&sloc=<?=$row['sloc'];?>" ><?= number_format($row['balance'],2,'.',','); ?></a>
 					
@@ -420,6 +427,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<td style="text-align: right; font-size: small;"><?= number_format($row['sent'],2,'.',','); ?></td>
 					<td style="text-align: right; font-size: small;"><?= number_format($row['return'],2,'.',','); ?></td>
 					<td style="text-align: right; font-size: small;"><?= number_format($row['delivery'],2,'.',','); ?></td>
+					<td style="text-align: right; font-size: small; font-weight: bold;"><?= number_format($row['balanceReCheck'],2,'.',','); ?></td>
 					
 					<!--<td style="text-align: right;"><?= number_format(-1*$row['pick'],0,'.',','); ?></td>
 					<td style="text-align: right; color: #006600; background-color: #ccccff;"><?= number_format($row['balance']-$row['pick'],0,'.',','); ?></td>-->
@@ -438,12 +446,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
              <?php if($countTotal>0){    ?>
                <div class="col-md-12">
-
 			<a target="_blank" href="<?=$rootPage;?>_xls.php<?=$condQuery;?>" class="btn btn-default pull-right"><i class="glyphicon glyphicon-print"></i> Export</a>
 
-			<a id="btnStkDocMovRpt" target="_blank" href="<?=$rootPage;?>_stmt_pdf.php<?=$condQuery;?>" class="btn btn-default pull-right" style="margin-right: 5px;"><i class="fa fa-file-pdf-o"></i> Stock Document Movement Report</a>
-			
-			<!-- <a id="btnStkLotMovRpt" target="_blank" href="<?=$rootPage;?>_lot_stmt_pdf.php<?=$condQuery;?>" class="btn btn-default pull-right"><i class="fa fa-file-pdf-o"></i> Stock Lot Movement Report</a> -->
+			<a target="_blank" href="<?=$rootPage;?>_stmt_pdf.php<?=$condQuery;?>" class="btn btn-default pull-right"><i class="fa fa-file-pdf-o"></i> Stock movement report</a>
 			
 			<nav>
 			<ul class="pagination">				
@@ -844,31 +849,7 @@ $(document).ready(function() {
 		<?php }else{ ?> $('#dateTo').datepicker('setDate', '0'); <?php } ?>
 		//จบ กำหนดเป็น วันที่จากฐานข้อมูล
 		
-		$('#btnStkDocMovRpt').click(function(){
-			var slocCheck = '<?=$sloc;?>';
-			var catCodeCheck = '<?=$catCode;?>';
-			var prodCodeCheck = '<?=$prodCode;?>';
-			//return false;
-			if(slocCheck=="" && catCodeCheck=="" && prodCodeCheck==""){
-				var msg = "This report is a big data process, please choose 1 from these conditions to run the process.\n\n1. Specify Location and Category. (Product code isn't require.)\n\n2. Specify Product Code. (Location and Category isn't require.\n\n";
-				alert(msg);
-				return false;
-			}
-			return true;			
-        });// $('#btnStkDocMovRpt').click(function(){
-
-        $('#btnStkLotMovRpt').click(function(){
-			var slocCheck = '<?=$sloc;?>';
-			var catCodeCheck = '<?=$catCode;?>';
-			var prodCodeCheck = '<?=$prodCode;?>';
-			//return false;
-			if(slocCheck=="" && catCodeCheck=="" && prodCodeCheck==""){
-				var msg = "This report is a big data process, please choose 1 from these conditions to run the process.\n\n1. Specify Location and Category. (Product code isn't require.)\n\n2. Specify Product Code. (Location and Category isn't require.\n\n";
-				alert(msg);
-				return false;
-			}
-			return true;			
-        });// $('#btnStkLotMovRpt').click(function(){
+		
 	});
 </script>
 

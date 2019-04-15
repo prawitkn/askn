@@ -8,7 +8,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 $rootPage = 'userDept';
 //Check user roll.
 switch($s_userGroupCode){
-	case 'admin' : case 'whSup' : case 'whMgr' : 
+	case 'admin' : case 'whMgr' : 
 		break;
 	default : 
 		header('Location: access_denied.php');
@@ -38,10 +38,11 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
 	<section class="content-header">
-		<h1><i class="fa fa-users"></i>
+		<h1><i class="fa fa-warning"></i>
        Closing Stock
         <small>Transaction management</small>
       </h1>
+
 	  <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-list"></i>Closing Stock List</a></li>
       </ol>
@@ -53,12 +54,10 @@ switch($s_userGroupCode){
 <!-- To allow only admin to access the content -->      
     <div class="box box-primary">
         <div class="box-header with-border">
-        	<label class="box-tittle" style="font-size: 20px;"><i class="fa fa-list"></i> Closing Stock list</label>
+        	<label class="box-tittle" style="font-size: 20px;"> Closing Stock list</label>
 
-			<a href="<?=$rootPage;?>_data.php?id=" class="btn btn-primary"><i class="fa fa-plus"></i> Add Closing Stock</a>
+			<a href="<?=$rootPage;?>_data.php?id=" class="btn btn-primary"><i class="fa fa-plus"></i> Add New Closing Stock</a>
 
-			<a href="#" name="btnSync" class="btn btn-primary"><i class="fa fa-refresh"></i> Closing Stock</a>
-		
 		
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
@@ -96,28 +95,6 @@ switch($s_userGroupCode){
         </div><!-- /.box-tools -->
         </div><!-- /.box-header -->
         <div class="box-body">
-				<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form form-inline" novalidate>
-				
-					<div class="row">
-							<div class="col-md-3">					
-								<label for="search_word">search key word.</label>
-								<input id="search_word" type="text" name="search_word" class="form-control" data-smk-msg="Require userFullname."required>
-								
-								
-							</div>  
-							<!--/.col-md-->
-							
-							<div class="col-md-1">
-								<label for="submit">&nbsp;</label>
-								<input type="submit" name="submit" class="btn btn-default" value="ค้นหา">
-							</div>  
-							<!--/.col-md-->
-					</div>
-					<!--/.row-->
-			
-			
-				</form>
-				<!--/.form1-->
 			
            <?php
 				$sql = "
@@ -144,22 +121,25 @@ switch($s_userGroupCode){
             <div class="row col-md-12 table-responsive">
             <table class="table table-hover">
                 <thead><tr style="background-color: #797979;">
-					<th>No.</th>					
-                    <th>Closing Date</th>
-                    <th>Status</th>
-                    <th>#</th>
-                    <th></th>
+					<th style="text-align: center">No.</th>					
+                    <th style="text-align: center">Closing Date</th>		
+                    <th style="text-align: center">Create by User</th>
+                    <th style="text-align: center">Status</th>
+                    <th style="text-align: center">Actions</th>
                 </tr></thead>
                 <?php $rowNo=($start+1); while ($row = $stmt->fetch()) { 
 						?>
                 <tr>
-					<td>
+					<td style="text-align: center">
                          <?= $rowNo; ?>
                     </td>
-					<td>
+					<td style="text-align: center">
 						<?= date('d M Y',strtotime( $row['closingDate'] )); ?>
 					</td>
-                    <td>
+					<td style="text-align: center">
+                         <?= $row['createUserName']; ?>
+                    </td>
+                    <td style="text-align: center">
 						 <?php
 						 switch($row['statusCode']){ 	
 							case 'A' :
@@ -176,25 +156,19 @@ switch($s_userGroupCode){
 						}
 						 ?>
                     </td>					
-                    <td>
+                    <td style="text-align: center">
 						
 						<?php if($row['statusCode']=='A'){ ?>
-							<a class="btn btn-primary" name="btn_row_edit" href="<?=$rootPage;?>_edit.php?act=edit&id=<?= $row['id']; ?>" >
-								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
-						<?php }else{ ?>	
-							<a class="btn btn-primary"  disabled  > 
-								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
+							<a class="btn btn-primary" name="btn_row_edit" href="<?=$rootPage;?>_view.php?id=<?= $row['id']; ?>" >
+								<i class="glyphicon glyphicon-search"></i> View</a>	
 						<?php } ?>
 						
 						<?php if($row['statusCode']=='I'){ ?>
 							<a class="btn btn-danger" name="btn_row_remove"  data-id="<?=$row['id'];?>" > 
-								<i class="glyphicon glyphicon-remove"></i> Remove</a>	
-						<?php }else{ ?>	
-							<a class="btn btn-danger"  disabled  >
-								<i class="glyphicon glyphicon-remove"></i> Remove</a>	
+								<i class="glyphicon glyphicon-remove"></i> Remove</a>		
 						<?php } ?>
 						
-						<?php if($row['statusCode']=='X' AND ($s_userGroupCode=='admin' OR $s_userGroupCode=='it' OR $s_userGroupCode=='prog')){ ?>
+						<?php if($row['statusCode']=='X' AND $s_userGroupCode=='admin' ){ ?>
 							<a class="btn btn-danger" name="btn_row_delete"  data-id="<?=$row['id'];?>" > 
 								<i class="glyphicon glyphicon-trash"></i> Delete</a>	
 						<?php } ?>

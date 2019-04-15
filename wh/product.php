@@ -42,6 +42,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <div class="box-header with-border">
 		<label class="box-title">Product List</label>
 			<a href="<?=$rootPage;?>_add.php" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add Product</a>
+			<?php if($s_userGroupCode=="admin"){ ?>
+			<a href="<?=$rootPage;?>_xls.php" class="btn btn-primary"><i class="glyphicon glyphicon-print"></i> Export All</a>
+			<?php } ?>
 		
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->

@@ -296,7 +296,17 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						
 
 
-
+						//PRODUCT ITEM (INSERT ONLY) 
+						//Update prodCodeId in product item.////////////////////////////////////////////
+						$sql = "UPDATE product_item_temp tmp 
+						INNER JOIN product_mapping map ON map.invProdId=tmp.prodId 
+						SET tmp.prodCodeId=map.wmsProdId 
+						";			
+						$stmt = $pdo->prepare($sql);
+						$stmt->execute();	
+						//Update prodCodeId in product item.////////////////////////////////////////////
+						
+												
 						//Update KG Product from NW to Qty
 						$sql = "UPDATE product_item_temp tmp 
 						SET tmp.qty=tmp.NW 
@@ -316,14 +326,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						//Update KG Product from NW to Qty
 
 						//Update Qty=NW If UOM = KG. / KG
-						$sql = "UPDATE product_item_temp SET qty=NW WHERE prodCodeId IN (SELECT id FROM `product` WHERE uomCode IN ('KG','KG.') )
+						$sql = "UPDATE product_item_temp SET qty=NW WHERE prodCodeId IN (SELECT id FROM `product` WHERE TRIM(uomCode) IN ('KG','KG.') )
 						";			
 						$stmt = $pdo->prepare($sql);
 						$stmt->execute();
 						//Update Qty=NW If UOM = KG. / KG
 
 						//Update Qty=1 If UOM = ROLL
-						$sql = "UPDATE product_item_temp SET qty=1 WHERE prodCodeId IN (SELECT id FROM `product` WHERE uomCode='ROLL')
+						$sql = "UPDATE product_item_temp SET qty=1 WHERE prodCodeId IN (SELECT id FROM `product` WHERE TRIM(uomCode)='ROLL')
 						";			
 						$stmt = $pdo->prepare($sql);
 						$stmt->execute();
@@ -338,15 +348,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						//Update Qty=NW If UOM = KG. / KG
 
 
-						//PRODUCT ITEM (INSERT ONLY) 
-						//Update prodCodeId in product item.////////////////////////////////////////////
-						$sql = "UPDATE product_item_temp tmp 
-						INNER JOIN product_mapping map ON map.invProdId=tmp.prodId 
-						SET tmp.prodCodeId=map.wmsProdId 
-						";			
-						$stmt = $pdo->prepare($sql);
-						$stmt->execute();	
-						//Update prodCodeId in product item.////////////////////////////////////////////
+						
 												
 						//Delete production only not approve sending.
 						/*$sql = "DELETE FROM product_item 

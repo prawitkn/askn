@@ -150,11 +150,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						</div>	
 					</div>
 					<div class="row">
-						<div class="col-md-6 form-group">
-
-
-							
-
+						<!-- <div class="col-md-6 form-group">
 							<label for="custId" >Customer</label>
 							<select id="custId" name="custId" class="form-control" data-smk-msg="Require Customer." required>
 								<option value=""> -- Select -- </option>
@@ -181,7 +177,21 @@ scratch. This page gets rid of all links and provides the needed markup only.
 								}
 								?>
 							</select>   								
-						</div>
+						</div> -->
+						<div class="col-md-6 form-group">
+							<label for="custName">Customer : </label>
+							<div class="row">
+								<div class="col-md-10">
+									<input type="hidden" name="custId" id="custId" class="form-control" value="<?=$hdr['custId'];?>" />
+									<input type="text" name="custName" id="custName" class="form-control" value="<?=$hdr['custName'];?>" data-smk-msg="Require Customer" required  />
+								</div><!--col-md-12-->
+								<div class="col-md-2">
+									<a data-toggle="modal" href="#modal_search_customer" name="btnSearchCustomer" class="btn btn-default" ><i class="glyphicon glyphicon-search" ></i> </a>
+								</div><!--col-md-1-->
+							</div><!--row-->
+						</div><!--form-group-->
+
+
 						<div class="col-md-6 form-group">
 							<label for="shipToId">Shipping to Customer</label>							
 							<select id="shipToId" name="shipToId" class="form-control" data-smk-msg="Require Salesman." required>
@@ -620,8 +630,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <!-- Main Footer -->
   <?php include'footer.php'; ?>
 
+
+
+
 <!-- Modal -->
-<div id="modal_search_product" class="modal fade" role="dialog">
+<div id="modal_search_product" class="modal fade" >
   <div class="modal-dialog modal-lg">
 
     <!-- Modal content-->
@@ -633,32 +646,29 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <div class="modal-body">
         <div class="form-horizontal">
 			<div class="form-group">	
-				<label for="txt_search_word_product" class="control-label col-md-2">Product Code </label>
+				<label for="txt_search_word" class="control-label col-md-2">Product Code </label>
 				<div class="col-md-4">
-					<input type="text" class="form-control" id="txt_search_word_product" />
+					<input type="text" class="form-control" id="txt_search_word" />
 				</div>
 			</div>
 		
-		<table id="tbl_search_product_main" class="table">
+		<table id="tbl_search_data_main" class="table">
 			<thead>
 				<tr bgcolor="4169E1" style="color: white; text-align: center;">
-					<td>#Select</td>
+					<td style="text-align: center;">#Select</td>
 					<td style="display: none;">ID</td>
-					<td>Product Code.</td>
-					<td>Product Name</td>
+					<td style="text-align: center;">Product Code.</td>
+					<td style="text-align: center;">Product Name</td>
 					<td style="display: none;">UOM</td>
-					<td>Product Category</td>
-					<td>MKT GROUP</td>
-					<td style="display: none;">Balance</td>
-					<td style="display: none;">Sales</td>
 				</tr>
 			</thead>
 			<tbody>
 			</tbody>
 		</table>
 		
-		<div id="div_search_product_result">
+		<div id="div_search_data_result">
 		</div>
+	</div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
@@ -667,6 +677,55 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
   </div>
 </div>
+
+
+
+
+
+
+<!-- Modal -->
+<div id="modal_search_customer" class="modal fade">
+  <div class="modal-dialog modal-lg">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Search Customer</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-horizontal">
+			<div class="form-group">	
+				<label for="txt_search_word" class="control-label col-md-2">Customer Name </label>
+				<div class="col-md-4">
+					<input type="text" class="form-control" id="txt_search_word" />
+				</div>
+			</div>
+		
+		<table id="tbl_search_data_main" class="table">
+			<thead>
+				<tr bgcolor="4169E1" style="color: white; text-align: center;">
+					<td style="text-align: center;">#Select</td>
+					<td style="display: none;">ID</td>
+					<td style="text-align: center;">Customer Name</td>
+					<td style="text-align: center;">Customer Code.</td>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+		
+		<div id="div_search_data_result">
+		</div>
+	</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 
 
 
@@ -743,19 +802,44 @@ $("#spin").hide();
   
 	
 	
-	//SEARCH Begin
-	$('a[name="btnProd"]').click(function(){
-		curName = $(this).prev().attr('name');
-		curId = $(this).prev().prev().attr('name');
-		if(!$('#'+curName).prop('disabled')){
-			$('#modal_search_product').modal('show');
+	//SEARCH Product Begin
+	function modalProductShow(search_word, data){
+		$('#modal_search_product #tbl_search_data_main tbody').empty();
+		$.each($.parseJSON(data), function(key,value){
+			$('#modal_search_product #tbl_search_data_main tbody').append(
+			'<tr>' +
+				'<td style="text-align: center;">' +
+				'	<div class="btn-group">' +
+				'	<a href="javascript:void(0);" data-name="search_btn_checked" ' +
+				'	class="btn" title="เลือก"> ' +
+				'	<i class="fa fa-circle-o"></i> เลือก</a> ' +
+				'	</div>' +
+				'</td>' + 
+				'<td style="display: none;">'+ value.prodId +'</td>' +
+				'<td style="text-align: center;">'+ value.prodCode +'</td>' +
+				'<td style="text-align: center;">'+ value.prodName +'</td>' +
+				'<td style="display: none;">'+ value.prodUomCode +'</td>' +		
+			'</tr>'
+			);		
+		});
+		$('#modal_search_product').modal('show');
+		$('#modal_search_product #txt_search_word').val(search_word);	
+	}
+	
+	$('a[name="btnSearchProduct"]').click(function(){ 
+		curId = $(this).closest('div').prev().closest('div').find('input:hidden').attr('name');
+		curName = $(this).closest('div').prev().closest('div').find('input:text').attr('name');
+		if($('#'+curName).prop('disabled')){
+			//$('#modal_search_product').modal('show');
+			return false;
 		}
 	});	
-	$('#txt_search_word_product').keyup(function(e){ 
+	
+	$('#modal_search_product #txt_search_word').keyup(function(e){ 
 		if(e.keyCode == 13)
-		{	
+		{
 			var params = {
-				search_word: $('#txt_search_word_product').val()
+				search_word: $(this).val()
 			};
 			if(params.search_word.length < 3){
 				alert('search word must more than 3 character.');
@@ -771,36 +855,10 @@ $("#spin").hide();
 						data=$.parseJSON(data);
 						switch(data.rowCount){
 							case 0 : alert('Data not found.');
-								$('#tbl_search_product_main tbody').empty();
 								return false; break;
 							default : 
-								$('#tbl_search_product_main tbody').empty();
-								$.each($.parseJSON(data.data), function(key,value){
-									$('#tbl_search_product_main tbody').append(
-									'<tr>' +
-										'<td>' +
-										'	<div class="btn-group">' +
-										'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
-										'	class="btn" title="เลือก"> ' +
-										'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
-										'	</div>' +
-										'</td>' + 
-										'<td style="display: none;">'+ value.prodId +'</td>' +
-										'<td>'+ value.prodCode +'</td>' +
-										'<td>'+ value.prodName +'</td>' +
-										'<td style="display: none;">'+ value.prodUomCode +'</td>' +
-										'<td>'+ value.prodCatName +'</td>' +
-										'<td>'+ value.prodAppName+'</td>' +									
-										'<td style="display: none;">'+ value.balance+'</td>' +	
-										'<td style="display: none;">'+ value.sales+'</td>' +	
-									'</tr>'
-									);		
-								});
-								$('#modal_search_product').modal('show');	
+								modalProductShow(params.search_word, data.data);	
 						}	
-						
-								
-							
 				  }   
 				}).error(function (response) {
 					alert(response.responseText);
@@ -808,86 +866,64 @@ $("#spin").hide();
 		}/* e.keycode=13 */	
 	});
 	
-	$(document).on("click",'a[data-name="search_person_btn_checked"]',function() {
-		$('input[name='+curId+']').val($(this).closest("tr").find('td:eq(1)').text());
+	$(document).on("click",'#modal_search_product a[data-name="search_btn_checked"]',function() {
+
+		var id=$(this).closest("tr").find('td:eq(1)').text();
+
+		$('input[name='+curId+']').val(id);
 		$('input[name='+curName+']').val($(this).closest("tr").find('td:eq(2)').text());
-		
-		$('#prodDesc').html($(this).closest('tr').find('td:eq(3)').text()+' / <span style="color: red;">'+$(this).closest('tr').find('td:eq(7)').text()+'(-'+$(this).closest('tr').find('td:eq(8)').text()+')</span>');	
+		//Sales Add
+		$('#prodDesc').html($(this).closest('tr').find('td:eq(3)').text());
+		$('#lblUom').text($(this).closest('tr').find('td:eq(4)').text());
+		//Get Roll Length		
+		getRollLength(id);
+		//Sales Add
 
-		$('#lblUom').text($(this).closest('tr').find('td:eq(4)').text());	
-		//$('#prodPrice').val($(this).closest('tr').find('td:eq(4)').text());	
-		//$('#salesPrice').val($(this).closest('tr').find('td:eq(4)').text());	
-
-		//Get Roll Length
-		var prodId=$(this).closest("tr").find('td:eq(1)').text();
-		
-		getRollLength(prodId);
-		
 		$('#modal_search_product').modal('hide');
+		//getList();
 	});
-	//Search End
+	//Search Product End
 
 	$('#prodCode').keyup(function(e){ 
-		if(e.keyCode == 13)
+		if(e.keyCode == 13) 
 		{
 			var params = {
-				search_word: $('#prodCode').val()
+				search_word: $(this).val()
 			};
-			curName = $(this).attr('name');
-			curId = $(this).prev().attr('name'); //alert(curName); alert(curId);
-
 			if(params.search_word.length < 3){
-				$('#modal_search_product').modal('show');
-				$('#txt_search_word_product').val(params.search_word).focus().select();
-
-				//alert('search word must more than 3 character.');
+				alert('search word must more than 3 character.');
 				return false;
-			}
-			
+			} 
+			curName = $(this).attr('name');
+			curId = $(this).prev().attr('name');
+			//alert(curId); alert(curName);
 			/* Send the data using post and put the results in a div */
 			  $.ajax({
 				  url: "search_product_ajax.php",
 				  type: "post",
 				  data: params,
 				datatype: 'json',
-				  success: function(data){	
+				  success: function(data){	//alert(data);
 						data=$.parseJSON(data);
 						switch(data.rowCount){
-							case 0 : //alert('Data not found.');
-								$('#tbl_search_person_main tbody').empty().fadeIn('slow');
+							case 0 : alert('Data not found.');
+								//$('#tbl_items tbody').empty();
 								return false; break;
 							case 1 :
+								var tmpId=0;
 								$.each($.parseJSON(data.data), function(key,value){
 									$('input[name='+curName+']').val(value.prodCode);
-									$('input[name='+curId+']').val(value.prodId);			
-									getRollLength(value.prodId);
+									$('input[name='+curId+']').val(value.prodId);
+									
+									// SO Form		
+									tmpId=value.prodId;
+									$('#lblUom').text(value.prodUomCode);
 								});
+								//getList();
+								getRollLength(tmpId);
 								break;
 							default : 
-								$('#tbl_search_person_main tbody').empty();
-								$.each($.parseJSON(data.data), function(key,value){
-									$('#tbl_search_person_main tbody').append(
-									'<tr>' +
-										'<td>' +
-										'	<div class="btn-group">' +
-										'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
-										'	class="btn" title="เลือก"> ' +
-										'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
-										'	</div>' +
-										'</td>' + 
-										'<td style="display: none;">'+ value.prodId +'</td>' +
-										'<td>'+ value.prodCode +'</td>' +
-										'<td>'+ value.prodName +'</td>' +
-										'<td style="display: none;">'+ value.prodUomCode +'</td>' +
-										'<td>'+ value.prodCatName +'</td>' +
-										'<td>'+ value.prodAppName+'</td>' +									
-										'<td style="display: none;">'+ value.balance+'</td>' +	
-										'<td style="display: none;">'+ value.sales+'</td>' +	
-									'</tr>'
-									);	
-								});								
-								$('#modal_search_product').modal('show');	
-								$('#tbl_search_person_main tbody').fadeIn('slow');
+								modalProductShow(params.search_word, data.data);
 						}	
 				  }   
 				}).error(function (response) {
@@ -895,8 +931,187 @@ $("#spin").hide();
 				});  
 		}/* e.keycode=13 */	
 	});
-		
 	
+
+
+
+	function getCustomer(custId){		
+		//alert($('option:selected', this).attr('data-addr1'));
+		var params = {
+			id: custId
+		}; 
+		$.ajax({
+			  url: "get_customer_ajax.php",
+			  type: "post",
+			  data: params,
+			datatype: 'json',
+			  success: function(data){
+					//alert(data);
+					$('#custAddr').empty();
+					$.each($.parseJSON(data), function(key,value){						
+						$('#custAddr').text(value.addr1+value.addr2+value.addr3+value.zipcode);
+						$('#payTypeCreditDays').val(value.creditDay);
+						$('#remark').val(value.soRemark);
+						$('#smId').val(value.smId);
+					});
+					//get shipto
+					$.ajax({
+					  url: "get_shipto_by_cust_ajax.php",
+					  type: "post",
+					  data: params,
+					datatype: 'json',
+					  success: function(data){
+						//alert(data);
+						$('#shipToId').empty();
+						$irow=1;
+						$.each($.parseJSON(data), function(key,value){
+							$('#shipToId').append('<option value="'+value.id+'" data-creditDay="'+value.creditDay+'" >'+value.code+' : '+value.name+'</option>' );
+							if($irow==1){
+								$('#shipToAddr').text(value.addr1+value.addr2+value.addr3+value.zipcode);	
+							}
+							$irow++;
+							//$('#payTypeCreditDays').val(value.creditDay);	
+						});
+								
+					  }, //success
+					  error:function(){
+						  alert('error');
+					  }   
+					});
+					//ajax shipto end.			
+			  }, //success
+			  error:function(){
+				  alert('error');
+			  }   
+			}); 
+		//$('#smId').val($('option:selected', this).attr('data-smId'));
+		e.preventDefault();
+	 }
+
+	//SEARCH Customer Begin
+	function modalCustomerShow(search_word, data){
+		$('#modal_search_customer #tbl_search_data_main tbody').empty();
+		$.each($.parseJSON(data), function(key,value){
+			$('#modal_search_customer #tbl_search_data_main tbody').append(
+			'<tr>' +
+				'<td style="text-align: center;">' +
+				'	<div class="btn-group">' +
+				'	<a href="javascript:void(0);" data-name="search_btn_checked" ' +
+				'	class="btn" title="เลือก"> ' +
+				'	<i class="fa fa-circle-o"></i> เลือก</a> ' +
+				'	</div>' +
+				'</td>' + 
+				'<td style="display: none;">'+ value.id +'</td>' +
+				'<td style="text-align: center;">'+ value.name +'</td>' +	
+				'<td style="text-align: center;">'+ value.code +'</td>' +
+			'</tr>'
+			);		
+		});
+		$('#modal_search_customer').modal('show');
+		$('#modal_search_customer #txt_search_word').val(search_word);	
+	}
+	
+	$('a[name="btnSearchCustomer"]').click(function(){ 
+		curId = $(this).closest('div').prev().closest('div').find('input:hidden').attr('name');
+		curName = $(this).closest('div').prev().closest('div').find('input:text').attr('name');
+		//alert(curId); alert(curName);
+		if($('#'+curName).prop('disabled')){
+			//$('#modal_search_customer').modal('show');
+			return false;
+		}				
+	});	
+	
+	$('#modal_search_customer #txt_search_word').keyup(function(e){ 
+		if(e.keyCode == 13)
+		{
+			var params = {
+				search_word: $(this).val()
+			};
+			if(params.search_word.length < 3){
+				alert('search word must more than 3 character.');
+				return false;
+			}
+			/* Send the data using post and put the results in a div */
+			  $.ajax({
+				  url: "search_customer_ajax.php",
+				  type: "post",
+				  data: params,
+				datatype: 'json',
+				  success: function(data){	//alert(data);
+						data=$.parseJSON(data);
+						switch(data.rowCount){
+							case 0 : alert('Data not found.');
+								return false; break;
+							default : 
+								modalCustomerShow(params.search_word, data.data);	
+						}	
+				  }   
+				}).error(function (response) {
+					alert(response.responseText);
+				});  
+		}/* e.keycode=13 */	
+	});
+	
+	$(document).on("click",'#modal_search_customer a[data-name="search_btn_checked"]',function() {
+		var id = $(this).closest("tr").find('td:eq(1)').text();
+		$('input[name='+curId+']').val(id);
+		$('input[name='+curName+']').val($(this).closest("tr").find('td:eq(2)').text());						
+		$('#modal_search_customer').modal('hide');
+		//getList();
+		getCustomer(id);
+	});
+	//Search End
+
+	$('#custName').keyup(function(e){ 
+		if(e.keyCode == 13) 
+		{
+			var params = {
+				search_word: $(this).val()
+			};
+			if(params.search_word.length < 3){
+				alert('search word must more than 3 character.');
+				return false;
+			} 
+			curName = $(this).attr('name');
+			curId = $(this).prev().attr('name');
+			//alert(curId);
+			/* Send the data using post and put the results in a div */
+			  $.ajax({
+				  url: "search_customer_ajax.php",
+				  type: "post",
+				  data: params,
+				datatype: 'json',
+				  success: function(data){	//lert(data);
+						data=$.parseJSON(data);
+						switch(data.rowCount){
+							case 0 : alert('Data not found.');
+								//$('#tbl_items tbody').empty();
+								return false; break;
+							case 1 :
+								$.each($.parseJSON(data.data), function(key,value){
+									$('input[name='+curName+']').val(value.prodCode);
+									$('input[name='+curId+']').val(value.prodId);
+								});
+								//getList();
+								break;
+							default : 
+								modalCustomerShow(params.search_word, data.data);
+						}	
+				  }   
+				}).error(function (response) {
+					alert(response.responseText);
+				});  
+		}/* e.keycode=13 */	
+	});	
+	
+
+
+
+
+
+
+
+
 
 	function getList(){		
 		var params = {
@@ -935,7 +1150,8 @@ $("#spin").hide();
 									'<td style="text-align: right;">'+value.qty+' '+value.uomCode+'</td>'+
 									'<td style="text-align: left;">'+tmpRemark+'</td>'+
 									'<td style="text-align: left;">'+value.deliveryDate+'</td>'+
-									'<td><a href="#" name="divShip" class="btn btn-default" data-ref-id="'+value.id+'" data-prod-id="'+value.prodId+'" ><i class="fa fa-cut"></i>Edit/Divided shipping</td>'+
+									'<td><a href="#" name="divShip" class="btn btn-default" data-ref-id="'+value.id+'" data-prod-id="'+value.prodId+'" ><i class="fa fa-cut"></i> Div.Ship.</td>'+
+									'<td><a href="#" name="editItem" class="btn btn-default" data-ref-id="'+value.id+'" data-prod-id="'+value.prodId+'" ><i class="fa fa-edit"></i> Edit</td>'+
 									'<td><a href="#" name="btnItmDelete" class="btn btn-danger" data-id="'+value.id+'"  ><i class="fa fa-trush"></i> Delete</a></td>'+
 									'</tr>');
 								$rowNo+=1;
@@ -982,6 +1198,35 @@ $("#spin").hide();
 	}
 
 	$('#tbl_items').on("click", "a[name=divShip]", function(e) {
+		var params = {
+			action: 'itemDivShip',
+			id: $(this).attr('data-ref-id')
+		};
+		//alert(params.id);
+		$.smkConfirm({text:'Are you sure to Divide Shipping ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+			$.post({
+				url: '<?=$rootPage;?>_ajax.php',
+				data: params,
+				dataType: 'json'
+			}).done(function (data) {					
+				if (data.success){ 
+					$.smkAlert({
+						text: data.message,
+						type: 'success',
+						position:'top-center'
+					});
+					formItemClear();
+				} else {
+					alert(data.message);
+				}
+			}).error(function (response) {
+				alert(response.responseText);
+			}); 
+		}});
+		e.preventDefault();
+	 });
+
+	$('#tbl_items').on("click", "a[name=editItem]", function(e) {
 		var params = {
 			action: 'getItem',
 			id: $(this).attr('data-ref-id'), //$('option:selected', this).val();
@@ -1073,7 +1318,7 @@ $("#spin").hide();
 			$('#smId').focus();
 			return false;
 		}
-		alert($('#deliveryDate').val());
+		//alert($('#deliveryDate').val());
 		if ($('#form1').smkValidate()){
 			$.post("<?=$rootPage;?>_ajax.php", $("#form1").serialize() )
 				.done(function(data) {

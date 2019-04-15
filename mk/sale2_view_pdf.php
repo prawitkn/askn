@@ -163,7 +163,7 @@ class MYPDF extends TCPDF {
 			<td colspan="4" ><span style="text-decoration: underline;">'.$hdr['packageTypeName'].'</span></td>
 		</tr>
 		<tr>
-			<td colspan="2">กรณีส่งต่างผระเทศ (Export) by :</td>
+			<td colspan="2">กรณีส่งต่างประเทศ (Export) by :</td>
 			<td colspan="3" ><span style="text-decoration: underline;">'.$hdr['containerLoadName'].'</span></td>
 		</tr>
 		<tr>
@@ -435,7 +435,13 @@ if( isset($_GET['soNo']) ){
 						</tr>';	
 				
 				//Loop item per page
-				$iRow+=1;
+				$cRowName = 1+(strlen($row['prodName'])/20);
+				$cRowCode = 1+(strlen($row['prodCode'])/20);
+				$cRowMax=0;
+				$cRowMax=($cRowMax<$cRowName?$cRowName:$cRowMax);
+				$cRowMax=($cRowMax<$cRowCode?$cRowCode:$cRowMax);
+
+				$iRow+=$cRowMax;
 				if($iRow==8){
 					$pdf->foot($hdr, $html);
 					
