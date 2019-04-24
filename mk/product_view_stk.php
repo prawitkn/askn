@@ -42,8 +42,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	<?php				
 		$id = $_GET['id'];
 		$sloc = ( isset($_GET['sloc']) ? $_GET['sloc'] : '' );
+		$locationCode = $sloc;
+		$pickNo='';
 
-		$sql = "SELECT `code`, `name`, `name2`, `photo`, `price`, `description`, `appCode`, `statusCode` 
+		$sql = "SELECT `code`, `name`, `name2`, `photo`, `uomCode`, `description`, `appCode`, `statusCode` 
 				FROM `product` 
 				WHERE 1
 				AND id=:id 
@@ -81,92 +83,323 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <!-- /.box-header -->
             <div class="box-body">
               <div class="row">
-				<div class="col-md-3">
-					<div class="col-md-12" style="text-align: center;">
+				<div class="col-md-12">
+					<div class="col-md-3" style="text-align: center;">
 						
 						<a href="../images/product/<?php echo (empty($row['photo'])? 'default.jpg' : $row['photo']) ?> " data-fancybox="images" data-caption="<?=$row['code'];?>">
-							<image src="../images/product/<?php echo (empty($row['photo'])? 'default.jpg' : $row['photo']) ?> " width="200" height="200" />
+							<image src="../images/product/<?php echo (empty($row['photo'])? 'default.jpg' : $row['photo']) ?> " width="150" height="150" />
 						</a>
 					</div>				
-	                <div class="col-md-12">
+	                <div class="col-md-9">
 						<label>Product Name : </label>
 						<?= $row['name']; ?><br/>
 						<label>Description : </label>
-						<?= $row['description']; ?><br/>						
+						<?= $row['description']; ?><br/>	
+						<label>Units of Measurement (Sales UOM)  : </label>
+						<span style="color: red;"><?= $row['uomCode']; ?></span><br/>						
 	                </div><!-- /.col-10 -->
 	         	</div>
 	         	<!--/.col-md-8-->
+	         	</div><!--/.row-->
 
-				<div class="col-md-9">
-					<h3>Avalible Stock by Length/Box/KG</h3>
-					<?php									
-						$sql = "select itm.prodCodeId as prodId, itm.qty, itm.grade, itm.gradeTypeId, itm.remarkWh 
-,rh.toCode as sloc 
-                        , pgt.name as gradeTypeName 
-						, sum(itm.qty) as sumQty
-from product prd
-INNER JOIN product_item itm ON itm.prodCodeId=prd.id 
-INNER JOIN receive_detail rd ON rd.prodItemId=itm.prodItemId AND rd.statusCode='A' 
-INNER JOIN receive rh ON rh.rcNo=rd.rcNo AND rh.statusCode='P' ";
-	if ( $sloc=="" ) { $sql.= "AND rh.toCode IN ('8','E') "; }else{ $sql .= "AND rh.toCode=:sloc "; }
-$sql .= "LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId 
-WHERE prd.id=:id 
-GROUP BY itm.prodCodeId , itm.qty, itm.grade, itm.gradeTypeId, itm.remarkWh , rh.toCode
-ORDER BY rh.toCode, itm.gradeTypeId, itm.remarkWh
-						";
-						$stmt = $pdo->prepare($sql);
-						$stmt->bindParam(':id', $id);
-						if ( $sloc=="" ){ 
-							//donothing 
-						}else{ 
-							$stmt->bindParam(':sloc', $sloc ); 
-						}
+	         <div class="row">
+				<div class="col-md-12">
+					<h3>Avalible Item Stock</h3>
+					<?php
+			
+			//No pick cust n prod condition setting.
+			$sql="SELECT catCode FROM product WHERE id=:id ";
+			$stmt = $pdo->prepare($sql);
+			$stmt->bindParam(':id', $id);
+			$stmt->execute();	
+			$row=$stmt->fetch();
+			$catCode=$row['catCode'];
+
+			// Get Customer Condition.
+			$sql="SELECT maxDays FROM wh_pick_cond WHERE custId=:custId AND prodId=:id ";
+			$stmt = $pdo->prepare($sql);
+			$stmt->bindParam(':custId', $custId);
+			$stmt->bindParam(':id', $id);
+			$stmt->execute();	
+			$row=$stmt->fetch();
+
+			$isCustomerPickCondition=false;
+			$maxDays=$row['maxDays'];
+
+			if($stmt->rowCount()>0){
+				$isCustomerPickCondition=true;
+			}
+
+
+
+			$pdo->beginTransaction();
+
+          	$sql = "
+          	CREATE TEMPORARY TABLE tmpStock (          	
+          		`sloc` varchar(1) NOT NULL,
+          		`prodId` int(11) NOT NULL,
+				  `prodCode` varchar(100) NOT NULL,
+				  `issueDate` date NOT NULL,
+				  `prodLife` int(11),
+				  `grade` int(11),
+				  `qty` decimal(10,2) NOT NULL,
+				  `meters` decimal(10,2) NOT NULL,
+				  `gradeTypeId` int(11),
+				  `gradeTypeName` varchar(100) NOT NULL,
+				  `remarkWh` varchar(100) NOT NULL,
+				  `total` decimal(10,2) NOT NULL,
+				  `bookedQty` decimal(10,2) NOT NULL,
+				  `pickQty` decimal(10,2) NOT NULL,
+          		  `isShelfed` int(11) NOT NULL
+		    )";
+          	$stmt = $pdo->prepare($sql);		
+			$stmt->execute();
+				
+		//switch coz
+		//Local order by issueDate, Export order by sendDate
+		//Local receive to 8 , Export receive to E
+		switch($locationCode){
+			case '8' : // local
+				$sql = "
+				INSERT INTO tmpStock (`sloc`, `prodId`, `prodCode`, `issueDate`, `prodLife`,
+				  `grade`, `meters`, `gradeTypeId`, `gradeTypeName`, `remarkWh`, `qty`, `total`, `bookedQty`, `pickQty`,`isShelfed`)
+				SELECT hdr.`toCode`, itm.`prodCodeId` as prodId, prd.code as prodCode, itm.`issueDate`, DATEDIFF(NOW(), itm.`issueDate`) as prodLife, itm.`grade`
+				, itm.`qty` as meters
+				, itm.`gradeTypeId`, pgt.name as `gradeTypeName` 
+				, itm.`remarkWh` 
+				, COUNT(*) as qty
+				,  IFNULL(SUM(itm.`qty`),0) as total			
+				, 0 as bookedQty
+				, 0 as pickQty
+				, (SELECT COUNT(x.shelfId) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
+				FROM `receive` hdr 
+				INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  		
+				INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+				LEFT JOIN product prd ON prd.id=itm.prodCodeId 		
+				LEFT JOIN wh_shelf_map_item smi ON smi.recvProdId=dtl.id 
+				LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  				
+				WHERE 1=1
+				AND hdr.statusCode='P' 	
+				AND dtl.statusCode='A' 
+				AND itm.prodCodeId=:id ";	
+				if($locationCode<>'') $sql .= "AND hdr.toCode=:toCode  ";		
+				$sql.="
+				GROUP BY itm.`prodCodeId`, itm.`issueDate`, itm.`grade`, prd.code , itm.`qty`, itm.`gradeTypeId`, itm.remarkWh , isShelfed 
+				"; 		
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':id', $id);
+				if($locationCode<>'') $stmt->bindParam(':toCode', $locationCode);
+				$stmt->execute();
+				break;
+			case 'E' : // Export.
+				$sql = "
+				INSERT INTO tmpStock (`sloc`, `prodId`, `prodCode`, `issueDate`, `prodLife`,
+				  `grade`, `meters`, `gradeTypeId`, `gradeTypeName`, `remarkWh`, `qty`, `total`, `bookedQty`, `pickQty`,`isShelfed`)
+				SELECT hdr.`toCode`, itm.`prodCodeId` as prodId, prd.code as prodCode, itm.`sendDate` as issueDate, DATEDIFF(NOW(), itm.`sendDate`) as prodLife, itm.`grade`
+				, itm.`qty` as meters
+				, itm.`gradeTypeId`, pgt.name as `gradeTypeName` 
+				, itm.`remarkWh` 
+				, COUNT(*) as qty
+				,  IFNULL(SUM(itm.`qty`),0) as total			
+				, 0 as bookedQty
+				, 0 as pickQty
+				, (SELECT COUNT(x.shelfId) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
+				FROM `receive` hdr 
+				INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  		
+				INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+				LEFT JOIN product prd ON prd.id=itm.prodCodeId 	
+				LEFT JOIN wh_shelf_map_item smi ON smi.recvProdId=dtl.id 	
+				LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  				
+				WHERE 1=1
+				AND hdr.statusCode='P' 	
+				AND dtl.statusCode='A' 
+				AND itm.prodCodeId=:id ";					
+				if($locationCode<>'') $sql .= "AND hdr.toCode=:toCode  ";			
+				$sql.="
+				GROUP BY itm.`prodCodeId`, itm.`sendDate`, itm.`grade`, prd.code , itm.`qty`, itm.`gradeTypeId`, itm.remarkWh , isShelfed 
+				"; 		
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':id', $id);
+				if($locationCode<>'') $stmt->bindParam(':toCode', $locationCode);
+				$stmt->execute();
+				break;
+
+			default : 
+				$sql = "
+				INSERT INTO tmpStock (`sloc`, `prodId`, `prodCode`, `issueDate`, `prodLife`,
+				  `grade`, `meters`, `gradeTypeId`, `gradeTypeName`, `remarkWh`, `qty`, `total`, `bookedQty`, `pickQty`,`isShelfed`)
+				SELECT hdr.`toCode`, itm.`prodCodeId` as prodId, prd.code as prodCode, IF(hdr.`toCode`='E',itm.sendDate,itm.`issueDate`) as issueDate, DATEDIFF(NOW(), IF( hdr.`toCode`='E', itm.sendDate, itm.`issueDate`) ) as prodLife, itm.`grade`
+				, itm.`qty` as meters
+				, itm.`gradeTypeId`, pgt.name as `gradeTypeName` 
+				, itm.`remarkWh` r
+				, COUNT(*) as qty
+				,  IFNULL(SUM(itm.`qty`),0) as total				
+				, 0 as bookedQty
+				, 0 as pickQty
+				, (SELECT COUNT(x.shelfId) FROM wh_shelf_map_item x WHERE x.recvProdId=dtl.id) as isShelfed
+				FROM `receive` hdr 
+				INNER JOIN receive_detail dtl on dtl.rcNo=hdr.rcNo  		
+				INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+				LEFT JOIN product prd ON prd.id=itm.prodCodeId 	
+				LEFT JOIN wh_shelf_map_item smi ON smi.recvProdId=dtl.id 
+				LEFT JOIN product_item_grade_type pgt ON pgt.id=itm.gradeTypeId  			
+				WHERE 1=1
+				AND hdr.statusCode='P' 	
+				AND dtl.statusCode='A' 
+				AND itm.prodCodeId=:id ";
+				if($locationCode<>'') { $sql .= "AND hdr.toCode=:toCode  "; }else{ $sql .= "AND hdr.toCode IN ('8','E')  "; }	
+				$sql.="
+				GROUP BY itm.`prodCodeId`, 4, itm.`grade`, prd.code , itm.`qty`, itm.`gradeTypeId`, itm.remarkWh , isShelfed 
+				";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':id', $id);
+				if($locationCode<>'') $stmt->bindParam(':toCode', $locationCode);
+				$stmt->execute();
+
+		}// End switch.
+
+	// Update booked qty
+	$sql = "UPDATE tmpStock hdr SET 
+	hdr.bookedQty = (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
+			ON pickh.pickNo=pickd.pickNo
+			WHERE pickd.prodId=hdr.prodId  
+			AND pickd.issueDate=hdr.issueDate AND pickd.grade=hdr.grade AND pickd.gradeTypeId= hdr.gradeTypeId AND pickd.remarkWh=hdr.remarkWh  AND pickd.meter=hdr.meters  
+			AND pickh.isFinish='N'
+			AND pickh.statusCode<>'X' 
+			AND pickh.pickNo<>:pickNo)";
+  	$stmt = $pdo->prepare($sql);	
+	$stmt->bindParam(':pickNo', $pickNo);	
+	$stmt->execute();
+
+	// // Update picked qty
+	// $sql = "UPDATE tmpStock hdr SET 
+	// hdr.pickQty = (SELECT IFNULL(SUM(pickd.qty),0) FROM picking pickh INNER JOIN picking_detail pickd 
+	// 		ON pickh.pickNo=pickd.pickNo
+	// 		WHERE pickd.saleItemId=:saleItemId AND pickd.issueDate=hdr.issueDate AND pickd.grade=hdr.grade AND pickd.meter=hdr.qty  AND pickd.gradeTypeId= hdr.gradeTypeId AND pickd.remarkWh=hdr.remarkWh 
+	// 		AND pickh.pickNo=:pickNo )";
+	// $stmt = $pdo->prepare($sql);		
+	// $stmt->bindParam(':pickNo', $pickNo);	
+	// $stmt->bindParam(':saleItemId', $saleItemId);
+	// $stmt->execute();
+
+
+	//We've got this far without an exception, so commit the changes.
+	$pdo->commit();	
+
+	// Get List.
+	$sql = "SELECT  `sloc`, `prodId`, `prodCode`, `issueDate`, `prodLife`, `grade`, `qty`, `meters`, `gradeTypeId`, `gradeTypeName`, `remarkWh`, `total`, `bookedQty`, `pickQty`,`isShelfed` 
+	FROM tmpStock ";
+	$sql .= "ORDER BY issueDate ASC";
+	$stmt = $pdo->prepare($sql);		
+	$stmt->execute();
+
+
+	?>
+              <div class="table-responsive">
+                <table class="table no-margin">
+                  <thead>
+                  <tr>
+					<th style="text-align: center;">No.</th>
+					<!--<th>Product Code</th>-->
+					<th style="text-align: center;">Location</th>
+					<th style="text-align: center;">MFD.</th>
+					<th style="text-align: center;">Prod.Life(Days)</th>
+					<th style="text-align: center;">Meter</th>
+					<th style="text-align: center;">Grade</th>	
+					<th style="text-align: center;">Grade Type</th>				
+					<th style="text-align: center;">WH Remark</th>
+                    <th style="text-align: center;">Qty</th>
+					<th style="text-align: center;">Total</th>
+					<th style="text-align: center; color: red;">Booked</th>
+					<th style="text-align: center; color: blue;">Balance</th>					
+                  </tr>
+                  </thead>
+                  <tbody>
+				  <?php $sumQtyTotal=$sumQtyBooked=$sumQtyBalance=0; $row_no = 1; while ($row = $stmt->fetch()) { 
+
+				  // Location Name.
+				  $locationName = '<b style="color: red;">N/A</b>'; 
+				switch($row['sloc']){
+					case 'E' : $locationName = 'Export'; break;
+					default : $locationName = 'Local'; 
+				} 
+
+				  // Grade Name.
+				  $gradeName = '<b style="color: red;">N/A</b>'; 
+				switch($row['grade']){
+					case 0 : $gradeName = 'A'; break;
+					case 1 : $gradeName = '<b style="color: red;">B</b>'; break;
+					case 2 : $gradeName = '<b style="color: red;">N</b>'; break;
+					default : 
+				} 
+
+				// Product life display.				
+				$prodLifeDays = $row['prodLife'];
+				if($isCustomerPickCondition){
+					if ( $row['prodLife'] > $maxDays ){
+						$prodLifeDays = '<b style="color: red;">'.$row['prodLife'].'</b>';
+					}
+				}else{
+					switch($catCode){
+						case '72' : //Cutting
+							if ( $row['prodLife'] > 90 ){
+								$prodLifeDays = '<b style="color: red;">'.number_format($row['prodLife'],0,'.',',').'</b>';
+							}
+							break;
+						default : //80					
+					}//end switch.
+				}// enc if customer pick condition.
+				
+				?>
+                  <tr>
+					<td style="text-align: center;"><?= $row_no; ?></td>
+					<td style="text-align: center;"><?= $locationName; ?></td>
+					<!--<td><?= $row['prodCode']; ?></td>-->				
+					<td style="text-align: center;"><?= date('d M Y',strtotime( $row['issueDate'] )); ?></td>
+					<td style="text-align: center;"><?= $prodLifeDays; ?></td>
+					<td style="text-align: right;"><?= number_format($row['meters'],2,'.',','); ?></td>
+					<td style="text-align: center;"><?= $gradeName; ?></td>
+					<td style="text-align: center;"><?= $row['gradeTypeName']; ?></td>
+					<td style="text-align: center;"><?= $row['remarkWh']; ?></td>
+					<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
+					<td style="text-align: right;"><?= number_format($row['total'],2,'.',','); ?></td>
+					<td style="text-align: right; color: red;"><?= number_format($row['bookedQty'],2,'.',','); ?></td>
+					<td style="text-align: right; color: blue;"><?= number_format($row['total']-$row['bookedQty'],2,'.',','); ?></td>
+					
+					<td >
 						
-						$stmt->execute();
-							?>
-			              <div class="table-responsive">
-			                <table class="table no-margin">
-			                  <thead>			                  	
-			                    <th style="text-align: center;">Location</th>
-			                    <th style="text-align: center;">Length/Pieces/KG</th>
-			                    <th style="text-align: center;">Grade</th>
-			                    <th style="text-align: center;">Grade Type</th>
-			                    <th style="text-align: center;">WH Remark</th>
-			                    <th style="text-align: center;">Qty</th>
-								<th style="text-align: center;">Qty Total</th>
-			                  </tr>
-			                  </thead>
-			                  <tbody>
-							  <?php $row_no = 1; $sumQtyTotal=0; while ($row = $stmt->fetch()) { 
-							  	$gradeName = '<b style="color: red;">N/A</b>'; 
-								switch($row['grade']){
-									case 0 : $gradeName = 'A'; break;
-									case 1 : $gradeName = '<b style="color: red;">B</b>'; $sumGradeNotOk+=1; break;
-									case 2 : $gradeName = '<b style="color: red;">N</b>'; $sumGradeNotOk+=1; break;
-									default : 
-										$gradeName = '<b style="color: red;">N/a</b>'; $sumGradeNotOk+=1;
-								} 
-								?>
-			                  <tr>			                  	
-								<td style="text-align: center;"><?= $row['sloc']; ?></td>
-								<td style="text-align: center;"><?= number_format($row['qty'],2,'.',','); ?></td>
-								<td style="text-align: center;"><?= $gradeName; ?></td>
-								<td style="text-align: center;"><?= $row['gradeTypeName']; ?></td>
-								<td style="text-align: center;"><?= $row['remarkWh']; ?></td>
-								<td style="text-align: center;"><?= number_format($row['sumQty']/$row['qty'],2,'.',','); ?></td>
-								<td style="text-align: center;"><?= number_format($row['sumQty'],2,'.',','); ?></td>
-			                </tr>
-			                <?php $row_no+=1; $sumQtyTotal+=$row['sumQty']; } ?>
-			                  </tbody>
-			                  <tfoot>
-			                  	<tr>
-			                  		<td colspan="6" style="text-align: center; font-weight: bold;">Total</td>
-			                  		<td style="text-align: center; font-weight: bold;"><?= number_format($sumQtyTotal,2,'.',','); ?></td>
-			                  	</tr>
-			                  </tfoot>
-			                </table>
-			              </div>
-			              <!-- /.table-responsive -->
+						
+						<?php if($row['isShelfed']==0){ ?>
+							<span style="color: red;">Not Shelfed.</span>
+						<?php }else{ ?>
+							
+						<?php } ?>
+					</td>					
+                </tr>
+                <?php $row_no+=1; $sumQtyTotal += $row['total'];
+                $sumQtyBooked += $row['bookedQty'];
+                $sumQtyBalance += $row['total']-$row['bookedQty']; } ?>
+                <tr>
+					<td style="text-align: center;"></td>
+					<td style="text-align: center;"></td>
+					<!--<td><?= $row['prodCode']; ?></td>-->				
+					<td style="text-align: center;"></td>
+					<td style="text-align: center;"></td>
+					<td style="text-align: right;"></td>
+					<td style="text-align: center;"></td>
+					<td style="text-align: center;"></td>
+					<td style="text-align: center;"></td>
+					<td style="text-align: right;"></td>
+					<td style="text-align: right; font-weight: bold;"><?= number_format($sumQtyTotal,2,'.',','); ?></td>
+					<td style="text-align: right; color: red;  font-weight: bold;"><?= number_format($sumQtyBooked,2,'.',','); ?></td>
+					<td style="text-align: right; color: blue;  font-weight: bold;"><?= number_format($sumQtyBalance,2,'.',','); ?></td>				
+					<td >
+					</td>					
+                </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!-- /.table-responsive -->
 					
                 </div><!-- /.col-4 -->
             </div><!-- /.row -->
@@ -414,11 +647,11 @@ $(function () {
                 enabled: true,
                 inside: false,
                 rotation: 0,
-                y: -50,
+                y: 0,
                 style: {
                             fontWeight: 'bold'
                         },
-                        format: 'Order {point.y:,.0f}'
+                        format: '{point.y:,.0f}'
                     }
        },{
             name: 'Balance',
@@ -428,11 +661,11 @@ $(function () {
                 enabled: true,
                 inside: false,
                 rotation: 0,
-                y: -50,
+                y: 0,
                 style: {
                             fontWeight: 'bold'
                         },
-                        format: 'Balance {point.y:,.0f} '
+                        format: '{point.y:,.0f} '
                     }
        }
         ]

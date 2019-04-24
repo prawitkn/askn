@@ -12,7 +12,7 @@ $rootPage = 'userDept';
 
 //Check user roll.
 switch($s_userGroupCode){
-	case 'it' : 
+	case 'admin' : 
 		break;
 	default : 
 		header('Location: access_denied.php');
@@ -38,13 +38,13 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-      <h1><i class="glyphicon glyphicon-user"></i>
-       User Production Department
-        <small>User Production Department management</small>
+      <h1><i class="glyphicon glyphicon-th-large"></i>
+       User Department
+        <small>User Department management</small>
       </h1>
 	  <ol class="breadcrumb">
-        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>User Production Department List</a></li>
-		<li><a href="#"><i class="glyphicon glyphicon-edit"></i>User Production Department</a></li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>User Department List</a></li>
+		<li><a href="#"><i class="glyphicon glyphicon-edit"></i>User Department</a></li>
       </ol>
     </section>
 
@@ -54,7 +54,7 @@ switch($s_userGroupCode){
       <!-- Your Page Content Here -->
     <div class="box box-primary">
         <div class="box-header with-border">
-        <h3 class="box-title">Add User Production Department</h3>
+        <h3 class="box-title">Add User Department</h3>
         <div class="box-tools pull-right">
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
@@ -67,16 +67,16 @@ switch($s_userGroupCode){
 					<input type="hidden" name="action" value="add" />			
 					<div class="col-md-6">					
                         <div class="form-group">
-                            <label for="code">User Production Department Code</label>
+                            <label for="code">User Department Code</label>
                             <input id="code" type="text" class="form-control" name="code" data-smk-msg="Require user group code."required>
                         </div>
                         
                         <div class="form-group">
-                            <label for="name">User Production Department Name</label>
+                            <label for="name">User Department Name</label>
                             <input id="name" type="text" class="form-control" name="name" data-smk-msg="Require uer group name" required>
                         </div>
 						
-						<button id="btn1" type="submit" class="btn btn-default">Submit</button>
+						<button id="btn1" type="submit" class="btn btn-default"><i class="fa fa-save"></i> Add User Department</button>
 					</div>
 					<!--/.col-md-->
 					<div class="col-md-6">

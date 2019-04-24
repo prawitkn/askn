@@ -27,7 +27,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 ?>    
  
 </head>
-<body class="hold-transition skin-green sidebar-mini">
+<body class="hold-transition <?=$skinColorName;?> sidebar-mini">
 
 
 	
@@ -238,7 +238,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					?>
                   <tr>
 					<td style="text-align: center;"><?= $c_row; ?></td>
-                    <td style="text-align: center;"><a href="send2_view.php?sdNo=<?=$row['sdNo'];?>" ><?= $row['sdNo']; ?></a></td>
+                    <td style="text-align: center;">
+                    <?php switch($s_userGroupCode){ 
+							 case 'sales' : case 'salesAdmin' : ?>
+								<?php echo $row['sdNo']; 
+								break; ?>
+							<?php default : ?>
+								<a href="send2_view.php?sdNo=<?=$row['sdNo'];?>" ><?= $row['sdNo']; ?></a>
+						<?php } ?>
+					</td>
 					<td style="text-align: center;"><?= date('d M Y',strtotime( $row['sendDate'] )); ?></td>
 					<td style="text-align: center;"><?= number_format($row['sumQty'],2,'.',','); ?></td>
                 </tr>

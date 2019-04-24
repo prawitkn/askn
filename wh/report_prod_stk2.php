@@ -404,8 +404,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					?>
                   <tr class="<?=$bgColor;?>">
 					<td style="text-align: right;"><?= $c_row; ?></td>
-                    <td style="width: 200px;"><a target="_blank" href="product_view_stk.php?id=<?=$row['prodId'];?>&sloc=" ><?= $row['prodCode']; ?></a></td>
-                    <td style="text-align: center;"><a target="_blank" href="product_view_stk.php?id=<?=$row['prodId'];?>&sloc=<?=$row['sloc'];?>" ><?= $locationName; ?></a></td>
+                    <td style="width: 200px;"><a target="_blank" href="product_view_stk.php?id=<?=$row['prodId'];?>&sloc=<?=$row['sloc'];?>" ><?= $row['prodCode']; ?></a></td>
+                    <td style="text-align: center;"><?= $locationName; ?></td>
 					<!--<td style="text-align: right; color: green;"><?= number_format($row['balance']-$row['book'],0,'.',','); ?></td>-->
 					<td style="text-align: right; color: blue;"><a target="_blank" href="report_itm_dtl_by_prd.php?prodCode=<?=$row['prodCode'];?>&sloc=<?=$row['sloc'];?>" ><?= number_format($row['balance'],2,'.',','); ?></a>
 					

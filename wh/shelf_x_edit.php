@@ -46,7 +46,7 @@ $row=$stmt->fetch();
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-      <h1><i class="glyphicon glyphicon-user"></i>
+      <h1><i class="glyphicon glyphicon-wrench"></i>
        Shelf Column
         <small>Shelf Column management</small>
       </h1>
@@ -88,7 +88,7 @@ $row=$stmt->fetch();
 							<input type="radio" name="statusCode" value="A" <?php echo ($row['statusCode']=='A'?' checked ':'');?> >Active
 							<input type="radio" name="statusCode" value="I" <?php echo ($row['statusCode']=='I'?' checked ':'');?> >Non-Active
 						</div>
-                        <button id="btn1" type="submit" class="btn btn-default"><i class="fa fa-save"></i>Edit Shelf Column</button>
+                        <button id="btn1" type="submit" class="btn btn-default"><i class="fa fa-save"></i> Edit Shelf Column</button>
 					</div>
 					<!--/.col-md-->
 					<div class="col-md-6">

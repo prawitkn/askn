@@ -35,7 +35,7 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-      <h1><i class="glyphicon glyphicon-vertical"></i>
+      <h1><i class="glyphicon glyphicon-wrench"></i>
        Shelf
         <small>Shelf management</small>
       </h1>
@@ -64,7 +64,7 @@ switch($s_userGroupCode){
 					<input type="hidden" name="action" value="add" />			
 					<div class="col-md-6">
 						<div class="form-group">
-							<label for="xId">Column</label>
+							<label for="xId">Shelf Column</label>
 							<select id="xId" name="xId" class="form-control" data-code=""  data-smk-msg="Require Column" required >
 								<option value=""> -- Select -- </option>
 								<?php
@@ -80,7 +80,7 @@ switch($s_userGroupCode){
 							</select>
 						</div>	
 						<div class="form-group">
-							<label for="yId">Row</label>
+							<label for="yId">Shelf Row</label>
 							<select id="yId" name="yId" class="form-control" data-code="" data-smk-msg="Require Row" required >
 								<option value=""> -- Select -- </option>
 								<?php
@@ -96,7 +96,7 @@ switch($s_userGroupCode){
 							</select>
 						</div>	
 						<div class="form-group">
-							<label for="zId">Rack</label>
+							<label for="zId">Shelf Rack</label>
 							<select id="zId" name="zId" class="form-control" data-code="" data-smk-msg="Require Rack" required >
 								<option value=""> -- Select -- </option>
 								<?php
@@ -112,15 +112,15 @@ switch($s_userGroupCode){
 							</select>
 						</div>	
 						<div class="form-group">
-                            <label for="code" >Code</label>
+                            <label for="code" >Shelf Code</label>
 							<input type="hidden" id="hidCode" name="hidCode" class="form-control" >
                             <input type="text" id="code" name="code" class="form-control" data-smk-msg="Require code" required disabled>
                         </div>
 						<div class="form-group">
-                            <label for="name" >name</label>
+                            <label for="name" >Shelf Name</label>
                             <input type="text" id="name" name="name" class="form-control" data-smk-msg="Require name" required >
                         </div>
-						<button id="btn1" type="submit" class="btn btn-default">Submit</button>
+						<button id="btn1" type="submit" class="btn btn-default"><i class="fa fa-save"></i> Add Shelf</button>
 					</div>
 					<!--/.col-md-->
 					<div class="col-md-6">

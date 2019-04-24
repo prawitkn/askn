@@ -70,7 +70,7 @@ $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
 // set margins (left, top, right)
 //$pdf->SetMargins(24, 26, 30);	//หน้า ๓ บนถึงตูดเลขหน้า ๒ ตูดเลขหน้าถึงตูดบรรทัดแรก ๑.๕
-$pdf->SetMargins(20, 20, 10);	//หน้า ๓ บนถึงตูดเลขหน้า ๒ ตูดเลขหน้าถึงตูดบรรทัดแรก ๑.๕
+$pdf->SetMargins(10, 20, 5);	//หน้า ๓ บนถึงตูดเลขหน้า ๒ ตูดเลขหน้าถึงตูดบรรทัดแรก ๑.๕
 $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
 $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
 
@@ -181,6 +181,7 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			$sql = "SELECT dtl.id, dtl.prodItemId 
 			, itm.prodCodeId, itm.barcode, itm.NW, itm.GW, itm.grade, itm.qty, itm.issueDate 
 			, hdr.deliveryDate 
+			, sh.custId, cust.name as custName 
 			FROM `delivery_header` hdr
 			INNER JOIN delivery_detail dtl on dtl.doNo=hdr.doNo
             INNER JOIN sale_header sh ON sh.soNo=hdr.soNo 
@@ -196,7 +197,7 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			if($prodId<>""){ $sql .= " AND prd.id=:prodId ";	}	
 			$sql .= "AND hdr.statusCode='P' ";
 
-			$sql.="ORDER BY prd.code, itm.issueDate, itm.barcode ASC ";
+			$sql.="ORDER BY prd.code, itm.issueDate, itm.barcode, cust.name  ASC ";
 
 			$stmt = $pdo->prepare($sql);
 			if($dateFromYmd<>""){ $stmt->bindParam(':dateFromYmd', $dateFromYmd );	}
@@ -236,11 +237,12 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 						  <tr>
 								<th style="font-weight: bold; text-align: center; width: 30px;" border="1">No.</th>
 								<th style="font-weight: bold; text-align: center; width: 250px;" border="1">Barcode</th>
-								<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Grade</th>
-								<th style="font-weight: bold; text-align: center; width: 70px;" border="1">Net<br/>Weight<br/>(kg.)</th>
-								<th style="font-weight: bold; text-align: center; width: 70px;" border="1">Gross<br/>Weight<br/>(kg.)</th>		
-								<th style="font-weight: bold; text-align: center; width: 70px;" border="1">Quantity (m.)</th>
+								<th style="font-weight: bold; text-align: center; width: 30px;" border="1">Grade</th>
+								<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Net<br/>Weight<br/>(kg.)</th>
+								<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Gross<br/>Weight<br/>(kg.)</th>	
+								<th style="font-weight: bold; text-align: center; width: 70px;" border="1">Piece/Length<br/>/KG</th>
 								<th style="font-weight: bold; text-align: center; width: 70px;" border="1">Delivery Date</th>
+								<th style="font-weight: bold; text-align: center; width: 100px;" border="1">Customer Name</th>
 							</tr>
 						  </thead>
 						  <tbody>
@@ -257,11 +259,12 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			$html .='<tr>
 				<td style="border: 0.1em solid black; text-align: center; width: 30px;">'.$row_no.'</td>
 				<td style="border: 0.1em solid black; padding: 10px; width: 250px;"> '.$row['barcode'].'</td>
-				<td style="border: 0.1em solid black; text-align: center; width: 50px;">'.$gradeName.'</td>
-				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.$row['NW'].'&nbsp;&nbsp;</td>
-				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.$row['GW'].'&nbsp;&nbsp;</td>
-				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($row['qty'],0,'.',',').'&nbsp;&nbsp;</td>
+				<td style="border: 0.1em solid black; text-align: center; width: 30px;">'.$gradeName.'</td>
+				<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['NW'].'&nbsp;&nbsp;</td>
+				<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['GW'].'&nbsp;&nbsp;</td>
+				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($row['qty'],2,'.',',').'&nbsp;&nbsp;</td>
 				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.date('d M Y',strtotime( $row['deliveryDate'] )).'&nbsp;&nbsp;</td>
+				<td style="border: 0.1em solid black; padding: 10px; width: 100px;"> '.$row['custName'].'</td>
 			</tr>';			
 										
 			$sumQty+=$row['qty'] ; $sumNW+=$row['NW']; $sumGW+=$row['GW'] ;								
@@ -271,11 +274,12 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			$html .='<tr>
 				<td style="border: 0.1em solid black; text-align: center; width: 30px;"></td>
 				<td style="border: 0.1em solid black; text-align: center; padding: 10px; width: 250px;">Total '.number_format($row_no-1,0,'.',',').' items</td>
-				<td style="border: 0.1em solid black; text-align: center; width: 50px;"></td>
-				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($sumNW,2,'.',',').'&nbsp;&nbsp;</td>
-				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($sumGW,2,'.',',').'&nbsp;&nbsp;</td>
-				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($sumQty,0,'.',',').'&nbsp;&nbsp;</td>
+				<td style="border: 0.1em solid black; text-align: center; width: 30px;"></td>
+				<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumNW,2,'.',',').'&nbsp;&nbsp;</td>
+				<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumGW,2,'.',',').'&nbsp;&nbsp;</td>
+				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($sumQty,2,'.',',').'&nbsp;&nbsp;</td>
 				<td style="border: 0.1em solid black; text-align: right; width: 70px;"></td>
+				<td style="border: 0.1em solid black; padding: 10px; width: 100px;"></td>
 			</tr>';
 			
 			

@@ -35,7 +35,7 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-      <h1><i class="glyphicon glyphicon-vertical"></i>
+      <h1><i class="glyphicon glyphicon-wrench"></i>
        Shelf Column
         <small>Shelf Column management</small>
       </h1>

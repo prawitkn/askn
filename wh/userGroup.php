@@ -10,7 +10,7 @@ $rootPage = 'userGroup';
 $tb = 'wh_user_group';
 //Check user roll.
 switch($s_userGroupCode){
-	case 'it' : case 'admin' :
+	case 'admin' :
 		break;
 	default : 
 		header('Location: access_denied.php');
@@ -39,7 +39,7 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
 	<section class="content-header">
-		<h1><i class="glyphicon glyphicon-user"></i>
+		<h1><i class="glyphicon glyphicon-th-large"></i>
        User Group
         <small>User Group management</small>
       </h1>
@@ -95,15 +95,11 @@ switch($s_userGroupCode){
 				<div class="col-md-6">					
 					<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
 						<div class="form-group">
-							<label for="search_word">User Group search key word.</label>
-							<div class="input-group">
+							<label for="search_word">User Group Name Search Key Word.</label>
+							
 								<input id="search_word" type="text" class="form-control" name="search_word" data-smk-msg="Require userFullname."required>
-								<span class="input-group-addon">
-									<span class="glyphicon glyphicon-search"></span>
-								</span>
-							</div>
 						</div>						
-						<input type="submit" class="btn btn-default" value="ค้นหา">
+						<input type="submit" class="btn btn-default" value="Search">
 					</form>
 				</div>  
 				<!--/.col-md-->
@@ -134,29 +130,29 @@ switch($s_userGroupCode){
             
             <table class="table table-striped">
                 <tr>
-					<th>No.</th>
-                    <th>ID</th>
-					<th>Code</th>
-					<th>Name</th>
-                    <th>Status</th>
-                    <th>#</th>
+					<th style="text-align: center;">No.</th>
+                    <th style="text-align: center;">User Group ID</th>
+					<th style="text-align: center;">User Group Code</th>
+					<th style="text-align: center;">User Group Name</th>
+                    <th style="text-align: center;">Status</th>
+                    <th style="text-align: center;">Actions</th>
                 </tr>
                 <?php $c_row=($start+1); while ($row = $stmt->fetch()) { 
 						?>
                 <tr>
-					<td>
+					<td style="text-align: center;">
                          <?= $c_row; ?>
                     </td>
-                    <td>
+                    <td style="text-align: center;">
                          <?= $row['id']; ?>
                     </td>					
-                    <td>
+                    <td style="text-align: center;">
                          <?= $row['code']; ?>
                     </td>
-                    <td>
+                    <td style="text-align: center;">
                          <?= $row['name']; ?>
                     </td>
-                    <td>
+                    <td style="text-align: center;">
 						 <?php
 						 switch($row['statusCode']){ 	
 							case 'A' :
@@ -173,28 +169,26 @@ switch($s_userGroupCode){
 						}
 						 ?>
                     </td>					
-                    <td>
-						
-						<?php if($row['statusCode']=='A'){ ?>
-							<a class="btn btn-primary" name="btn_row_edit" href="<?=$rootPage;?>_edit.php?act=edit&id=<?= $row['id']; ?>" >
-								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
-						<?php }else{ ?>	
-							<a class="btn btn-primary"  disabled  > 
-								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
-						<?php } ?>
-						
-						<?php if($row['statusCode']=='I'){ ?>
-							<a class="btn btn-danger" name="btn_row_remove"  data-id="<?=$row['id'];?>" > 
-								<i class="glyphicon glyphicon-remove"></i> Remove</a>	
-						<?php }else{ ?>	
-							<a class="btn btn-danger"  disabled  >
-								<i class="glyphicon glyphicon-remove"></i> Remove</a>	
-						<?php } ?>
-						
-						<?php if($row['statusCode']=='X' AND ($s_userGroupCode=='admin' OR $s_userGroupCode=='it' OR $s_userGroupCode=='prog')){ ?>
-							<a class="btn btn-danger" name="btn_row_delete"  data-id="<?=$row['id'];?>" > 
-								<i class="glyphicon glyphicon-trash"></i> Delete</a>	
-						<?php } ?>
+                    <td style="text-align: center;">
+						<?php
+						 switch($row['statusCode']){ 	
+							case 'A' :
+								echo '<a class="btn btn-primary" name="btn_row_edit" href="'.$rootPage.'_edit.php?act=edit&id='.$row['id'].'" >
+								<i class="glyphicon glyphicon-edit"></i> Edit</a>';
+								break;
+							case 'I' :
+								echo '<a class="btn btn-danger" name="btn_row_remove"  data-id="'.$row['id'].'" > 
+								<i class="glyphicon glyphicon-remove"></i> Remove</a>	';
+								break;
+							case 'X' : 
+								if($s_userGroupCode=="admin"){
+									echo '<a class="btn btn-danger" name="btn_row_delete"  data-id="'.$row['id'].'" > 
+								<i class="glyphicon glyphicon-trash"></i> Delete</a>';
+								}
+								break;
+							default :	
+								echo '';
+						} //end switch ?>
                     </td>
                 </tr>
                 <?php $c_row+=1; } ?>

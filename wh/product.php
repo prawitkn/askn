@@ -4,7 +4,25 @@ This is a starter template page. Use this page to start your new project from
 scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
-<?php	include 'head.php'; ?>    
+<?php	include 'head.php'; 
+
+//Check user roll.
+switch($s_userGroupCode){
+	case 'admin' : 
+		break;
+	case 'pdSup' :
+		if ( $s_userDeptCode == 'T' ){
+			//break;
+		}else{			
+			header('Location: access_denied.php');
+			exit();
+		}
+		break;
+	default : 
+		header('Location: access_denied.php');
+		exit();
+}
+?>	<!-- head.php included session.php! -->    
 
 </head>
 <body class="hold-transition <?=$skinColorName;?> sidebar-mini">
@@ -107,30 +125,30 @@ scratch. This page gets rid of all links and provides the needed markup only.
            ?>             
             <table class="table table-striped">
                 <tr>
-                    <th>No.</th>					
-					<th>Image</th>
-					<th>Code</th>
-					<th>Name</th>
-					<th>Status</th>
-                    <th>#</th>
+                    <th style="text-align: center;">No.</th>					
+					<th style="text-align: center;">Product Image</th>
+					<th style="text-align: center;">Product Code</th>
+					<th style="text-align: center;">Product Name</th>
+					<th style="text-align: center;">Status</th>
+                    <th style="text-align: center;">Actions</th>
                 </tr>
                 <?php $c_row=($start+1); while ($row = mysqli_fetch_assoc($result)) { 
 					$img = '../images/product/'.(empty($row['photo'])? 'default.jpg' : $row['photo']);
 				?>
                 <tr>
-                    <td>
+                    <td style="text-align: center;">
                          <?= $c_row; ?>
                     </td>					
-					<td>
+					<td style="text-align: center;">
                          <img class="img-circle" src="<?=$img;?>" alt="Product Image" width="50" />
                     </td>	
-					<td>
+					<td style="text-align: center;">
                          <?= $row['code']; ?>
                     </td>	
-					<td>
+					<td style="text-align: center;">
                          <?= $row['name']; ?>
                     </td> 
-					<td>
+					<td style="text-align: center;">
 						 <?php
 						 switch($row['statusCode']){ 	
 							case 'A' :
@@ -147,7 +165,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						}
 						 ?>
                     </td>					
-                    <td>
+                    <td style="text-align: center;">
 						
 						<?php if($row['statusCode']=='A' OR ($s_userGroupCode=='it' OR $s_userGroupCode=='prog')){ ?>
 							<a class="btn btn-primary" name="btn_row_edit" href="<?=$rootPage;?>_edit.php?act=edit&id=<?= $row['id']; ?>" >

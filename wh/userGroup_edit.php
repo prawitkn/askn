@@ -56,7 +56,7 @@ $row=$stmt->fetch();
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-      <h1><i class="glyphicon glyphicon-user"></i>
+      <h1><i class="glyphicon glyphicon-th-large"></i>
        User Group
         <small>User Group management</small>
       </h1>
@@ -100,7 +100,7 @@ $row=$stmt->fetch();
 							<input type="radio" name="statusCode" value="I" <?php echo ($row['statusCode']=='I'?' checked ':'');?> >Inactive
 						</div>
 						
-						<button id="btn1" type="submit" class="btn btn-default">Submit</button>
+						<button id="btn1" type="submit" class="btn btn-default"><i class="fa fa-save"></i> Edit User Group</button>
 					</div>
 					<!--/.col-md-->
 					<div class="col-md-6">

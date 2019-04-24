@@ -218,24 +218,16 @@ $hdr = $stmt->fetch();
 							SELECT DISTINCT dtl.`prodId`, dtl.`issueDate`, dtl.`grade`, dtl.`remarkWh`, ws.code as shelfCode, ws.name as shelfName
 							, prd.code as prodCode 
 							FROM `picking_detail` dtl 		
-							INNER JOIN 
-								(SELECT itm.prodItemId, itm.prodCodeId, itm.grade, itm.remarkWh, sh.sendDate as issueDate 
-								FROM product_item itm
-								INNER JOIN send_detail sd ON sd.prodItemId=itm.prodItemId
-								INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.sendDate=:sendDate 
-								WHERE itm.prodCodeId=:prodId
-								AND itm.prodItemId IN (SELECT xrdtl.prodItemId FROM wh_shelf_map_item x 
-												INNER JOIN receive_detail xrdtl ON xrdtl.id=x.recvProdId)
-								) as tmp ON tmp.grade=dtl.grade AND tmp.remarkWh=dtl.remarkWh 
-								AND tmp.prodCodeId=dtl.prodId AND tmp.issueDate=dtl.issueDate 
+							INNER JOIN product_item itm ON itm.prodCodeId=dtl.prodId AND itm.sendDate=dtl.issueDate AND itm.grade=dtl.grade AND itm.remarkWh=dtl.remarkWh  		
 
-							INNER JOIN receive_detail rDtl on  tmp.prodItemId=rDtl.prodItemId 
+							INNER JOIN receive_detail rDtl on  itm.prodItemId=rDtl.prodItemId 
 							INNER JOIN wh_shelf_map_item wmi on wmi.recvProdId=rDtl.id 
 							INNER JOIN wh_shelf ws ON wmi.shelfId=ws.id 
-							LEFT JOIN product prd ON prd.id=tmp.prodCodeId 
+							LEFT JOIN product prd ON prd.id=itm.prodCodeId 
 							WHERE 1 
 				            AND rDtl.statusCode='A'  
 							AND dtl.`pickNo`=:pickNo 
+							AND dtl.`prodId`=:prodId 
 
 							ORDER BY dtl.id 
 							LIMIT 10 
@@ -243,7 +235,6 @@ $hdr = $stmt->fetch();
 							$stmt2 = $pdo->prepare($sql);	
 							$stmt2->bindParam(':pickNo', $hdr['pickNo']);
 							$stmt2->bindParam(':prodId', $row['prodId']);
-							$stmt2->bindParam(':sendDate', $row['issueDate']);
 							$stmt2->execute();
 			   			break;
 			   			

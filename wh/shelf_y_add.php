@@ -35,7 +35,7 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-      <h1><i class="glyphicon glyphicon-vertical"></i>
+      <h1><i class="glyphicon glyphicon-wrench"></i>
        Shelf Row
         <small>Shelf Row management</small>
       </h1>
@@ -64,14 +64,14 @@ switch($s_userGroupCode){
 					<input type="hidden" name="action" value="add" />			
 					<div class="col-md-6">	
 						<div class="form-group">
-                            <label for="code" >Code</label>
+                            <label for="code" >Shelf Row Code</label>
                             <input type="text" id="code" name="code" class="form-control" data-smk-msg="Require code" required>
                         </div>
 						<div class="form-group">
-                            <label for="name" >name</label>
+                            <label for="name" >Shelf Row Name</label>
                             <input type="text" id="name" name="name" class="form-control" data-smk-msg="Require name" required>
                         </div>
-						<button id="btn1" type="submit" class="btn btn-default">Submit</button>
+						<button id="btn1" type="submit" class="btn btn-default"><i class="fa fa-save"></i> Add Shelf Row</button>
 					</div>
 					<!--/.col-md-->
 					<div class="col-md-6">

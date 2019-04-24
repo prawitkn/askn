@@ -177,7 +177,9 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			}
 		
 	
-			$sql = "SELECT prd.code , prd.description, itm.grade, count(itm.prodItemId) as qty, sum(itm.qty) as totalQty 
+			$sql = "SELECT prd.code , prd.description, itm.grade
+			, sh.custId, cust.name as custName 
+			, count(itm.prodItemId) as qty, sum(itm.qty) as totalQty 
 			FROM `delivery_header` hdr
 			INNER JOIN delivery_detail dtl on dtl.doNo=hdr.doNo
             INNER JOIN sale_header sh ON sh.soNo=hdr.soNo 
@@ -192,8 +194,8 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			if($prodCode<>""){ $sql .= " AND prd.code like :prodCode ";	}	
 			if($prodId<>""){ $sql .= " AND prd.id=:prodId ";	}	
 			$sql .= "AND hdr.statusCode='P' ";
-			$sql.="GROUP BY prd.code, prd.description ";
-			$sql.="ORDER BY prd.code ";
+			$sql.="GROUP BY prd.code, prd.description, itm.grade, sh.custId, cust.name ";
+			$sql.="ORDER BY prd.code, itm.grade, cust.name  ";
 
 			$stmt = $pdo->prepare($sql);
 			if($dateFromYmd<>""){ $stmt->bindParam(':dateFromYmd', $dateFromYmd );	}
@@ -217,11 +219,12 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 				</tr>
 				  <tr>
 						<th style="font-weight: bold; text-align: center; width: 30px;" border="1">No.</th>
-						<th style="font-weight: bold; text-align: center; width: 150px;" border="1">Product Code</th>
-						<th style="font-weight: bold; text-align: center; width: 250px;" border="1">Description</th>
+						<th style="font-weight: bold; text-align: center; width: 100px;" border="1">Product Code</th>
+						<th style="font-weight: bold; text-align: center; width: 200px;" border="1">Description</th>
 						<th style="font-weight: bold; text-align: center; width: 40px;" border="1">Grade</th>
 						<th style="font-weight: bold; text-align: center; width: 50px;" border="1">Box/Roll</th>
 						<th style="font-weight: bold; text-align: center; width: 70px;" border="1">Piece/Length<br/>/KG</th>
+						<th style="font-weight: bold; text-align: center; width: 100px;" border="1">Customer Name</th>
 					</tr>
 				  </thead>
 				  <tbody>
@@ -238,11 +241,12 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 				
 			$html .='<tr>
 				<td style="border: 0.1em solid black; text-align: center; width: 30px;">'.$row_no.'</td>
-				<td style="border: 0.1em solid black; padding: 10px; width: 150px;"> '.$row['code'].'</td>
-				<td style="border: 0.1em solid black; padding: 10px; width: 250px;"> '.$row['description'].'</td>
+				<td style="border: 0.1em solid black; padding: 10px; width: 100px;"> '.$row['code'].'</td>
+				<td style="border: 0.1em solid black; padding: 10px; width: 200px;"> '.$row['description'].'</td>
 				<td style="border: 0.1em solid black; text-align: center; width: 40px;">'.$gradeName.'</td>
 				<td style="border: 0.1em solid black; text-align: right; width: 50px;">'.$row['qty'].'&nbsp;&nbsp;</td>
-				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($row['totalQty'],0,'.',',').'&nbsp;&nbsp;</td>
+				<td style="border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($row['totalQty'],2,'.',',').'&nbsp;&nbsp;</td>
+				<td style="border: 0.1em solid black; padding: 10px; width: 100px;"> '.$row['custName'].'</td>
 			</tr>';			
 										
 			$sumQty+=$row['qty'] ; $sumTotalQty+=$row['totalQty'];					
@@ -251,11 +255,12 @@ $pdf->SetFont('THSarabun', '', 12, '', true);
 			
 			$html .='<tr>
 				<td style="font-weight: bold; border: 0.1em solid black; text-align: center; width: 30px;"></td>
-				<td style="font-weight: bold; border: 0.1em solid black; text-align: center; padding: 10px; width: 150px;">Total '.number_format($row_no-1,0,'.',',').' items</td>
-				<td style="font-weight: bold; border: 0.1em solid black; text-align: center; padding: 10px; width: 250px;"></td>
+				<td style="font-weight: bold; border: 0.1em solid black; text-align: center; padding: 10px; width: 100px;">Total '.number_format($row_no-1,0,'.',',').' items</td>
+				<td style="font-weight: bold; border: 0.1em solid black; text-align: center; padding: 10px; width: 200px;"></td>
 				<td style="font-weight: bold; border: 0.1em solid black; text-align: center; width: 40px;"></td>
-				<td style="font-weight: bold; border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumQty,0,'.',',').'&nbsp;&nbsp;</td>
-				<td style="font-weight: bold; border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($sumTotalQty,0,'.',',').'&nbsp;&nbsp;</td>
+				<td style="font-weight: bold; border: 0.1em solid black; text-align: right; width: 50px;">'.number_format($sumQty,2,'.',',').'&nbsp;&nbsp;</td>
+				<td style="font-weight: bold; border: 0.1em solid black; text-align: right; width: 70px;">'.number_format($sumTotalQty,2,'.',',').'&nbsp;&nbsp;</td>
+				<td style="font-weight: bold; border: 0.1em solid black; text-align: center; width: 100px;"></td>
 			</tr>';
 			
 			

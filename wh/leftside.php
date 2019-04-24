@@ -40,8 +40,8 @@
 				<li><a href="shelf_z.php"><i class="glyphicon glyphicon-wrench"></i> <span>Shelf Rack</span></a></li>					
 			<?php } ?>    
 					
-			<li><a href="userGroup.php"><i class="fa fa-list-ol"></i> <span>User Group</span></a></li>
-			<li><a href="userDept.php"><i class="fa fa-list-ol"></i> <span>User Prod. Dept.</span></a></li>
+			<li><a href="userGroup.php"><i class="glyphicon glyphicon-th-large"></i> <span>User Group</span></a></li>
+			<li><a href="userDept.php"><i class="glyphicon glyphicon-th-large"></i> <span>User Prod. Dept.</span></a></li>
 		<?php } ?>
 
 		<?php if ( $s_userGroupCode == 'admin' || ( $s_userGroupCode == 'pdSup' && $s_userDeptCode == 'T' ) ) { ?>

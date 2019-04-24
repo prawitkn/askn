@@ -433,7 +433,11 @@ $('#btn_approve').click (function(e) {
 		//alert('Sales Order No. <?=$hdr['soNo'];?> will Close automatically.');
 	<?php //} ?>
 	//alert(params.hdrID);
+	//$(this).attr('disabled','disabled');
+	$("#spin").show();
+	//alert('big');
 	$.smkConfirm({text:'Are you sure to Approve ?',accept:'Yes', cancel:'Cancel'}, function (e){if(e){
+		$("#spin").show();
 		$.post({
 			url: '<?=$rootPage;?>_ajax.php',
 			data: params,
@@ -456,11 +460,13 @@ $('#btn_approve').click (function(e) {
 					text: data.message,
 					type: 'danger',
 					position:'top-center'
-				});
+				});				
+				$(this).removeAttr('disabled');	
 			}
 			//e.preventDefault();		
 		}).error(function (response) {
-			alert(response.responseText);
+			alert(response.responseText);	
+			$(this).removeAttr('disabled');	
 		});
 		//.post
 	}});

@@ -86,7 +86,7 @@ $pdo->beginTransaction();
 
 
 			//Last Prev Closing Date. = LPCD
-			$sql = "SELECT th.id, th.closingDate FROM stk_closing th WHERE th.statusCode='A' AND th.closingDate<='$dateFromYmd' ORDER BY th.closingDate DESC LIMIT 1
+			$sql = "SELECT th.id, th.closingDate FROM stk_closing th WHERE th.statusCode='A' AND DATE(th.closingDate)<='$dateFromYmd' ORDER BY th.closingDate DESC LIMIT 1
           	";
           	$stmt = $pdo->prepare($sql);		
 			$stmt->execute();
@@ -110,7 +110,7 @@ $pdo->beginTransaction();
 			$sql = "UPDATE tmpStock hdr
 	         ,(SELECT itm.prodCodeId, sh.toCode, SUM(itm.qty) as sumQty FROM product_item itm 
 	          				INNER JOIN send_detail sd ON sd.prodItemId=itm.prodItemId  
-	         				INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.statusCode='P' AND sh.rcNo IS NULL 
+	         				INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.statusCode='P' AND sh.rcNo IS NULL AND  DATE(sh.sendDate) <= '$dateFromYmd'
 	          				GROUP BY itm.prodCodeId, sh.toCode
 	          				) as tmp 
 	          SET hdr.onway=tmp.sumQty 
@@ -124,7 +124,7 @@ $pdo->beginTransaction();
 	         ,(SELECT itm.prodCodeId, th.toCode as fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
 	          				INNER JOIN receive_detail td ON td.prodItemId=itm.prodItemId  
 	         				INNER JOIN receive th ON th.rcNo=td.rcNo AND th.statusCode='P' 
-	         					AND th.receiveDate > '$lpcDate' AND th.receiveDate <= '$dateFromYmd'
+	         					AND DATE(th.receiveDate) > '$lpcDate' AND DATE(th.receiveDate) <= '$dateFromYmd'
 	          				GROUP BY itm.prodCodeId, th.toCode
 	          				) as tmp 
 	          SET hdr.receive=tmp.sumQty 
@@ -139,7 +139,7 @@ $pdo->beginTransaction();
 	         				FROM product_item itm 
 	          				INNER JOIN send_detail td ON td.prodItemId=itm.prodItemId  
 	         				INNER JOIN send th ON th.sdNo=td.sdNo AND th.statusCode='P' 
-	         					AND th.sendDate > '$lpcDate' AND th.sendDate <= '$dateFromYmd'
+	         					AND DATE(th.sendDate) > '$lpcDate' AND DATE(th.sendDate) <= '$dateFromYmd'
 	          				GROUP BY itm.prodCodeId, th.fromCode
 	          				) as tmp 
 	          SET hdr.sent=tmp.sumQty 
@@ -149,11 +149,10 @@ $pdo->beginTransaction();
 			$stmt->execute();
 
 			//return
-			$sql = "UPDATE tmpStock hdr
+			$sql = "UPDATE tmpStock hdr 
 	         ,(SELECT itm.prodCodeId, th.fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
 	          				INNER JOIN rt_detail td ON td.prodItemId=itm.prodItemId  
-	         				INNER JOIN rt th ON th.rtNo=td.rtNo AND th.statusCode='P' 
-	         					AND th.returnDate > '$dateFromYmd'
+	         				INNER JOIN rt th ON th.rtNo=td.rtNo AND th.statusCode='P' AND DATE(th.returnDate) > '$lpcDate' AND DATE(th.returnDate) <= '$dateFromYmd' 
 	          				GROUP BY itm.prodCodeId, th.fromCode
 	          				) as tmp 
 	          SET hdr.return=tmp.sumQty 
@@ -167,7 +166,7 @@ $pdo->beginTransaction();
 	         ,(SELECT itm.prodCodeId, CASE WHEN cust.locationCode = 'L' THEN '8' ELSE 'E' END as fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
 	          				INNER JOIN delivery_detail td ON td.prodItemId=itm.prodItemId  
 	         				INNER JOIN delivery_header th ON th.doNo=td.doNo AND th.statusCode='P' 
-	         					AND th.deliveryDate > '$lpcDate' AND th.deliveryDate <= '$dateFromYmd'
+	         					AND DATE(th.deliveryDate) > '$lpcDate' AND DATE(th.deliveryDate) <= '$dateFromYmd'
 	         				INNER JOIN sale_header shd ON shd.soNo=th.soNo 
 	         				INNER JOIN customer cust ON cust.id=shd.custId 
 	          				GROUP BY itm.prodCodeId, cust.locationCode 
@@ -180,31 +179,11 @@ $pdo->beginTransaction();
 			
 			//balance
 			$sql = "UPDATE tmpStock 
-			SET `balanceReCheck`=`openAcc`+`receive`-`sent`-`return`-`delivery`
+			SET `balance`=`openAcc`+`receive`-`sent`-`return`-`delivery`
           	";
           	$stmt = $pdo->prepare($sql);		
 			$stmt->execute();
-
-
-			//Receive
-			$sql = "UPDATE tmpStock hdr
-	         ,(SELECT itm.prodCodeId, th.toCode as fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
-	          				INNER JOIN receive_detail td ON td.prodItemId=itm.prodItemId AND td.statusCode='A'   
-	         				INNER JOIN receive th ON th.rcNo=td.rcNo AND th.statusCode='P' 
-	         					AND th.receiveDate <= '$dateFromYmd'
-	          				GROUP BY itm.prodCodeId, th.toCode
-	          				) as tmp 
-	          SET hdr.balance=tmp.sumQty 
-	          WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.fromCode 
-          	";
-          	$stmt = $pdo->prepare($sql);		
-			$stmt->execute();
-
-
-
-			
-			
-
+	
 			//delete
 			$sql = "DELETE FROM tmpStock 
 			WHERE `openAcc`=0 AND `onway`=0
@@ -236,20 +215,30 @@ $countTotal = $stmt->rowCount();
 if($countTotal>0){
 	// Add Header
 	$objPHPExcel->setActiveSheetIndex(0)
-		->setCellValue('B1', 'Update Date : '.date('Y-m-d H:i:s'));
+		->setCellValue('B1', 'Stock Date : '.date('d M Y',strtotime( $dateFromYmd )));
+
+	$objPHPExcel->setActiveSheetIndex(0)
+		->setCellValue('B2', 'Print Date : '.date('Y-m-d H:i:s'));
 		
 	$objPHPExcel->setActiveSheetIndex(0)		
-		->setCellValue('A2', 'Product ID')
-		->setCellValue('B2', 'Product Code')
-		->setCellValue('C2', 'Location')
-		->setCellValue('D2', 'Balance')
-		->setCellValue('E2', 'Onway');
+		->setCellValue('A3', 'Product ID')
+		->setCellValue('B3', 'Product Code')
+		->setCellValue('C3', 'Location')
+		->setCellValue('D3', 'Balance')
+		->setCellValue('E3', 'Onway');
 		//->setCellValue('D2', 'Available')
 
-	$iRow=3; while($row = $stmt->fetch() ){
+	$iRow=4; while($row = $stmt->fetch() ){
+		// Check incorrect balance.
+		$isNotEqual=false;
+		$bgColor="";
+		if ( $row['balance']<0 ){
+			$isNotEqual=true;
+			$bgColor="bg-danger";
+		}
 	// Add some data
 	$objPHPExcel->setActiveSheetIndex(0)		
-		->setCellValue('A'.$iRow, $row['prodId'])
+		->setCellValue('A'.$iRow, $row['prodId'].($isNotEqual?' *** ':''))
 		->setCellValue('B'.$iRow, $row['prodCode'])
 		->setCellValue('C'.$iRow, $row['sloc'])
 		->setCellValue('D'.$iRow, $row['balance'])

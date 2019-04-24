@@ -600,6 +600,7 @@ if(!isset($_POST['action'])){
 				}
 				$fromCode = $hdr['fromCode'];
 				$toCode = $hdr['toCode'];
+				$sendDate = $hdr['sendDate'];
 
 				//Query 1: Check Prev Cloosing Date
 				$hdrIssueTime = strtotime($hdr['sendDate']);
@@ -711,7 +712,14 @@ if(!isset($_POST['action'])){
 				$stmt->bindParam(':sdNo', $sdNo);
 				$stmt->execute();
 				
-
+				//Set send date to item..
+				$sql = "UPDATE product_item itm 
+				INNER JOIN tmpSend ts ON ts.prodItemId=itm.prodItemId 
+				SET itm.sendDate=:sendDate 
+				";
+				$stmt = $pdo->prepare($sql);
+				$stmt->bindParam(':sendDate', $sendDate);
+				$stmt->execute();
 				
 				
 				//Query 4:  UPDATE doc running.
@@ -728,68 +736,72 @@ if(!isset($_POST['action'])){
 				
 
 
-				//Query 5: UPDATE STK BAl sloc from 
-				$sql = "		
-				UPDATE stk_bal sb,
-				( SELECT itm.prodCodeId, sum(itm.qty)  as sumQty
-					   FROM send_detail dtl
-					   INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-					   WHERE sdNo=:sdNo GROUP BY itm.prodCodeId) as s
-				SET sb.send=sb.send+s.sumQty
-				, sb.balance=sb.balance-s.sumQty 
-				WHERE sb.prodId=s.prodCodeId
-				AND sb.sloc=:fromCode
-				";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $noNext);
-				$stmt->bindParam(':fromCode', $fromCode);
-				$stmt->execute();
+				// //Query 5: UPDATE STK BAl sloc from 
+				// $sql = "		
+				// UPDATE stk_bal sb,
+				// ( SELECT itm.prodCodeId, sum(itm.qty)  as sumQty
+				// 	   FROM send_detail dtl
+				// 	   INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+				// 	   WHERE sdNo=:sdNo GROUP BY itm.prodCodeId) as s
+				// SET sb.send=sb.send+s.sumQty
+				// , sb.balance=sb.balance-s.sumQty 
+				// WHERE sb.prodId=s.prodCodeId
+				// AND sb.sloc=:fromCode
+				// ";
+				// $stmt = $pdo->prepare($sql);
+				// $stmt->bindParam(':sdNo', $noNext);
+				// $stmt->bindParam(':fromCode', $fromCode);
+				// $stmt->execute();
 					
-				//Query 6: INSERT STK BAl sloc from 
-				$sql = "INSERT INTO stk_bal (prodId, sloc, send, balance) 
-				SELECT itm.prodCodeId, :fromCode, SUM(itm.qty), -1*SUM(itm.qty) 
-				FROM send_detail sd
-				INNER JOIN product_item itm ON itm.prodItemId=sd.prodItemId 
-				WHERE sd.sdNo=:sdNo 
-				AND itm.prodCodeId NOT IN (SELECT sb2.prodId FROM stk_bal sb2 WHERE sb2.sloc=:fromCode2)
-				GROUP BY itm.prodCodeId
-				";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $noNext);
-				$stmt->bindParam(':fromCode', $fromCode);
-				$stmt->bindParam(':fromCode2', $fromCode);
-				$stmt->execute();
+				// //Query 6: INSERT STK BAl sloc from 
+				// $sql = "INSERT INTO stk_bal (prodId, sloc, send, balance) 
+				// SELECT itm.prodCodeId, :fromCode, SUM(itm.qty), -1*SUM(itm.qty) 
+				// FROM send_detail sd
+				// INNER JOIN product_item itm ON itm.prodItemId=sd.prodItemId 
+				// WHERE sd.sdNo=:sdNo 
+				// AND itm.prodCodeId NOT IN (SELECT sb2.prodId FROM stk_bal sb2 WHERE sb2.sloc=:fromCode2)
+				// GROUP BY itm.prodCodeId
+				// ";
+				// $stmt = $pdo->prepare($sql);
+				// $stmt->bindParam(':sdNo', $noNext);
+				// $stmt->bindParam(':fromCode', $fromCode);
+				// $stmt->bindParam(':fromCode2', $fromCode);
+				// $stmt->execute();
 				
-				//Query 5: UPDATE STK BAl sloc to 
-				$sql = "		
-				UPDATE stk_bal sb,
-				( SELECT itm.prodCodeId, sum(itm.qty)  as sumQty
-					   FROM send_detail dtl
-					   INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
-					   WHERE sdNo=:sdNo GROUP BY itm.prodCodeId) as s
-				SET sb.onway=sb.onway+s.sumQty
-				WHERE sb.prodId=s.prodCodeId
-				AND sb.sloc=:toCode
-				";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $noNext);
-				$stmt->bindParam(':toCode', $toCode);
-				$stmt->execute();
+				// //Query 5: UPDATE STK BAl sloc to 
+				// $sql = "		
+				// UPDATE stk_bal sb,
+				// ( SELECT itm.prodCodeId, sum(itm.qty)  as sumQty
+				// 	   FROM send_detail dtl
+				// 	   INNER JOIN product_item itm ON itm.prodItemId=dtl.prodItemId 
+				// 	   WHERE sdNo=:sdNo GROUP BY itm.prodCodeId) as s
+				// SET sb.onway=sb.onway+s.sumQty
+				// WHERE sb.prodId=s.prodCodeId
+				// AND sb.sloc=:toCode
+				// ";
+				// $stmt = $pdo->prepare($sql);
+				// $stmt->bindParam(':sdNo', $noNext);
+				// $stmt->bindParam(':toCode', $toCode);
+				// $stmt->execute();
 				
-				//Query 6: INSERT STK BAl sloc to 
-				$sql = "INSERT INTO stk_bal (prodId, sloc, onway) 
-						SELECT itm.prodCodeId, :toCode, SUM(itm.qty) 
-						FROM send_detail sd 
-						INNER JOIN product_item itm ON itm.prodItemId=sd.prodItemId 
-						WHERE sd.sdNo=:sdNo 
-						AND itm.prodCodeId NOT IN (SELECT sb2.prodId FROM stk_bal sb2 WHERE sb2.sloc=:toCode2)
-						GROUP BY itm.prodCodeId
-						";
-				$stmt = $pdo->prepare($sql);
-				$stmt->bindParam(':sdNo', $noNext);
-				$stmt->bindParam(':toCode', $toCode);
-				$stmt->bindParam(':toCode2', $toCode);
-				$stmt->execute();
+				// //Query 6: INSERT STK BAl sloc to 
+				// $sql = "INSERT INTO stk_bal (prodId, sloc, onway) 
+				// 		SELECT itm.prodCodeId, :toCode, SUM(itm.qty) 
+				// 		FROM send_detail sd 
+				// 		INNER JOIN product_item itm ON itm.prodItemId=sd.prodItemId 
+				// 		WHERE sd.sdNo=:sdNo 
+				// 		AND itm.prodCodeId NOT IN (SELECT sb2.prodId FROM stk_bal sb2 WHERE sb2.sloc=:toCode2)
+				// 		GROUP BY itm.prodCodeId
+				// 		";
+				// $stmt = $pdo->prepare($sql);
+				// $stmt->bindParam(':sdNo', $noNext);
+				// $stmt->bindParam(':toCode', $toCode);
+				// $stmt->bindParam(':toCode2', $toCode);
+				// $stmt->execute();
+
+
+				$sendDate = $hdr['sendDate'];
+
 				
 				//We've got this far without an exception, so commit the changes.
 				$pdo->commit();
@@ -922,6 +934,11 @@ if(!isset($_POST['action'])){
 				$stmt->bindParam(':sdNo', $sdNo);
 				$stmt->execute();
 
+					
+				//Query 3: UPDATE DATA
+				$sql = "UPDATE send_detail SET sdNo=? WHERE sdNo=? ";
+				$stmt = $pdo->prepare($sql);
+				$stmt->execute(array($noNext,$sdNo));		
 
 				//Query 1: UPDATE DATA
 				$sql = "UPDATE send SET statusCode='P'
@@ -936,11 +953,16 @@ if(!isset($_POST['action'])){
 				$stmt->bindParam(':approveById', $s_userId);
 				$stmt->bindParam(':sdNo', $sdNo);
 				$stmt->execute();
-					
-				//Query 3: UPDATE DATA
-				$sql = "UPDATE send_detail SET sdNo=? WHERE sdNo=? ";
+
+				//Set send date to item..
+				$sql = "UPDATE product_item itm 
+				INNER JOIN tmpSend ts ON ts.prodItemId=itm.prodItemId 
+				SET itm.sendDate=:sendDate 
+				";
 				$stmt = $pdo->prepare($sql);
-				$stmt->execute(array($noNext,$sdNo));				
+				$stmt->bindParam(':sendDate', $sendDate);
+				$stmt->execute();
+						
 				
 				//Query 4:  UPDATE doc running.
 				$sql = "UPDATE doc_running SET cur_no=? WHERE year=? and name=? and prefix=? ";

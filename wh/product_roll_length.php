@@ -5,7 +5,25 @@ This is a starter template page. Use this page to start your new project from
 scratch. This page gets rid of all links and provides the needed markup only.
 -->
 <html>
-<?php include 'head.php'; ?>	<!-- head.php included session.php! -->
+<?php include 'head.php'; 
+
+//Check user roll.
+switch($s_userGroupCode){
+	case 'admin' : 
+		break;
+	case 'pdSup' :
+		if ( $s_userDeptCode == 'T' ){
+			//break;
+		}else{			
+			header('Location: access_denied.php');
+			exit();
+		}
+		break;
+	default : 
+		header('Location: access_denied.php');
+		exit();
+}
+?>	<!-- head.php included session.php! -->    
  
 </head>
 <body class="hold-transition <?=$skinColorName;?> sidebar-mini">

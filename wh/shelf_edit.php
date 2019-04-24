@@ -46,13 +46,13 @@ $row=$stmt->fetch();
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-      <h1><i class="glyphicon glyphicon-user"></i>
-       Shelf Rack
-        <small>Shelf Rack management</small>
+      <h1><i class="glyphicon glyphicon-wrench"></i>
+       Shelf
+        <small>Shelf management</small>
       </h1>
 	  <ol class="breadcrumb">
-        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Shelf Rack List</a></li>
-		<li><a href="#"><i class="glyphicon glyphicon-edit"></i>Shelf Rack</a></li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>Shelf List</a></li>
+		<li><a href="#"><i class="glyphicon glyphicon-edit"></i>Shelf</a></li>
       </ol>
     </section>
 
@@ -76,7 +76,7 @@ $row=$stmt->fetch();
 					<input type="hidden" name="id" value="<?=$row['id'];?>" />	
 					<div class="col-md-6">
 						<div class="form-group">
-							<label for="xId">Column</label>
+							<label for="xId">Shelf Column</label>
 							<select id="xId" name="xId" class="form-control" data-code=""  data-smk-msg="Require Column" required >
 								<option value=""> -- Select -- </option>
 								<?php
@@ -93,7 +93,7 @@ $row=$stmt->fetch();
 							</select>
 						</div>	
 						<div class="form-group">
-							<label for="yId">Row</label>
+							<label for="yId">Shelf Row</label>
 							<select id="yId" name="yId" class="form-control" data-code="" data-smk-msg="Require Row" required >
 								<option value=""> -- Select -- </option>
 								<?php
@@ -110,7 +110,7 @@ $row=$stmt->fetch();
 							</select>
 						</div>	
 						<div class="form-group">
-							<label for="zId">Rack</label>
+							<label for="zId">Shelf Rack</label>
 							<select id="zId" name="zId" class="form-control" data-code="" data-smk-msg="Require Rack" required >
 								<option value=""> -- Select -- </option>
 								<?php
@@ -127,12 +127,12 @@ $row=$stmt->fetch();
 							</select>
 						</div>	
 						<div class="form-group">
-                            <label for="code" >Code</label>
+                            <label for="code" >Shelf Code</label>
 							<input type="hidden" id="hidCode" name="hidCode" class="form-control" value="<?=$row['code'];?>" >
                             <input type="text" id="code" name="code" class="form-control" value="<?=$row['code'];?>" data-smk-msg="Require code" required disabled>
                         </div>
 						<div class="form-group">
-                            <label for="name" >name</label>
+                            <label for="name" >Shelf Name</label>
                             <input type="text" id="name" name="name" class="form-control" value="<?=$row['name'];?>" data-smk-msg="Require name" required >
                         </div>
 						
@@ -141,7 +141,7 @@ $row=$stmt->fetch();
 							<input type="radio" name="statusCode" value="A" <?php echo ($row['statusCode']=='A'?' checked ':'');?> >Active
 							<input type="radio" name="statusCode" value="I" <?php echo ($row['statusCode']=='I'?' checked ':'');?> >Inactive
 						</div>
-                        <button id="btn1" type="submit" class="btn btn-default">Submit</button>
+                        <button id="btn1" type="submit" class="btn btn-default"><i class="fa fa-save"></i> Edit Shelf</button>
 					</div>
 					<!--/.col-md-->
 					<div class="col-md-6">

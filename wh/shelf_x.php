@@ -37,7 +37,7 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
 	<section class="content-header">
-		<h1><i class="glyphicon glyphicon-vertical"></i>
+		<h1><i class="glyphicon glyphicon-wrench"></i>
        Shelf Column
         <small>Shelf Column management</small>
       </h1>
@@ -96,15 +96,10 @@ switch($s_userGroupCode){
 				<div class="col-md-6">					
 					<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
 						<div class="form-group">
-							<label for="search_word">Person Name search key word.</label>
-							<div class="input-group">
-								<input id="search_word" type="text" class="form-control" name="search_word" data-smk-msg="Require userFullname."required>
-								<span class="input-group-addon">
-									<span class="glyphicon glyphicon-search"></span>
-								</span>
-							</div>
+							<label for="search_word">Shelf Column Code and Name search key word.</label>
+							<input id="search_word" type="text" class="form-control" name="search_word" data-smk-msg="Require userFullname."required>
 						</div>						
-						<input type="submit" class="btn btn-default" value="ค้นหา">
+						<input type="submit" class="btn btn-default" value="Search">
 					</form>
 				</div>  
 				<!--/.col-md-->

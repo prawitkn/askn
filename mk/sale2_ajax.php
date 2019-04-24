@@ -157,7 +157,9 @@
 
 					$isInsertNewItem=true;
 
-					if( $refItmId <> "" ){
+					if( $refItmId <> "" ){						
+						$isInsertNewItem=false;
+
 						//Query 1: Check Status for not gen running No.
 						$sql = "SELECT saleItemId FROM picking ph
 						INNER JOIN picking_detail pd ON pd.pickNo=ph.pickNo AND pd.saleItemId=:saleItemId 
@@ -171,22 +173,85 @@
 						if($row_count == 1 ){
 							//return JSON
 							header('Content-Type: application/json');
-							echo json_encode(array('success' => false, 'message' => 'Fail! Can not change used sales item ID.'));
+							echo json_encode(array('success' => false, 'message' => 'ผิดพลาด! สินค้ารายการนี้ถูกนำไปใช้ Picking แล้ว กรุณาติดต่อคลังสินค้า'));
 							exit();
 						}
 
-						//Update delivery datte, rollLengId, remark 
-						$sql = "UPDATE `sale_detail` SET `qty`=:qty, `deliveryDate`=:deliveryDate, `rollLengthId`=:rollLengthId, `remark`=:remark WHERE id=:id 
+						$sql = "SELECT `id`, `prodId`, `deliveryDate`, `qty`, `rollLengthId`, `remark`, `createTime`, `soNo` FROM `sale_detail` WHERE id=:id 
 						";
 						$stmt = $pdo->prepare($sql);
-						$stmt->bindParam(':qty', $qty);
-						$stmt->bindParam(':deliveryDate', $deliveryDate);	
-						$stmt->bindParam(':rollLengthId', $rollLengthId);	
-						$stmt->bindParam(':remark', $itemRemark);	
 						$stmt->bindParam(':id', $refItmId);	
 						$stmt->execute();
+						$row=$stmt->fetch();
 
-						$isInsertNewItem=false;
+						$oldDeliveryDate=$row['deliveryDate'];
+						$oldQty=$row['qty'];
+						$oldRollLengthId=$row['rollLengthId'];
+						$oldRemark=$row['remark'];
+
+						$remainQty=$oldQty-$qty;
+
+						
+
+						if($oldQty==$qty){
+							//Update delivery datte, rollLengId, remark 
+							$sql = "UPDATE `sale_detail` SET `deliveryDate`=:deliveryDate, `rollLengthId`=:rollLengthId, `remark`=:remark WHERE id=:id 
+							";
+							$stmt = $pdo->prepare($sql);
+							$stmt->bindParam(':deliveryDate', $deliveryDate);	
+							$stmt->bindParam(':rollLengthId', $rollLengthId);	
+							$stmt->bindParam(':remark', $itemRemark);	
+							$stmt->bindParam(':id', $refItmId);	
+							$stmt->execute();
+
+						}else{	
+							// if($remainQty<=0){					
+							// 	header('Content-Type: application/json');
+							// 	$errors = "Error : "."incorrect Quantity.";
+							// 	echo json_encode(array('success' => false, 'message' => $errors));
+							// 	exit();
+							// }
+
+							//Edit qty=entery qty, remain = wait for qty.
+							$sql = "UPDATE `sale_detail` SET qty=:qty, `deliveryDate`=:deliveryDate, `rollLengthId`=:rollLengthId, `remark`=:remark WHERE id=:id 
+							";
+							$stmt = $pdo->prepare($sql);
+							$stmt->bindParam(':qty', $qty);
+							$stmt->bindParam(':deliveryDate', $deliveryDate);	
+							$stmt->bindParam(':rollLengthId', $rollLengthId);	
+							$stmt->bindParam(':remark', $itemRemark);		
+							$stmt->bindParam(':id', $refItmId);	
+							$stmt->execute();
+
+							if($remainQty > 0 ){
+								//insert product
+							    $sql = "INSERT INTO `sale_detail`
+								(`prodId`, `deliveryDate`, `qty`, `rollLengthId`, `remark`, `createTime`, `soNo`) 
+								VALUES 
+								(:prodId, :deliveryDate, :qty,:rollLengthId,:remark, now(), :soNo)
+								";
+								$stmt = $pdo->prepare($sql);
+								$stmt->bindParam(':prodId', $prodId);	
+								$stmt->bindParam(':deliveryDate', $oldDeliveryDate);
+								$stmt->bindParam(':qty', $remainQty);	
+								$stmt->bindParam(':rollLengthId', $oldRollLengthId);
+								$stmt->bindParam(':remark', $oldRemark);	
+								$stmt->bindParam(':soNo', $soNo);	
+								$stmt->execute();
+							}
+						}
+
+						// //Update delivery datte, rollLengId, remark 
+						// $sql = "UPDATE `sale_detail` SET `qty`=:qty, `deliveryDate`=:deliveryDate, `rollLengthId`=:rollLengthId, `remark`=:remark WHERE id=:id 
+						// ";
+						// $stmt = $pdo->prepare($sql);
+						// $stmt->bindParam(':qty', $qty);
+						// $stmt->bindParam(':deliveryDate', $deliveryDate);	
+						// $stmt->bindParam(':rollLengthId', $rollLengthId);	
+						// $stmt->bindParam(':remark', $itemRemark);	
+						// $stmt->bindParam(':id', $refItmId);	
+						// $stmt->execute();
+
 
 
 						$pdo->commit();
@@ -875,7 +940,7 @@
 					if($row_count == 1 ){
 						//return JSON
 						header('Content-Type: application/json');
-						echo json_encode(array('success' => false, 'message' => 'Fail! Can not delete used sales item ID.'));
+						echo json_encode(array('success' => false, 'message' => 'ผิดพลาด! สินค้ารายการนี้ถูกนำไปใช้ Picking แล้ว กรุณาติดต่อคลังสินค้า'));
 						exit();
 					}
 
@@ -885,7 +950,7 @@
 					$stmt->execute();
 					
 					header('Content-Type: application/json');
-					echo json_encode(array('success' => true, 'message' => 'Data delfffseted Complete.'));
+					echo json_encode(array('success' => true, 'message' => 'Data deleted Complete.'));
 				}catch(Exception $e){
 					header('Content-Type: application/json');
 					$errors = "Error on Data delete. Please try again. " . $e->getMessage();

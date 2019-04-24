@@ -11,14 +11,17 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		$s_userGroupCode = $row_user['userGroupCode'];
 		$s_userDeptCode = $row_user['userDeptCode'];
 		$s_userID=$_SESSION['userID'];*/
+		
 	//Roll
 	switch($s_userGroupCode){
-		case 'whOff' : case 'whSup' : case 'pdSup' : case 'pdMgr' : case 'whMgr' : case 'salesAdmin' :  
+		case 'admin' : case 'whOff' : case 'whSup' : case 'pdSup' : case 'pdMgr' : case 'whMgr' : case 'salesAdmin' : 
 			break;
 		default : 
 			header('Location: access_denied.php');
 			exit();
 	}
+
+
 
 	$rootPage="report_delivery2";
 	
@@ -98,7 +101,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <!-- Buttons, labels, and many other things can be placed here! -->
           <!-- Here is a label for example -->
           <?php
-				 $sql = "SELECT prd.code, prd.description
+				 $sql = "SELECT prd.code, prd.description, itm.grade, sh.custId, cust.name 
 				FROM `delivery_header` hdr
 				INNER JOIN delivery_detail dtl on dtl.doNo=hdr.doNo
 	            INNER JOIN sale_header sh ON sh.soNo=hdr.soNo 
@@ -113,7 +116,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				if($prodCode<>""){ $sql .= " AND prd.code like :prodCode ";	}	
 				if($prodId<>""){ $sql .= " AND prd.id=:prodId ";	}	
 				$sql .= "AND hdr.statusCode='P' ";
-				$sql.="GROUP BY prd.code, prd.description ";
+				$sql.="GROUP BY prd.code, prd.description, itm.grade, sh.custId, cust.name ";
 
 				$stmt = $pdo->prepare($sql);
 				if($dateFromYmd<>""){ $stmt->bindParam(':dateFromYmd', $dateFromYmd );	}
@@ -179,9 +182,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					</select>		
 					
 					<label for="prodCode">Product Code : </label>
-					<input type="hidden" name="prodId" id="prodId" class="form-control" value="<?=$prodId;?>"  />
-					<input type="text" name="prodCode" id="prodCode" class="form-control" value="<?=$prodCode;?>"  />
+					<input type="hidden" name="prodId" id="prodId" class="form-control" value=""  />
+					<input type="text" name="prodCode" id="prodCode" class="form-control" value="" placeholder="<?=$prodCode;?>"  />
 					<a href="#" name="btnSdNo" class="btn btn-default" ><i class="glyphicon glyphicon-search" ></i> </a>
+					
                     </form>
 
                     <a name="btnSubmit" id="btnSubmit" href="#" class="btn btn-primary"><i class="glyphicon glyphicon-search"></i> Search</a>
@@ -201,11 +205,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<th>Grade</th>
 					<th>Box/Roll</th>
 					<th>Piece/Length/KG</th>
+					<th>Customer Name</th>
                   </tr>
                   </thead>
                   <tbody>
 					<?php
-						 $sql = "SELECT prd.code, prd.description, itm.grade, count(itm.prodItemId) as qty, sum(itm.qty) as totalQty 
+						 $sql = "SELECT prd.code, prd.description, itm.grade
+						 , sh.custId, cust.name as custName 
+						 , count(itm.prodItemId) as qty, sum(itm.qty) as totalQty 
 						FROM `delivery_header` hdr
 						INNER JOIN delivery_detail dtl on dtl.doNo=hdr.doNo
                         INNER JOIN sale_header sh ON sh.soNo=hdr.soNo 
@@ -221,8 +228,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						if($prodId<>""){ $sql .= " AND prd.id=:prodId ";	}	
 						$sql .= "AND hdr.statusCode='P' ";
 
-						$sql.="GROUP BY prd.code, prd.description ";
-						$sql.="ORDER BY prd.code ";
+						$sql.="GROUP BY prd.code, prd.description, itm.grade, sh.custId, cust.name ";
+						$sql.="ORDER BY prd.code, itm.grade, cust.name  ";
 						$sql.="LIMIT $start, $rows ";
 
 						$stmt = $pdo->prepare($sql);
@@ -258,6 +265,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 					<td><?= $gradeName; ?></td>
 					<td style="text-align: right;"><?= number_format($row['qty'],0,'.',','); ?></td>
 					<td style="text-align: right;"><?= number_format($row['totalQty'],2,'.',','); ?></td>
+					<td><?= $row['custName']; ?></td>
                 </tr>
                  <?php $c_row +=1; $sumQty+=$row['qty']; $sumTotalQty+=$row['totalQty']; } ?>
                   </tbody>
@@ -417,7 +425,7 @@ $(document).ready(function() {
 				'	<div class="btn-group">' +
 				'	<a href="javascript:void(0);" data-name="search_person_btn_checked" ' +
 				'	class="btn" title="เลือก"> ' +
-				'	<i class="glyphicon glyphicon-ok"></i> เลือก</a> ' +
+				'	<i class="fa fa-circle-o"></i> เลือก</a> ' +
 				'	</div>' +
 				'</td>' + 
 				'<td style="display: none;">'+ value.prodId +'</td>' +

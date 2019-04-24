@@ -341,7 +341,7 @@ if(!isset($_POST['action'])){
 		case 'approve' :
 			//Check user roll.
 			switch($s_userGroupCode){
-				case 'it' : case 'admin' : case 'whSup' : 
+				case 'admin' : case 'whSup' : 
 					break; 
 				default : 
 					//return JSON
@@ -359,7 +359,7 @@ if(!isset($_POST['action'])){
 				$pdo->beginTransaction();
 				
 				//Query 1: Check Status for not gen running No.
-				$sql = "SELECT do.doNo, pp.pickNo, do.deliveryDate FROM delivery_header do
+				$sql = "SELECT do.doNo, pp.pickNo, do.deliveryDate, do.statusCode FROM delivery_header do
 				INNER JOIN prepare pp ON pp.ppNo=do.ppNo 
 				WHERE do.doNo=:doNo AND do.statusCode='C' LIMIT 1";
 				$stmt = $pdo->prepare($sql);
@@ -368,17 +368,24 @@ if(!isset($_POST['action'])){
 				$row_count = $stmt->rowCount();	
 				if($row_count != 1 ){		
 					//return JSON
+					
+					$hdr=$stmt->fetch();
 					header('Content-Type: application/json');
-					echo json_encode(array('success' => false, 'message' => 'Status incorrect.'));
+					echo json_encode(array('success' => false, 'message' => 'Status incorrect.'.$hdr['statusCode']));
 					exit();
+				}else{
+					$sql = "UPDATE delivery_header hdr SET  hdr.statusCode='W' WHERE hdr.doNo=:doNo ";
+					$stmt = $pdo->prepare($sql);		
+					$stmt->bindParam(':doNo', $doNo);
+					$stmt->execute();
 				}
 				$hdr=$stmt->fetch();
 				$pickNo=$hdr['pickNo'];
 				
+				$hdrIssueTime = new DateTime($hdr['deliveryDate']); 
+				$hdrIssueDate = $hdrIssueTime->format('Y-m-d');	
 
-				//Query 1: Check Prev Cloosing Date
-				$hdrIssueTime = strtotime($hdr['deliveryDate']);
-				$hdrIssueDate = date("Y-m-d", $hdrIssueTime);		
+				//Query 1: Check Prev Cloosing Date	
 				$sql = "SELECT `closingDate` FROM `stk_closing` WHERE statusCode='A' AND closingDate >= :closingDate LIMIT 1 ";
 				$stmt = $pdo->prepare($sql);
 				$stmt->bindParam(':closingDate', $hdrIssueDate);
@@ -543,7 +550,7 @@ if(!isset($_POST['action'])){
 				*/
 
 				//Query 5: UPDATE STK BAl
-				$sql = "UPDATE stk_bal sb
+				/*$sql = "UPDATE stk_bal sb
 				INNER JOIN delivery_prod dp ON dp.prodId=sb.prodId AND dp.doNo=:nextNo 
 				SET sb.delivery = sb.delivery + dp.qty
 				, sb.sales =  sb.sales - dp.qty 
@@ -567,6 +574,7 @@ if(!isset($_POST['action'])){
 				$stmt->bindParam(':sloc', $sloc);
 				$stmt->bindParam(':sloc2', $sloc);
 			    $stmt->execute();
+				*/
 				
 				//We've got this far without an exception, so commit the changes.
 			    $pdo->commit();

@@ -21,7 +21,7 @@ $tb = "wh_sloc_z";
 
 //Check user roll.
 switch($s_userGroupCode){
-	case 'it' : case 'admin' :
+	case 'admin' :
 		break;
 	default : 
 		header('Location: access_denied.php');
@@ -46,7 +46,7 @@ $row=$stmt->fetch();
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-      <h1><i class="glyphicon glyphicon-user"></i>
+      <h1><i class="glyphicon glyphicon-wrench"></i>
        Shelf Rack
         <small>Shelf Rack management</small>
       </h1>
@@ -76,11 +76,11 @@ $row=$stmt->fetch();
 					<input type="hidden" name="id" value="<?=$row['id'];?>" />	
 					<div class="col-md-6">	
 						<div class="form-group">
-                            <label for="code" >code</label>
+                            <label for="code" >Shelf Rack Code</label>
                             <input type="code" id="code" name="code" class="form-control" value="<?=$row['code'];?>" data-smk-msg="Require title" required>
                         </div>
 						<div class="form-group">
-                            <label for="name" >name</label>
+                            <label for="name" >Shelf Rack Name</label>
                             <input type="text" id="name" name="name" class="form-control" value="<?=$row['name'];?>" data-smk-msg="Require name" required>
                         </div>
 						<div class="form-group">
@@ -88,7 +88,7 @@ $row=$stmt->fetch();
 							<input type="radio" name="statusCode" value="A" <?php echo ($row['statusCode']=='A'?' checked ':'');?> >Active
 							<input type="radio" name="statusCode" value="I" <?php echo ($row['statusCode']=='I'?' checked ':'');?> >Non-Active
 						</div>
-                        <button id="btn1" type="submit" class="btn btn-default">Submit</button>
+                        <button id="btn1" type="submit" class="btn btn-default"><i class="fa fa-save"></i> Edit Shelf Rack</button>
 					</div>
 					<!--/.col-md-->
 					<div class="col-md-6">

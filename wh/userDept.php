@@ -9,7 +9,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 $rootPage = 'userDept';
 //Check user roll.
 switch($s_userGroupCode){
-	case 'it' : 
+	case 'admin' : 
 		break;
 	default : 
 		header('Location: access_denied.php');
@@ -38,12 +38,12 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
 	<section class="content-header">
-		<h1><i class="glyphicon glyphicon-user"></i>
-       User Production Department
-        <small>User Production Department management</small>
+		<h1><i class="glyphicon glyphicon-th-large"></i>
+       User Department
+        <small>User Department management</small>
       </h1>
       <ol class="breadcrumb">
-        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-list"></i>User Production Department List</a></li>
+        <li><a href="<?=$rootPage;?>.php"><i class="glyphicon glyphicon-th-large"></i>User Department List</a></li>
       </ol>
     </section>
 
@@ -53,8 +53,8 @@ switch($s_userGroupCode){
 <!-- To allow only admin to access the content -->      
     <div class="box box-primary">
         <div class="box-header with-border">
-		<label class="box-title">User Production Department List</label>
-			<a href="<?=$rootPage;?>_add.php?id=" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add User Production Department</a>
+		<label class="box-title">User Department List</label>
+			<a href="<?=$rootPage;?>_add.php?id=" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add User Department</a>
 		
 		
         <div class="box-tools pull-right">
@@ -93,15 +93,10 @@ switch($s_userGroupCode){
 				<div class="col-md-6">					
 					<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
 						<div class="form-group">
-							<label for="search_word">User Production Department search key word.</label>
-							<div class="input-group">
+							<label for="search_word">User Department search key word.</label>
 								<input id="search_word" type="text" class="form-control" name="search_word" data-smk-msg="Require userFullname."required>
-								<span class="input-group-addon">
-									<span class="glyphicon glyphicon-search"></span>
-								</span>
-							</div>
 						</div>						
-						<input type="submit" class="btn btn-default" value="ค้นหา">
+						<input type="submit" class="btn btn-default" value="Search">
 					</form>
 				</div>  
 				<!--/.col-md-->
@@ -132,25 +127,25 @@ switch($s_userGroupCode){
             
             <table class="table table-striped">
                 <tr>
-					<th>No.</th>
-					<th>Code</th>
-					<th>Name</th>
-                    <th>Status</th>
-                    <th>#</th>
+					<th style="text-align: center;">No.</th>
+					<th style="text-align: center;">User Department Code</th>
+					<th style="text-align: center;">User Department Name</th>
+                    <th style="text-align: center;">Status</th>
+                    <th style="text-align: center;">Actions</th>
                 </tr>
                 <?php $c_row=($start+1); while ($row = $stmt->fetch()) { 					
 						?>
                 <tr>
-					<td>
+					<td style="text-align: center;">
                          <?= $c_row; ?>
                     </td>			
-                    <td>
+                    <td style="text-align: center;">
                          <?= $row['code']; ?>
                     </td>
-                    <td>
+                    <td style="text-align: center;">
                          <?= $row['name']; ?>
                     </td>
-                    <td>
+                    <td style="text-align: center;">
 						 <?php
 						 switch($row['statusCode']){ 	
 							case 'A' :
@@ -167,28 +162,26 @@ switch($s_userGroupCode){
 						}
 						 ?>
                     </td>					
-                    <td>
-						
-						<?php if($row['statusCode']=='A'){ ?>
-							<a class="btn btn-primary" name="btn_row_edit" href="<?=$rootPage;?>_edit.php?act=edit&id=<?= $row['id']; ?>" >
-								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
-						<?php }else{ ?>	
-							<a class="btn btn-primary"  disabled  > 
-								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
-						<?php } ?>
-						
-						<?php if($row['statusCode']=='I'){ ?>
-							<a class="btn btn-danger" name="btn_row_remove"  data-id="<?=$row['id'];?>" > 
-								<i class="glyphicon glyphicon-remove"></i> Remove</a>	
-						<?php }else{ ?>	
-							<a class="btn btn-danger"  disabled  >
-								<i class="glyphicon glyphicon-remove"></i> Remove</a>	
-						<?php } ?>
-						
-						<?php if($row['statusCode']=='X' AND ($s_userGroupCode=='admin' OR $s_userGroupCode=='it' OR $s_userGroupCode=='prog')){ ?>
-							<a class="btn btn-danger" name="btn_row_delete"  data-id="<?=$row['id'];?>" > 
-								<i class="glyphicon glyphicon-trash"></i> Delete</a>	
-						<?php } ?>
+                    <td style="text-align: center;">
+						<?php
+						 switch($row['statusCode']){ 	
+							case 'A' :
+								echo '<a class="btn btn-primary" name="btn_row_edit" href="'.$rootPage.'_edit.php?act=edit&id='.$row['id'].'" >
+								<i class="glyphicon glyphicon-edit"></i> Edit</a>';
+								break;
+							case 'I' :
+								echo '<a class="btn btn-danger" name="btn_row_remove"  data-id="'.$row['id'].'" > 
+								<i class="glyphicon glyphicon-remove"></i> Remove</a>	';
+								break;
+							case 'X' : 
+								if($s_userGroupCode=="admin"){
+									echo '<a class="btn btn-danger" name="btn_row_delete"  data-id="'.$row['id'].'" > 
+								<i class="glyphicon glyphicon-trash"></i> Delete</a>';
+								}
+								break;
+							default :	
+								echo '';
+						} //end switch ?>
                     </td>
                 </tr>
                 <?php $c_row+=1; } ?>

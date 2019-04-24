@@ -57,19 +57,19 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						?>
 						<div class="row col-md-12">
 							<div class="form-group col-md-6">
-                            <label for="code">Code</label>                            
+                            <label for="code">Product Code</label>                            
 							<input id="code" type="text" class="form-control" name="code" value="" data-smk-msg="Require Code" required>	
                         	</div>
 
                         	<div class="form-group col-md-6">
-                            <label for="name">Name</label>                            
+                            <label for="name">Product Name</label>                            
 							<input id="name" type="text" class="form-control" name="name" value="" data-smk-msg="Require Name" required>	
                         	</div>
 						</div>
 						
 						<div class="row col-md-12">
 							<div class="form-group col-md-4">
-	                            <label for="uomCode">UOM</label>                            
+	                            <label for="uomCode">Sales UOM</label>                            
 								<input id="uomCode" type="text" class="form-control" name="uomCode" value="" data-smk-msg="Require UOM" required>						
                         	</div>
 
@@ -153,7 +153,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						</div>
 
 						<!--<a name="btn_submit" class="btn btn-default">Submit</a>--->
-						<button type="submit" name="btn_submit" class="btn btn-default" >Submit</button>
+						<button type="submit" name="btn_submit" class="btn btn-default" ><i class="fa fa-save"></i> Add Product</button>
                     
                 </div>
 				

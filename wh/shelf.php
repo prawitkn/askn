@@ -22,7 +22,7 @@ $rootPage = 'shelf';
 $tb = 'wh_shelf';
 //Check user roll.
 switch($s_userGroupCode){
-	case 'it' : case 'admin' : case 'whOff' : case 'whSup' : 
+	case 'admin' : case 'whOff' : case 'whSup' : 
 		break;
 	default :  
 		header('Location: access_denied.php');
@@ -38,7 +38,7 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
 	<section class="content-header">
-		<h1><i class="glyphicon glyphicon-vertical"></i>
+		<h1><i class="glyphicon glyphicon-wrench"></i>
        Shelf
         <small>Shelf management</small>
       </h1>
@@ -54,7 +54,7 @@ switch($s_userGroupCode){
     <div class="box box-primary">
         <div class="box-header with-border">
 		<label class="box-title">Shelf List</label>
-			<a href="<?=$rootPage;?>_add.php?id=" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add Self</a>
+			<a href="<?=$rootPage;?>_add.php?id=" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> Add Shelf</a>
 		
 		
         <div class="box-tools pull-right">
@@ -96,7 +96,7 @@ switch($s_userGroupCode){
 				<div class="col-md-6">					
 					<form id="form1" action="<?=$rootPage;?>.php" method="get" class="form" novalidate>
 						<div class="form-group">
-							<label for="search_word">Name search key word.</label>
+							<label for="search_word">Shelf name search key word.</label>
 							<div class="input-group">
 								<input id="search_word" type="text" class="form-control" name="search_word" data-smk-msg="Require userFullname."required>
 								<span class="input-group-addon">
@@ -104,7 +104,7 @@ switch($s_userGroupCode){
 								</span>
 							</div>
 						</div>						
-						<input type="submit" class="btn btn-default" value="ค้นหา">
+						<input type="submit" class="btn btn-default" value="Search">
 					</form>
 				</div>  
 				<!--/.col-md-->
@@ -112,14 +112,17 @@ switch($s_userGroupCode){
 			<!--/.row-->
            <?php
 			$sql = "
-			SELECT `id`, `code`, `name`, `statusCode`
-			FROM `".$tb."`  
+			SELECT a.`id`, a.`code`, a.`name`, a.`statusCode`
+			FROM `".$tb."` a 
+			LEFT JOIN wh_sloc_x x ON x.id=a.xId 
+			LEFT JOIN wh_sloc_y y ON y.id=a.yId 
+			LEFT JOIN wh_sloc_z z ON z.id=a.zId  
 			WHERE 1=1 ";
 			if(isset($_GET['search_word']) and isset($_GET['search_word'])){
 				$search_word=$_GET['search_word'];
 				$sql .= "and (code like '%".$_GET['search_word']."%' ) ";
 			}	
-			$sql .= "ORDER BY code ASC ";
+			$sql .= "ORDER BY x.code, CAST(y.code AS UNSIGNED), CAST(z.code AS UNSIGNED) ASC ";
 			$sql.="LIMIT $start, $rows ";		
 			//$result = mysqli_query($link, $sql);
 			$stmt = $pdo->prepare($sql);	
@@ -129,11 +132,11 @@ switch($s_userGroupCode){
             <div class="table-responsive">
             <table class="table table-striped">
                 <tr>
-					<th>No.</th>	
-					<th>code</th>
-                    <th>name</th>
-                    <th>Status</th>
-                    <th>#</th>
+					<th style="text-align: center;">No.</th>	
+					<th style="text-align: center;">Shelf Code</th>
+                    <th style="text-align: center;">Shelf Name</th>
+                    <th style="text-align: center;">Status</th>
+                    <th style="text-align: center;">Actions</th>
                 </tr>
                 <?php $c_row=($start+1); while ($row = $stmt->fetch()) { 
 					$statusName = '<label class="label label-info">Unknow</label>';
@@ -144,16 +147,16 @@ switch($s_userGroupCode){
 						}
 						?>
                 <tr>
-					<td>
+					<td style="text-align: center;">
                          <?= $c_row; ?>
                     </td>	
-                    <td>
+                    <td style="text-align: center;">
                          <?= $row['code']; ?>
                     </td>
-                    <td>
+                    <td style="text-align: center;">
                          <?= $row['name']; ?>
                     </td>				
-                    <td>
+                    <td style="text-align: center;">
 						 <?php
 						 switch($row['statusCode']){ 	
 							case 'A' :
@@ -170,28 +173,26 @@ switch($s_userGroupCode){
 						}
 						 ?>
                     </td>					
-                    <td>
-						
-						<?php if($row['statusCode']=='A'){ ?>
-							<a class="btn btn-primary" name="btn_row_edit" href="<?=$rootPage;?>_edit.php?act=edit&id=<?= $row['id']; ?>" >
-								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
-						<?php }else{ ?>	
-							<a class="btn btn-primary"  disabled  > 
-								<i class="glyphicon glyphicon-edit"></i> Edit</a>	
-						<?php } ?>
-						
-						<?php if($row['statusCode']=='I'){ ?>
-							<a class="btn btn-danger" name="btn_row_remove"  data-id="<?=$row['id'];?>" > 
-								<i class="glyphicon glyphicon-remove"></i> Remove</a>	
-						<?php }else{ ?>	
-							<a class="btn btn-danger"  disabled  >
-								<i class="glyphicon glyphicon-remove"></i> Remove</a>	
-						<?php } ?>
-						
-						<?php if($row['statusCode']=='X' AND ($s_userGroupCode=='admin' OR $s_userGroupCode=='it' OR $s_userGroupCode=='prog')){ ?>
-							<a class="btn btn-danger" name="btn_row_delete"  data-id="<?=$row['id'];?>" > 
-								<i class="glyphicon glyphicon-trash"></i> Delete</a>	
-						<?php } ?>
+                    <td style="text-align: center;">
+						<?php
+						 switch($row['statusCode']){ 	
+							case 'A' :
+								echo '<a class="btn btn-primary" name="btn_row_edit" href="'.$rootPage.'_edit.php?act=edit&id='.$row['id'].'" >
+								<i class="glyphicon glyphicon-edit"></i> Edit</a>';
+								break;
+							case 'I' :
+								echo '<a class="btn btn-danger" name="btn_row_remove"  data-id="'.$row['id'].'" > 
+								<i class="glyphicon glyphicon-remove"></i> Remove</a>	';
+								break;
+							case 'X' : 
+								if($s_userGroupCode=="admin"){
+									echo '<a class="btn btn-danger" name="btn_row_delete"  data-id="'.$row['id'].'" > 
+								<i class="glyphicon glyphicon-trash"></i> Delete</a>';
+								}
+								break;
+							default :	
+								echo '';
+						} //end switch ?>
                     </td>
                 </tr>
                 <?php $c_row+=1; } ?>

@@ -38,7 +38,7 @@ switch($s_userGroupCode){
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-      <h1><i class="glyphicon glyphicon-user"></i>
+      <h1><i class="glyphicon glyphicon-th-large"></i>
        User Group
         <small>User Group management</small>
       </h1>
@@ -76,7 +76,7 @@ switch($s_userGroupCode){
                             <input id="name" type="text" class="form-control" name="name" data-smk-msg="Require uer group name" required>
                         </div>
 						
-						<button id="btn1" type="submit" class="btn btn-default">Submit</button>
+						<button id="btn1" type="submit" class="btn btn-default"><i class="fa fa-save"></i> Add User Group</button>
 					</div>
 					<!--/.col-md-->
 					<div class="col-md-6">

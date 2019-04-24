@@ -358,6 +358,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						";			
 						$stmt = $pdo->prepare($sql);
 						$stmt->execute();	*/
+
 						
 						//Update un sent item.
 						$sql = "UPDATE  product_item map

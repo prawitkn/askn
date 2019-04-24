@@ -10,24 +10,23 @@ scratch. This page gets rid of all links and provides the needed markup only.
 $rootPage = 'prodMapCustProdCode';
 
 //Check user roll.
-$isAllow=false;
 switch($s_userGroupCode){
-	case 'admin' : $isAllow=true; break;
-	case 'pdSup' : 
+	case 'admin' : 
+		break;
+	case 'pdSup' :
 		if ( $s_userDeptCode == 'T' ){
-			$isAllow=true;
+			//break;
+		}else{			
+			header('Location: access_denied.php');
+			exit();
 		}
 		break;
 	default : 
-}//.switch
+		header('Location: access_denied.php');
+		exit();
+}
+?>	<!-- head.php included session.php! -->    
 
-if ( !$isAllow ){
-	header('Location: access_denied.php');
-	exit();
-}//.if isallow
-	
-
-?>	<!-- head.php included session.php! -->
 
 </head>
 <body class="hold-transition <?=$skinColorName;?> sidebar-mini">

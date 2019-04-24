@@ -1150,8 +1150,8 @@ $("#spin").hide();
 									'<td style="text-align: right;">'+value.qty+' '+value.uomCode+'</td>'+
 									'<td style="text-align: left;">'+tmpRemark+'</td>'+
 									'<td style="text-align: left;">'+value.deliveryDate+'</td>'+
-									'<td><a href="#" name="divShip" class="btn btn-default" data-ref-id="'+value.id+'" data-prod-id="'+value.prodId+'" ><i class="fa fa-cut"></i> Div.Ship.</td>'+
-									'<td><a href="#" name="editItem" class="btn btn-default" data-ref-id="'+value.id+'" data-prod-id="'+value.prodId+'" ><i class="fa fa-edit"></i> Edit</td>'+
+									'<td><a href="#" name="divShip" class="btn btn-default" data-ref-id="'+value.id+'" data-prod-id="'+value.prodId+'" ><i class="fa fa-cut"></i> Pick Pending</td>'+
+									'<td><a href="#" name="editItem" class="btn btn-default" data-ref-id="'+value.id+'" data-prod-id="'+value.prodId+'" ><i class="fa fa-edit"></i> Split / Edit</td>'+
 									'<td><a href="#" name="btnItmDelete" class="btn btn-danger" data-id="'+value.id+'"  ><i class="fa fa-trush"></i> Delete</a></td>'+
 									'</tr>');
 								$rowNo+=1;

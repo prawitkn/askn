@@ -71,7 +71,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						<input type="hidden" name="id" id="id" value="<?= $row['id']; ?>" />
 						<div class="row col-md-12">
 							<div class="form-group col-md-6">
-                            <label for="id">ID</label>                            
+                            <label for="id">Product ID</label>                            
 							<div class="input-group">
 								<input id="id" type="text" class="form-control" name="id" value="<?= $row['id']; ?>" data-smk-msg="Require Group" disabled required>							
 							</div>
@@ -79,19 +79,19 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						</div>
 						<div class="row col-md-12">
 							<div class="form-group col-md-6">
-                            <label for="code">Code</label>                            
+                            <label for="code">Product Code</label>                            
 							<input id="code" type="text" class="form-control" name="code" value="<?= $row['code']; ?>" data-smk-msg="Require Group" required>	
                         	</div>
 
                         	<div class="form-group col-md-6">
-                            <label for="name">Name</label>                            
+                            <label for="name">Product Name</label>                            
 							<input id="name" type="text" class="form-control" name="name" value="<?= $row['name']; ?>" data-smk-msg="Require Name" required>	
                         	</div>
 						</div>
 
 						<div class="row col-md-12">
 							<div class="form-group col-md-4">
-                            <label for="uomCode">UOM</label>                            
+                            <label for="uomCode">Sales UOM</label>                            
 							<input id="uomCode" type="text" class="form-control" name="uomCode" value="<?= $row['uomCode']; ?>" data-smk-msg="Require UOM" required>							
                         	</div>
 
@@ -174,7 +174,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 						</div>
 
 						<!--<a name="btn_submit" class="btn btn-default">Submit</a>--->
-						<button type="submit" name="btn_submit" class="btn btn-default" >Submit</button>
+						<button type="submit" name="btn_submit" class="btn btn-default" ><i class="fa fa-save"></i> Update Product</button>
                     
                 </div>
 				
