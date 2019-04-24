@@ -378,7 +378,7 @@ if(!isset($_POST['action'])){
 				
 				//return JSON
 				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data approved', 'pickNo' => $pickNo));	
+				echo json_encode(array('success' => true, 'message' => 'Data Confirmed.', 'pickNo' => $pickNo));	
 			} 
 			//Our catch block will handle any exceptions that are thrown.
 			catch(Exception $e){
@@ -420,7 +420,7 @@ if(!isset($_POST['action'])){
 				
 				//return JSON
 				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data approved', 'pickNo' => $pickNo));	
+				echo json_encode(array('success' => true, 'message' => 'Data Rejected', 'pickNo' => $pickNo));	
 			} 
 			//Our catch block will handle any exceptions that are thrown.
 			catch(Exception $e){
@@ -509,7 +509,7 @@ if(!isset($_POST['action'])){
 				
 				//return JSON
 				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data approved', 'pickNo' => $nextNo));	
+				echo json_encode(array('success' => true, 'message' => 'Data Approved', 'pickNo' => $nextNo));	
 			} 
 			//Our catch block will handle any exceptions that are thrown.
 			catch(Exception $e){
@@ -582,7 +582,7 @@ if(!isset($_POST['action'])){
 				
 				//return JSON
 				header('Content-Type: application/json');
-				echo json_encode(array('success' => true, 'message' => 'Data Approved', 'sdNo' => $pickNo));	
+				echo json_encode(array('success' => true, 'message' => 'Data Removed', 'sdNo' => $pickNo));	
 			} 
 			//Our catch block will handle any exceptions that are thrown.
 			catch(Exception $e){

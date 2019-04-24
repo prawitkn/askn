@@ -243,7 +243,8 @@ $custId = $hdr['custId'];
 						<th>Qty</th>
 						<th>#</th>
 					</tr>
-					<?php $row_no=1; while ($row = $stmt2->fetch()) { 
+					<?php $isHasPickOrderItem=false; $row_no=1; while ($row = $stmt2->fetch()) { 
+						$isHasPickOrderItem=true;
 					$gradeName = ''; 
 					switch($row['grade']){
 						case 0 : $gradeName = 'A'; break;
@@ -621,7 +622,11 @@ $("#spin").hide();
 	});
 	//.btn_click
 			   
-	$('#btn_verify').click (function(e) {				 
+	$('#btn_verify').click (function(e) {
+		<?php if(!$isHasPickOrderItem){ ?>
+			alert('Cannot Confirm Empty Picking List.');
+			return false;
+		<?php } ?>				 
 		var params = {		
 		action: 'confirm',			
 		pickNo: $('#pickNo').val()				
