@@ -34,5 +34,5 @@
 		$result_user = mysqli_query($link,$qry_user);        
         
     }else{
-		header("Location: login.php");
+		header("Location: ..\index.php");
 	}

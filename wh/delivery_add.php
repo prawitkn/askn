@@ -646,6 +646,7 @@ $(document).ready(function() {
 			autoclose: true,
 			format: 'dd/mm/yyyy',
 			todayBtn: true,
+			minDate: '28/04/2019',
 			language: 'en',             //เปลี่ยน label ต่างของ ปฏิทิน ให้เป็น ภาษาไทย   (ต้องใช้ไฟล์ bootstrap-datepicker.th.min.js นี้ด้วย)
 			thaiyear: false              //Set เป็นปี พ.ศ.
 		});  //กำหนดเป็นวันปัจุบัน

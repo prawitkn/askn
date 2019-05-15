@@ -31,15 +31,20 @@
 			          	$sql = "
 			          	CREATE TEMPORARY TABLE tmpStock (
 			          		`prodId` int(11) NOT NULL,
+							  `prodCode` varchar(100) NOT NULL,
 							  `sloc` varchar(10) NOT NULL,
 							  `openAcc` decimal(10,2) NOT NULL,
-							  `openTrans` decimal(10,2) NOT NULL,
 							  `onway` decimal(10,2) NOT NULL,
-							  `receive` decimal(10,2) NOT NULL,
+							  `receive` decimal(10,2) NOT NULL,				  
+							  `receiveNext` decimal(10,2) NOT NULL,
 							  `sent` decimal(10,2) NOT NULL,
-							  `return` decimal(10,2) NOT NULL,
+							  `sentNext` decimal(10,2) NOT NULL,
+							  `return` decimal(10,2) NOT NULL,				  
+							  `returnNext` decimal(10,2) NOT NULL,
 							  `delivery` decimal(10,2) NOT NULL,
+							  `deliveryNext` decimal(10,2) NOT NULL,
 							  `balance` decimal(10,2) NOT NULL,
+							  `balanceCalc` decimal(10,2) NOT NULL,
 							  `book` decimal(10,2) NOT NULL,
 					      	PRIMARY KEY (`prodId`,`sloc`)
 					    )";
@@ -47,13 +52,44 @@
 						$stmt->execute();
 
 						$sql = "
-				          INSERT INTO tmpStock (prodId, sloc)
-				          SELECT prd.id, sl.code 
-				          FROM product prd
-				          CROSS JOIN sloc sl ON sl.code IN ('8','E')
+				          INSERT INTO tmpStock (prodId, prodCode, sloc)
+				          SELECT prd.id, prd.code, sl.code 
+				          FROM product prd ";
+				        $sql .= "
+				          CROSS JOIN sloc sl ON 1=1 ";
+				        // if($sloc<>""){ $sql .= " AND sl.code='$sloc' ";	}else{ $sql .= " AND sl.code IN ('8','E') "; }  
+				        // $sql .= "WHERE 1=1 ";
+				        // if($prodCode<>""){ $sql .= "AND prd.code like '%".$prodCode."%' ";	}
+				        // if($catCode<>""){ $sql .= " AND prd.catCode='$catCode' ";	}
+
+			          	$stmt = $pdo->prepare($sql);		
+						$stmt->execute();				
+
+						// Balance
+						$sql = "UPDATE tmpStock hdr
+				         ,(SELECT itm.prodCodeId, sh.toCode, SUM(itm.qty) as sumQty FROM product_item itm 
+				          				INNER JOIN receive_detail sd ON sd.prodItemId=itm.prodItemId AND sd.statusCode='A'   
+				         				INNER JOIN receive sh ON sh.rcNo=sd.rcNo AND sh.statusCode='P'
+				          				GROUP BY itm.prodCodeId, sh.toCode
+				          				) as tmp 
+				          SET hdr.balance=tmp.sumQty 
+				          WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.toCode 
 			          	";
 			          	$stmt = $pdo->prepare($sql);		
 						$stmt->execute();
+
+						// //Onway
+						// $sql = "UPDATE tmpStock hdr
+				  //        ,(SELECT itm.prodCodeId, sh.toCode, SUM(itm.qty) as sumQty FROM product_item itm 
+				  //         				INNER JOIN send_detail sd ON sd.prodItemId=itm.prodItemId  
+				  //        				INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.statusCode='P' AND sh.rcNo IS NULL AND DATE(sh.sendDate) <= '$dateFromYmd'
+				  //         				GROUP BY itm.prodCodeId, sh.toCode
+				  //         				) as tmp 
+				  //         SET hdr.onway=tmp.sumQty 
+				  //         WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.toCode 
+			   //        	";
+			   //        	$stmt = $pdo->prepare($sql);		
+						// $stmt->execute();
 
 						//Last Prev Closing Date. = LPCD
 						$sql = "SELECT th.id, th.closingDate FROM stk_closing th WHERE th.statusCode='A' AND DATE(th.closingDate)<='$dateFromYmd' ORDER BY th.closingDate DESC LIMIT 1
@@ -75,20 +111,8 @@
 			          	$stmt = $pdo->prepare($sql);	
 						$stmt->bindParam(':lpcdId', $lpcdId);	
 						$stmt->execute();
+								
 
-						//Onway
-						$sql = "UPDATE tmpStock hdr
-				         ,(SELECT itm.prodCodeId, sh.toCode, SUM(itm.qty) as sumQty FROM product_item itm 
-				          				INNER JOIN send_detail sd ON sd.prodItemId=itm.prodItemId  
-				         				INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.statusCode='P' AND sh.rcNo IS NULL AND  DATE(sh.sendDate) <= '$dateFromYmd'
-				          				GROUP BY itm.prodCodeId, sh.toCode
-				          				) as tmp 
-				          SET hdr.onway=tmp.sumQty 
-				          WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.toCode 
-			          	";
-			          	$stmt = $pdo->prepare($sql);		
-						$stmt->execute();
-						
 						//Receive
 						$sql = "UPDATE tmpStock hdr
 				         ,(SELECT itm.prodCodeId, th.toCode as fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
@@ -102,6 +126,20 @@
 			          	";
 			          	$stmt = $pdo->prepare($sql);		
 						$stmt->execute();
+
+						// //Receive Next
+						// $sql = "UPDATE tmpStock hdr
+				  //        ,(SELECT itm.prodCodeId, th.toCode as fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
+				  //         				INNER JOIN receive_detail td ON td.prodItemId=itm.prodItemId  
+				  //        				INNER JOIN receive th ON th.rcNo=td.rcNo AND th.statusCode='P' 
+				  //        					AND DATE(th.receiveDate) > '$dateFromYmd' 
+				  //         				GROUP BY itm.prodCodeId, th.toCode
+				  //         				) as tmp 
+				  //         SET hdr.receiveNext=tmp.sumQty 
+				  //         WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.fromCode 
+			   //        	";
+			   //        	$stmt = $pdo->prepare($sql);		
+						// $stmt->execute();
 
 						//Sent
 						$sql = "UPDATE tmpStock hdr
@@ -118,6 +156,21 @@
 			          	$stmt = $pdo->prepare($sql);		
 						$stmt->execute();
 
+						// //Sent Next
+						// $sql = "UPDATE tmpStock hdr
+				  //        ,(SELECT itm.prodCodeId, th.fromCode, SUM(itm.qty) as sumQty 
+				  //        				FROM product_item itm 
+				  //         				INNER JOIN send_detail td ON td.prodItemId=itm.prodItemId  
+				  //        				INNER JOIN send th ON th.sdNo=td.sdNo AND th.statusCode='P' 
+				  //        					AND DATE(th.sendDate) > '$dateFromYmd' 
+				  //         				GROUP BY itm.prodCodeId, th.fromCode
+				  //         				) as tmp 
+				  //         SET hdr.sentNext=tmp.sumQty 
+				  //         WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.fromCode 
+			   //        	";
+			   //        	$stmt = $pdo->prepare($sql);		
+						// $stmt->execute();
+
 						//return
 						$sql = "UPDATE tmpStock hdr 
 				         ,(SELECT itm.prodCodeId, th.fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
@@ -130,6 +183,19 @@
 			          	";
 			          	$stmt = $pdo->prepare($sql);		
 						$stmt->execute();
+
+						// //return Next
+						// $sql = "UPDATE tmpStock hdr 
+				  //        ,(SELECT itm.prodCodeId, th.fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
+				  //         				INNER JOIN rt_detail td ON td.prodItemId=itm.prodItemId  
+				  //        				INNER JOIN rt th ON th.rtNo=td.rtNo AND th.statusCode='P' AND DATE(th.returnDate) > '$dateFromYmd' 
+				  //         				GROUP BY itm.prodCodeId, th.fromCode
+				  //         				) as tmp 
+				  //         SET hdr.returnNext=tmp.sumQty 
+				  //         WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.fromCode 
+			   //        	";
+			   //        	$stmt = $pdo->prepare($sql);		
+						// $stmt->execute();
 
 						//delivery
 						$sql = "UPDATE tmpStock hdr
@@ -146,10 +212,26 @@
 			          	";
 			          	$stmt = $pdo->prepare($sql);		
 						$stmt->execute();
+
+						// //delivery next
+						// $sql = "UPDATE tmpStock hdr
+				  //        ,(SELECT itm.prodCodeId, CASE WHEN cust.locationCode = 'L' THEN '8' ELSE 'E' END as fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
+				  //         				INNER JOIN delivery_detail td ON td.prodItemId=itm.prodItemId  
+				  //        				INNER JOIN delivery_header th ON th.doNo=td.doNo AND th.statusCode='P' 
+				  //        					AND DATE(th.deliveryDate) > '$dateFromYmd' 
+				  //        				INNER JOIN sale_header shd ON shd.soNo=th.soNo 
+				  //        				INNER JOIN customer cust ON cust.id=shd.custId 
+				  //         				GROUP BY itm.prodCodeId, cust.locationCode 
+				  //         				) as tmp 
+				  //         SET hdr.deliveryNext=tmp.sumQty 
+				  //         WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.fromCode 
+			   //        	";
+			   //        	$stmt = $pdo->prepare($sql);		
+						// $stmt->execute();
 						
 						//balance
 						$sql = "UPDATE tmpStock 
-						SET `balance`=`openAcc`+`receive`-`sent`-`return`-`delivery`
+						SET `balanceCalc`=`openAcc`+`receive`-`sent`-`return`-`delivery`
 			          	";
 			          	$stmt = $pdo->prepare($sql);		
 						$stmt->execute();
@@ -158,10 +240,13 @@
 						$sql = "DELETE FROM tmpStock 
 						WHERE `openAcc`=0 AND `onway`=0
 						AND `receive`=0 AND `sent`=0 AND `return`=0 AND `delivery`=0 
-						AND `balance`=0 AND `book`=0 
+						AND `balanceCalc`=0 AND `balance`=0 AND `book`=0 
 			          	";
 			          	$stmt = $pdo->prepare($sql);		
 						$stmt->execute();
+
+
+
 				
 						$sql = "INSERT INTO stk_closing (`closingDate`
 						, `statusCode`, `createTime`, `createUserId`) 

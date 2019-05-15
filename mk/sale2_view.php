@@ -230,7 +230,7 @@ $rootPage="sale2";
 	</div>
 	<div class="row">	
 		<div class="col-md-3">
-			กรณีส่งต่างผระเทศ (Export) by :  
+			กรณีส่งต่างประเทศ (Export) by :  
 		</div>
 		<div class="col-md-9">
 			<span style="text-decoration: underline;"><?=$hdr['containerLoadName'];?></span>

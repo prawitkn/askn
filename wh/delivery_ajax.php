@@ -55,6 +55,12 @@ if(!isset($_POST['action'])){
 				$deliveryDate = str_replace('/', '-', $deliveryDate);
 				$deliveryDate = date("Y-m-d",strtotime($deliveryDate));
 
+				if($deliveryDate < date("Y-m-d")){
+					//return JSON
+					header('Content-Type: application/json');
+					echo json_encode(array('success' => false, 'message' => 'Delivery Date incorrect.'));
+					exit();
+				}
 				$pdo->beginTransaction();
 				
 				//Query 1: Check Status for not gen running No.

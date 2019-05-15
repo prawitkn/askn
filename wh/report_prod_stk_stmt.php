@@ -12,7 +12,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		$s_userDeptCode = $row_user['userDeptCode'];
 		$s_userID=$_SESSION['userID'];*/
 	
-	$rootPage="report_prod_stk2";
+	$rootPage="report_prod_stk_stmt";
 	$isSubmit=false;
 
 	$dateFrom=$dateTo="";
@@ -107,12 +107,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
 				  `sloc` varchar(10) NOT NULL,
 				  `openAcc` decimal(10,2) NOT NULL,
 				  `onway` decimal(10,2) NOT NULL,
-				  `receive` decimal(10,2) NOT NULL,
+				  `receive` decimal(10,2) NOT NULL,				  
+				  `receiveNext` decimal(10,2) NOT NULL,
 				  `sent` decimal(10,2) NOT NULL,
-				  `return` decimal(10,2) NOT NULL,
+				  `sentNext` decimal(10,2) NOT NULL,
+				  `return` decimal(10,2) NOT NULL,				  
+				  `returnNext` decimal(10,2) NOT NULL,
 				  `delivery` decimal(10,2) NOT NULL,
+				  `deliveryNext` decimal(10,2) NOT NULL,
 				  `balance` decimal(10,2) NOT NULL,
-				  `balanceReCheck` decimal(10,2) NOT NULL,
+				  `balanceCalc` decimal(10,2) NOT NULL,
 				  `book` decimal(10,2) NOT NULL,
 		      	PRIMARY KEY (`prodId`,`sloc`)
 		    )";
@@ -137,7 +141,33 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	        if($catCode<>""){ $sql .= " AND prd.catCode='$catCode' ";	}
 
           	$stmt = $pdo->prepare($sql);		
-			$stmt->execute();		
+			$stmt->execute();			
+
+			// Balance
+			$sql = "UPDATE tmpStock hdr
+	         ,(SELECT itm.prodCodeId, sh.toCode, SUM(itm.qty) as sumQty FROM product_item itm 
+	          				INNER JOIN receive_detail sd ON sd.prodItemId=itm.prodItemId AND sd.statusCode='A'   
+	         				INNER JOIN receive sh ON sh.rcNo=sd.rcNo AND sh.statusCode='P'
+	          				GROUP BY itm.prodCodeId, sh.toCode
+	          				) as tmp 
+	          SET hdr.balance=tmp.sumQty 
+	          WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.toCode 
+          	";
+          	$stmt = $pdo->prepare($sql);		
+			$stmt->execute();
+
+			//Onway
+			$sql = "UPDATE tmpStock hdr
+	         ,(SELECT itm.prodCodeId, sh.toCode, SUM(itm.qty) as sumQty FROM product_item itm 
+	          				INNER JOIN send_detail sd ON sd.prodItemId=itm.prodItemId  
+	         				INNER JOIN send sh ON sh.sdNo=sd.sdNo AND sh.statusCode='P' AND sh.rcNo IS NULL AND DATE(sh.sendDate) <= '$dateFromYmd'
+	          				GROUP BY itm.prodCodeId, sh.toCode
+	          				) as tmp 
+	          SET hdr.onway=tmp.sumQty 
+	          WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.toCode 
+          	";
+          	$stmt = $pdo->prepare($sql);		
+			$stmt->execute();
 
 
 			//Last Prev Closing Date. = LPCD
@@ -173,7 +203,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           	";
           	$stmt = $pdo->prepare($sql);		
 			$stmt->execute();
-			
+
 			//Receive
 			$sql = "UPDATE tmpStock hdr
 	         ,(SELECT itm.prodCodeId, th.toCode as fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
@@ -183,6 +213,20 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	          				GROUP BY itm.prodCodeId, th.toCode
 	          				) as tmp 
 	          SET hdr.receive=tmp.sumQty 
+	          WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.fromCode 
+          	";
+          	$stmt = $pdo->prepare($sql);		
+			$stmt->execute();
+
+			//Receive Next
+			$sql = "UPDATE tmpStock hdr
+	         ,(SELECT itm.prodCodeId, th.toCode as fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
+	          				INNER JOIN receive_detail td ON td.prodItemId=itm.prodItemId  
+	         				INNER JOIN receive th ON th.rcNo=td.rcNo AND th.statusCode='P' 
+	         					AND DATE(th.receiveDate) > '$dateFromYmd' 
+	          				GROUP BY itm.prodCodeId, th.toCode
+	          				) as tmp 
+	          SET hdr.receiveNext=tmp.sumQty 
 	          WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.fromCode 
           	";
           	$stmt = $pdo->prepare($sql);		
@@ -203,6 +247,21 @@ scratch. This page gets rid of all links and provides the needed markup only.
           	$stmt = $pdo->prepare($sql);		
 			$stmt->execute();
 
+			//Sent Next
+			$sql = "UPDATE tmpStock hdr
+	         ,(SELECT itm.prodCodeId, th.fromCode, SUM(itm.qty) as sumQty 
+	         				FROM product_item itm 
+	          				INNER JOIN send_detail td ON td.prodItemId=itm.prodItemId  
+	         				INNER JOIN send th ON th.sdNo=td.sdNo AND th.statusCode='P' 
+	         					AND DATE(th.sendDate) > '$dateFromYmd' 
+	          				GROUP BY itm.prodCodeId, th.fromCode
+	          				) as tmp 
+	          SET hdr.sentNext=tmp.sumQty 
+	          WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.fromCode 
+          	";
+          	$stmt = $pdo->prepare($sql);		
+			$stmt->execute();
+
 			//return
 			$sql = "UPDATE tmpStock hdr 
 	         ,(SELECT itm.prodCodeId, th.fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
@@ -211,6 +270,19 @@ scratch. This page gets rid of all links and provides the needed markup only.
 	          				GROUP BY itm.prodCodeId, th.fromCode
 	          				) as tmp 
 	          SET hdr.return=tmp.sumQty 
+	          WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.fromCode 
+          	";
+          	$stmt = $pdo->prepare($sql);		
+			$stmt->execute();
+
+			//return Next
+			$sql = "UPDATE tmpStock hdr 
+	         ,(SELECT itm.prodCodeId, th.fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
+	          				INNER JOIN rt_detail td ON td.prodItemId=itm.prodItemId  
+	         				INNER JOIN rt th ON th.rtNo=td.rtNo AND th.statusCode='P' AND DATE(th.returnDate) > '$dateFromYmd' 
+	          				GROUP BY itm.prodCodeId, th.fromCode
+	          				) as tmp 
+	          SET hdr.returnNext=tmp.sumQty 
 	          WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.fromCode 
           	";
           	$stmt = $pdo->prepare($sql);		
@@ -231,10 +303,26 @@ scratch. This page gets rid of all links and provides the needed markup only.
           	";
           	$stmt = $pdo->prepare($sql);		
 			$stmt->execute();
+
+			//delivery next
+			$sql = "UPDATE tmpStock hdr
+	         ,(SELECT itm.prodCodeId, CASE WHEN cust.locationCode = 'L' THEN '8' ELSE 'E' END as fromCode, SUM(itm.qty) as sumQty FROM product_item itm 
+	          				INNER JOIN delivery_detail td ON td.prodItemId=itm.prodItemId  
+	         				INNER JOIN delivery_header th ON th.doNo=td.doNo AND th.statusCode='P' 
+	         					AND DATE(th.deliveryDate) > '$dateFromYmd' 
+	         				INNER JOIN sale_header shd ON shd.soNo=th.soNo 
+	         				INNER JOIN customer cust ON cust.id=shd.custId 
+	          				GROUP BY itm.prodCodeId, cust.locationCode 
+	          				) as tmp 
+	          SET hdr.deliveryNext=tmp.sumQty 
+	          WHERE hdr.prodId=tmp.prodCodeId AND hdr.sloc=tmp.fromCode 
+          	";
+          	$stmt = $pdo->prepare($sql);		
+			$stmt->execute();
 			
 			//balance
 			$sql = "UPDATE tmpStock 
-			SET `balance`=`openAcc`+`receive`-`sent`-`return`-`delivery`
+			SET `balanceCalc`=`openAcc`+`receive`-`sent`-`return`-`delivery`
           	";
           	$stmt = $pdo->prepare($sql);		
 			$stmt->execute();
@@ -254,7 +342,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 
 			$sql = "SELECT  
-			sb.`prodId`, sb.`prodCode`, sb.`sloc`, sb.`openAcc`, sb.`onway`, sb.`receive` ,sb.`sent`,sb.`return` ,sb.`delivery` ,sb.`balance` ,sb.`balanceReCheck` ,sb.`book` 	
+			sb.`prodId`, sb.`prodCode`, sb.`sloc`, sb.`openAcc`, sb.`onway`, sb.`receive` ,sb.`receiveNext` ,sb.`sent` ,sb.`sentNext`,sb.`return` ,sb.`returnNext` ,sb.`delivery` ,sb.`deliveryNext` ,sb.`balance` ,sb.`balanceCalc` 	
 			FROM tmpStock sb ";
 			$stmt = $pdo->prepare($sql);		
 			$stmt->execute();
@@ -377,7 +465,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 		       	<?php }else{ 
 		       		//there data.
   					$sql = "SELECT  
-					sb.`prodId`, sb.`prodCode`, sb.`sloc`, sb.`openAcc`, sb.`onway`, sb.`receive` ,sb.`sent`,sb.`return` ,sb.`delivery` ,sb.`balance` ,sb.`balanceReCheck` ,sb.`book` 	
+					sb.`prodId`, sb.`prodCode`, sb.`sloc`, sb.`openAcc`, sb.`onway`, sb.`receive` ,sb.`receiveNext` ,sb.`sent` ,sb.`sentNext`,sb.`return` ,sb.`returnNext` ,sb.`delivery` ,sb.`deliveryNext` ,sb.`balance` ,sb.`balanceCalc` 	
 					, sl.name as slocName 
 					FROM tmpStock sb 
 						INNER JOIN sloc sl ON sl.code=sb.sloc ";
@@ -390,7 +478,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 							//$img = 'dist/img/product/'.(empty($row['photo'])? 'default.jpg' : $row['photo']);
 		       			$isNotEqual=false;
 		       			$bgColor="";
-		       			if ( $row['balance']<0 ){
+		       			if ( $row['balance']<>$row['balanceCalc'] ){
 		       				$isNotEqual=true;
 		       				$bgColor="bg-danger";
 		       			}
@@ -408,21 +496,40 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     <td style="text-align: center;"><?= $locationName; ?></td>
 					<!--<td style="text-align: right; color: green;"><?= number_format($row['balance']-$row['book'],0,'.',','); ?></td>-->
 					<td style="text-align: right; color: blue;"><a target="_blank" href="report_itm_dtl_by_prd.php?prodCode=<?=$row['prodCode'];?>&sloc=<?=$row['sloc'];?>" ><?= number_format($row['balance'],2,'.',','); ?></a>
-					
+						<?php $nextTotal = 0+$row['receiveNext']-$row['sentNext']-$row['returnNext']-$row['deliveryNext']; ?>
+						<?php if($nextTotal > 0){ ?>
+							</br><small><?=number_format($nextTotal,2,'.',',');?></small>
+						<?php } ?>	
+						<?php if($nextTotal < 0){ ?>
+							</br><small><?=number_format($nextTotal,2,'.',',');?></small>
+						<?php } ?>	
 					</td>
-					<!--<td style="text-align: right; color: black;"><a target="_blank" href="report_itm_dtl_by_prd.php?prodCode=<?=$row['prodCode'];?>&sloc=<?=$row['sloc'];?>" ><?= number_format($row['balanceReCheck'],2,'.',','); ?></a></td>-->
+					<!--<td style="text-align: right; color: black;"><a target="_blank" href="report_itm_dtl_by_prd.php?prodCode=<?=$row['prodCode'];?>&sloc=<?=$row['sloc'];?>" ><?= number_format($row['balanceCalc'],2,'.',','); ?></a></td>-->
 					<td style="text-align: right; color: orange;">
-						<a target="_blank" href="report_prod_stk_onway.php?prodId=<?=$row['prodId'];?>&sloc=<?=$row['sloc'];?>" ><?= number_format($row['onway'],2,'.',','); ?></a>			
+						<a target="_blank" href="report_prod_stk_onway.php?prodId=<?=$row['prodId'];?>&sloc=<?=$row['sloc'];?>" ><?= number_format($row['onway'],2,'.',','); ?>
+						</a>			
 					</td>
-					<!--<td><?= $row['catCode']; ?></td>-->
 					<td style="text-align: right; font-size: small;"><?= number_format($row['openAcc'],2,'.',','); ?></td>
-					<td style="text-align: right; font-size: small;"><?= number_format($row['receive'],2,'.',','); ?></td>
-					<td style="text-align: right; font-size: small;"><?= number_format($row['sent'],2,'.',','); ?></td>
-					<td style="text-align: right; font-size: small;"><?= number_format($row['return'],2,'.',','); ?></td>
-					<td style="text-align: right; font-size: small;"><?= number_format($row['delivery'],2,'.',','); ?></td>
-					
-					<!--<td style="text-align: right;"><?= number_format(-1*$row['pick'],0,'.',','); ?></td>
-					<td style="text-align: right; color: #006600; background-color: #ccccff;"><?= number_format($row['balance']-$row['pick'],0,'.',','); ?></td>-->
+					<td style="text-align: right; font-size: small;"><?= number_format($row['receive'],2,'.',','); ?>
+						<?php if($row['receiveNext'] > 0){ ?>
+							<small>+<?=number_format($row['receiveNext'],2,'.',',');?></small>
+						<?php } ?>	
+					</td>
+					<td style="text-align: right; font-size: small;"><?= number_format($row['sent'],2,'.',','); ?>
+						<?php if($row['sentNext'] > 0){ ?>
+							<small>+<?=number_format($row['sentNext'],2,'.',',');?></small>
+						<?php } ?>							
+					</td>
+					<td style="text-align: right; font-size: small;"><?= number_format($row['return'],2,'.',','); ?>
+						<?php if($row['returnNext'] > 0){ ?>
+							<small>+<?=number_format($row['returnNext'],2,'.',',');?></small>
+						<?php } ?>			
+					</td>
+					<td style="text-align: right; font-size: small;"><?= number_format($row['delivery'],2,'.',','); ?>
+						<?php if($row['deliveryNext'] > 0){ ?>
+							<small>+<?=number_format($row['deliveryNext'],2,'.',',');?></small>
+						<?php } ?>			
+					</td>
                 </tr>
                  <?php 
                  	$c_row +=1; }//end while					
@@ -439,9 +546,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
              <?php if($countTotal>0){    ?>
                <div class="col-md-12">
 
-			<a target="_blank" href="<?=$rootPage;?>_xls.php<?=$condQuery;?>" class="btn btn-default pull-right"><i class="glyphicon glyphicon-print"></i> Export</a>
+			<!-- <a target="_blank" href="<?=$rootPage;?>_xls.php<?=$condQuery;?>" class="btn btn-default pull-right"><i class="glyphicon glyphicon-print"></i> Export</a> -->
 
-			<a id="btnStkDocMovRpt" target="_blank" href="<?=$rootPage;?>_stmt_pdf.php<?=$condQuery;?>" class="btn btn-default pull-right" style="margin-right: 5px;"><i class="fa fa-file-pdf-o"></i> Stock Document Movement Report</a>
+			<a id="btnStkDocMovRpt" target="_blank" href="<?=$rootPage;?>_stmt_pdf.php<?=$condQuery;?>" class="btn btn-default pull-right" style="margin-right: 0px;"><i class="fa fa-file-pdf-o"></i> Stock Document Movement Report</a>
 			
 			<!-- <a id="btnStkLotMovRpt" target="_blank" href="<?=$rootPage;?>_lot_stmt_pdf.php<?=$condQuery;?>" class="btn btn-default pull-right"><i class="fa fa-file-pdf-o"></i> Stock Lot Movement Report</a> -->
 			
